@@ -1,0 +1,92 @@
+body{
+  background: #ccc;
+}
+#breakpoints table{
+  font-size: 10px;
+}
+
+#console{
+  background: #f7f7f7;
+  font-size: 0.8em;
+}
+#stdout {
+  background: darkgrey;
+  color: black;
+}
+#console, #stdout, #raw_output{
+  font-family: monospace;
+  overflow: auto;
+  font-size: 10px;
+}
+.sent_command{
+  cursor: pointer;
+}
+.sent_command:hover{
+  background: yellow;
+}
+.disabled {
+    z-index: 1000;
+    background-color: lightgrey;
+    opacity: 0.6;
+    pointer-events: none;
+}
+.no_margin{
+  margin: 0px;
+}
+.code{
+  overflow: auto;
+  font-size: 10px;
+}
+.gutter{
+
+}
+.line_num{
+
+}
+.code pre, table.code {
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+    width: 100%
+}
+#current_line{
+  background: yellow;
+}
+.breakpoint td.gutter div{
+  background: blue;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border-color: black;
+}
+.no_breakpoint td.gutter div{
+  /*background: blue;*/
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border-color: black;
+}
+.active_breakpoint{
+  background: red;
+}
+.gutter{
+  width: 10px;
+  padding-right: 5px;
+  background: #d4ffab;
+}
+.pre{
+  white-space: pre;
+}
+.source_code:hover td, .source_code:hover td pre{
+  background-color: lightblue;
+  cursor: pointer;
+}
+.source_code td{
+  background-color: #f7f7f7
+}
+.padding_left{
+  padding-left: 5px;
+}
+.line_of_code{
+  height: 18px
+}

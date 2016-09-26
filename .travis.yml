@@ -1,0 +1,13 @@
+language: python
+sudo: required
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+before_install:
+  - sudo apt-get install gdb
+# command to run tests
+script:
+  - python setup.py test
