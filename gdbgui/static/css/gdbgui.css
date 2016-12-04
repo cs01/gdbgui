@@ -18,7 +18,7 @@ body{
   overflow: auto;
   font-size: 10px;
 }
-.sent_command{
+.pointer{
   cursor: pointer;
 }
 .sent_command:hover{
@@ -31,7 +31,10 @@ body{
     pointer-events: none;
 }
 .no_margin{
-  margin: 0px;
+  margin: 2px;
+}
+.no_padding{
+  padding: 2px !important;
 }
 .code{
   overflow: auto;
@@ -76,6 +79,9 @@ body{
 }
 .pre{
   white-space: pre;
+}
+pre{
+  overflow: visible !important;
 }
 .source_code:hover td, .source_code:hover td pre{
   background-color: lightblue;
