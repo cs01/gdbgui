@@ -26,6 +26,11 @@ const Util = {
     post_msg: function(data){
         App.set_status(_.escape(data.responseJSON.message))
         // Messenger().post(_.escape(data.responseJSON.message))
+    },
+    escape: function(s){
+        return s.replace(/([^\\]\\n)/g, '<br>')
+                .replace(/\\t/g, '&nbsp')
+                .replace(/\\"+/g, '"')
     }
 }
 
@@ -33,7 +38,7 @@ const Consts = {
     set_target_app_button: $('#set_target_app'),
     jq_gdb_mi_output: $('#gdb_mi_output'),
     jq_console: $('#console'),
-    stdout: $('#stdout'),
+    jq_stdout: $('#stdout'),
 
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
@@ -46,6 +51,9 @@ const Consts = {
     jq_status: $('#status'),
     jq_command_history: $('#command_history'),
     jq_source_code_heading: $('#source_code_heading'),
+    jq_disassembly: $('#disassembly'),
+    jq_disassembly_heading: $('#disassembly_heading'),
+    jq_refresh_disassembly_button: $('button#refresh_disassembly'),
 }
 
 let App = {
@@ -112,7 +120,20 @@ let App = {
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
         $("body").on("click", ".resizer", App.click_resizer_button);
+        Consts.jq_refresh_disassembly_button.click(App.refresh_disassembly);
 
+    },
+    refresh_disassembly: function(e){
+        let file = App.state.rendered_source_file.fullname
+        let line = App.state.rendered_source_file.line
+        if (file !== null && line !== null){
+            line = Math.max(line - 10, 1)
+            // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Data-Manipulation.html
+            const mi_response_format = 4
+            App.run_gdb_command(`-data-disassemble -f ${file} -l ${line} -- ${mi_response_format}`)
+        } else {
+            Consts.jq_status.html('gdbgui is not sure which file and line to disassemble. Reach a breakpoint, then try again.')
+        }
     },
     click_set_target_app_button: function(e){
         var binary = Consts.jq_binary.val();
@@ -225,9 +246,9 @@ let App = {
         for (let r of response_array){
             if (r.type === 'output'){
                 // output of program
-                Consts.stdout.append(`<p class='pre no_margin output'>${r.payload.replace(/[^(\\)]\\n/g)}</span>`)
+                Consts.jq_stdout.append(`<p class='pre no_margin output'>${r.payload.replace(/[^(\\)]\\n/g)}</span>`)
             }else{
-                // output of gdb
+                // gdb machine interface structure output
                 Consts.jq_gdb_mi_output.append(`<p class='pre ${text_class[r.type]} no_margin output'>${r.type}:\n${JSON.stringify(r, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
             }
 
@@ -259,12 +280,19 @@ let App = {
                     }
                 } else if ('register-names' in r.payload) {
                     App.register_names = r.payload['register-names']
+                } else if ('asm_insns' in r.payload) {
+                    App.render_disasembly(r.payload.asm_insns)
                 }
 
-            }else if (r.payload && typeof r.payload.frame !== 'undefined') {
+            } else if (r.payload && typeof r.payload.frame !== 'undefined') {
                 // Stopped on a frame. We can render the file and highlight the line!
                 App.state.frame = r.payload.frame;
                 App.read_and_render_file(App.state.frame.fullname, App.state.frame.line);
+
+            } else if (r.type === 'console'){
+                // Consts.jq_console.append(_.replace(r.payload, '\\n', '<br>'))
+                // Consts.jq_console.append(`<pre style="border-radius: 0; border: 0; margin: 0; padding: 0;">${r.payload}</pre>`)
+                Consts.jq_console.append(`<p class='no_margin output'>${Util.escape(r.payload)}</span>`)
             }
 
             if (r.message && r.message === 'stopped'){
@@ -274,11 +302,7 @@ let App = {
                 }
             }
 
-            if (r.type === 'console'){
-                // Consts.jq_console.append(_.replace(r.payload, '\\n', '<br>'))
-                Consts.jq_console.append(`<pre style="border-radius: 0; border: 0; margin: 0; padding: 0;">${r.payload}</pre>`)
-            }
-
+            // Update status
             let status = [];
             if (r.message){
                 status.push(r.message)
@@ -293,9 +317,19 @@ let App = {
         }
 
         // scroll to the bottom
-        Consts.stdout.animate({'scrollTop': Consts.stdout.prop('scrollHeight')})
+        Consts.jq_stdout.animate({'scrollTop': Consts.jq_stdout.prop('scrollHeight')})
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         Consts.jq_console.animate({'scrollTop': Consts.jq_console.prop('scrollHeight')})
+    },
+    render_disasembly: function(asm_insns){
+        let thead = [ 'line', 'function+offset address instruction']
+        let data = []
+        for(let i of asm_insns){
+            let content = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
+            data.push([i['line'], content.join('<br>')])
+        }
+        Consts.jq_disassembly.html(Util.get_table(thead, data));
+        Consts.jq_disassembly_heading.html(asm_insns['fullname'])
     },
     render_stack: function(stack){
         let thead = _.keys(stack[0])
