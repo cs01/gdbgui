@@ -1,10 +1,9 @@
 from setuptools import find_packages, setup, Command
 import sys
-from gdbgui.tests import test_app
 
 # from distutils.core import setup,
 EXCLUDE_FROM_PACKAGES = []
-version = '0.0.0.1'
+version = '0.0.0.2'
 
 
 class TestCommand (Command):
@@ -18,6 +17,9 @@ class TestCommand (Command):
         pass
 
     def run(self):
+        # import here so dependency error on Flask is not
+        # raised
+        from gdbgui.tests import test_app
         sys.exit(test_app.main())
 
 
@@ -39,7 +41,7 @@ setup(
     cmdclass={'test': TestCommand},
     install_requires=[
         'Flask>=0.11.1',
-        'pygdbmi>=0.0.1.8',
+        'pygdbmi>=0.0.1.9',
     ],
     classifiers=[
         'Intended Audience :: Developers',
