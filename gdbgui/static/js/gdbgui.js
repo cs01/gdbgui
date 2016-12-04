@@ -31,7 +31,7 @@ const Util = {
 
 const Consts = {
     set_target_app_button: $('#set_target_app'),
-    jq_raw_output: $('#raw_output'),
+    jq_gdb_mi_output: $('#gdb_mi_output'),
     jq_console: $('#console'),
     stdout: $('#stdout'),
 
@@ -41,8 +41,10 @@ const Consts = {
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
     jq_breakpoints: $('#breakpoints'),
+    jq_stack: $('#stack'),
+    jq_registers: $('#registers'),
     jq_status: $('#status'),
-    jq_commands_sent: $('#commands_sent'),
+    jq_command_history: $('#command_history'),
     jq_source_code_heading: $('#source_code_heading'),
 }
 
@@ -104,9 +106,12 @@ let App = {
             }
         );
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
+        $('.clear_history').click(function(e){App.clear_history(e)});
+        $('.clear_console').click(function(e){App.clear_console(e)});
         $("body").on("click", ".breakpoint", App.click_breakpoint);
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
+        $("body").on("click", ".resizer", App.click_resizer_button);
 
     },
     click_set_target_app_button: function(e){
@@ -134,6 +139,20 @@ let App = {
                 let cmd = [`-break-delete ${b.number}`, '-break-list']
                 App.run_gdb_command(cmd)
             }
+        }
+    },
+    click_resizer_button: function(e){
+        console.log(e)
+        let jq_selection = $(e.currentTarget.dataset['target_selector'])
+        let cur_height = jq_selection.height()
+        if (e.currentTarget.dataset['resize_type'] === 'enlarge'){
+            jq_selection.height(cur_height + 50)
+        } else if (e.currentTarget.dataset['resize_type'] === 'shrink'){
+            if (cur_height > 50){
+                jq_selection.height(cur_height - 50)
+            }
+        } else {
+            console.error('unknown resize type ' + e.currentTarget.dataset['resize_type'])
         }
     },
     click_source_file_gutter_with_no_breakpoint: function(e){
@@ -177,6 +196,13 @@ let App = {
             error: Util.post_msg
         })
     },
+    clear_history: function(){
+        App.state.history = []
+        Consts.jq_command_history.html('')
+    },
+    clear_console: function(){
+        Consts.jq_console.html('')
+    },
     save_to_history: function(cmd){
         if (_.isArray(App.state.history)){
             App.state.history.push(cmd)
@@ -185,7 +211,7 @@ let App = {
         }
     },
     show_in_history_table: function(cmd){
-        Consts.jq_commands_sent.prepend(`<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+        Consts.jq_command_history.prepend(`<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
     },
     receive_gdb_response: function(response_array){
         const text_class = {
@@ -202,11 +228,13 @@ let App = {
                 Consts.stdout.append(`<p class='pre no_margin output'>${r.payload.replace(/[^(\\)]\\n/g)}</span>`)
             }else{
                 // output of gdb
-                Consts.jq_raw_output.append(`<p class='pre ${text_class[r.type]} no_margin output'>${r.type}:\n${JSON.stringify(r, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
+                Consts.jq_gdb_mi_output.append(`<p class='pre ${text_class[r.type]} no_margin output'>${r.type}:\n${JSON.stringify(r, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
             }
 
 
             if (r.type === 'result' && r.message === 'done' && r.payload){
+                // This is special GDB Machine Interface structured data that we
+                // can render in the frontend
                 if ('bkpt' in r.payload){
                     // breakpoint was created
                     App.store_breakpoint(r.payload.bkpt);
@@ -223,6 +251,14 @@ let App = {
                     }
                     App.render_breakpoint_table();
                     App.render_cached_source_file();
+                } else if ('stack' in r.payload) {
+                    App.render_stack(r.payload.stack)
+                } else if ('register-values' in r.payload) {
+                    if (App.register_names){
+                        App.render_registers(App.register_names, r.payload['register-values'])
+                    }
+                } else if ('register-names' in r.payload) {
+                    App.register_names = r.payload['register-names']
                 }
 
             }else if (r.payload && typeof r.payload.frame !== 'undefined') {
@@ -240,7 +276,7 @@ let App = {
 
             if (r.type === 'console'){
                 // Consts.jq_console.append(_.replace(r.payload, '\\n', '<br>'))
-                Consts.jq_console.append(`<pre style="border-radius: 0; border-right: 0; border-top: 0; border-left: 0; border-color: #dcdcdc; margin: 0; padding: 0;">${r.payload}</pre>`)
+                Consts.jq_console.append(`<pre style="border-radius: 0; border: 0; margin: 0; padding: 0;">${r.payload}</pre>`)
             }
 
             let status = [];
@@ -258,8 +294,18 @@ let App = {
 
         // scroll to the bottom
         Consts.stdout.animate({'scrollTop': Consts.stdout.prop('scrollHeight')})
-        Consts.jq_raw_output.animate({'scrollTop': Consts.jq_raw_output.prop('scrollHeight')})
+        Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         Consts.jq_console.animate({'scrollTop': Consts.jq_console.prop('scrollHeight')})
+    },
+    render_stack: function(stack){
+        let thead = _.keys(stack[0])
+        let stack_array = stack.map(b => _.values(b));
+        Consts.jq_stack.html(Util.get_table(thead, stack_array));
+    },
+    render_registers(names, values){
+        let thead = ['name', 'value']
+        let register_array = values.map(v => [names[v['number']], v['value']]);
+        Consts.jq_registers.html(Util.get_table(thead, register_array));
     },
     read_and_render_file: function(fullname, highlight_line=0){
         if (fullname === null){
@@ -270,6 +316,7 @@ let App = {
             // We have this cached locally, just use it!
             let f = _.find(App.state.source_files, i => i.fullname === fullname);
             App.render_source_file(fullname, f.source_code, highlight_line);
+            return
         }
 
         $.ajax({
@@ -306,7 +353,6 @@ let App = {
         App.scroll_to_current_source_code_line()
         App.state.rendered_source_file.fullname = fullname
         App.state.rendered_source_file.line = highlight_line
-
     },
     scroll_to_current_source_code_line: function(){
         let jq_current_line = $("#current_line")
