@@ -13,17 +13,19 @@ head
 
 body
     div.container-fluid
-        div.row(style="height: 70px;")
-            h4#status GDB is running on the backend. Choose a binary to debug.
+        div.row
+            h4#status(style="height: 20px") GDB is running on the backend. Choose a binary to debug.
 
         div.row
             div.col-md-6
+                //- binary selection
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-primary#set_target_app(type="button") Debug This Binary
                         input.form-control#binary(type="text", placeholder="Path to target executable")
-                //- premade button
+
+                //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd='run', title='Run the loaded program') Run
                         span.glyphicon.glyphicon-off.padding_left
@@ -46,44 +48,45 @@ body
                         span.input-group-btn
                             button.btn.btn-success.run_gdb_command(type="button") Send command
                         input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", list="gdb_command_reference")
-            //- history -- should
-            div.col-md-6(style="overflow: auto; height: 100px; ")
+            //- history
+            div.col-md-6(style="overflow: auto; height: 100px; ") History
+
                 table.table.table-condensed(style="padding: 0; font-size: 0.8em")
                     tbody#commands_sent(style="padding: 0")
 
-        //- console
-        div.panel.panel-default
-            div.panel-heading gdb console
-            div.panel-body#console(style="overflow: auto; height: 150px; background-color: #f7f7f7")
-
-
         //- source
-        div.panel.panel-default
-            div.panel-heading#source_code_heading Source Code
-            div.panel-body.code_container(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+        div.no_padding.col-md-6#source_div
+            span.glyphicon.glyphicon-resize-vertical.resizer.pointer(data-target_selector="#source_div" data-resize_type="enlarge")
+            span#source_code_heading Source Code
+
+            div#code_container(style="overflow: auto; height: 150px; background-color: #f7f7f7")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
+        div.col-md-6.no_padding gdb console
+            div#console(style="overflow: auto; height: 150px; background-color: #f7f7f7")
 
-        //- breakpoints
-        div.panel.panel-default
-            div.panel-heading Breakpoints
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
+        div.col-md-6.no_padding Breakpoints
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
+                span.glyphicon.glyphicon-refresh.padding_left
 
-            div.panel-body#breakpoints(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+            div#breakpoints(style="overflow: auto; height: 150px; background-color: #f7f7f7")
 
-        //- stdout
-        div.panel.panel-default
-            div.panel-heading stdout/stderr
-                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Flush GDB Child Process Output
+        div.col-md-6.no_padding stdout/stderr
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
+                span.glyphicon.glyphicon-refresh.padding_left
             div.panel-body#stdout(style="overflow: auto; height: 150px; background-color: #f7f7f7")
 
 
-        //- //- raw output (delete?)
-        //- div.panel.panel-default
-        //-     div.panel-heading gdb raw output
-        //-     div.panel-body#raw_output(style="overflow: auto; height: 150px; font-size: 0.8em")
+        div.col-md-6.no_padding stack
+            div#stack
+
+        div.col-md-6.no_padding registers
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
+                span.glyphicon.glyphicon-refresh.padding_left
+            div#registers
+        div.col-md-6.no_padding gdb raw output
+            div#raw_output(style="overflow: auto; height: 150px; font-size: 0.8em")
 
 
 datalist(id="gdb_command_reference")

@@ -13,7 +13,7 @@ pexpect==4.2.1
 pickleshare==0.7.4
 prompt-toolkit==1.0.7
 ptyprocess==0.5.1
-pygdbmi==0.0.1.8
+pygdbmi==0.0.1.9
 Pygments==2.1.3
 pyjade==4.0.0
 simplegeneric==0.8.1

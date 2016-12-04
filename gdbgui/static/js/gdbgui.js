@@ -38,7 +38,7 @@ const Consts = {
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
     jq_code: $('#code_table'),
-    jq_code_container: $('.code_container'),
+    jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
     jq_breakpoints: $('#breakpoints'),
     jq_status: $('#status'),
@@ -51,11 +51,23 @@ let App = {
     // Initialize
     init: function(){
         App.register_events();
+
         Consts.jq_binary.val(localStorage.getItem('last_binary'))
+        try{
+            App.state.history = JSON.parse(localStorage.getItem('history'))
+        }catch(err){
+            App.state.history = []
+        }
+        if (_.isArray(App.state.history)){
+            App.state.history.map(App.show_in_history_table)
+        }
     },
     onclose: function(){
+        console.log(JSON.stringify(App.state.history))
+        console.log(JSON.stringify(App.state.history))
+        console.log(JSON.stringify(App.state.history))
         localStorage.setItem('last_binary', Consts.jq_binary.val())
-        console.log(Consts.jq_binary.val())
+        localStorage.setItem('history', JSON.stringify(App.state.history))
         return null
     },
     set_status: function(status){
@@ -64,7 +76,8 @@ let App = {
     state: {'breakpoints': [],  // list of breakpoints
             'source_files': [], // list of absolute paths, and their contents
             'frame': {}, // current "frame" in gdb. Has keys: line, fullname (path to file), among others.
-            'rendered_source_file': {'fullname': null, 'line': null} // current source file displayed
+            'rendered_source_file': {'fullname': null, 'line': null}, // current source file displayed
+            'history': []
             },
     clear_state: function(){
         App.state =  {
@@ -153,7 +166,8 @@ let App = {
         }
 
         App.set_status('')
-        Consts.jq_commands_sent.prepend(`<tr><td class="sent_command" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+        App.save_to_history(cmd)
+        App.show_in_history_table(cmd)
         $.ajax({
             url: "/run_gdb_command",
             cache: false,
@@ -162,6 +176,16 @@ let App = {
             success: App.receive_gdb_response,
             error: Util.post_msg
         })
+    },
+    save_to_history: function(cmd){
+        if (_.isArray(App.state.history)){
+            App.state.history.push(cmd)
+        }else{
+            App.state.history = [cmd]
+        }
+    },
+    show_in_history_table: function(cmd){
+        Consts.jq_commands_sent.prepend(`<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
     },
     receive_gdb_response: function(response_array){
         const text_class = {
@@ -278,7 +302,7 @@ let App = {
             line_num++;
         }
         Consts.jq_code.html(tbody.join(''))
-        Consts.jq_source_code_heading.html('Source Code: ' + fullname)
+        Consts.jq_source_code_heading.text(fullname)
         App.scroll_to_current_source_code_line()
         App.state.rendered_source_file.fullname = fullname
         App.state.rendered_source_file.line = highlight_line
@@ -286,7 +310,7 @@ let App = {
     },
     scroll_to_current_source_code_line: function(){
         let jq_current_line = $("#current_line")
-        if (jq_current_line.length === 1){
+        if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
             let top_of_line = jq_current_line.position().top
             let top_of_table = jq_current_line.closest('table').position().top
             let time_to_scroll = 0
