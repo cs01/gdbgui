@@ -3,19 +3,18 @@ head
     link(href='static/css/gdbgui.css', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
-    link(href='static/vendor/css/awesomplete.css', rel='stylesheet')
 
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
     script(type="text/javascript" src='static/vendor/js/messenger.min.js')
     script(type="text/javascript" src='static/vendor/js/lodash.min.js')
-    script(type="text/javascript" src='static/vendor/js/awesomplete.min.js')
+    script(type="text/javascript" src='static/vendor/js/moment.min.js')
 
 body
     div.container-fluid
         div.row
-            h4#status(style="height: 20px") GDB is running on the backend. Choose a binary to debug.
-
+            span Status:&nbsp&nbsp
+            span#status(style="height: 20px") GDB is running on the backend. Choose a binary to debug.
         div.row
             div.col-md-6
                 //- binary selection
@@ -39,7 +38,7 @@ body
                         span.glyphicon.glyphicon-arrow-up.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd='-break-insert main', title="Add breakpoint to the programs entry point") Add Breakpoint to Main
                         span.glyphicon.glyphicon-flag.padding_left
-                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='interrupt') Kill Target
+                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt') Kill Target
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
                 //- freeform input
@@ -50,43 +49,51 @@ body
                         input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", list="gdb_command_reference")
             //- history
             div.col-md-6(style="overflow: auto; height: 100px; ") History
+                button.btn.btn-default.btn-xs.clear_history(type='button') Clear
 
-                table.table.table-condensed(style="padding: 0; font-size: 0.8em")
-                    tbody#commands_sent(style="padding: 0")
+                div.gdb_content_div
+                    table.table.table-condensed
+                        tbody#command_history
 
         //- source
         div.no_padding.col-md-6#source_div
-            span.glyphicon.glyphicon-resize-vertical.resizer.pointer(data-target_selector="#source_div" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
             span#source_code_heading Source Code
 
-            div#code_container(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+            div#code_container.gdb_content_div
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
         div.col-md-6.no_padding gdb console
-            div#console(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+            button.btn.btn-default.btn-xs.clear_console(type='button') Clear
+            div#console.gdb_content_div
 
         div.col-md-6.no_padding Breakpoints
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
 
-            div#breakpoints(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+            div#breakpoints.gdb_content_div
 
         div.col-md-6.no_padding stdout/stderr
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
-            div.panel-body#stdout(style="overflow: auto; height: 150px; background-color: #f7f7f7")
+            div.gdb_content_div#stdout
 
 
         div.col-md-6.no_padding stack
-            div#stack
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames') Refresh
+                span.glyphicon.glyphicon-refresh.padding_left
+            div#stack.gdb_content_div
 
         div.col-md-6.no_padding registers
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-list-register-names
+            -data-list-register-values x') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
-            div#registers
-        div.col-md-6.no_padding gdb raw output
-            div#raw_output(style="overflow: auto; height: 150px; font-size: 0.8em")
+            div#registers.gdb_content_div
+
+        div.col-md-6.no_padding gdb machine interface output
+            div#gdb_mi_output.gdb_content_div
 
 
 datalist(id="gdb_command_reference")

@@ -1,22 +1,20 @@
 body{
   background: #ccc;
 }
-#breakpoints table{
-  font-size: 10px;
+table{
+  font-size: 0.9em;
 }
 
 #console{
-  background: #f7f7f7;
-  font-size: 0.8em;
+  font-size: 0.9em;
 }
 #stdout {
-  background: darkgrey;
   color: black;
 }
-#console, #stdout, #raw_output{
+#console, #stdout, #gdb_mi_output{
   font-family: monospace;
   overflow: auto;
-  font-size: 10px;
+  font-size: 0.9em;
 }
 .pointer{
   cursor: pointer;
@@ -38,13 +36,7 @@ body{
 }
 .code{
   overflow: auto;
-  font-size: 10px;
-}
-.gutter{
-
-}
-.line_num{
-
+  font-size: 0.9em;
 }
 .code pre, table.code {
     margin: 0px;
@@ -57,15 +49,15 @@ body{
 }
 .breakpoint td.gutter div{
   background: blue;
-  width: 10px;
-  height: 10px;
+  width: 0.9em;
+  height: 0.9em;
   border-radius: 50%;
   border-color: black;
 }
 .no_breakpoint td.gutter div{
   /*background: blue;*/
-  width: 10px;
-  height: 10px;
+  width: 0.9em;
+  height: 0.9em;
   border-radius: 50%;
   border-color: black;
 }
@@ -73,7 +65,7 @@ body{
   background: red;
 }
 .gutter{
-  width: 10px;
+  width: 0.9em;
   padding-right: 5px;
   background: #d4ffab;
 }
@@ -95,4 +87,13 @@ pre{
 }
 .line_of_code{
   height: 18px
+}
+.gdb_content_div{
+  overflow: auto;
+  height: 150px;
+  background-color: #f7f7f7;
+  border-color: black;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 2px;
 }
