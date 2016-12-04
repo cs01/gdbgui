@@ -1,3 +1,7 @@
+//- The jade project (and file extension) is now Pug, but
+//- as far as I know, the python package has not been renamed, so it remains
+//- a jade file for now
+
 html
 head
     link(href='static/css/gdbgui.css', rel='stylesheet')
@@ -21,7 +25,7 @@ body
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
-                            button.btn.btn-primary#set_target_app(type="button") Debug This Binary
+                            button.btn.btn-primary#set_target_app(type="button") Load Binary
                         input.form-control#binary(type="text", placeholder="Path to target executable")
 
                 //- premade buttons
@@ -57,42 +61,65 @@ body
 
         //- source
         div.no_padding.col-md-6#source_div
+            span#source_code_heading Source Code
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
-            span#source_code_heading Source Code
 
             div#code_container.gdb_content_div
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
-        div.col-md-6.no_padding gdb console
+
+        div.col-md-6.no_padding
+            span gdb console
             button.btn.btn-default.btn-xs.clear_console(type='button') Clear
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
             div#console.gdb_content_div
 
-        div.col-md-6.no_padding Breakpoints
+        div.col-md-6.no_padding
+            span Breakpoints
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
 
             div#breakpoints.gdb_content_div
 
         div.col-md-6.no_padding stdout/stderr
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stdout" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stdout" data-resize_type="shrink")
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
             div.gdb_content_div#stdout
 
 
         div.col-md-6.no_padding stack
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
         div.col-md-6.no_padding registers
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
             button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-list-register-names
             -data-list-register-values x') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
 
+        div.col-md-6.no_padding disassembly
+            span#disassembly_heading
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="shrink")
+            button.btn.btn-default.btn-xs#refresh_disassembly(type='button') Refresh
+                span.glyphicon.glyphicon-refresh.padding_left
+            div#disassembly.gdb_content_div
+
         div.col-md-6.no_padding gdb machine interface output
+            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
+            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
             div#gdb_mi_output.gdb_content_div
 
 
