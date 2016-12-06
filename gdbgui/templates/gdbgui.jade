@@ -30,15 +30,15 @@ body
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='run', title='Run the loaded program') Run
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-run', title='Run the loaded program') Run
                         span.glyphicon.glyphicon-off.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='continue', title='Continue running program') Continue
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Continue running program') Continue
                         span.glyphicon.glyphicon-play.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='next', title='Step to next line (will not enter function)') Next
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title='Step to next line (will not enter function)') Next
                         span.glyphicon.glyphicon-step-forward.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='step', title='Step into next function call or to next line') Step
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title='Step into next function call or to next line') Step
                         span.glyphicon.glyphicon-arrow-down.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='return', title='Return to calling function') Return
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title='Return to calling function') Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd='-break-insert main', title="Add breakpoint to the programs entry point") Add Breakpoint to Main
                         span.glyphicon.glyphicon-flag.padding_left
@@ -64,7 +64,7 @@ body
             span#source_code_heading Source Code
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
-
+            button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Fetch Source File List
             div#code_container.gdb_content_div
                 table#code_table.code
                     tr
@@ -89,7 +89,7 @@ body
         div.col-md-6.no_padding stdout/stderr
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stdout" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stdout" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='call fflush(0)') Refresh
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
             div.gdb_content_div#stdout
 
