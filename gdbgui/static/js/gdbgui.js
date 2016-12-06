@@ -137,7 +137,7 @@ let App = {
     },
     click_set_target_app_button: function(e){
         var binary = Consts.jq_binary.val();
-        App.run_gdb_command(`file ${binary}`);
+        App.run_gdb_command(`-file-exec-and-symbols ${binary}`);
         App.enable_gdb_controls();
     },
     keydown_on_binary_input: function(e){
