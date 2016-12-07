@@ -59,7 +59,7 @@ def run_gdb_command():
 def read_file():
     """Used to get contents of source files that are being debugged"""
     path = request.args.get('path')
-    if os.path.isfile(path):
+    if path and os.path.isfile(path):
         try:
             with open(path, 'r') as f:
                 return jsonify({'source_code': f.read().splitlines(),
@@ -85,7 +85,6 @@ def signal_handler(signal, frame):
 
 
 def quit_backend():
-    global app, gdb
     gdb.exit()
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
@@ -102,7 +101,7 @@ def setup_backend(serve=True, port=5000, debug=False):
     app.debug = debug
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     if serve:
-        extra_files=[]
+        extra_files = []
         for dirname, dirs, files in os.walk(TEMPLATE_DIR):
             for filename in files:
                 filename = os.path.join(dirname, filename)

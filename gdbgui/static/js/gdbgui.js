@@ -24,8 +24,11 @@ const Util = {
         return result.join('\n');
     },
     post_msg: function(data){
-        App.set_status(_.escape(data.responseJSON.message))
-        // Messenger().post(_.escape(data.responseJSON.message))
+        if (data.responseJSON && data.responseJSON.message){
+            App.set_status(_.escape(data.responseJSON.message))
+        }else{
+            App.set_status(`${data.statusText} (${data.status} error)`)
+        }
     },
     escape: function(s){
         return s.replace(/([^\\]\\n)/g, '<br>')
@@ -342,7 +345,7 @@ let App = {
         Consts.jq_registers.html(Util.get_table(thead, register_array));
     },
     read_and_render_file: function(fullname, highlight_line=0){
-        if (fullname === null){
+        if (fullname === null || fullname === undefined){
             return
         }
 
