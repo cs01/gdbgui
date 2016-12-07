@@ -18,10 +18,10 @@ body
     div.container-fluid(style="position: fixed; top: 0; margin-top: 0;
                                 height: 30px; width: 100%;
                                 border-bottom: black; border-style: solid; border-width: 0px; border-bottom-width: 1px;
-                                z-index: 1000; background: #6dc6ff")
+                                z-index: 1000; background: #ccc")
         div.row
-            span Status:&nbsp&nbsp
-            span#status(style="height: 20px") GDB is running on the backend. Choose a binary to debug.
+            span Status:&nbsp
+            span#status(style="height: 20px") GDB is waiting to run a command
 
     div.container-fluid(style="margin-top: 50px")
         div.row
@@ -31,7 +31,8 @@ body
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-primary#set_target_app(type="button") Load Binary
-                        input.form-control#binary(type="text", placeholder="Path to target executable")
+                        input.form-control#binary(type="text", placeholder="Path to target executable", list='past_binaries')
+                        datalist#past_binaries
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
@@ -65,7 +66,11 @@ body
             span#source_code_heading Source Code
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
-            button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Fetch Source File List
+            div
+                select#source_file_list
+                    option Load a binary, then click Refresh List
+                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Refresh List
+
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr

@@ -60,6 +60,7 @@ const Consts = {
 
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
+    jq_source_file_list: $('#source_file_list'),
     jq_code: $('#code_table'),
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
@@ -80,19 +81,24 @@ let App = {
     init: function(){
         App.register_events();
 
-        Consts.jq_binary.val(localStorage.getItem('last_binary'))
         try{
-            App.state.history = JSON.parse(localStorage.getItem('history'))
+            App.state.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
+            Consts.jq_binary.val(App.state.past_binaries[0])
+        } catch(err){
+            App.state.past_binaries = []
+        }
+        App.render_past_binary_options_datalist()
+
+        try{
+            App.state.history = _.uniq(JSON.parse(localStorage.getItem('history')))
         }catch(err){
             App.state.history = []
         }
-        if (_.isArray(App.state.history)){
-            App.state.history.map(App.show_in_history_table)
-        }
+        App.render_history_table()
     },
     onclose: function(){
-        localStorage.setItem('last_binary', Consts.jq_binary.val())
-        localStorage.setItem('history', JSON.stringify(App.state.history))
+        localStorage.setItem('past_binaries', JSON.stringify(App.state.past_binaries) || [])
+        localStorage.setItem('history', JSON.stringify(App.state.history) || [])
         return null
     },
     set_status: function(status){
@@ -102,7 +108,8 @@ let App = {
             'source_files': [], // list of absolute paths, and their contents
             'frame': {}, // current "frame" in gdb. Has keys: line, fullname (path to file), among others.
             'rendered_source_file': {'fullname': null, 'line': null}, // current source file displayed
-            'history': []
+            'history': [],
+            'past_binaries': []
             },
     clear_state: function(){
         App.state =  {
@@ -136,6 +143,7 @@ let App = {
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
         $("body").on("click", ".resizer", App.click_resizer_button);
+        $("body").on("change", "#source_file_list", App.select_file_from_file_list);
         Consts.jq_refresh_disassembly_button.click(App.refresh_disassembly);
 
     },
@@ -153,8 +161,13 @@ let App = {
     },
     click_set_target_app_button: function(e){
         var binary = Consts.jq_binary.val();
+        _.remove(App.state.past_binaries, i => i === binary)
+        App.state.past_binaries.unshift(binary)
+        App.render_past_binary_options_datalist()
         App.run_gdb_command(`-file-exec-and-symbols ${binary}`);
-        App.enable_gdb_controls();
+    },
+    render_past_binary_options_datalist: function(){
+        $('#past_binaries').html(App.state.past_binaries.map(b => `<option>${b}</option`))
     },
     keydown_on_binary_input: function(e){
         if(e.keyCode === 13) {
@@ -222,7 +235,7 @@ let App = {
 
         App.set_status(`running command "${cmd}"`)
         App.save_to_history(cmd)
-        App.show_in_history_table(cmd)
+        App.render_history_table()
         $.ajax({
             url: "/run_gdb_command",
             cache: false,
@@ -250,13 +263,15 @@ let App = {
     },
     save_to_history: function(cmd){
         if (_.isArray(App.state.history)){
-            App.state.history.push(cmd)
+            _.remove(App.state.history, i => i === cmd)
+            App.state.history.unshift(cmd)
         }else{
             App.state.history = [cmd]
         }
     },
-    show_in_history_table: function(cmd){
-        Consts.jq_command_history.prepend(`<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+    render_history_table: function(){
+        let history_html = App.state.history.map(cmd => `<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+        Consts.jq_command_history.html(history_html)
     },
     receive_gdb_response: function(response_array){
         const text_class = {
@@ -298,14 +313,19 @@ let App = {
                     App.render_cached_source_file();
                 } else if ('stack' in r.payload) {
                     App.render_stack(r.payload.stack)
+
                 } else if ('register-values' in r.payload) {
                     if (App.register_names){
                         App.render_registers(App.register_names, r.payload['register-values'])
                     }
                 } else if ('register-names' in r.payload) {
                     App.register_names = r.payload['register-names']
+
                 } else if ('asm_insns' in r.payload) {
                     App.render_disasembly(r.payload.asm_insns)
+
+                } else if ('files' in r.payload){
+                    App.render_file_list(r.payload.files)
                 }
 
             } else if (r.payload && typeof r.payload.frame !== 'undefined') {
@@ -331,19 +351,30 @@ let App = {
             if (r.message){
                 status.push(r.message)
             }
-            if (r.payload && r.payload.msg){
-                status.push(r.payload.msg)
+            if (r.payload){
+                if (r.payload.msg) {status.push(r.payload.msg)}
+                if (r.payload.reason) {status.push(r.payload.reason)}
+                if (r.payload.frame){
+                    for(let i of ['file', 'func', 'line']){
+                        if (i in r.payload.frame){
+                            status.push(`${i}: ${r.payload.frame[i]}`)
+                        }
+                    }
+                }
             }
-            if (r.payload && r.payload.reason){
-                status.push(r.payload.reason)
-            }
-            App.set_status(status.join('. '))
+            App.set_status(status.join(', '))
         }
 
         // scroll to the bottom
         Consts.jq_stdout.animate({'scrollTop': Consts.jq_stdout.prop('scrollHeight')})
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         Consts.jq_console.animate({'scrollTop': Consts.jq_console.prop('scrollHeight')})
+    },
+    render_file_list: function(files){
+        Consts.jq_source_file_list.html(files.map(f => `<option class='file' data-fullname="${f.fullname}">${f.fullname}</option>`))
+    },
+    select_file_from_file_list: function(e){
+        App.read_and_render_file($(e.currentTarget).val())
     },
     render_disasembly: function(asm_insns){
         let thead = [ 'line', 'function+offset address instruction']
