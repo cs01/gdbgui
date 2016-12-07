@@ -131,6 +131,7 @@ let App = {
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
         $('.clear_history').click(function(e){App.clear_history(e)});
         $('.clear_console').click(function(e){App.clear_console(e)});
+        $('.get_gdb_response').click(function(e){App.get_gdb_response(e)});
         $("body").on("click", ".breakpoint", App.click_breakpoint);
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
@@ -227,6 +228,15 @@ let App = {
             cache: false,
             method: 'POST',
             data: {'cmd': cmd},
+            success: App.receive_gdb_response,
+            error: Util.post_msg
+        })
+    },
+    get_gdb_response: function(){
+        App.set_status(`Getting GDB response`)
+        $.ajax({
+            url: "/get_gdb_response",
+            cache: false,
             success: App.receive_gdb_response,
             error: Util.post_msg
         })
