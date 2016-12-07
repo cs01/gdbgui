@@ -54,6 +54,17 @@ def run_gdb_command():
     else:
         return client_error({'message': 'gdb is not running'})
 
+@app.route('/get_gdb_response')
+def get_gdb_response():
+    if gdb is not None:
+        try:
+            response = gdb.get_gdb_response()
+            return jsonify(response)
+        except Exception as e:
+            return server_error({'message': str(e)})
+    else:
+        return client_error({'message': 'gdb is not running'})
+
 
 @app.route('/read_file')
 def read_file():

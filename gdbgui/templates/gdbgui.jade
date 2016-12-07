@@ -15,10 +15,15 @@ head
     script(type="text/javascript" src='static/vendor/js/moment.min.js')
 
 body
-    div.container-fluid
+    div.container-fluid(style="position: fixed; top: 0; margin-top: 0;
+                                height: 30px; width: 100%;
+                                border-bottom: black; border-style: solid; border-width: 0px; border-bottom-width: 1px;
+                                z-index: 1000; background: #6dc6ff")
         div.row
             span Status:&nbsp&nbsp
             span#status(style="height: 20px") GDB is running on the backend. Choose a binary to debug.
+
+    div.container-fluid(style="margin-top: 50px")
         div.row
             div.col-md-6
                 //- binary selection
@@ -45,27 +50,23 @@ body
                     button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt') Kill Target
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
+                    button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
+
+
                 //- freeform input
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-success.run_gdb_command(type="button") Send command
                         input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", list="gdb_command_reference")
-            //- history
-            div.col-md-6(style="overflow: auto; height: 100px; ") History
-                button.btn.btn-default.btn-xs.clear_history(type='button') Clear
-
-                div.gdb_content_div
-                    table.table.table-condensed
-                        tbody#command_history
 
         //- source
-        div.no_padding.col-md-6#source_div
+        div.no_padding.col-md-12#source_div
             span#source_code_heading Source Code
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
             button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Fetch Source File List
-            div#code_container.gdb_content_div
+            div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
@@ -93,6 +94,13 @@ body
                 span.glyphicon.glyphicon-refresh.padding_left
             div.gdb_content_div#stdout
 
+        //- history
+        div.col-md-6.no_padding History
+            button.btn.btn-default.btn-xs.clear_history(type='button') Clear
+
+            div.gdb_content_div
+                table.table.table-condensed
+                    tbody#command_history
 
         div.col-md-6.no_padding stack
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
