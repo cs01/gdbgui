@@ -2,11 +2,11 @@
 "use strict";
 
 const Util = {
-    get_table: function(thead, data) {
+    get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
         result.push("<thead>");
         result.push("<tr>");
-        for (let h of thead){
+        for (let h of columns){
             result.push(`<th>${h}</th>`);
         }
         result.push("</tr>");
@@ -22,6 +22,21 @@ const Util = {
         result.push("</tbody>");
         result.push("</table>");
         return result.join('\n');
+    },
+    get_table_data: function(objs){
+        // put keys of all objects into array
+        let all_keys = _.flatten(objs.map(i => _.keys(i)))
+        let columns = _.uniq(_.flatten(all_keys)).sort()
+
+        let data = []
+        for (let s of objs){
+            let row = []
+            for (let k of columns){
+                row.push(k in s ? s[k] : '')
+            }
+            data.push(row)
+        }
+        return [columns, data]
     },
     post_msg: function(data){
         if (data.responseJSON && data.responseJSON.message){
@@ -76,9 +91,6 @@ let App = {
         }
     },
     onclose: function(){
-        console.log(JSON.stringify(App.state.history))
-        console.log(JSON.stringify(App.state.history))
-        console.log(JSON.stringify(App.state.history))
         localStorage.setItem('last_binary', Consts.jq_binary.val())
         localStorage.setItem('history', JSON.stringify(App.state.history))
         return null
@@ -166,7 +178,6 @@ let App = {
         }
     },
     click_resizer_button: function(e){
-        console.log(e)
         let jq_selection = $(e.currentTarget.dataset['target_selector'])
         let cur_height = jq_selection.height()
         if (e.currentTarget.dataset['resize_type'] === 'enlarge'){
@@ -208,7 +219,7 @@ let App = {
             return
         }
 
-        App.set_status('')
+        App.set_status(`running command "${cmd}"`)
         App.save_to_history(cmd)
         App.show_in_history_table(cmd)
         $.ajax({
@@ -335,14 +346,13 @@ let App = {
         Consts.jq_disassembly_heading.html(asm_insns['fullname'])
     },
     render_stack: function(stack){
-        let thead = _.keys(stack[0])
-        let stack_array = stack.map(b => _.values(b));
-        Consts.jq_stack.html(Util.get_table(thead, stack_array));
+        let [columns, data] = Util.get_table_data(stack)
+        Consts.jq_stack.html(Util.get_table(columns, data));
     },
     render_registers(names, values){
-        let thead = ['name', 'value']
+        let columns = ['name', 'value']
         let register_array = values.map(v => [names[v['number']], v['value']]);
-        Consts.jq_registers.html(Util.get_table(thead, register_array));
+        Consts.jq_registers.html(Util.get_table(columns, register_array));
     },
     read_and_render_file: function(fullname, highlight_line=0){
         if (fullname === null || fullname === undefined){
@@ -410,9 +420,8 @@ let App = {
         App.state.breakpoints.push(breakpoint);
     },
     render_breakpoint_table: function(){
-        const thead = _.keys(App.state.breakpoints[0]);
-        let bkpt_array = App.state.breakpoints.map(b => _.values(b));
-        Consts.jq_breakpoints.html(Util.get_table(thead, bkpt_array));
+        let [columns, data] = Util.get_table_data(App.state.breakpoints)
+        Consts.jq_breakpoints.html(Util.get_table(columns, data))
     },
     enable_gdb_controls: function(){
         Consts.js_gdb_controls.removeClass('disabled');
