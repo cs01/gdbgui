@@ -97,3 +97,13 @@ pre{
   border-width: 1px;
   border-radius: 2px;
 }
+.dropdown-btn {
+    vertical-align: top;
+    height: 30px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+.awesomplete  ul {
+  overflow: auto;
+  max-height: 200px;
+}
