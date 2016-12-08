@@ -60,7 +60,8 @@ const Consts = {
 
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
-    jq_source_file_list: $('#source_file_list'),
+    jq_source_file_input: $('#source_file_input'),
+    jq_source_files_datalist: $('#source_files_datalist'),
     jq_code: $('#code_table'),
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
@@ -105,11 +106,12 @@ let App = {
         Consts.jq_status.text(status)
     },
     state: {'breakpoints': [],  // list of breakpoints
-            'source_files': [], // list of absolute paths, and their contents
+            'source_files': [], // list of absolute paths
+            'cached_source_files': [], // list of absolute paths, and their source code
             'frame': {}, // current "frame" in gdb. Has keys: line, fullname (path to file), among others.
             'rendered_source_file': {'fullname': null, 'line': null}, // current source file displayed
             'history': [],
-            'past_binaries': []
+            'past_binaries': [],
             },
     clear_state: function(){
         App.state =  {
@@ -136,6 +138,7 @@ let App = {
             }
         );
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
+        Consts.jq_source_file_input.keyup(function(e){App.keyup_source_file_input(e)});
         $('.clear_history').click(function(e){App.clear_history(e)});
         $('.clear_console').click(function(e){App.clear_console(e)});
         $('.get_gdb_response').click(function(e){App.get_gdb_response(e)});
@@ -143,8 +146,37 @@ let App = {
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
         $("body").on("click", ".resizer", App.click_resizer_button);
-        $("body").on("change", "#source_file_list", App.select_file_from_file_list);
+
         Consts.jq_refresh_disassembly_button.click(App.refresh_disassembly);
+        App.init_autocomplete()
+
+
+    },
+    init_autocomplete: function(){
+
+        App.autocomplete_source_file_input = new Awesomplete('#source_file_input', {
+            minChars: 0,
+            maxItems: 10000,
+            list: [],
+            sort: (a,b ) => {return a < b ? -1 : 1;}
+        });
+
+        Awesomplete.$('.dropdown-btn').addEventListener("click", function() {
+            if (App.autocomplete_source_file_input.ul.childNodes.length === 0) {
+                App.autocomplete_source_file_input.minChars = 0;
+                App.autocomplete_source_file_input.evaluate();
+            }
+            else if (App.autocomplete_source_file_input.ul.hasAttribute('hidden')) {
+                App.autocomplete_source_file_input.open();
+            }
+            else {
+                App.autocomplete_source_file_input.close();
+            }
+        })
+
+         Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
+            App.read_and_render_file(e.currentTarget.value)
+        });
 
     },
     refresh_disassembly: function(e){
@@ -325,7 +357,9 @@ let App = {
                     App.render_disasembly(r.payload.asm_insns)
 
                 } else if ('files' in r.payload){
-                    App.render_file_list(r.payload.files)
+                    App.source_files = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                    App.autocomplete_source_file_input.list = App.source_files
+                    App.autocomplete_source_file_input.evaluate()
                 }
 
             } else if (r.payload && typeof r.payload.frame !== 'undefined') {
@@ -370,11 +404,10 @@ let App = {
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         Consts.jq_console.animate({'scrollTop': Consts.jq_console.prop('scrollHeight')})
     },
-    render_file_list: function(files){
-        Consts.jq_source_file_list.html(files.map(f => `<option class='file' data-fullname="${f.fullname}">${f.fullname}</option>`))
-    },
-    select_file_from_file_list: function(e){
-        App.read_and_render_file($(e.currentTarget).val())
+    keyup_source_file_input: function(e){
+        if (e.keyCode === 13){
+            App.read_and_render_file(e.currentTarget.value)
+        }
     },
     render_disasembly: function(asm_insns){
         let thead = [ 'line', 'function+offset address instruction']
@@ -400,9 +433,9 @@ let App = {
             return
         }
 
-        if (App.state.source_files.some(f => f.fullname === fullname)){
+        if (App.state.cached_source_files.some(f => f.fullname === fullname)){
             // We have this cached locally, just use it!
-            let f = _.find(App.state.source_files, i => i.fullname === fullname);
+            let f = _.find(App.state.cached_source_files, i => i.fullname === fullname);
             App.render_source_file(fullname, f.source_code, highlight_line);
             return
         }
@@ -413,7 +446,7 @@ let App = {
             type: 'GET',
             data: {path: fullname},
             success: function(response){
-                App.state.source_files.push({'fullname': fullname, 'source_code': response.source_code})
+                App.state.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
                 App.render_source_file(fullname, response.source_code, highlight_line);
             },
             error: Util.post_msg

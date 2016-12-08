@@ -7,12 +7,14 @@ head
     link(href='static/css/gdbgui.css', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
+    link(href='static/vendor/css/awesomeplete.css', rel='stylesheet')
 
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
     script(type="text/javascript" src='static/vendor/js/messenger.min.js')
     script(type="text/javascript" src='static/vendor/js/lodash.min.js')
     script(type="text/javascript" src='static/vendor/js/moment.min.js')
+    script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
 
 body
     div.container-fluid(style="position: fixed; top: 0; margin-top: 0;
@@ -59,16 +61,20 @@ body
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-success.run_gdb_command(type="button") Send command
-                        input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", list="gdb_command_reference")
+                        input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", data-list="#gdb_command_reference", style="width: 300px")
 
         //- source
         div.no_padding.col-md-12#source_div
             span#source_code_heading Source Code
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
             div
-                select#source_file_list
-                    option Load a binary, then click Refresh List
+                input#source_file_input.dropdown-input(autocomplete='off', style="width: 500px")
+
+                button.dropdown-btn(type="button")
+                    span.caret
+
                 button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Refresh List
 
             div#code_container.gdb_content_div(style="height: 300px")
@@ -137,6 +143,7 @@ body
 
 
 datalist(id="gdb_command_reference")
+    //- TODO complete this list
     option(value="Command Description")
     option(value="help  List gdb command topics.")
     option(value="help topic-classes  List gdb command within class.")
@@ -229,75 +236,6 @@ datalist(id="gdb_command_reference")
     option(value="list filename:function  List source code.")
     option(value="set listsize count")
     option(value="show listsize Number of lines listed when list command given.")
-    //- option(value="directory directory-name")
-    //- option(value="dir directory-name")
-    //- option(value="show directories  Add specified directory to front of source code path.")
-    //- option(value="directory Clear sourcepath when nothing specified.")
-    //- option(value="Machine Language  ")
-    //- option(value="info line")
-    //- option(value="info line number  Displays the start and end position in object code for the current line in source.")
-    //- option(value="Display position in object code for a specified line in source.")
-    //- option(value="disassemble 0xstart 0xend Displays machine code for positions in object code specified (can use start and end hex memory values")
-    //- option(value="given by the info line command.")
-    //- option(value="stepi")
-    //- option(value="si")
-    //- option(value="nexti")
-    //- option(value="ni  step/next assembly/processor instruction.")
-    //- option(value="x 0xaddress")
-    //- option(value="x/nfu 0xaddress Examine the contents of memory.")
-    //- option(value="Examine the contents of memory and specify formatting.")
-    //- option(value="n: number of display items to print")
-    //- option(value="f: specify the format for the output")
-    //- option(value="u: specify the size of the data unit (eg. byte, word, ...)")
-    //- option(value="Example: x/4dw var")
-    //- option(value="Examine Variables ")
-    //- option(value="print variable-name")
-    //- option(value="p variable-name")
-    //- option(value="p file-name::variable-name")
-    //- option(value="p 'file-name'::variable-name  Print value stored in variable.")
-    //- option(value="p *array-variable@length  Print first # values of array specified by length. Good for pointers to dynamicaly allocated memory.")
-    //- option(value="p/x variable  Print as integer variable in hex.")
-    //- option(value="p/d variable  Print variable as a signed integer.")
-    //- option(value="p/u variable  Print variable as a un-signed integer.")
-    //- option(value="p/o variable  Print variable as a octal.")
-    //- option(value="p/t variable")
-    //- option(value="x/b address")
-    //- option(value="x/b &variable Print as integer value in binary. (1 byte/8bits)")
-    //- option(value="p/c variable  Print integer as character.")
-    //- option(value="p/f variable  Print variable as floating point number.")
-    //- option(value="p/a variable  Print as a hex address.")
-    //- option(value="x/w address")
-    //- option(value="x/4b &variable  Print binary representation of 4 bytes (1 32 bit word) of memory pointed to by address.")
-    //- option(value="ptype variable")
-    //- option(value="ptype data-type Prints type definition of the variable or declared variable type. Helpful for viewing class or struct definitions option(value=while debugging.")
-    //- option(value="GDB Modes ")
-    //- option(value="set gdb-option value  Set a GDB option")
-    //- option(value="set logging on")
-    //- option(value="set logging off")
-    //- option(value="show logging")
-    //- option(value="set logging file log-file Turn on/off logging. Default name of file is gdb.txt")
-    //- option(value="set print array on")
-    //- option(value="set print array off")
-    //- option(value="show print array  Default is off. Convient readable format for arrays turned on/off.")
-    //- option(value="set print array-indexes on")
-    //- option(value="set print array-indexes off")
-    //- option(value="show print array-indexes  Default off. Print index of array elements.")
-    //- option(value="set print pretty on")
-    //- option(value="set print pretty off")
-    //- option(value="show print pretty Format printing of C structures.")
-    //- option(value="set print union on")
-    //- option(value="set print union off")
-    //- option(value="show print union  Default is on. Print C unions.")
-    //- option(value="set print demangle on")
-    //- option(value="set print demangle off")
-    //- option(value="show print demangle Default on. Controls printing of C++ names.")
-    //- option(value="Start and Stop  ")
-    //- option(value="run")
-    //- option(value="r")
-    //- option(value="run command-line-arguments")
-    //- option(value="c Continue execution to next break point.")
-    //- option(value="kill  Stop program execution.")
-    //- option(value="quit")
-    //- option(value="q Exit GDB debugger.")
+
 
 script(type="text/javascript" src='static/js/gdbgui.js')
