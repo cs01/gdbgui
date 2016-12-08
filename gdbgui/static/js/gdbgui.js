@@ -2,11 +2,11 @@
 "use strict";
 
 const Util = {
-    get_table: function(thead, data) {
+    get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
         result.push("<thead>");
         result.push("<tr>");
-        for (let h of thead){
+        for (let h of columns){
             result.push(`<th>${h}</th>`);
         }
         result.push("</tr>");
@@ -23,9 +23,27 @@ const Util = {
         result.push("</table>");
         return result.join('\n');
     },
+    get_table_data: function(objs){
+        // put keys of all objects into array
+        let all_keys = _.flatten(objs.map(i => _.keys(i)))
+        let columns = _.uniq(_.flatten(all_keys)).sort()
+
+        let data = []
+        for (let s of objs){
+            let row = []
+            for (let k of columns){
+                row.push(k in s ? s[k] : '')
+            }
+            data.push(row)
+        }
+        return [columns, data]
+    },
     post_msg: function(data){
-        App.set_status(_.escape(data.responseJSON.message))
-        // Messenger().post(_.escape(data.responseJSON.message))
+        if (data.responseJSON && data.responseJSON.message){
+            App.set_status(_.escape(data.responseJSON.message))
+        }else{
+            App.set_status(`${data.statusText} (${data.status} error)`)
+        }
     },
     escape: function(s){
         return s.replace(/([^\\]\\n)/g, '<br>')
@@ -42,6 +60,8 @@ const Consts = {
 
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
+    jq_source_file_input: $('#source_file_input'),
+    jq_source_files_datalist: $('#source_files_datalist'),
     jq_code: $('#code_table'),
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
@@ -62,32 +82,36 @@ let App = {
     init: function(){
         App.register_events();
 
-        Consts.jq_binary.val(localStorage.getItem('last_binary'))
         try{
-            App.state.history = JSON.parse(localStorage.getItem('history'))
+            App.state.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
+            Consts.jq_binary.val(App.state.past_binaries[0])
+        } catch(err){
+            App.state.past_binaries = []
+        }
+        App.render_past_binary_options_datalist()
+
+        try{
+            App.state.history = _.uniq(JSON.parse(localStorage.getItem('history')))
         }catch(err){
             App.state.history = []
         }
-        if (_.isArray(App.state.history)){
-            App.state.history.map(App.show_in_history_table)
-        }
+        App.render_history_table()
     },
     onclose: function(){
-        console.log(JSON.stringify(App.state.history))
-        console.log(JSON.stringify(App.state.history))
-        console.log(JSON.stringify(App.state.history))
-        localStorage.setItem('last_binary', Consts.jq_binary.val())
-        localStorage.setItem('history', JSON.stringify(App.state.history))
+        localStorage.setItem('past_binaries', JSON.stringify(App.state.past_binaries) || [])
+        localStorage.setItem('history', JSON.stringify(App.state.history) || [])
         return null
     },
     set_status: function(status){
         Consts.jq_status.text(status)
     },
     state: {'breakpoints': [],  // list of breakpoints
-            'source_files': [], // list of absolute paths, and their contents
+            'source_files': [], // list of absolute paths
+            'cached_source_files': [], // list of absolute paths, and their source code
             'frame': {}, // current "frame" in gdb. Has keys: line, fullname (path to file), among others.
             'rendered_source_file': {'fullname': null, 'line': null}, // current source file displayed
-            'history': []
+            'history': [],
+            'past_binaries': [],
             },
     clear_state: function(){
         App.state =  {
@@ -114,13 +138,45 @@ let App = {
             }
         );
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
+        Consts.jq_source_file_input.keyup(function(e){App.keyup_source_file_input(e)});
         $('.clear_history').click(function(e){App.clear_history(e)});
         $('.clear_console').click(function(e){App.clear_console(e)});
+        $('.get_gdb_response').click(function(e){App.get_gdb_response(e)});
         $("body").on("click", ".breakpoint", App.click_breakpoint);
         $("body").on("click", ".no_breakpoint", App.click_source_file_gutter_with_no_breakpoint);
         $("body").on("click", ".sent_command", App.click_sent_command);
         $("body").on("click", ".resizer", App.click_resizer_button);
+
         Consts.jq_refresh_disassembly_button.click(App.refresh_disassembly);
+        App.init_autocomplete()
+
+
+    },
+    init_autocomplete: function(){
+
+        App.autocomplete_source_file_input = new Awesomplete('#source_file_input', {
+            minChars: 0,
+            maxItems: 10000,
+            list: [],
+            sort: (a,b ) => {return a < b ? -1 : 1;}
+        });
+
+        Awesomplete.$('.dropdown-btn').addEventListener("click", function() {
+            if (App.autocomplete_source_file_input.ul.childNodes.length === 0) {
+                App.autocomplete_source_file_input.minChars = 0;
+                App.autocomplete_source_file_input.evaluate();
+            }
+            else if (App.autocomplete_source_file_input.ul.hasAttribute('hidden')) {
+                App.autocomplete_source_file_input.open();
+            }
+            else {
+                App.autocomplete_source_file_input.close();
+            }
+        })
+
+         Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
+            App.read_and_render_file(e.currentTarget.value)
+        });
 
     },
     refresh_disassembly: function(e){
@@ -137,8 +193,13 @@ let App = {
     },
     click_set_target_app_button: function(e){
         var binary = Consts.jq_binary.val();
-        App.run_gdb_command(`file ${binary}`);
-        App.enable_gdb_controls();
+        _.remove(App.state.past_binaries, i => i === binary)
+        App.state.past_binaries.unshift(binary)
+        App.render_past_binary_options_datalist()
+        App.run_gdb_command(`-file-exec-and-symbols ${binary}`);
+    },
+    render_past_binary_options_datalist: function(){
+        $('#past_binaries').html(App.state.past_binaries.map(b => `<option>${b}</option`))
     },
     keydown_on_binary_input: function(e){
         if(e.keyCode === 13) {
@@ -163,7 +224,6 @@ let App = {
         }
     },
     click_resizer_button: function(e){
-        console.log(e)
         let jq_selection = $(e.currentTarget.dataset['target_selector'])
         let cur_height = jq_selection.height()
         if (e.currentTarget.dataset['resize_type'] === 'enlarge'){
@@ -205,14 +265,23 @@ let App = {
             return
         }
 
-        App.set_status('')
+        App.set_status(`running command "${cmd}"`)
         App.save_to_history(cmd)
-        App.show_in_history_table(cmd)
+        App.render_history_table()
         $.ajax({
             url: "/run_gdb_command",
             cache: false,
             method: 'POST',
             data: {'cmd': cmd},
+            success: App.receive_gdb_response,
+            error: Util.post_msg
+        })
+    },
+    get_gdb_response: function(){
+        App.set_status(`Getting GDB response`)
+        $.ajax({
+            url: "/get_gdb_response",
+            cache: false,
             success: App.receive_gdb_response,
             error: Util.post_msg
         })
@@ -226,13 +295,15 @@ let App = {
     },
     save_to_history: function(cmd){
         if (_.isArray(App.state.history)){
-            App.state.history.push(cmd)
+            _.remove(App.state.history, i => i === cmd)
+            App.state.history.unshift(cmd)
         }else{
             App.state.history = [cmd]
         }
     },
-    show_in_history_table: function(cmd){
-        Consts.jq_command_history.prepend(`<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+    render_history_table: function(){
+        let history_html = App.state.history.map(cmd => `<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
+        Consts.jq_command_history.html(history_html)
     },
     receive_gdb_response: function(response_array){
         const text_class = {
@@ -274,14 +345,21 @@ let App = {
                     App.render_cached_source_file();
                 } else if ('stack' in r.payload) {
                     App.render_stack(r.payload.stack)
+
                 } else if ('register-values' in r.payload) {
                     if (App.register_names){
                         App.render_registers(App.register_names, r.payload['register-values'])
                     }
                 } else if ('register-names' in r.payload) {
                     App.register_names = r.payload['register-names']
+
                 } else if ('asm_insns' in r.payload) {
                     App.render_disasembly(r.payload.asm_insns)
+
+                } else if ('files' in r.payload){
+                    App.source_files = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                    App.autocomplete_source_file_input.list = App.source_files
+                    App.autocomplete_source_file_input.evaluate()
                 }
 
             } else if (r.payload && typeof r.payload.frame !== 'undefined') {
@@ -307,19 +385,29 @@ let App = {
             if (r.message){
                 status.push(r.message)
             }
-            if (r.payload && r.payload.msg){
-                status.push(r.payload.msg)
+            if (r.payload){
+                if (r.payload.msg) {status.push(r.payload.msg)}
+                if (r.payload.reason) {status.push(r.payload.reason)}
+                if (r.payload.frame){
+                    for(let i of ['file', 'func', 'line']){
+                        if (i in r.payload.frame){
+                            status.push(`${i}: ${r.payload.frame[i]}`)
+                        }
+                    }
+                }
             }
-            if (r.payload && r.payload.reason){
-                status.push(r.payload.reason)
-            }
-            App.set_status(status.join('. '))
+            App.set_status(status.join(', '))
         }
 
         // scroll to the bottom
         Consts.jq_stdout.animate({'scrollTop': Consts.jq_stdout.prop('scrollHeight')})
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         Consts.jq_console.animate({'scrollTop': Consts.jq_console.prop('scrollHeight')})
+    },
+    keyup_source_file_input: function(e){
+        if (e.keyCode === 13){
+            App.read_and_render_file(e.currentTarget.value)
+        }
     },
     render_disasembly: function(asm_insns){
         let thead = [ 'line', 'function+offset address instruction']
@@ -332,23 +420,22 @@ let App = {
         Consts.jq_disassembly_heading.html(asm_insns['fullname'])
     },
     render_stack: function(stack){
-        let thead = _.keys(stack[0])
-        let stack_array = stack.map(b => _.values(b));
-        Consts.jq_stack.html(Util.get_table(thead, stack_array));
+        let [columns, data] = Util.get_table_data(stack)
+        Consts.jq_stack.html(Util.get_table(columns, data));
     },
     render_registers(names, values){
-        let thead = ['name', 'value']
+        let columns = ['name', 'value']
         let register_array = values.map(v => [names[v['number']], v['value']]);
-        Consts.jq_registers.html(Util.get_table(thead, register_array));
+        Consts.jq_registers.html(Util.get_table(columns, register_array));
     },
     read_and_render_file: function(fullname, highlight_line=0){
-        if (fullname === null){
+        if (fullname === null || fullname === undefined){
             return
         }
 
-        if (App.state.source_files.some(f => f.fullname === fullname)){
+        if (App.state.cached_source_files.some(f => f.fullname === fullname)){
             // We have this cached locally, just use it!
-            let f = _.find(App.state.source_files, i => i.fullname === fullname);
+            let f = _.find(App.state.cached_source_files, i => i.fullname === fullname);
             App.render_source_file(fullname, f.source_code, highlight_line);
             return
         }
@@ -359,7 +446,7 @@ let App = {
             type: 'GET',
             data: {path: fullname},
             success: function(response){
-                App.state.source_files.push({'fullname': fullname, 'source_code': response.source_code})
+                App.state.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
                 App.render_source_file(fullname, response.source_code, highlight_line);
             },
             error: Util.post_msg
@@ -407,9 +494,8 @@ let App = {
         App.state.breakpoints.push(breakpoint);
     },
     render_breakpoint_table: function(){
-        const thead = _.keys(App.state.breakpoints[0]);
-        let bkpt_array = App.state.breakpoints.map(b => _.values(b));
-        Consts.jq_breakpoints.html(Util.get_table(thead, bkpt_array));
+        let [columns, data] = Util.get_table_data(App.state.breakpoints)
+        Consts.jq_breakpoints.html(Util.get_table(columns, data))
     },
     enable_gdb_controls: function(){
         Consts.js_gdb_controls.removeClass('disabled');
