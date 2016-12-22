@@ -4,7 +4,7 @@
 # A browser-based gui for GDB
 The goal of this project is to reduce the learning curve of GDB to zero, including autocompletion and documentation of all commands.
 
-Made with a lightweight Python server (Flask), and JavaScript for the frontend. Simply run the server, then view the page. Tested on Ubuntu 16.04 with Chrome.
+Made with a lightweight Python server (Flask), and JavaScript for the frontend. Simply run the server, then view the page. Tested on Ubuntu 14.04 and 16.04 with Chrome.
 
 ![gdbgui](https://github.com/cs01/gdbgui/blob/master/gdbgui.png)
 
