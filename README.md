@@ -6,6 +6,8 @@ The goal of this project is to reduce the learning curve of GDB to zero, includi
 
 Made with a lightweight Python server (Flask), and JavaScript for the frontend. Simply run the server, then view the page. Tested on Ubuntu 16.04 with Chrome.
 
+![gdbgui](https://github.com/cs01/gdbgui/blob/master/gdbgui.png)
+
 ## Installation and Use
 
 Either
