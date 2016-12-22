@@ -3,7 +3,7 @@ import sys
 
 # from distutils.core import setup,
 EXCLUDE_FROM_PACKAGES = []
-version = '0.0.0.3'
+version = '0.0.0.4'
 
 
 class TestCommand (Command):
@@ -42,6 +42,7 @@ setup(
     install_requires=[
         'Flask>=0.11.1',
         'pygdbmi>=0.0.1.9',
+        'pyjade>=4.0.0'
     ],
     classifiers=[
         'Intended Audience :: Developers',
