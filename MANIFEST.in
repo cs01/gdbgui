@@ -1,0 +1,2 @@
+recursive-include gdbgui/static *
+recursive-include gdbgui/templates *
