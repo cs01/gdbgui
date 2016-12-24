@@ -55,14 +55,10 @@ const Util = {
 const Consts = {
     set_target_app_button: $('#set_target_app'),
     jq_gdb_mi_output: $('#gdb_mi_output'),
-    jq_stdout: $('#stdout'),
     jq_gdb_command_input: $('#gdb_command'),
     jq_binary: $('#binary'),
-    jq_source_file_input: $('#source_file_input'),
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
-    jq_stack: $('#stack'),
-    jq_registers: $('#registers'),
     jq_status: $('#status'),
     jq_command_history: $('#command_history'),
 }
@@ -116,16 +112,33 @@ let GdbApi = {
 /**
  * update and manipulate the console component
  */
-let GdbConsole = {
+let GdbConsoleComponent = {
     el: $('#console'),
     clear_console: function(){
-        GdbConsole.el.html('')
+        GdbConsoleComponent.el.html('')
     },
     add: function(s){
-        GdbConsole.el.append(`<p class='no_margin output'>${Util.escape(s)}</span>`)
+        GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(s)}</span>`)
     },
     scroll_to_bottom: function(){
-        GdbConsole.el.animate({'scrollTop': GdbConsole.el.prop('scrollHeight')})
+        GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
+    }
+}
+
+/**
+ * update and manipulate the stdout/stderr component
+ */
+let StdoutStderrComponent = {
+    el: $('#stdout'),
+    clear_stdout: function(){
+        StdoutStderrComponent.el.html('')
+    },
+    add_output: function(s){
+        StdoutStderrComponent.el.append(`<p class='pre no_margin output'>${s.replace(/[^(\\)]\\n/g)}</span>`)
+    },
+    scroll_to_bottom: function(){
+        GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
+        StdoutStderrComponent.el.animate({'scrollTop': StdoutStderrComponent.el.prop('scrollHeight')})
     }
 }
 
@@ -162,11 +175,13 @@ let BreakpointComponent = {
  * update and manipulate the breakpoint component
  */
 let SourceCodeComponent = {
+    el_source_file_input: $('#source_file_input'),
     el_source_code: $('#code_table'),
     el_title: $('#source_code_heading'),
     init: function(){
         $("body").on("click", ".breakpoint", SourceCodeComponent.click_breakpoint)
         $("body").on("click", ".no_breakpoint", SourceCodeComponent.click_source_file_gutter_with_no_breakpoint)
+        SourceCodeComponent.el_source_file_input.keyup(SourceCodeComponent.keyup_source_file_input);
         SourceCodeComponent.setup_source_file_autocomplete()
     },
     click_breakpoint: function(e){
@@ -254,6 +269,11 @@ let SourceCodeComponent = {
             error: Util.post_msg
         })
     },
+    keyup_source_file_input: function(e){
+        if (e.keyCode === 13){
+            SourceCodeComponent.read_and_render_file(e.currentTarget.value)
+        }
+    },
 }
 
 let DisassemblyComponent = {
@@ -286,6 +306,30 @@ let DisassemblyComponent = {
     },
 }
 
+let StackComponent = {
+    el: $('#stack'),
+    render_stack: function(stack){
+        let [columns, data] = Util.get_table_data_from_objs(stack)
+        StackComponent.el.html(Util.get_table(columns, data));
+    },
+}
+
+let RegisterComponent = {
+    el: $('#registers'),
+    register_names: [],
+    render_registers(values){
+        if(RegisterComponent.register_names.length === values.length){
+            let columns = ['name', 'value']
+            let register_array = values.map(v => [RegisterComponent.register_names[v['number']], v['value']]);
+            RegisterComponent.el.html(Util.get_table(columns, register_array));
+        } else {
+            console.error('Could not render registers. Length of names != length of values!')
+        }
+    },
+    set_register_names: function(names){
+        RegisterComponent.register_names = names
+    }
+}
 
 let App = {
     // Initialize
@@ -348,9 +392,8 @@ let App = {
         );
 
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
-        Consts.jq_source_file_input.keyup(function(e){App.keyup_source_file_input(e)});
         $('.clear_history').click(function(e){App.clear_history(e)});
-        $('.clear_console').click(function(e){GdbConsole.clear_console(e)});
+        $('.clear_console').click(function(e){GdbConsoleComponent.clear_console(e)});
 
         $('.get_gdb_response').click(function(e){GdbApi.get_gdb_response(e)});
 
@@ -427,7 +470,7 @@ let App = {
         for (let r of response_array){
             if (r.type === 'output'){
                 // output of program
-                Consts.jq_stdout.append(`<p class='pre no_margin output'>${r.payload.replace(/[^(\\)]\\n/g)}</span>`)
+                StdoutStderrComponent.add_output(r.payload)
             }else{
                 // gdb machine interface structure output
                 Consts.jq_gdb_mi_output.append(`<p class='pre ${text_class[r.type]} no_margin output'>${r.type}:\n${JSON.stringify(r, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
@@ -454,14 +497,13 @@ let App = {
                     BreakpointComponent.render_breakpoint_table();
                     App.render_cached_source_file();
                 } else if ('stack' in r.payload) {
-                    App.render_stack(r.payload.stack)
+                    StackComponent.render_stack(r.payload.stack)
+
+                } else if ('register-names' in r.payload) {
+                    RegisterComponent.set_register_names(r.payload['register-names'])
 
                 } else if ('register-values' in r.payload) {
-                    if (App.register_names){
-                        App.render_registers(App.register_names, r.payload['register-values'])
-                    }
-                } else if ('register-names' in r.payload) {
-                    App.register_names = r.payload['register-names']
+                    RegisterComponent.render_registers(r.payload['register-values'])
 
                 } else if ('asm_insns' in r.payload) {
                     DisassemblyComponent.render_disasembly(r.payload.asm_insns)
@@ -478,7 +520,7 @@ let App = {
                 SourceCodeComponent.read_and_render_file(App.state.frame.fullname, App.state.frame.line);
 
             } else if (r.type === 'console'){
-                GdbConsole.add(r.payload)
+                GdbConsoleComponent.add(r.payload)
             }
 
             if (r.message && r.message === 'stopped'){
@@ -508,23 +550,9 @@ let App = {
         }
 
         // scroll to the bottom
-        Consts.jq_stdout.animate({'scrollTop': Consts.jq_stdout.prop('scrollHeight')})
+        StdoutStderrComponent.scroll_to_bottom()
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
-        GdbConsole.scroll_to_bottom()
-    },
-    keyup_source_file_input: function(e){
-        if (e.keyCode === 13){
-            SourceCodeComponent.read_and_render_file(e.currentTarget.value)
-        }
-    },
-    render_stack: function(stack){
-        let [columns, data] = Util.get_table_data_from_objs(stack)
-        Consts.jq_stack.html(Util.get_table(columns, data));
-    },
-    render_registers(names, values){
-        let columns = ['name', 'value']
-        let register_array = values.map(v => [names[v['number']], v['value']]);
-        Consts.jq_registers.html(Util.get_table(columns, register_array));
+        GdbConsoleComponent.scroll_to_bottom()
     },
     scroll_to_current_source_code_line: function(){
         let jq_current_line = $("#current_line")
