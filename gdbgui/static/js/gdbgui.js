@@ -128,35 +128,35 @@ let GdbConsoleComponent = {
 /**
  * update and manipulate the stdout/stderr component
  */
-let StdoutStderrComponent = {
+let StdoutStderr = {
     el: $('#stdout'),
     clear_stdout: function(){
-        StdoutStderrComponent.el.html('')
+        StdoutStderr.el.html('')
     },
     add_output: function(s){
-        StdoutStderrComponent.el.append(`<p class='pre no_margin output'>${s.replace(/[^(\\)]\\n/g)}</span>`)
+        StdoutStderr.el.append(`<p class='pre no_margin output'>${s.replace(/[^(\\)]\\n/g)}</span>`)
     },
     scroll_to_bottom: function(){
         GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
-        StdoutStderrComponent.el.animate({'scrollTop': StdoutStderrComponent.el.prop('scrollHeight')})
+        StdoutStderr.el.animate({'scrollTop': StdoutStderr.el.prop('scrollHeight')})
     }
 }
 
 /**
  * update and manipulate the breakpoint component
  */
-let BreakpointComponent = {
+let Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
     render_breakpoint_table: function(){
-        let [columns, data] = Util.get_table_data_from_objs(BreakpointComponent.breakpoints)
-        BreakpointComponent.el.html(Util.get_table(columns, data))
+        let [columns, data] = Util.get_table_data_from_objs(Breakpoint.breakpoints)
+        Breakpoint.el.html(Util.get_table(columns, data))
     },
     remove_stored_breakpoints: function(){
-        BreakpointComponent.breakpoints = []
+        Breakpoint.breakpoints = []
     },
     remove_breakpoint_if_present: function(fullname, line){
-        for (let b of BreakpointComponent.breakpoints){
+        for (let b of Breakpoint.breakpoints){
             if (b.fullname === fullname && b.line === line){
                 let cmd = [`-break-delete ${b.number}`, '-break-list']
                 GdbApi.run_gdb_command(cmd)
@@ -164,30 +164,30 @@ let BreakpointComponent = {
         }
     },
     store_breakpoint: function(breakpoint){
-        BreakpointComponent.breakpoints.push(breakpoint);
+        Breakpoint.breakpoints.push(breakpoint);
     },
     get_breakpoint_lines_For_file: function(fullname){
-        return BreakpointComponent.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line));
+        return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line));
     }
 }
 
 /**
  * update and manipulate the breakpoint component
  */
-let SourceCodeComponent = {
+let SourceCode = {
     el_source_file_input: $('#source_file_input'),
     el_source_code: $('#code_table'),
     el_title: $('#source_code_heading'),
     init: function(){
-        $("body").on("click", ".breakpoint", SourceCodeComponent.click_breakpoint)
-        $("body").on("click", ".no_breakpoint", SourceCodeComponent.click_source_file_gutter_with_no_breakpoint)
-        SourceCodeComponent.el_source_file_input.keyup(SourceCodeComponent.keyup_source_file_input);
-        SourceCodeComponent.setup_source_file_autocomplete()
+        $("body").on("click", ".breakpoint", SourceCode.click_breakpoint)
+        $("body").on("click", ".no_breakpoint", SourceCode.click_source_file_gutter_with_no_breakpoint)
+        SourceCode.el_source_file_input.keyup(SourceCode.keyup_source_file_input);
+        SourceCode.setup_source_file_autocomplete()
     },
     click_breakpoint: function(e){
         let line = e.currentTarget.dataset.line
         // todo: embed fullname in the dom instead of depending on state
-        BreakpointComponent.remove_breakpoint_if_present(App.state.rendered_source_file.fullname, line)
+        Breakpoint.remove_breakpoint_if_present(App.state.rendered_source_file.fullname, line)
     },
     click_source_file_gutter_with_no_breakpoint: function(e){
         let line = e.currentTarget.dataset.line
@@ -219,14 +219,14 @@ let SourceCodeComponent = {
 
         // perform action when an item is selected
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
-            SourceCodeComponent.read_and_render_file(e.currentTarget.value)
+            SourceCode.read_and_render_file(e.currentTarget.value)
         });
     },
     render_source_file: function(fullname, source_code, highlight_line=0){
         highlight_line = parseInt(highlight_line);
         let line_num = 1,
             tbody = [],
-            bkpt_lines = BreakpointComponent.get_breakpoint_lines_For_file(fullname)
+            bkpt_lines = Breakpoint.get_breakpoint_lines_For_file(fullname)
 
         for (let line of source_code){
             let breakpoint_class = (bkpt_lines.indexOf(line_num) !== -1) ? 'breakpoint': 'no_breakpoint';
@@ -239,8 +239,8 @@ let SourceCodeComponent = {
                 `);
             line_num++;
         }
-        SourceCodeComponent.el_source_code.html(tbody.join(''))
-        SourceCodeComponent.el_title.text(fullname)
+        SourceCode.el_source_code.html(tbody.join(''))
+        SourceCode.el_title.text(fullname)
         App.scroll_to_current_source_code_line()
         App.state.rendered_source_file.fullname = fullname
         App.state.rendered_source_file.line = highlight_line
@@ -253,7 +253,7 @@ let SourceCodeComponent = {
         if (App.state.cached_source_files.some(f => f.fullname === fullname)){
             // We have this cached locally, just use it!
             let f = _.find(App.state.cached_source_files, i => i.fullname === fullname);
-            SourceCodeComponent.render_source_file(fullname, f.source_code, highlight_line);
+            SourceCode.render_source_file(fullname, f.source_code, highlight_line);
             return
         }
 
@@ -264,23 +264,23 @@ let SourceCodeComponent = {
             data: {path: fullname},
             success: function(response){
                 App.state.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
-                SourceCodeComponent.render_source_file(fullname, response.source_code, highlight_line);
+                SourceCode.render_source_file(fullname, response.source_code, highlight_line);
             },
             error: Util.post_msg
         })
     },
     keyup_source_file_input: function(e){
         if (e.keyCode === 13){
-            SourceCodeComponent.read_and_render_file(e.currentTarget.value)
+            SourceCode.read_and_render_file(e.currentTarget.value)
         }
     },
 }
 
-let DisassemblyComponent = {
+let Disassembly = {
     el_title: $('#disassembly_heading'),
     el: $('#disassembly'),
     init: function(){
-        $('button#refresh_disassembly').click(DisassemblyComponent.refresh_disassembly)
+        $('button#refresh_disassembly').click(Disassembly.refresh_disassembly)
     },
     refresh_disassembly: function(e){
         let file = App.state.rendered_source_file.fullname
@@ -301,8 +301,8 @@ let DisassemblyComponent = {
             let content = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
             data.push([i['line'], content.join('<br>')])
         }
-        DisassemblyComponent.el_title.html(asm_insns['fullname'])
-        DisassemblyComponent.el.html(Util.get_table(thead, data))
+        Disassembly.el_title.html(asm_insns['fullname'])
+        Disassembly.el.html(Util.get_table(thead, data))
     },
 }
 
@@ -314,20 +314,31 @@ let StackComponent = {
     },
 }
 
-let RegisterComponent = {
+let Registers = {
     el: $('#registers'),
     register_names: [],
-    render_registers(values){
-        if(RegisterComponent.register_names.length === values.length){
+    render_registers(register_values){
+        if(Registers.register_names.length !== register_values.length){
             let columns = ['name', 'value']
-            let register_array = values.map(v => [RegisterComponent.register_names[v['number']], v['value']]);
-            RegisterComponent.el.html(Util.get_table(columns, register_array));
+            let register_table_data = []
+
+            for (let i in Registers.register_names){
+                let name = Registers.register_names[i]
+                let obj = _.find(register_values, v => v['number'] === i)
+                if (obj){
+                    register_table_data.push([name, obj['value']])
+                }else{
+                    register_table_data.push([name, ''])
+                }
+            }
+            Registers.el.html(Util.get_table(columns, register_table_data));
         } else {
             console.error('Could not render registers. Length of names != length of values!')
         }
     },
     set_register_names: function(names){
-        RegisterComponent.register_names = names
+        // filter out non-empty names
+        Registers.register_names = names.filter(name => name)
     }
 }
 
@@ -470,7 +481,7 @@ let App = {
         for (let r of response_array){
             if (r.type === 'output'){
                 // output of program
-                StdoutStderrComponent.add_output(r.payload)
+                StdoutStderr.add_output(r.payload)
             }else{
                 // gdb machine interface structure output
                 Consts.jq_gdb_mi_output.append(`<p class='pre ${text_class[r.type]} no_margin output'>${r.type}:\n${JSON.stringify(r, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
@@ -482,31 +493,31 @@ let App = {
                 // can render in the frontend
                 if ('bkpt' in r.payload){
                     // breakpoint was created
-                    BreakpointComponent.store_breakpoint(r.payload.bkpt);
-                    BreakpointComponent.render_breakpoint_table();
+                    Breakpoint.store_breakpoint(r.payload.bkpt);
+                    Breakpoint.render_breakpoint_table();
                     if (App.state.rendered_source_file.fullname !== null){
                         App.render_cached_source_file();
                     }else{
-                        SourceCodeComponent.read_and_render_file(r.payload.bkpt.fullname);
+                        SourceCode.read_and_render_file(r.payload.bkpt.fullname);
                     }
                 } else if ('BreakpointTable' in r.payload){
-                    BreakpointComponent.remove_stored_breakpoints()
+                    Breakpoint.remove_stored_breakpoints()
                     for (let bkpt of r.payload.BreakpointTable.body){
-                        BreakpointComponent.store_breakpoint(bkpt);
+                        Breakpoint.store_breakpoint(bkpt);
                     }
-                    BreakpointComponent.render_breakpoint_table();
+                    Breakpoint.render_breakpoint_table();
                     App.render_cached_source_file();
                 } else if ('stack' in r.payload) {
                     StackComponent.render_stack(r.payload.stack)
 
                 } else if ('register-names' in r.payload) {
-                    RegisterComponent.set_register_names(r.payload['register-names'])
+                    Registers.set_register_names(r.payload['register-names'])
 
                 } else if ('register-values' in r.payload) {
-                    RegisterComponent.render_registers(r.payload['register-values'])
+                    Registers.render_registers(r.payload['register-values'])
 
                 } else if ('asm_insns' in r.payload) {
-                    DisassemblyComponent.render_disasembly(r.payload.asm_insns)
+                    Disassembly.render_disasembly(r.payload.asm_insns)
 
                 } else if ('files' in r.payload){
                     App.state.source_files = _.uniq(r.payload.files.map(f => f.fullname)).sort()
@@ -517,7 +528,7 @@ let App = {
             } else if (r.payload && typeof r.payload.frame !== 'undefined') {
                 // Stopped on a frame. We can render the file and highlight the line!
                 App.state.frame = r.payload.frame;
-                SourceCodeComponent.read_and_render_file(App.state.frame.fullname, App.state.frame.line);
+                SourceCode.read_and_render_file(App.state.frame.fullname, App.state.frame.line);
 
             } else if (r.type === 'console'){
                 GdbConsoleComponent.add(r.payload)
@@ -550,7 +561,7 @@ let App = {
         }
 
         // scroll to the bottom
-        StdoutStderrComponent.scroll_to_bottom()
+        StdoutStderr.scroll_to_bottom()
         Consts.jq_gdb_mi_output.animate({'scrollTop': Consts.jq_gdb_mi_output.prop('scrollHeight')})
         GdbConsoleComponent.scroll_to_bottom()
     },
@@ -564,7 +575,7 @@ let App = {
         }
     },
     render_cached_source_file: function(){
-        SourceCodeComponent.read_and_render_file(App.state.rendered_source_file.fullname, App.state.rendered_source_file.line)
+        SourceCode.read_and_render_file(App.state.rendered_source_file.fullname, App.state.rendered_source_file.line)
     },
     enable_gdb_controls: function(){
         Consts.js_gdb_controls.removeClass('disabled');
@@ -579,7 +590,7 @@ let App = {
 }
 
 App.init();
-SourceCodeComponent.init()
-DisassemblyComponent.init()
+SourceCode.init()
+Disassembly.init()
 window.addEventListener("beforeunload", App.onclose)
 })(jQuery, _, Awesomplete);
