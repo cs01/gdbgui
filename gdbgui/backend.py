@@ -1,21 +1,25 @@
 #!/usr/bin/env python
-from flask import Flask, render_template, jsonify, session
+from flask import Flask, render_template, jsonify
 import os
 import argparse
 from flask import request
 import signal
-from ipdb import set_trace as db
 from pygdbmi.gdbcontroller import GdbController
+import webbrowser
+
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
+DEFAULT_HOST = '0.0.0.0'
+DEFAULT_PORT = 5000
 
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
 
 gdb = None
+
 
 def server_error(obj):
     return jsonify(obj), 500
@@ -26,24 +30,24 @@ def client_error(obj):
 
 
 def get_extra_files():
-    extra_dirs = ['.']
-    extra_files = extra_dirs[:]
-    for extra_dir in extra_dirs:
-        for dirname, dirs, files in os.walk(extra_dir):
-            for filename in files:
-                filename = os.path.join(dirname, filename)
-                if os.path.isfile(filename):
-                    extra_files.append(filename)
+    extra_files = []
+    for dirname, dirs, files in os.walk(TEMPLATE_DIR):
+        for filename in files:
+            filename = os.path.join(dirname, filename)
+            if os.path.isfile(filename):
+                extra_files.append(filename)
     return extra_files
 
 
 @app.route('/')
 def gdbgui():
+    """Render the main gdbgui interface"""
     return render_template('gdbgui.jade')
 
 
 @app.route('/run_gdb_command', methods=['POST'])
 def run_gdb_command():
+    """Run a gdb command"""
     if gdb is not None:
         try:
             cmd = request.form.get('cmd') or request.form.getlist('cmd[]')
@@ -54,8 +58,10 @@ def run_gdb_command():
     else:
         return client_error({'message': 'gdb is not running'})
 
+
 @app.route('/get_gdb_response')
 def get_gdb_response():
+    """Return output from gdb.get_gdb_response"""
     if gdb is not None:
         try:
             response = gdb.get_gdb_response()
@@ -68,7 +74,7 @@ def get_gdb_response():
 
 @app.route('/read_file')
 def read_file():
-    """Used to get contents of source files that are being debugged"""
+    """Read a file and return its contents as an array"""
     path = request.args.get('path')
     if path and os.path.isfile(path):
         try:
@@ -83,8 +89,8 @@ def read_file():
 
 
 def signal_handler(signal, frame):
-    """handle ctrl+c (SIGINT) and make sure the child process is killed!"""
-    global gdb
+    """handle ctrl+c (SIGINT) to make sure the child gdb process is killed"""
+    print("Received signal %s. Shutting down gdbgui." % signal)
     if gdb is not None:
         try:
             gdb.exit()
@@ -96,6 +102,7 @@ def signal_handler(signal, frame):
 
 
 def quit_backend():
+    """Shutdown the flask server. Used when programmitcally testing gdbgui"""
     gdb.exit()
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
@@ -103,31 +110,39 @@ def quit_backend():
     func()
 
 
-def setup_backend(serve=True, port=5000, debug=False):
+def open_browser(host, port):
+    if host.startswith('http'):
+        url = '%s:%s' % (host, port)
+    else:
+        url = 'http://%s:%s' % (host, port)
+    print(" * Opening gdbgui in browser (%s)" % url)
+    webbrowser.open(url)
+
+
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, view=True):
     """Run the server of the gdb gui"""
-    global app, gdb
+    global gdb
     signal.signal(signal.SIGINT, signal_handler)
     gdb = GdbController()
     app.secret_key = 'iusahjpoijeoprkge[0irokmeoprgk890'
     app.debug = debug
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+
     if serve:
-        extra_files = []
-        for dirname, dirs, files in os.walk(TEMPLATE_DIR):
-            for filename in files:
-                filename = os.path.join(dirname, filename)
-                if os.path.isfile(filename):
-                    extra_files.append(filename)
-        app.run(port=port, extra_files=extra_files)
+        if view:
+            open_browser(host, port)
+        app.run(host=host, port=port, extra_files=get_extra_files())
 
 
 def main():
     """Entry point from command line"""
     parser = argparse.ArgumentParser()
-    parser.add_argument("--port", default=5000)
+    parser.add_argument("--port", default=DEFAULT_PORT)
+    parser.add_argument("--host", default=DEFAULT_HOST)
     parser.add_argument("--debug", action='store_true')
+    parser.add_argument("--view", action='store_true')
     args = parser.parse_args()
-    setup_backend(port=args.port, debug=args.debug)
+    setup_backend(serve=True, host=args.host, port=args.port, debug=args.debug, view=args.view)
 
 
 if __name__ == '__main__':
