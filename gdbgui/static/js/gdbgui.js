@@ -352,7 +352,13 @@ const SourceCode = {
                     SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
                     SourceCode.render_source_file(fullname, response.source_code, current_line, make_current_line_visible)
                 },
-                error: Status.render_ajax_error_msg
+                error: function(response){
+                    Status.render_ajax_error_msg(response)
+                    let source_code = [`failed to fetch file ${fullname}`]
+                    let make_current_line_visible = false
+                    SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': source_code})
+                    SourceCode.render_source_file(fullname, source_code, 0, make_current_line_visible)
+                }
             })
         }
     },
