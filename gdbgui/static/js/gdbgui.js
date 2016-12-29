@@ -53,10 +53,9 @@ const Util = {
 }
 
 const Consts = {
-    set_target_app_button: $('#set_target_app'),
+    enter_button_num: 13,
     jq_gdb_mi_output: $('#gdb_mi_output'),
     jq_gdb_command_input: $('#gdb_command'),
-    jq_binary: $('#binary'),
     jq_code_container: $('#code_container'),
     js_gdb_controls: $('.gdb_controls'),
 }
@@ -135,6 +134,7 @@ let GdbApi = {
                     }else{
                         SourceCode.read_and_render_file(r.payload.bkpt.fullname);
                     }
+
                 } else if ('BreakpointTable' in r.payload){
                     Breakpoint.remove_stored_breakpoints()
                     for (let bkpt of r.payload.BreakpointTable.body){
@@ -142,6 +142,7 @@ let GdbApi = {
                     }
                     Breakpoint.render_breakpoint_table();
                     App.render_cached_source_file();
+
                 } else if ('stack' in r.payload) {
                     StackComponent.render_stack(r.payload.stack)
 
@@ -207,6 +208,9 @@ let GdbApi = {
  */
 let GdbConsoleComponent = {
     el: $('#console'),
+    init: function(){
+        $('.clear_console').click(function(e){GdbConsoleComponent.clear_console});
+    },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
     },
@@ -363,7 +367,7 @@ let SourceCode = {
         })
     },
     keyup_source_file_input: function(e){
-        if (e.keyCode === 13){
+        if (e.keyCode === Consts.enter_button_num){
             SourceCode.read_and_render_file(e.currentTarget.value)
         }
     },
@@ -488,30 +492,58 @@ let History = {
     },
 }
 
+let BinarySelection = {
+    el: $('#binary'),
+    init: function(){
+        // events
+        $('#set_target_app').click(BinarySelection.set_target_app_from_event);
+        BinarySelection.el.keydown(BinarySelection.keydown_on_binary_input)
+
+        // get old binaries list
+        try{
+            BinarySelection.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
+            BinarySelection.render(BinarySelection.past_binaries[0])
+        } catch(err){
+            BinarySelection.past_binaries = []
+        }
+        // update list of old binarys
+        BinarySelection.render_past_binary_options_datalist()
+    },
+    onclose: function(){
+        localStorage.setItem('past_binaries', JSON.stringify(BinarySelection.past_binaries) || [])
+        return null
+    },
+    past_binaries: [],
+    set_target_app_from_event: function(e){
+        var binary = BinarySelection.el.val();
+        _.remove(BinarySelection.past_binaries, i => i === binary)
+        BinarySelection.past_binaries.unshift(binary)
+        BinarySelection.render_past_binary_options_datalist()
+        GdbApi.run_gdb_command(`-file-exec-and-symbols ${binary}`);
+    },
+    render: function(binary){
+        BinarySelection.el.val(binary)
+    },
+    render_past_binary_options_datalist: function(){
+        $('#past_binaries').html(BinarySelection.past_binaries.map(b => `<option>${b}</option`))
+    },
+    keydown_on_binary_input: function(e){
+        if(e.keyCode === Consts.enter_button_num) {
+            BinarySelection.set_target_app_from_event(e)
+        }
+    },
+}
+
 let App = {
     // Initialize
     init: function(){
         App.register_events();
-
-        try{
-            App.state.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
-            Consts.jq_binary.val(App.state.past_binaries[0])
-        } catch(err){
-            App.state.past_binaries = []
-        }
-        App.render_past_binary_options_datalist()
         History.render()
-    },
-    onclose: function(){
-        localStorage.setItem('past_binaries', JSON.stringify(App.state.past_binaries) || [])
-        return null
     },
     state: {'source_files': [], // list of absolute paths
             'cached_source_files': [], // list of absolute paths, and their source code
             'frame': {}, // current "frame" in gdb. Has keys: line, fullname (path to file), among others.
             'rendered_source_file': {'fullname': null, 'line': null}, // current source file displayed
-            'history': [],
-            'past_binaries': [],
             },
     clear_state: function(){
         App.state =  {
@@ -522,13 +554,11 @@ let App = {
     // Event handling
     register_events: function(){
         $(window).keydown(function(e){
-            if((event.keyCode === 13)) {
+            if((event.keyCode === Consts.enter_button_num)) {
                 event.preventDefault();
             }
         });
 
-        Consts.set_target_app_button.click(App.click_set_target_app_button);
-        Consts.jq_binary.keydown(App.keydown_on_binary_input)
         Consts.jq_gdb_command_input.keydown(App.keydown_on_gdb_cmd_input)
 
         $('#stop_gdb').click(GdbApi.stop_gdb);
@@ -539,29 +569,12 @@ let App = {
         );
 
         $('.gdb_cmd').click(function(e){App.click_gdb_cmd_button(e)});
-        $('.clear_console').click(function(e){GdbConsoleComponent.clear_console(e)});
-
         $('.get_gdb_response').click(function(e){GdbApi.get_gdb_response(e)});
 
         $("body").on("click", ".resizer", App.click_resizer_button);
     },
-    click_set_target_app_button: function(e){
-        var binary = Consts.jq_binary.val();
-        _.remove(App.state.past_binaries, i => i === binary)
-        App.state.past_binaries.unshift(binary)
-        App.render_past_binary_options_datalist()
-        GdbApi.run_gdb_command(`-file-exec-and-symbols ${binary}`);
-    },
-    render_past_binary_options_datalist: function(){
-        $('#past_binaries').html(App.state.past_binaries.map(b => `<option>${b}</option`))
-    },
-    keydown_on_binary_input: function(e){
-        if(e.keyCode === 13) {
-            App.click_set_target_app_button(e)
-        }
-    },
     keydown_on_gdb_cmd_input: function(e){
-        if(e.keyCode === 13) {
+        if(e.keyCode === Consts.enter_button_num) {
             GdbApi.run_gdb_command($(e.target).val())
         }
     },
@@ -606,9 +619,13 @@ let App = {
 }
 
 App.init();
+GdbConsoleComponent.init()
 SourceCode.init()
 Disassembly.init()
 History.init()
-window.addEventListener("beforeunload", App.onclose)
+BinarySelection.init()
+
+window.addEventListener("beforeunload", BinarySelection.onclose)
 window.addEventListener("beforeunload", History.onclose)
+
 })(jQuery, _, Awesomplete);
