@@ -98,12 +98,26 @@ const History = {
 
 const GdbApi = {
     init: function(){
-        $('.gdb_cmd').click(function(e){GdbApi.click_gdb_cmd_button(e)})
+        $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
+        $("body").on("click", ".gdb_cmds", GdbApi.click_gdb_cmds_button)
+        $("body").on("click", ".get_gdb_response", GdbApi.get_gdb_response)
         $('#stop_gdb').click(GdbApi.stop_gdb)
-        $('.get_gdb_response').click(function(e){GdbApi.get_gdb_response(e)})
     },
     click_gdb_cmd_button: function(e){
         GdbApi.run_gdb_command(e.currentTarget.dataset.cmd)
+    },
+    // run multiple commands
+    // i.e. <a data-cmd0='cmd 0' data-cmd1='cmd 1' data-...>
+    click_gdb_cmds_button: function(e){
+        let cmds = []
+        let i = 0
+        let cmd = e.currentTarget.dataset[`cmd${i}`]
+        while(cmd !== undefined && i < 10){
+            cmds.push(cmd)
+            i++
+            cmd = e.currentTarget.dataset[`cmd${i}`]
+        }
+        GdbApi.run_gdb_command(cmds)
     },
     stop_gdb: function(){
         $.ajax({
@@ -216,7 +230,6 @@ const StdoutStderr = {
     }
 }
 
-
 const GdbMiOutput = {
     el: $('#gdb_mi_output'),
     clear: function(){
@@ -256,6 +269,10 @@ const Breakpoint = {
         }
     },
     store_breakpoint: function(breakpoint){
+        // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
+        if ('fullname' in breakpoint){
+            breakpoint[' '] = `<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''}>View</a> | <a class="gdb_cmds pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`
+        }
         Breakpoint.breakpoints.push(breakpoint)
     },
     get_breakpoint_lines_For_file: function(fullname){
@@ -279,7 +296,7 @@ const SourceCode = {
     init: function(){
         $("body").on("click", ".breakpoint", SourceCode.click_breakpoint)
         $("body").on("click", ".no_breakpoint", SourceCode.click_source_file_gutter_with_no_breakpoint)
-
+        $("body").on("click", ".view_file", SourceCode.click_view_file)
     },
     cached_source_files: [],  // list with keys fullname, source_code
     click_breakpoint: function(e){
@@ -370,7 +387,7 @@ const SourceCode = {
                 container_height = SourceCode.el_code_container.height(),
                 time_to_scroll = 0
 
-            if ((top_of_line - top_of_table) > container_height){
+            if (top_of_line - top_of_table > container_height || top_of_table - top_of_line > container_height){
                 // line is out of view, scroll so it's in the middle of the table
                 SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + container_height/2)}, 0)
             }
@@ -385,6 +402,11 @@ const SourceCode = {
         if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
             jq_current_line.removeAttr('id')  // remove current line id
         }
+    },
+    click_view_file: function(e){
+        let fullname = e.currentTarget.dataset['fullname']
+        let line = e.currentTarget.dataset['line']
+        SourceCode.fetch_and_render_file(fullname, line, true)
     }
 }
 

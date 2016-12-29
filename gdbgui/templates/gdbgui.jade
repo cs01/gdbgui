@@ -70,12 +70,12 @@ body
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
 
             div
-                input#source_file_input.dropdown-input(autocomplete='off', style="width: 500px")
+                input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter path here, or select from dropdown', style="width: 500px")
 
                 button.dropdown-btn(type="button")
                     span.caret
 
-                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Refresh List
+                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
 
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
@@ -123,8 +123,7 @@ body
         div.col-md-6.no_padding registers
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-list-register-names
-            -data-list-register-values x') Refresh
+            button.btn.btn-default.btn-xs.gdb_cmds(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x') Refresh
                 span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
 
