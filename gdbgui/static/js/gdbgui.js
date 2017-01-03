@@ -24,6 +24,10 @@ const Status = {
         }
     },
     render_from_gdb_mi_response: function(mi_obj){
+        if(!mi_obj){
+            Status.render('empty response')
+            return
+        }
         // Update status
         let status = [];
         if (mi_obj.message){
@@ -76,7 +80,7 @@ const History = {
         }
 
         if (_.isArray(History.items)){
-            _.remove(History.items, i => i in cmds)
+            _.remove(History.items, i => cmds.indexOf(i) !== -1)
             for(let cmd of cmds){
                 History.items.unshift(cmd)
             }
@@ -99,25 +103,32 @@ const History = {
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
-        $("body").on("click", ".gdb_cmds", GdbApi.click_gdb_cmds_button)
         $("body").on("click", ".get_gdb_response", GdbApi.get_gdb_response)
         $('#stop_gdb').click(GdbApi.stop_gdb)
     },
+    state: {'waiting_for_response': false},
     click_gdb_cmd_button: function(e){
-        GdbApi.run_gdb_command(e.currentTarget.dataset.cmd)
-    },
-    // run multiple commands
-    // i.e. <a data-cmd0='cmd 0' data-cmd1='cmd 1' data-...>
-    click_gdb_cmds_button: function(e){
-        let cmds = []
-        let i = 0
-        let cmd = e.currentTarget.dataset[`cmd${i}`]
-        while(cmd !== undefined && i < 10){
-            cmds.push(cmd)
-            i++
-            cmd = e.currentTarget.dataset[`cmd${i}`]
+        if (e.currentTarget.dataset.cmd !== undefined){
+            // run single command
+            // i.e. <a data-cmd='cmd' />
+            GdbApi.run_gdb_command(e.currentTarget.dataset.cmd)
+        }else if (e.currentTarget.dataset.cmd0 !== undefined){
+            // run multiple commands
+            // i.e. <a data-cmd0='cmd 0' data-cmd1='cmd 1' data-...>
+            let cmds = []
+            let i = 0
+            let cmd = e.currentTarget.dataset[`cmd${i}`]
+            while(cmd !== undefined && i < 10){
+                cmds.push(cmd)
+                i++
+                cmd = e.currentTarget.dataset[`cmd${i}`]
+            }
+            GdbApi.run_gdb_command(cmds)
+        }else{
+            console.error('expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element')
         }
-        GdbApi.run_gdb_command(cmds)
+
+
     },
     stop_gdb: function(){
         $.ajax({
@@ -131,6 +142,14 @@ const GdbApi = {
         })
     },
     run_gdb_command: function(cmd){
+        if(GdbApi.state.waiting_for_response === true){
+            Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
+            return
+        }else{
+            // todo
+            // GdbApi.state.waiting_for_response = true
+        }
+
         if(_.trim(cmd) === ''){
             return
         }
@@ -143,16 +162,23 @@ const GdbApi = {
             method: 'POST',
             data: {'cmd': cmd},
             success: process_gdb_response,
-            error: Status.render_ajax_error_msg
+            error: Status.render_ajax_error_msg,
         })
     },
     get_gdb_response: function(){
+        if(GdbApi.state.waiting_for_response === true){
+            Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
+            return
+        }else{
+            // todo
+            // GdbApi.state.waiting_for_response = true
+        }
         Status.render(`Getting GDB response`)
         $.ajax({
             url: "/get_gdb_response",
             cache: false,
             success: process_gdb_response,
-            error: Status.render_ajax_error_msg
+            error: Status.render_ajax_error_msg,
         })
     },
 }
@@ -271,14 +297,18 @@ const Breakpoint = {
     store_breakpoint: function(breakpoint){
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
         if ('fullname' in breakpoint){
-            breakpoint[' '] = `<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''}>View</a> | <a class="gdb_cmds pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`
+            breakpoint[' '] = `<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a> | <a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`
         }
-        Breakpoint.breakpoints.push(breakpoint)
+
+        // add the breakpoint if it's not stored already
+        if(Breakpoint.breakpoints.indexOf(breakpoint) === -1){
+            Breakpoint.breakpoints.push(breakpoint)
+        }
     },
     get_breakpoint_lines_For_file: function(fullname){
         return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line))
     },
-    assign_breakpoints_from_mi_response: function(payload){
+    assign_breakpoints_from_mi_breakpoint_table: function(payload){
         Breakpoint.remove_stored_breakpoints()
         for (let bkpt of payload.BreakpointTable.body){
             Breakpoint.store_breakpoint(bkpt)
@@ -310,12 +340,12 @@ const SourceCode = {
         GdbApi.run_gdb_command(cmd)
     },
     render_cached_source_file: function(){
-        SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, false)
+        SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': true})
     },
     is_cached: function(fullname){
         return SourceCode.cached_source_files.some(f => f.fullname === fullname)
     },
-    render_source_file: function(fullname, source_code, current_line=0, make_current_line_visible=false){
+    render_source_file: function(fullname, source_code, current_line=0, options={'highlight': false, 'scroll': false}){
         current_line = parseInt(current_line)
         let line_num = 1,
             tbody = [],
@@ -323,11 +353,14 @@ const SourceCode = {
 
         for (let line of source_code){
             let breakpoint_class = (bkpt_lines.indexOf(line_num) !== -1) ? 'breakpoint': 'no_breakpoint';
-            let current_line_id = (line_num === current_line) ? 'id=current_line': '';
+            let tags = ''
+            if (line_num === current_line){
+              tags = `id=current_line ${options.highlight ? 'class=highlight' : ''}`
+            }
             tbody.push(`<tr class='source_code ${breakpoint_class}' data-line=${line_num}>
                 <td class='gutter'><div></div></td>
                 <td class='line_num'>${line_num}</td>
-                <td class='line_of_code'><pre ${current_line_id}>${line}</pre></td>
+                <td class='line_of_code'><pre ${tags}>${line}</pre></td>
                 </tr>
                 `)
             line_num++;
@@ -338,26 +371,25 @@ const SourceCode = {
         SourceCode.rendered_source_file_fullname = fullname
         SourceCode.rendered_source_file_line = current_line
 
-        if(make_current_line_visible){
+        if(options.scroll){
             SourceCode.make_current_line_visible()
         }
     },
     // call this to rerender a file when breakpoints change, for example
     rerender: function(){
         if(_.isString(SourceCode.rendered_source_file_fullname)){
-            let make_current_line_visible = false
-            SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, make_current_line_visible)
+            SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': false})
         }
     },
     // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=0, make_current_line_visible=false){
+    fetch_and_render_file: function(fullname, current_line=0, options={'highlight': false, 'scroll': false}){
         if (!_.isString(fullname)){
             console.error('cannot render file without a name')
 
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
             let f = _.find(SourceCode.cached_source_files, i => i.fullname === fullname)
-            SourceCode.render_source_file(fullname, f.source_code, current_line, make_current_line_visible)
+            SourceCode.render_source_file(fullname, f.source_code, current_line, options)
 
         } else {
             $.ajax({
@@ -367,29 +399,33 @@ const SourceCode = {
                 data: {path: fullname},
                 success: function(response){
                     SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
-                    SourceCode.render_source_file(fullname, response.source_code, current_line, make_current_line_visible)
+                    SourceCode.render_source_file(fullname, response.source_code, current_line, options)
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
-                    let source_code = [`failed to fetch file ${fullname}`]
-                    let make_current_line_visible = false
+                    let source_code = [`(failed to fetch file ${fullname})`]
                     SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': source_code})
-                    SourceCode.render_source_file(fullname, source_code, 0, make_current_line_visible)
+                    SourceCode.render_source_file(fullname, source_code, 0, options)
                 }
             })
         }
     },
     make_current_line_visible: function(){
+        const time_to_scroll = 0
         let jq_current_line = $("#current_line")
         if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
-            let top_of_line = jq_current_line.position().top,
-                top_of_table = jq_current_line.closest('table').position().top,
-                container_height = SourceCode.el_code_container.height(),
-                time_to_scroll = 0
+            let top_of_container = SourceCode.el_code_container.position().top,
+                height_of_container = SourceCode.el_code_container.height(),
+                bottom_of_container = top_of_container + height_of_container,
+                top_of_line = jq_current_line.position().top,
+                bottom_of_line = top_of_line+ jq_current_line.height(),
+                top_of_table = jq_current_line.closest('table').position().top
 
-            if (top_of_line - top_of_table > container_height || top_of_table - top_of_line > container_height){
+            if ((top_of_line >= top_of_container) && (bottom_of_line < (bottom_of_container))){
+                // do nothing, it's already in view
+            }else{
                 // line is out of view, scroll so it's in the middle of the table
-                SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + container_height/2)}, 0)
+                SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + height_of_container/2)}, 0)
             }
 
         }else{
@@ -401,12 +437,14 @@ const SourceCode = {
         let jq_current_line = $("#current_line")
         if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
             jq_current_line.removeAttr('id')  // remove current line id
+            jq_current_line.removeClass('highlight')  // remove current line id
         }
     },
     click_view_file: function(e){
-        let fullname = e.currentTarget.dataset['fullname']
-        let line = e.currentTarget.dataset['line']
-        SourceCode.fetch_and_render_file(fullname, line, true)
+        let fullname = e.currentTarget.dataset['fullname'],
+            line = e.currentTarget.dataset['line'],
+            highlight = e.currentTarget.dataset['highlight'] === 'true'
+        SourceCode.fetch_and_render_file(fullname, line, {'highlight': highlight, 'scroll': true})
     }
 }
 
@@ -482,6 +520,12 @@ const Disassembly = {
 const Stack = {
     el: $('#stack'),
     render_stack: function(stack){
+        for (let s of stack){
+            if ('fullname' in s){
+                s[' '] = `<a class='view_file pointer' data-fullname=${s.fullname || ''} data-line=${s.line || ''} data-highlight=true>View</a>`
+            }
+        }
+
         let [columns, data] = Util.get_table_data_from_objs(stack)
         Stack.el.html(Util.get_table(columns, data))
     },
@@ -561,7 +605,7 @@ const GdbCommandInput = {
     el: $('#gdb_command'),
     init: function(){
         GdbCommandInput.el.keydown(GdbCommandInput.keydown_on_gdb_cmd_input)
-        $('.run_gdb_command').click(GdbCommandInput.run_gdb_command)
+        $('.run_gdb_command').click(GdbCommandInput.run_current_command)
     },
     keydown_on_gdb_cmd_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
@@ -573,6 +617,11 @@ const GdbCommandInput = {
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
+        GdbCommandInput.make_flash()
+    },
+    make_flash: function(){
+        GdbCommandInput.el.removeClass('flash')
+        GdbCommandInput.el.addClass('flash')
     }
 }
 
@@ -616,10 +665,10 @@ const process_gdb_response = function(response_array){
                 // breakpoint was created
                 Breakpoint.store_breakpoint(r.payload.bkpt)
                 Breakpoint.render_breakpoint_table()
-                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, true)
+                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, {'highlight': false, 'scroll': true})
 
             } else if ('BreakpointTable' in r.payload){
-                Breakpoint.assign_breakpoints_from_mi_response(r.payload)
+                Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
                 SourceCode.rerender()
 
             } else if ('stack' in r.payload) {
@@ -655,22 +704,23 @@ const process_gdb_response = function(response_array){
 
         if (r.payload && typeof r.payload.frame !== 'undefined') {
             // Stopped on a frame. We can render the file and highlight the line!
-            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, true)
+            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, {'highlight': true, 'scroll': true})
         }
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason && r.payload.reason.includes('exited')){
             SourceCode.remove_current_line()
         }
-
     }
 
     // render response of last element of array
     Status.render_from_gdb_mi_response(_.last(response_array))
 
-    // scroll to the bottom
-    StdoutStderr.scroll_to_bottom()
-    GdbMiOutput.scroll_to_bottom()
-    GdbConsoleComponent.scroll_to_bottom()
+    if(response_array.length > 0){
+        // scroll to the bottom
+        StdoutStderr.scroll_to_bottom()
+        GdbMiOutput.scroll_to_bottom()
+        GdbConsoleComponent.scroll_to_bottom()
+    }
 }
 
 // initialize components

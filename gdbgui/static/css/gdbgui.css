@@ -44,7 +44,7 @@ table{
     border-width: 0px;
     width: 100%
 }
-#current_line{
+.highlight{
   background: yellow;
 }
 .breakpoint td.gutter div{
@@ -106,4 +106,22 @@ pre{
 .awesomplete  ul {
   overflow: auto;
   max-height: 200px;
+}
+
+.flash {
+    -webkit-animation-name: flash-animation;
+    -webkit-animation-duration: 1.0s;
+
+    animation-name: flash-animation;
+    animation-duration: 1.0s;
+}
+
+@-webkit-keyframes flash-animation {
+    from { background: yellow; }
+    to   { background: default; }
+}
+
+@keyframes flash-animation {
+    from { background: yellow; }
+    to   { background: default; }
 }
