@@ -35,7 +35,11 @@ setup(
     include_package_data=True,
     keywords=['gdb', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui'],
     scripts=[],
-    entry_points={},
+    entry_points={
+        'console_scripts': [
+            'gdbgui = gdbgui.backend:main'
+        ],
+    },
     extras_require={},
     zip_safe=False,
     cmdclass={'test': TestCommand},
