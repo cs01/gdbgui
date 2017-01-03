@@ -64,7 +64,7 @@ def get_gdb_response():
     """Return output from gdb.get_gdb_response"""
     if gdb is not None:
         try:
-            response = gdb.get_gdb_response()
+            response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
             return jsonify(response)
         except Exception as e:
             return server_error({'message': str(e)})
