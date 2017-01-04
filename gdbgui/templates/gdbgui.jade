@@ -40,19 +40,19 @@ body
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', title='Run the loaded program, or start the program over') Run
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
                         span.glyphicon.glyphicon-off.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Continue running program') Continue
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
                         span.glyphicon.glyphicon-play.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title='Step to next line (will not enter function)') Next
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title='Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)') Next
                         span.glyphicon.glyphicon-step-forward.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title='Step into next function call or to next line') Step
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title='Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)') Step
                         span.glyphicon.glyphicon-arrow-down.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title='Return to calling function') Return
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint to the programs entry point") Add Breakpoint to Main
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint at the 'main' function (-break-insert main)") Add Breakpoint to Main
                         span.glyphicon.glyphicon-flag.padding_left
-                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt') Kill Target
+                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt' title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
                     button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
@@ -90,10 +90,10 @@ body
                         span.glyphicon.glyphicon-download.padding_left
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
-            div#console.gdb_content_div
+            div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
             div(style="position: relative")
                 span.gdb_console(style="position: absolute; left: 5px; margin-top: 9px") (gdb)
-                input.form-control.dropdown-input.gdb_console#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", style="padding-left: 45px")
+                input.form-control.dropdown-input.gdb_console#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", style="padding-left: 45px; border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0", placeholder='enter any gdb command, or gdb machine interface command')
 
 
         div.col-md-6.no_padding
