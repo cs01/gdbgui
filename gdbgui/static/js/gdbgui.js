@@ -295,14 +295,18 @@ const Breakpoint = {
         }
     },
     store_breakpoint: function(breakpoint){
+        let bkpt = _.assign(breakpoint)
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
+        let links = []
         if ('fullname' in breakpoint){
-            breakpoint[' '] = `<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a> | <a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`
+             links.push(`<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a>`)
         }
+        links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
 
+        bkpt[' '] = links.join(' | ')
         // add the breakpoint if it's not stored already
-        if(Breakpoint.breakpoints.indexOf(breakpoint) === -1){
-            Breakpoint.breakpoints.push(breakpoint)
+        if(Breakpoint.breakpoints.indexOf(bkpt) === -1){
+            Breakpoint.breakpoints.push(bkpt)
         }
     },
     get_breakpoint_lines_For_file: function(fullname){
@@ -310,10 +314,12 @@ const Breakpoint = {
     },
     assign_breakpoints_from_mi_breakpoint_table: function(payload){
         Breakpoint.remove_stored_breakpoints()
-        for (let bkpt of payload.BreakpointTable.body){
-            Breakpoint.store_breakpoint(bkpt)
+        if(payload && payload.BreakpointTable && payload.BreakpointTable.body){
+            for (let bkpt of payload.BreakpointTable.body){
+                Breakpoint.store_breakpoint(bkpt)
+            }
+            Breakpoint.render_breakpoint_table()
         }
-        Breakpoint.render_breakpoint_table()
     }
 }
 
@@ -403,7 +409,7 @@ const SourceCode = {
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
-                    let source_code = [`(failed to fetch file ${fullname})`]
+                    let source_code = [`failed to fetch file ${fullname}`]
                     SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': source_code})
                     SourceCode.render_source_file(fullname, source_code, 0, options)
                 }
@@ -520,9 +526,7 @@ const Disassembly = {
             let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line}</a>`
             let source_line = '(file not loaded)'
             if(i.line <= source_code.length){
-                source_line = source_code[i.line+1]
-            }else{
-                source_line = '(file not loaded)'
+                source_line = source_code[i.line - 1]
             }
             data.push([line_link, assembly.join('<br>'), source_line])
         }
@@ -573,44 +577,54 @@ const Registers = {
     }
 }
 
+const Prefs = {
+    auto_reload_breakpoints: function(){
+        // todo add checkboxes in a UI widget
+        return true
+    }
+}
+
 const BinarySelection = {
     el: $('#binary'),
     init: function(){
         // events
-        $('#set_target_app').click(BinarySelection.set_target_app_from_event)
+        $('#set_target_app').click(BinarySelection.click_set_target_app)
         BinarySelection.el.keydown(BinarySelection.keydown_on_binary_input)
 
-        // get old binaries list
         try{
-            BinarySelection.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
-            BinarySelection.render(BinarySelection.past_binaries[0])
+            BinarySelection.last_binary = localStorage.getItem('last_binary') || ''
+            BinarySelection.render(BinarySelection.last_binary)
         } catch(err){
-            BinarySelection.past_binaries = []
+            BinarySelection.last_binary = ''
         }
-        // update list of old binarys
-        BinarySelection.render_past_binary_options_datalist()
+
     },
     onclose: function(){
-        localStorage.setItem('past_binaries', JSON.stringify(BinarySelection.past_binaries) || [])
+        localStorage.setItem('last_binary',  BinarySelection.el.val())
         return null
     },
-    past_binaries: [],
-    set_target_app_from_event: function(e){
-        var binary = BinarySelection.el.val()
-        _.remove(BinarySelection.past_binaries, i => i === binary)
-        BinarySelection.past_binaries.unshift(binary)
-        BinarySelection.render_past_binary_options_datalist()
-        GdbApi.run_gdb_command(`-file-exec-and-symbols ${binary}`)
+    click_set_target_app: function(e){
+        BinarySelection.set_target_app()
+    },
+    set_target_app: function(){
+        var binary = _.trim(BinarySelection.el.val())
+        if (binary === ''){
+            Status.render('enter a binary path before attempting to load')
+            return
+        }
+        let cmds = [`-file-exec-and-symbols ${binary}`]
+        if (Prefs.auto_reload_breakpoints()){
+            cmds.push('-break-list')
+        }
+        GdbApi.run_gdb_command(cmds)
+
     },
     render: function(binary){
         BinarySelection.el.val(binary)
     },
-    render_past_binary_options_datalist: function(){
-        $('#past_binaries').html(BinarySelection.past_binaries.map(b => `<option>${b}</option`))
-    },
     keydown_on_binary_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
-            BinarySelection.set_target_app_from_event(e)
+            BinarySelection.set_target_app()
         }
     },
 }
