@@ -27,7 +27,7 @@ body
                 span Status:&nbsp
                 span#status GDB is waiting to run a command
 
-    div.container-fluid(style="margin-top: 50px")
+    div.container-fluid(style="margin-top: 35px")
         div.row
             div.col-md-12
                 //- binary selection
@@ -44,15 +44,15 @@ body
                         span.glyphicon.glyphicon-off.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
                         span.glyphicon.glyphicon-play.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title='Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)') Next
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
                         span.glyphicon.glyphicon-step-forward.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title='Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)') Step
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
                         span.glyphicon.glyphicon-arrow-down.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint at the 'main' function (-break-insert main)") Add Breakpoint to Main
                         span.glyphicon.glyphicon-flag.padding_left
-                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt' title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
+                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt', title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
                     button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
@@ -84,9 +84,9 @@ body
             div.titlebar
                 span.lighttext gdb console
                 div.btn-group
-                    button.btn.btn-default.btn-xs.clear_console(type='button') Clear
-                        span.glyphicon.glyphicon-trash.padding_left
-                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Flush Output
+                    button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
+                        span.glyphicon.glyphicon-ban-circle.padding_left
+                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
                         span.glyphicon.glyphicon-download.padding_left
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
@@ -99,7 +99,7 @@ body
         div.col-md-6.no_padding
             div.titlebar
                 span.lighttext breakpoints
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints (-break-list')") Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
@@ -111,7 +111,7 @@ body
                 span.lighttext stack
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames') Refresh
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames', title='Refresh stack (-stack-list-frames)') Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
@@ -120,7 +120,7 @@ body
                 span.lighttext registers
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x') Refresh
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x', title='Refresh all register names and values (-data-list-register-values x)') Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
 
@@ -130,7 +130,7 @@ body
                 span#disassembly_heading
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs#refresh_disassembly(type='button') Refresh
+                button.btn.btn-default.btn-xs#refresh_disassembly(type='button', title='Render disassembly at current frame') Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
             div#disassembly.gdb_content_div
 

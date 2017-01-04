@@ -637,7 +637,9 @@ const GdbCommandInput = {
         }
     },
     run_current_command: function(){
-        GdbApi.run_gdb_command(GdbCommandInput.el.val())
+        let cmd = GdbCommandInput.el.val()
+        GdbCommandInput.clear()
+        GdbApi.run_gdb_command(cmd)
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
@@ -645,6 +647,9 @@ const GdbCommandInput = {
     make_flash: function(){
         GdbCommandInput.el.removeClass('flash')
         GdbCommandInput.el.addClass('flash')
+    },
+    clear: function(){
+        GdbCommandInput.el.val('')
     }
 }
 
@@ -680,6 +685,10 @@ const GlobalEvents = {
 }
 
 const process_gdb_response = function(response_array){
+
+    // update status with error or with last response
+    let update_status = true
+
     for (let r of response_array){
         if (r.type === 'result' && r.message === 'done' && r.payload){
             // This is special GDB Machine Interface structured data that we
@@ -709,6 +718,7 @@ const process_gdb_response = function(response_array){
             } else if ('files' in r.payload){
                 SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
                 SourceFileAutocomplete.input.evaluate()
+
             } // else if (your check here) {
             //      render your custom compenent here!
             // }
@@ -733,10 +743,18 @@ const process_gdb_response = function(response_array){
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason && r.payload.reason.includes('exited')){
             SourceCode.remove_current_line()
         }
+
+        if(update_status && _.isString(r.message) && (r.message.indexOf('error') !== -1 || r.message.indexOf('not found') !== -1)){
+            Status.render_from_gdb_mi_response(r)
+            update_status = false
+        }
     }
 
-    // render response of last element of array
-    Status.render_from_gdb_mi_response(_.last(response_array))
+    if(update_status){
+        // render response of last element of array
+        Status.render_from_gdb_mi_response(_.last(response_array))
+        update_status = false
+    }
 
     if(response_array.length > 0){
         // scroll to the bottom
