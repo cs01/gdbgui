@@ -21,10 +21,11 @@ body
     div.container-fluid(style="position: fixed; top: 0; margin-top: 0;
                                 height: 30px; width: 100%;
                                 border-bottom: black; border-style: solid; border-width: 0px; border-bottom-width: 1px;
-                                z-index: 1000; background: #ccc")
+                                z-index: 1000; background: #f1f1f1; border-bottom-color: #ccc;")
         div.row
-            span Status:&nbsp
-            span#status(style="height: 20px") GDB is waiting to run a command
+            div(style="height: 20px; margin-top: 5px; margin-left: 10px")
+                span Status:&nbsp
+                span#status GDB is waiting to run a command
 
     div.container-fluid(style="margin-top: 50px")
         div.row
@@ -33,7 +34,7 @@ body
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
-                            button.btn.btn-primary#set_target_app(type="button") Load Binary
+                            button.btn.btn-primary#set_target_app(type="button") Load This Binary
                         input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
                         datalist#past_binaries
 
@@ -57,18 +58,11 @@ body
                     button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
 
 
-                //- freeform input
-                form(role=form)
-                    div.input-group.input-group-sm
-                        span.input-group-btn
-                            button.btn.btn-success.run_gdb_command(type="button") Send command
-                        input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", data-list="#gdb_command_reference", style="font-family: courier")
-
         //- source
         div.no_padding.col-md-12#source_div
-            span#source_code_heading Source Code
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
+            div.titlebar
+                span#source_code_heading.lighttext (no source code file loaded)
 
             div
                 input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter path here, or select from dropdown', style="width: 500px")
@@ -78,67 +72,73 @@ body
 
                 button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
 
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-6.no_padding
-            span gdb console
-            button.btn.btn-default.btn-xs.clear_console(type='button') Clear
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
+        div.col-md-12.no_padding
+            div.titlebar
+                span.lighttext gdb console
+                div.btn-group
+                    button.btn.btn-default.btn-xs.clear_console(type='button') Clear
+                        span.glyphicon.glyphicon-trash.padding_left
+                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Flush Output
+                        span.glyphicon.glyphicon-download.padding_left
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
             div#console.gdb_content_div
+            div(style="position: relative")
+                span.gdb_console(style="position: absolute; left: 5px; margin-top: 9px") (gdb)
+                input.form-control.dropdown-input.gdb_console#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", style="padding-left: 45px")
+
 
         div.col-md-6.no_padding
-            span Breakpoints
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
-                span.glyphicon.glyphicon-refresh.padding_left
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+            div.titlebar
+                span.lighttext breakpoints
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints") Refresh
+                    span.glyphicon.glyphicon-refresh.padding_left
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
 
             div#breakpoints.gdb_content_div
 
-        div.col-md-6.no_padding stdout/stderr
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stdout" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stdout" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Flush Output
-                span.glyphicon.glyphicon-refresh.padding_left
-            div.gdb_content_div#stdout
-
-        //- history
-        div.col-md-6.no_padding History
-            button.btn.btn-default.btn-xs.clear_history(type='button') Clear
-
-            div.gdb_content_div
-                table.table.table-condensed
-                    tbody#command_history
-
-        div.col-md-6.no_padding stack
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames') Refresh
-                span.glyphicon.glyphicon-refresh.padding_left
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext stack
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames') Refresh
+                    span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
-        div.col-md-6.no_padding registers
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x') Refresh
-                span.glyphicon.glyphicon-refresh.padding_left
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext registers
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x') Refresh
+                    span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
 
-        div.col-md-6.no_padding disassembly
-            span#disassembly_heading
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs#refresh_disassembly(type='button') Refresh
-                span.glyphicon.glyphicon-refresh.padding_left
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext disassembly
+                span#disassembly_heading
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs#refresh_disassembly(type='button') Refresh
+                    span.glyphicon.glyphicon-refresh.padding_left
             div#disassembly.gdb_content_div
 
-        div.col-md-6.no_padding gdb machine interface output
-            span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
-            span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext gdb machine interface output
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
             div#gdb_mi_output.gdb_content_div
 
 footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #f5f5f5')

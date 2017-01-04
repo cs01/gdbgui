@@ -1,12 +1,28 @@
 body{
   background: #ccc;
+  color: grey;
+  border-color: grey;
 }
 table{
   font-size: 0.9em;
 }
-
-#console{
-  font-size: 0.9em;
+.lighttext{
+  color: #4a4a4a;
+}
+.glyphicon{
+  /* glyphicons are too bold, make them lighter*/
+    color: #848484;
+}
+.titlebar{
+  width: 100%;
+  color: black;
+  background-color: white;
+}
+#console, .gdb_console{
+  font-size: 0.9em !important;
+  background-color: #292929 !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
 }
 #stdout {
   color: black;
@@ -20,7 +36,8 @@ table{
   cursor: pointer;
 }
 .sent_command:hover{
-  background: yellow;
+  /* lighten background */
+  background-color:rgba(255,255,255,0.5)
 }
 .disabled {
     z-index: 1000;
@@ -45,7 +62,7 @@ table{
     width: 100%
 }
 .highlight{
-  background: yellow;
+  background: rgba(255, 255, 0, 0.5);
 }
 .breakpoint td.gutter div{
   background: blue;
@@ -92,7 +109,7 @@ pre{
   overflow: auto;
   height: 150px;
   background-color: #f7f7f7;
-  border-color: black;
+  border-color: grey;
   border-style: solid;
   border-width: 1px;
   border-radius: 2px;
