@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/cs01/gdbgui.svg?branch=master)](https://travis-ci.org/cs01/gdbgui)
 
 # A browser-based frontend/gui for GDB.
-Add breakpoints, view sourcecode, stack traces, registers, disassembly, and more. Easily hackable single page of es6 JavaScript and jquery, with python managing a gdb subprocess on the backend (see [pygdbmi](https://github.com/cs01/pygdbmi)).
+Add breakpoints, view sourcecode, stack traces, registers, disassembly, and more. Easily hackable single page of es6 JavaScript and jQuery, with python managing a gdb subprocess on the backend (see [pygdbmi](https://github.com/cs01/pygdbmi)).
 
 Made with a lightweight Python server (Flask), and JavaScript for the frontend. Simply run the server, view the page, and start debuggin'!
 
@@ -10,14 +10,18 @@ Made with a lightweight Python server (Flask), and JavaScript for the frontend. 
 
 ## Install
 
-	pip install gdbgui
+	pip install gdbgui --upgrade
 
 ## Run
 
-    python -m gdbgui.backend
+    > gdbgui
     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
 Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in a browser and enjoy!
+
+### Help
+
+`gdbgui -h` displays command line options, such as changing the port or host ip. For any other questions feel free to email me or create an issue in github.
 
 ## Compatibility
 Python versions: 2.7, 3.3, 3.4, 3.5, pypy
@@ -41,15 +45,18 @@ There are only three parts to gdb:
 To get started with development, set up a new virtual environment, then run
 
     git clone https://github.com/cs01/gdbgui
+    cd gdbgui
     pip install -r gdbgui/requirements.txt
     python -m gdbgui.backend --debug
 
 ### Testing
-Test changes are still working with `python setup.py test`. Add to tests at gdbgui/tests/test_app.py
+`python setup.py test` runs unit tests located in `gdbgui/tests/test_app.py`. Add new tests there as necessary.
 
 ## Contributing
 
 Contributions and bug fixes are welcome!
+
+If you use this at your company or for your job, I would love to hear from you -- send me an email and let me know.
 
 
 ## Credits
@@ -63,11 +70,12 @@ Inspiration was drawn from the following projects
 ## TODO
 
 Despite this list, gdbgui is quite usable in its current form
+
+* ~~allow argument passing to the inferior process being debugged~~
+* ~~add links back to github, etc~~
 * escape brackets on system <includes> so they don't disappear
-* allow argument passing to the inferior process being debugged
 * add button to widen windows
 * add clear button to windows
-* add links back to github, etc
 * improve toolbar styling, change color when error occurs
 * add preference ui elements (auto-refresh various windows after command is sent; show/hide windows as desired)
 * make flash of color fade out when snapping to source code lines or restoring old history
