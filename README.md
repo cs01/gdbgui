@@ -20,39 +20,31 @@ Made with a lightweight Python server (Flask), and JavaScript for the frontend. 
 Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in a browser and enjoy!
 
 ## Compatibility
-Tested on Python versions
+Python versions: 2.7, 3.3, 3.4, 3.5, pypy
 
-* 2.7
-* 3.3
-* 3.4
-* 3.5
-* pypy
+Operating systems: Ubuntu 16.04
 
-Tested on operating systems
-
-* Ubuntu 16.04
-
-Test on browsers
-
-* Chrome
+Browsers: Chrome
 
 ## Development
 
 `gdbgui` was designed to be easily hackable and extendtable.
 
-There is a a single JavaScript file that does all of the requests and handling of gdb responses, `gdbgui.js`.
+There are only three parts to gdb:
 
-The main page is derived from a single template `gdbgui.jade`. Note: jade has been renamed to [pug](https://github.com/pugjs/pug), but the Python pypi package still maintains the jade name. Pug is a more concise form of html.
+1. `gdbgui.js`: There is only a single JavaScript file, and that file contains the majority of the app itself. It sends AJAX requests to interact with gdb, then gets the response and updates the DOM as necessary.
 
-The backend consists of a single Python file, `backend.py`, which makes use of [pygdbmi](https://github.com/cs01/pygdbmi) to interact with a gdb subprocess, and [Flask](http://flask.pocoo.org/) to set up url routing and responses.
+1. `gdbgui.jade`: HTML file that defines the frontend (Note: Jade/Pug is a more concise form of html. Also note: jade has been renamed to [pug](https://github.com/pugjs/pug), but the Python pypi package still maintains the jade name.)
+
+1. `backend.py`: The backend consists of a single Python file, which makes use of [pygdbmi](https://github.com/cs01/pygdbmi) to interact with a gdb subprocess, and [Flask](http://flask.pocoo.org/) to set up url routing and responses.
 
 To get started with development, set up a new virtual environment, then run
 
     git clone https://github.com/cs01/gdbgui
     pip install -r gdbgui/requirements.txt
-
     python -m gdbgui.backend --debug
 
+### Testing
 Test changes are still working with `python setup.py test`. Add to tests at gdbgui/tests/test_app.py
 
 ## Contributing
