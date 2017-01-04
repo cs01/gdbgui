@@ -506,11 +506,25 @@ const Disassembly = {
         }
     },
     render_disasembly: function(asm_insns){
-        let thead = [ 'line', 'function+offset address instruction']
+        let thead = ['line', 'function+offset address instruction', 'source']
         let data = []
+        let source_code = []
+        for (let file of SourceCode.cached_source_files){
+            if(file.fullname === asm_insns[0].fullname){
+                source_code = file.source_code
+                break
+            }
+        }
         for(let i of asm_insns){
-            let content = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
-            data.push([i['line'], content.join('<br>')])
+            let assembly = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
+            let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line}</a>`
+            let source_line = '(file not loaded)'
+            if(i.line <= source_code.length){
+                source_line = source_code[i.line+1]
+            }else{
+                source_line = '(file not loaded)'
+            }
+            data.push([line_link, assembly.join('<br>'), source_line])
         }
         Disassembly.el_title.html(asm_insns['fullname'])
         Disassembly.el.html(Util.get_table(thead, data))
