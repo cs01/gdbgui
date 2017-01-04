@@ -33,7 +33,7 @@ body
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-primary#set_target_app(type="button") Load Binary
-                        input.form-control#binary(type="text", placeholder="Path to target executable", list='past_binaries')
+                        input.form-control#binary(type="text", placeholder="/path/to/target/executable", list='past_binaries')
                         datalist#past_binaries
 
                 //- premade buttons
@@ -101,7 +101,7 @@ body
         div.col-md-6.no_padding stdout/stderr
             span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stdout" data-resize_type="enlarge")
             span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stdout" data-resize_type="shrink")
-            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Refresh
+            button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)') Flush Output
                 span.glyphicon.glyphicon-refresh.padding_left
             div.gdb_content_div#stdout
 
