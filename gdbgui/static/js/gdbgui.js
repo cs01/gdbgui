@@ -48,58 +48,6 @@ const Status = {
     }
 }
 
-const History = {
-    el: $('#command_history'),
-    items: [],
-    init: function(){
-        $('.clear_history').click(function(e){History.clear(e)})
-        $("body").on("click", ".sent_command", History.click_sent_command)
-
-        try{
-            History.items = _.uniq(JSON.parse(localStorage.getItem('history')))
-        }catch(err){
-            History.items = []
-        }
-        History.render()
-    },
-    onclose: function(){
-        localStorage.setItem('history', JSON.stringify(History.items) || [])
-        return null
-    },
-    clear: function(){
-        History.items = []
-        History.render()
-    },
-    update: function(cmd){
-        History.save_to_history(cmd)
-        History.render()
-    },
-    save_to_history: function(cmds){
-        if (!_.isArray(cmds)){
-            cmds = [cmds]
-        }
-
-        if (_.isArray(History.items)){
-            _.remove(History.items, i => cmds.indexOf(i) !== -1)
-            for(let cmd of cmds){
-                History.items.unshift(cmd)
-            }
-        }else{
-            History.items = cmds
-        }
-    },
-    render: function(){
-        let history_html = History.items.map(cmd => `<tr><td class="sent_command pointer" data-cmd="${cmd}" style="padding: 0">${cmd}</td></tr>`)
-        History.el.html(history_html)
-    },
-    click_sent_command: function(e){
-        // when a previously sent command is clicked, populate the command input
-        // with it
-        let previous_cmd_from_history = (e.currentTarget.dataset.cmd)
-        GdbCommandInput.set_input_text(previous_cmd_from_history)
-    },
-}
-
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
@@ -127,8 +75,6 @@ const GdbApi = {
         }else{
             console.error('expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element')
         }
-
-
     },
     stop_gdb: function(){
         $.ajax({
@@ -142,6 +88,10 @@ const GdbApi = {
         })
     },
     run_gdb_command: function(cmd){
+        if(_.trim(cmd) === ''){
+            return
+        }
+
         if(GdbApi.state.waiting_for_response === true){
             Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
             return
@@ -150,12 +100,14 @@ const GdbApi = {
             // GdbApi.state.waiting_for_response = true
         }
 
-        if(_.trim(cmd) === ''){
-            return
+        let cmds = cmd
+        if(_.isString(cmds)){
+            cmds = [cmds]
         }
 
-        Status.render(`running command "${cmd}"`)
-        History.update(cmd)
+        Status.render(`running command(s) "${cmd}"`)
+        History.save_to_history(cmds)
+        GdbConsoleComponent.add_sent_commands(cmds)
         $.ajax({
             url: "/run_gdb_command",
             cache: false,
@@ -230,30 +182,64 @@ const Util = {
 const GdbConsoleComponent = {
     el: $('#console'),
     init: function(){
-        $('.clear_console').click(function(e){GdbConsoleComponent.clear_console})
+        $('.clear_console').click(GdbConsoleComponent.clear_console)
+        $("body").on("click", ".sent_command", GdbConsoleComponent.click_sent_command)
+        // TODO when focus is in input and up/down arrows are pressed, cycle through history and populate
+        // input with old history entry
     },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
     },
     add: function(s){
-        GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(s)}</span>`)
+        let strings = s
+        if(_.isString(s)){
+            strings = [s]
+        }
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(string)}</span>`))
+    },
+    add_sent_commands(cmds){
+        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='no_margin output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</span>`))
+        GdbConsoleComponent.scroll_to_bottom()
     },
     scroll_to_bottom: function(){
         GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
-    }
+    },
+    click_sent_command: function(e){
+        // when a previously sent command is clicked, populate the command input
+        // with it
+        let previous_cmd_from_history = (e.currentTarget.dataset.cmd)
+        GdbCommandInput.set_input_text(previous_cmd_from_history)
+    },
 }
 
-const StdoutStderr = {
-    el: $('#stdout'),
-    clear_stdout: function(){
-        StdoutStderr.el.html('')
+const History = {
+    init: function(){
+        $("body").on("click", ".sent_command", History.click_sent_command)
+
+        try{
+            History.items = _.uniq(JSON.parse(localStorage.getItem('history')))
+        }catch(err){
+            History.items = []
+        }
     },
-    add_output: function(s){
-        StdoutStderr.el.append(`<p class='pre no_margin output'>${s.replace(/[^(\\)]\\n/g)}</span>`)
+    onclose: function(){
+        localStorage.setItem('history', JSON.stringify(History.items) || [])
+        return null
     },
-    scroll_to_bottom: function(){
-        StdoutStderr.el.animate({'scrollTop': StdoutStderr.el.prop('scrollHeight')})
-    }
+    save_to_history: function(cmds){
+        if (!_.isArray(cmds)){
+            cmds = [cmds]
+        }
+
+        if (_.isArray(History.items)){
+            _.remove(History.items, i => cmds.indexOf(i) !== -1)
+            for(let cmd of cmds){
+                History.items.unshift(cmd)
+            }
+        }else{
+            History.items = cmds
+        }
+    },
 }
 
 const GdbMiOutput = {
@@ -523,7 +509,7 @@ const Disassembly = {
         }
         for(let i of asm_insns){
             let assembly = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
-            let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line}</a>`
+            let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line} view</a>`
             let source_line = '(file not loaded)'
             if(i.line <= source_code.length){
                 source_line = source_code[i.line - 1]
@@ -655,7 +641,6 @@ const GdbCommandInput = {
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
-        GdbCommandInput.make_flash()
     },
     make_flash: function(){
         GdbCommandInput.el.removeClass('flash')
@@ -734,7 +719,7 @@ const process_gdb_response = function(response_array){
 
         if (r.type === 'output'){
             // output of program
-            StdoutStderr.add_output(r.payload)
+            GdbConsoleComponent.add(r.payload)
         }else{
             // gdb mi output
             GdbMiOutput.add_mi_output(r)
@@ -755,7 +740,6 @@ const process_gdb_response = function(response_array){
 
     if(response_array.length > 0){
         // scroll to the bottom
-        StdoutStderr.scroll_to_bottom()
         GdbMiOutput.scroll_to_bottom()
         GdbConsoleComponent.scroll_to_bottom()
     }
@@ -768,11 +752,9 @@ GdbCommandInput.init()
 GdbConsoleComponent.init()
 SourceCode.init()
 Disassembly.init()
-History.init()
 BinaryLoader.init()
 SourceFileAutocomplete.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
-window.addEventListener("beforeunload", History.onclose)
 
 })(jQuery, _, Awesomplete)
