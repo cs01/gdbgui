@@ -584,35 +584,45 @@ const Prefs = {
     }
 }
 
-const BinarySelection = {
+const BinaryLoader = {
     el: $('#binary'),
     init: function(){
         // events
-        $('#set_target_app').click(BinarySelection.click_set_target_app)
-        BinarySelection.el.keydown(BinarySelection.keydown_on_binary_input)
+        $('#set_target_app').click(BinaryLoader.click_set_target_app)
+        BinaryLoader.el.keydown(BinaryLoader.keydown_on_binary_input)
 
         try{
-            BinarySelection.last_binary = localStorage.getItem('last_binary') || ''
-            BinarySelection.render(BinarySelection.last_binary)
+            BinaryLoader.last_binary = localStorage.getItem('last_binary') || ''
+            BinaryLoader.render(BinaryLoader.last_binary)
         } catch(err){
-            BinarySelection.last_binary = ''
+            BinaryLoader.last_binary = ''
         }
 
     },
     onclose: function(){
-        localStorage.setItem('last_binary',  BinarySelection.el.val())
+        localStorage.setItem('last_binary',  BinaryLoader.el.val())
         return null
     },
     click_set_target_app: function(e){
-        BinarySelection.set_target_app()
+        BinaryLoader.set_target_app()
     },
     set_target_app: function(){
-        var binary = _.trim(BinarySelection.el.val())
-        if (binary === ''){
+        var binary_and_args = _.trim(BinaryLoader.el.val())
+        if (binary_and_args === ''){
             Status.render('enter a binary path before attempting to load')
             return
         }
-        let cmds = [`-file-exec-and-symbols ${binary}`]
+        let binary, args, cmds
+        let index_of_first_space = binary_and_args.indexOf(' ')
+        if( index_of_first_space === -1){
+            binary = binary_and_args
+            args = ''
+        }else{
+            binary = binary_and_args.slice(0, index_of_first_space)
+            args = binary_and_args.slice(index_of_first_space + 1, binary_and_args.length)
+        }
+        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`]
+
         if (Prefs.auto_reload_breakpoints()){
             cmds.push('-break-list')
         }
@@ -620,11 +630,11 @@ const BinarySelection = {
 
     },
     render: function(binary){
-        BinarySelection.el.val(binary)
+        BinaryLoader.el.val(binary)
     },
     keydown_on_binary_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
-            BinarySelection.set_target_app()
+            BinaryLoader.set_target_app()
         }
     },
 }
@@ -759,10 +769,10 @@ GdbConsoleComponent.init()
 SourceCode.init()
 Disassembly.init()
 History.init()
-BinarySelection.init()
+BinaryLoader.init()
 SourceFileAutocomplete.init()
 
-window.addEventListener("beforeunload", BinarySelection.onclose)
+window.addEventListener("beforeunload", BinaryLoader.onclose)
 window.addEventListener("beforeunload", History.onclose)
 
 })(jQuery, _, Awesomplete)

@@ -4,6 +4,7 @@
 
 html
 head
+    title gdbgui - gdb in a browser
     link(href='static/css/gdbgui.css', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
@@ -27,13 +28,13 @@ body
 
     div.container-fluid(style="margin-top: 50px")
         div.row
-            div.col-md-6
+            div.col-md-12
                 //- binary selection
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-primary#set_target_app(type="button") Load Binary
-                        input.form-control#binary(type="text", placeholder="/path/to/target/executable", list='past_binaries')
+                        input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
                         datalist#past_binaries
 
                 //- premade buttons
@@ -61,7 +62,7 @@ body
                     div.input-group.input-group-sm
                         span.input-group-btn
                             button.btn.btn-success.run_gdb_command(type="button") Send command
-                        input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", data-list="#gdb_command_reference")
+                        input.form-control.dropdown-input#gdb_command(type="text", placeholder="gdb command", autocomplete="on", data-list="#gdb_command_reference", style="font-family: courier")
 
         //- source
         div.no_padding.col-md-12#source_div
