@@ -73,7 +73,7 @@ Despite this list, gdbgui is quite usable in its current form
 
 * ~~allow argument passing to the inferior process being debugged~~
 * ~~add links back to github, etc~~
-* escape brackets on system <includes> so they don't disappear
+* ~~escape brackets on system <includes> so they don't disappear~~
 * add button to widen windows
 * add clear button to windows
 * improve toolbar styling, change color when error occurs
