@@ -580,21 +580,24 @@ const Prefs = {
 
 const BinaryLoader = {
     el: $('#binary'),
+    el_past_binaries: $('#past_binaries'),
     init: function(){
         // events
         $('#set_target_app').click(BinaryLoader.click_set_target_app)
         BinaryLoader.el.keydown(BinaryLoader.keydown_on_binary_input)
 
         try{
-            BinaryLoader.last_binary = localStorage.getItem('last_binary') || ''
-            BinaryLoader.render(BinaryLoader.last_binary)
+            BinaryLoader.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
+            BinaryLoader.render(BinaryLoader.past_binaries[0])
         } catch(err){
-            BinaryLoader.last_binary = ''
+            BinaryLoader.past_binaries = []
         }
-
+        // update list of old binarys
+        BinaryLoader.render_past_binary_options_datalist()
     },
+    past_binaries: [],
     onclose: function(){
-        localStorage.setItem('last_binary',  BinaryLoader.el.val())
+        localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
         return null
     },
     click_set_target_app: function(e){
@@ -602,10 +605,18 @@ const BinaryLoader = {
     },
     set_target_app: function(){
         var binary_and_args = _.trim(BinaryLoader.el.val())
+
         if (binary_and_args === ''){
             Status.render('enter a binary path before attempting to load')
             return
         }
+
+        // save to list of binaries used that autopopulates the input dropdown
+        _.remove(BinaryLoader.past_binaries, i => i === binary_and_args)
+        BinaryLoader.past_binaries.unshift(binary_and_args)
+        BinaryLoader.render_past_binary_options_datalist()
+
+        // find the binary and arguments so gdb can be told which is which
         let binary, args, cmds
         let index_of_first_space = binary_and_args.indexOf(' ')
         if( index_of_first_space === -1){
@@ -615,8 +626,11 @@ const BinaryLoader = {
             binary = binary_and_args.slice(0, index_of_first_space)
             args = binary_and_args.slice(index_of_first_space + 1, binary_and_args.length)
         }
+
+        // tell gdb which arguments to use when calling the binary, before loading the binary
         cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`]
 
+        // reload breakpoints after sending to make sure they're up to date
         if (Prefs.auto_reload_breakpoints()){
             cmds.push('-break-list')
         }
@@ -630,6 +644,9 @@ const BinaryLoader = {
         if(e.keyCode === ENTER_BUTTON_NUM) {
             BinaryLoader.set_target_app()
         }
+    },
+    render_past_binary_options_datalist: function(){
+        BinaryLoader.el_past_binaries.html(BinaryLoader.past_binaries.map(b => `<option>${b}</option`))
     },
 }
 
