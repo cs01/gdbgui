@@ -87,7 +87,19 @@ const GdbApi = {
             error: Status.render_ajax_error_msg
         })
     },
-    run_gdb_command: function(cmd){
+    /**
+     * runs a gdb cmd (or commands) directly in gdb on the backend
+     * validates command before sending, and updates the gdb console and status bar
+     * @param cmd: a string or array of strings, that are directly evaluated by gdb
+     * @param success_callback: function to be called upon successful completion.  The data returned
+     *                          is an object. See pygdbmi for a description of the format.
+     *                          The default callback works in most cases, but in some cases a the response is stateful and
+     *                          requires a specific callback. For example, when creating a variable in gdb
+     *                          to watch, gdb returns generic looking data that a generic callback could not
+     *                          figure out how to handle.
+     * @return nothing
+     */
+    run_gdb_command: function(cmd, success_callback=process_gdb_response){
         if(_.trim(cmd) === ''){
             return
         }
@@ -113,7 +125,7 @@ const GdbApi = {
             cache: false,
             method: 'POST',
             data: {'cmd': cmd},
-            success: process_gdb_response,
+            success: success_callback,
             error: Status.render_ajax_error_msg,
         })
     },
@@ -195,10 +207,10 @@ const GdbConsoleComponent = {
         if(_.isString(s)){
             strings = [s]
         }
-        strings.map(string => GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(string)}</span>`))
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
-        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='no_margin output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</span>`))
+        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='no_margin output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
         GdbConsoleComponent.scroll_to_bottom()
     },
     scroll_to_bottom: function(){
@@ -244,6 +256,9 @@ const History = {
 
 const GdbMiOutput = {
     el: $('#gdb_mi_output'),
+    init: function(){
+        $('.clear_mi_output').click(GdbMiOutput.clear)
+    },
     clear: function(){
         GdbMiOutput.el.html('')
     },
@@ -354,6 +369,8 @@ const SourceCode = {
             if (line_num === current_line){
               tags = `id=current_line ${options.highlight ? 'class=highlight' : ''}`
             }
+            line = line.replace("<", "&lt;")
+            line = line.replace(">", "&gt;")
             tbody.push(`<tr class='source_code ${breakpoint_class}' data-line=${line_num}>
                 <td class='gutter'><div></div></td>
                 <td class='line_num'>${line_num}</td>
@@ -528,10 +545,13 @@ const Disassembly = {
 
 const Stack = {
     el: $('#stack'),
+    init: function(){
+        $("body").on("click", ".select_frame", Stack.click_select_frame)
+    },
     render_stack: function(stack){
         for (let s of stack){
             if ('fullname' in s){
-                s[' '] = `<a class='view_file pointer' data-fullname=${s.fullname || ''} data-line=${s.line || ''} data-highlight=true>View</a>`
+                s[' '] = `<a class='select_frame pointer' data-fullname=${s.fullname} data-line=${s.line || ''} data-framenum=${s.level} data-highlight=true>View</a>`
             }
             if ('addr' in s){
                 s.addr = Memory.make_addr_into_link(s.addr)
@@ -541,6 +561,20 @@ const Stack = {
         let [columns, data] = Util.get_table_data_from_objs(stack)
         Stack.el.html(Util.get_table(columns, data))
     },
+    /**
+     * select a frame and jump to the line in source code
+     * triggered when clicking on an object with the "select_frame" class
+     * must have data attributes: framenum, fullname, line
+     *
+     */
+    click_select_frame: function(e){
+        Stack.select_frame(e.currentTarget.dataset.framenum)
+        SourceCode.click_view_file(e)
+        Variables.refresh_all_for_current_frame()
+    },
+    select_frame: function(framenum){
+        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
+    }
 }
 
 const Registers = {
@@ -697,6 +731,218 @@ const Memory = {
     }
 }
 
+/**
+ * https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
+ */
+const Variables = {
+    el: $('#variables'),
+    el_input: $('#variable_input'),
+    init: function(){
+        // create new var when enter is pressed
+        Variables.el_input.keydown(Variables.keydown_on_input)
+
+        // remove var when icon is clicked
+        $("body").on("click", ".delete_gdb_variable", Variables.click_delete_gdb_variable)
+        Variables.render()
+    },
+    state: {
+        waiting_for_create_var_response: false,
+        waiting_for_children_list_response: false,
+        children_being_retrieve_for_var: null,
+        expression_being_created: null,
+        expression_to_gdb_data: {},
+        array_of_variable_objs: []
+    },
+    get_obj_from_gdb_var_name: function(gdb_var_name){
+        for(let key in Variables.state.expression_to_gdb_data){
+            let obj = Variables.state.expression_to_gdb_data[key]
+            if (obj.name === gdb_var_name){
+                return obj
+            }
+        }
+        return null
+    },
+    get_expression_from_gdb_var_name: function(gdb_var_name){
+        for(let key in Variables.state.expression_to_gdb_data){
+            let obj = Variables.state.expression_to_gdb_data[key]
+            if (obj.name === gdb_var_name){
+                return key
+            }
+        }
+        return undefined
+    },
+    delete_local_gdb_var_data: function(gdb_var_name){
+        let key = Variables.get_expression_from_gdb_var_name(gdb_var_name)
+        if(key){
+            delete Variables.state.expression_to_gdb_data[key]
+        }
+    },
+    keydown_on_input: function(e){
+        if((e.keyCode === ENTER_BUTTON_NUM)) {
+            let expr = Variables.el_input.val()
+            if(_.trim(expr) !== ''){
+                Variables.create_variable(Variables.el_input.val())
+            }
+        }
+    },
+    create_variable: function(expression){
+        if(Variables.waiting_for_create_var_response === true){
+            Status.render(`cannot create a new variable before finishing creation of expression "${Variables.state.expression_being_created}"`)
+            return
+        }
+        Variables.state.waiting_for_create_var_response = true
+        Variables.expression_being_created = expression
+        // - means auto assign variable name in gdb
+        // * means evaluate it at the current frame
+        // need to use custom callback due to stateless nature of gdb's response
+        // Variables.callback_after_create_variable
+        GdbApi.run_gdb_command(`-var-create - * ${expression}`, Variables.callback_after_create_variable)
+    },
+    callback_after_create_variable: function(mi_response_array){
+        Variables.state.waiting_for_create_var_response = false
+
+        mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
+
+        if(mi_response_array.length === 1){
+            let r = mi_response_array[0]
+            if(r.type === 'result' && r.message === 'done'){
+               // an example payload:
+               // "payload": {
+               //      "has_more": "0",
+               //      "name": "var2",
+               //      "numchild": "0",
+               //      "thread-id": "1",
+               //      "type": "int",
+               //      "value": "0"
+               //  },
+
+               // add the children key and initialize to empty array
+                r.payload.children = []
+
+                // save this payload
+                Variables.state.expression_to_gdb_data[Variables.expression_being_created] = r.payload
+
+                // fetch info on children if necessary
+                if(parseInt(r.payload.numchild) > 0){
+                    Variables.get_children_for_var(r.payload.name)
+                }
+
+            }else{
+                // this is an unexpected case. Let the status bar render some info to help debug the issue.
+                Status.render_from_gdb_mi_response(r)
+            }
+        }else{
+            process_gdb_response(mi_response_array)
+        }
+        Variables.render()
+    },
+    get_children_for_var: function(gdb_variable_name){
+        if(Variables.state.waiting_for_children_list_response === true){
+            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.children_being_retrieved_for_var}`)
+            return
+        }
+        Variables.state.children_being_retrieved_for_var = gdb_variable_name
+        Variables.state.waiting_for_children_list_response = true
+        GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`, Variables.callback_after_list_children)
+    },
+    callback_after_list_children: function(mi_response_array){
+        Variables.state.waiting_for_children_list_response = false
+
+        mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
+
+        let r = mi_response_array[0]
+        let obj = Variables.get_obj_from_gdb_var_name(Variables.state.children_being_retrieved_for_var)
+        if(obj){
+            obj.children = r.payload.children
+        }
+        Variables.render()
+    },
+    render: function(){
+        const col_names = ['', 'expression (type): value', 'gdb var']
+        const child_display = function(child){
+            return child.name
+        }
+        let table_data = []
+
+        for(let expression in Variables.state.expression_to_gdb_data){
+            let obj = Variables.state.expression_to_gdb_data[expression]
+            if(obj.in_scope === 'true' || _.isUndefined(obj.in_scope)){
+                table_data.push(Variables.get_rendered_var(expression, obj))
+            }
+        }
+
+        Variables.el.html(Util.get_table(col_names, table_data))
+    },
+    get_rendered_var: function(expression, obj){
+        console.log(obj.in_scope)
+
+        let child_tree = `<ul>
+
+        </ul>`
+        let child_li = ''
+        for(let child of obj.children){
+            child_li += `<li>${child.exp} (${child.type}): ${child.value}</li>`
+
+            // TODO handle children of children
+            // if(parseInt(child.numchild) > 0){
+            //     child_name_and_val = '+ ' + child_name_and_val
+            // }
+        }
+
+        let delete_button = `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${obj.name}' />`
+
+        let expression_and_value = `
+        <ul>
+        <li>${expression} (${obj.type}): ${obj.value}
+            <ul>
+                ${child_li}
+            </ul>
+        <ul>
+        `
+        return [delete_button, expression_and_value, obj.name]
+    },
+    update_variable_values: function(){
+        GdbApi.run_gdb_command(`-var-update *`)
+    },
+    handle_changelist: function(changelist_array){
+        for(let c of changelist_array){
+            let obj = Variables.get_obj_from_gdb_var_name(c.name)
+            if(obj){
+                _.assign(obj, c)
+            }
+        }
+        Variables.render()
+    },
+    click_delete_gdb_variable: function(e){
+        // delete locally
+        Variables.delete_local_gdb_var_data(e.currentTarget.dataset.gdb_variable)
+
+        // delete in gdb too
+        GdbApi.run_gdb_command(`-var-delete ${e.currentTarget.dataset.gdb_variable}`)
+
+        // re-render variables in browser
+        Variables.render()
+    }
+}
+
+const AllLocalVariables = {
+    el: $('#all_local_variables'),
+    render: function(data){
+        const col_names = ['variable', 'value']
+        let table_data = []
+        for(let obj of data){
+            let value_str = JSON.stringify(obj.value, null, 4).replace(/[^(\\)]\\n/g)
+            table_data.push([obj.name, `<p class='pre'>${value_str}</p>`])
+        }
+
+        Variables.el.html(Util.get_table(col_names, table_data))
+    },
+    refresh_all_for_current_frame: function(){
+        GdbApi.run_gdb_command(`-stack-list-locals --all-values`)
+    }
+}
+
+
 const GlobalEvents = {
     // Initialize
     init: function(){
@@ -766,6 +1012,12 @@ const process_gdb_response = function(response_array){
             if ('memory' in r.payload){
                 Memory.render_memory(r.payload.memory)
             }
+            if ('locals' in r.payload){
+                AllLocalVariables.render(r.payload.locals)
+            }
+            if ('changelist' in r.payload){
+                Variables.handle_changelist(r.payload.changelist)
+            }
             // if (your check here) {
             //      render your custom compenent here!
             // }
@@ -815,11 +1067,14 @@ GlobalEvents.init()
 GdbApi.init()
 GdbCommandInput.init()
 GdbConsoleComponent.init()
+GdbMiOutput.init()
+Stack.init()
 SourceCode.init()
 Disassembly.init()
 BinaryLoader.init()
 SourceFileAutocomplete.init()
 Memory.init()
+Variables.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 

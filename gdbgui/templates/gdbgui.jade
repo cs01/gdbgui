@@ -40,15 +40,15 @@ body
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', , title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
                         span.glyphicon.glyphicon-off.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-continue', data-cmd1='-var-update --all-values *', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
                         span.glyphicon.glyphicon-play.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-next', data-cmd1='-var-update --all-values *', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
                         span.glyphicon.glyphicon-step-forward.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-step', data-cmd1='-var-update --all-values *', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
                         span.glyphicon.glyphicon-arrow-down.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-return', data-cmd1='-var-update --all-values *', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint at the 'main' function (-break-insert main)") Add Breakpoint to Main
                         span.glyphicon.glyphicon-flag.padding_left
@@ -102,6 +102,21 @@ body
 
         div.col-md-6.no_padding
             div.titlebar
+                span.lighttext variables
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
+                input#variable_input.form-control(placeholder='expression to watch for current frame')
+            div#variables.gdb_content_div
+
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext All Local Variables
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
+            div#all_local_variables.gdb_content_div
+
+        div.col-md-6.no_padding
+            div.titlebar
                 span.lighttext breakpoints
                 button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints (-break-list')") Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
@@ -140,13 +155,6 @@ body
 
         div.col-md-6.no_padding
             div.titlebar
-                span.lighttext variables
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
-            div#variables.gdb_content_div
-
-        div.col-md-6.no_padding
-            div.titlebar
                 span.lighttext memory
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
@@ -158,6 +166,8 @@ body
                 span.lighttext gdb machine interface output
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
+                        span.glyphicon.glyphicon-ban-circle.padding_left
             div#gdb_mi_output.gdb_content_div
 
 footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #f5f5f5')
