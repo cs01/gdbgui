@@ -288,8 +288,13 @@ const Breakpoint = {
              links.push(`<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a>`)
         }
         links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
-
         bkpt[' '] = links.join(' | ')
+
+        // turn address into link
+        if (bkpt['addr']){
+            bkpt['addr'] =  Memory.make_addr_into_link(bkpt['addr'])
+        }
+
         // add the breakpoint if it's not stored already
         if(Breakpoint.breakpoints.indexOf(bkpt) === -1){
             Breakpoint.breakpoints.push(bkpt)
@@ -508,7 +513,7 @@ const Disassembly = {
             }
         }
         for(let i of asm_insns){
-            let assembly = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${el.address} ${el.inst}`)
+            let assembly = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${Memory.make_addr_into_link(el.address)} ${el.inst}`)
             let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line} view</a>`
             let source_line = '(file not loaded)'
             if(i.line <= source_code.length){
@@ -527,6 +532,9 @@ const Stack = {
         for (let s of stack){
             if ('fullname' in s){
                 s[' '] = `<a class='view_file pointer' data-fullname=${s.fullname || ''} data-line=${s.line || ''} data-highlight=true>View</a>`
+            }
+            if ('addr' in s){
+                s.addr = Memory.make_addr_into_link(s.addr)
             }
         }
 
@@ -653,6 +661,25 @@ const GdbCommandInput = {
     }
 }
 
+const Memory = {
+    el: $('#memory'),
+    init: function(){
+        $("body").on("click", ".memory_address", Memory.click_memory_address)
+    },
+    click_memory_address: function(e){
+        let addr = e.currentTarget.dataset['memory_address']
+        GdbApi.run_gdb_command(` -data-read-memory-bytes ${addr} 1`)
+    },
+    render_memory: function(mi_memory_data){
+        let data = mi_memory_data.map(m => _.values(m))
+        let table = Util.get_table(_.keys(mi_memory_data[0]), data)
+        Memory.el.html(table)
+    },
+    make_addr_into_link: function(addr){
+        return `<a class='pointer memory_address' data-memory_address='${addr}'>${addr}</a>`
+    }
+}
+
 const GlobalEvents = {
     // Initialize
     init: function(){
@@ -698,28 +725,31 @@ const process_gdb_response = function(response_array){
                 Breakpoint.store_breakpoint(r.payload.bkpt)
                 Breakpoint.render_breakpoint_table()
                 SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, {'highlight': false, 'scroll': true})
-
-            } else if ('BreakpointTable' in r.payload){
+            }
+            if ('BreakpointTable' in r.payload){
                 Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
                 SourceCode.rerender()
-
-            } else if ('stack' in r.payload) {
+            }
+            if ('stack' in r.payload) {
                 Stack.render_stack(r.payload.stack)
-
-            } else if ('register-names' in r.payload) {
+            }
+            if ('register-names' in r.payload) {
                 Registers.set_register_names(r.payload['register-names'])
-
-            } else if ('register-values' in r.payload) {
+            }
+            if ('register-values' in r.payload) {
                 Registers.render_registers(r.payload['register-values'])
-
-            } else if ('asm_insns' in r.payload) {
+            }
+            if ('asm_insns' in r.payload) {
                 Disassembly.render_disasembly(r.payload.asm_insns)
-
-            } else if ('files' in r.payload){
+            }
+            if ('files' in r.payload){
                 SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
                 SourceFileAutocomplete.input.evaluate()
-
-            } // else if (your check here) {
+            }
+            if ('memory' in r.payload){
+                Memory.render_memory(r.payload.memory)
+            }
+            // if (your check here) {
             //      render your custom compenent here!
             // }
 
@@ -772,6 +802,7 @@ SourceCode.init()
 Disassembly.init()
 BinaryLoader.init()
 SourceFileAutocomplete.init()
+Memory.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
