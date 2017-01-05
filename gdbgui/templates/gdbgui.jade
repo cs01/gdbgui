@@ -136,6 +136,21 @@ body
 
         div.col-md-6.no_padding
             div.titlebar
+                span.lighttext variables
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
+            div#variables.gdb_content_div
+
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext memory
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
+            div#memory.gdb_content_div
+
+
+        div.col-md-6.no_padding
+            div.titlebar
                 span.lighttext gdb machine interface output
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
