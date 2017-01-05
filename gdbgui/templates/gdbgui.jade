@@ -65,7 +65,7 @@ body
                 span#source_code_heading.lighttext (no source code file loaded)
 
             div
-                input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter path here, or select from dropdown', style="width: 500px")
+                input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter source file path here, or select from dropdown', style="width: 500px")
 
                 button.dropdown-btn(type="button")
                     span.caret
@@ -81,6 +81,7 @@ body
                         td Source code will be displayed here when applicable
 
         div.col-md-12.no_padding
+            //- text/buttons above the gdb console output
             div.titlebar
                 span.lighttext gdb console
                 div.btn-group
@@ -90,10 +91,13 @@ body
                         span.glyphicon.glyphicon-download.padding_left
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
+
+            //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
-            div(style="position: relative")
-                span.gdb_console(style="position: absolute; left: 5px; margin-top: 9px") (gdb)
-                input.form-control.dropdown-input.gdb_console#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", style="padding-left: 45px; border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0", placeholder='enter any gdb command, or gdb machine interface command')
+
+            //- gdb console input
+            span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
+            input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
 
         div.col-md-6.no_padding

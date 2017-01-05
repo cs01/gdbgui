@@ -24,6 +24,16 @@ table{
   color: #f9f9f9 !important;
   font-family: monospace !important;
 }
+#gdb_command{
+  padding-left: 45px;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  font-size: 0.9em !important;
+  background-color: #3c3c3c !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
+}
 #stdout {
   color: black;
 }
