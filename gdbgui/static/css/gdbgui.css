@@ -34,6 +34,15 @@ pre{
 .pointer{
   cursor: pointer;
 }
+.gdb_content_div{
+  overflow: auto;
+  height: 150px;
+  background-color: #f7f7f7;
+  border-color: grey;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 2px;
+}
 
 /* specific styling for ids */
 #always_on_top{
@@ -96,7 +105,8 @@ pre{
 .highlight{
   background: rgba(255, 255, 0, 0.5);
 }
-.right_border{
+.line_num_container{
+  width: 50px;
   border-width: 0;
   border-right: 1px;
   border-style: solid;
@@ -135,15 +145,6 @@ pre{
 .line_of_code{
   height: 18px
 }
-.gdb_content_div{
-  overflow: auto;
-  height: 150px;
-  background-color: #f7f7f7;
-  border-color: grey;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 2px;
-}
 .dropdown-btn {
     vertical-align: top;
     height: 30px;
@@ -174,4 +175,17 @@ have scrollbar, so it doesn't take over the page */
 @keyframes flash-animation {
     from { background: yellow; }
     to   { background: default; }
+}
+
+#variables li{
+  list-style: none;
+}
+
+#variables ul.variable{
+    padding-left: 5px;
+    border: 0px;
+}
+#variables li:hover{
+  /* lighten background */
+  background-color: #ffffc0;
 }
