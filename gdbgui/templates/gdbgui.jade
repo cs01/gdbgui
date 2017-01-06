@@ -18,17 +18,11 @@ head
     script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
 
 body
-    div.container-fluid(style="position: fixed; top: 0; margin-top: 0;
-                                height: 30px; width: 100%;
-                                border-bottom: black; border-style: solid; border-width: 0px; border-bottom-width: 1px;
-                                z-index: 1000; background: #f1f1f1; border-bottom-color: #ccc;")
-        div.row
-            div(style="height: 20px; margin-top: 5px; margin-left: 10px")
-                span Status:&nbsp
-                span#status GDB is waiting to run a command
 
-    div.container-fluid(style="margin-top: 35px")
-        div.row
+    //- this container stays on top, no matter what
+    div.container-fluid#always_on_top
+
+        div.row(style='max-height: 80px')
             div.col-md-12
                 //- binary selection
                 form(role=form)
@@ -56,6 +50,14 @@ body
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
                     button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
+
+        div.row
+            div(style="height: 20px; margin-top: 5px; margin-left: 15px")
+                span Status:&nbsp
+                span#status GDB is waiting to run a command
+
+    //- the div after the "always on top" div must givei a margin on top at least as tall as the "always on top" div
+    div.container-fluid(style="margin-top: 110px")
 
 
         //- source

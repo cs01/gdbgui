@@ -74,6 +74,7 @@ Despite this list, gdbgui is quite usable in its current form
 * ~~allow argument passing to the inferior process being debugged~~
 * ~~add links back to github, etc~~
 * ~~escape brackets on system <includes> so they don't disappear~~
+* ~~only make gutter create/delete breakpoints, not anywhere in source file~~
 * add button to widen windows
 * add clear button to windows
 * improve toolbar styling, change color when error occurs
@@ -82,4 +83,3 @@ Despite this list, gdbgui is quite usable in its current form
 * add autocompletion and documentation of all commands
 * add ability to view/inspect variables
 * add ability to view/inspect memory
-* only make gutter create/delete breakpoints, not anywhere in source file
