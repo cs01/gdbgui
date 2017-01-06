@@ -336,8 +336,8 @@ const SourceCode = {
     rendered_source_file_fullname: null,
     rendered_source_file_line: null,
     init: function(){
-        $("body").on("click", ".breakpoint", SourceCode.click_breakpoint)
-        $("body").on("click", ".no_breakpoint", SourceCode.click_source_file_gutter_with_no_breakpoint)
+        $("body").on("click", ".breakpoint .gutter", SourceCode.click_breakpoint)
+        $("body").on("click", ".no_breakpoint .gutter", SourceCode.click_source_file_gutter_with_no_breakpoint)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
     },
     cached_source_files: [],  // list with keys fullname, source_code
@@ -371,8 +371,8 @@ const SourceCode = {
             }
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
-            tbody.push(`<tr class='source_code ${breakpoint_class}' data-line=${line_num}>
-                <td class='gutter'><div></div></td>
+            tbody.push(`<tr class='source_code ${breakpoint_class}'>
+                <td class='gutter pointer' data-line=${line_num}><div></div></td>
                 <td class='line_num'>${line_num}</td>
                 <td class='line_of_code'><pre ${tags}>${line}</pre></td>
                 </tr>
@@ -570,7 +570,7 @@ const Stack = {
     click_select_frame: function(e){
         Stack.select_frame(e.currentTarget.dataset.framenum)
         SourceCode.click_view_file(e)
-        Variables.refresh_all_for_current_frame()
+        AllLocalVariables.clear()
     },
     select_frame: function(framenum){
         GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
@@ -750,32 +750,34 @@ const Variables = {
         waiting_for_children_list_response: false,
         children_being_retrieve_for_var: null,
         expression_being_created: null,
-        expression_to_gdb_data: {},
-        array_of_variable_objs: []
+        variables: []
+    },
+    save_new_variable: function(expression, gdb_var_name, mi_obj){
+        Variables.state.variables.push({'expression': expression, 'gdb_var_name': gdb_var_name, 'mi_obj': mi_obj})
     },
     get_obj_from_gdb_var_name: function(gdb_var_name){
-        for(let key in Variables.state.expression_to_gdb_data){
-            let obj = Variables.state.expression_to_gdb_data[key]
-            if (obj.name === gdb_var_name){
-                return obj
-            }
+        let objs = Variables.state.variables.filter(v => v.gdb_var_name === gdb_var_name)
+        if(objs.length === 1){
+            return objs[0]
         }
-        return null
+        return undefined
+    },
+    get_obj_from_expression: function(expression){
+        let objs = Variables.state.variables.filter(v => v.expression === expression)
+        if(objs.length === 1){
+            return objs[0]
+        }
+        return undefined
     },
     get_expression_from_gdb_var_name: function(gdb_var_name){
-        for(let key in Variables.state.expression_to_gdb_data){
-            let obj = Variables.state.expression_to_gdb_data[key]
-            if (obj.name === gdb_var_name){
-                return key
-            }
+        let objs = Variables.state.variables.filter(v => v.gdb_var_name === gdb_var_name)
+        if(objs.length === 1){
+            return objs[0].expression
         }
         return undefined
     },
     delete_local_gdb_var_data: function(gdb_var_name){
-        let key = Variables.get_expression_from_gdb_var_name(gdb_var_name)
-        if(key){
-            delete Variables.state.expression_to_gdb_data[key]
-        }
+        _.remove(Variables.state.variables, v => v.gdb_var_name === gdb_var_name)
     },
     keydown_on_input: function(e){
         if((e.keyCode === ENTER_BUTTON_NUM)) {
@@ -820,12 +822,12 @@ const Variables = {
                 r.payload.children = []
 
                 // save this payload
-                Variables.state.expression_to_gdb_data[Variables.expression_being_created] = r.payload
+                Variables.save_new_variable(Variables.expression_being_created, r.payload.name, r.payload)
 
-                // fetch info on children if necessary
-                if(parseInt(r.payload.numchild) > 0){
-                    Variables.get_children_for_var(r.payload.name)
-                }
+                // // fetch info on children if necessary
+                // if(parseInt(r.payload.numchild) > 0){
+                //     Variables.get_children_for_var(r.payload.name)
+                // }
 
             }else{
                 // this is an unexpected case. Let the status bar render some info to help debug the issue.
@@ -845,18 +847,18 @@ const Variables = {
         Variables.state.waiting_for_children_list_response = true
         GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`, Variables.callback_after_list_children)
     },
-    callback_after_list_children: function(mi_response_array){
-        Variables.state.waiting_for_children_list_response = false
+    // callback_after_list_children: function(mi_response_array){
+    //     Variables.state.waiting_for_children_list_response = false
 
-        mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
+    //     mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
 
-        let r = mi_response_array[0]
-        let obj = Variables.get_obj_from_gdb_var_name(Variables.state.children_being_retrieved_for_var)
-        if(obj){
-            obj.children = r.payload.children
-        }
-        Variables.render()
-    },
+    //     let r = mi_response_array[0]
+    //     let obj = Variables.get_obj_from_gdb_var_name(Variables.state.children_being_retrieved_for_var)
+    //     if(obj){
+    //         obj.mi_obj.children = r.payload.children
+    //     }
+    //     Variables.render()
+    // },
     render: function(){
         const col_names = ['', 'expression (type): value', 'gdb var']
         const child_display = function(child){
@@ -864,23 +866,22 @@ const Variables = {
         }
         let table_data = []
 
-        for(let expression in Variables.state.expression_to_gdb_data){
-            let obj = Variables.state.expression_to_gdb_data[expression]
+        for(let obj of Variables.state.variables){
+            console.log(obj.in_scope)
             if(obj.in_scope === 'true' || _.isUndefined(obj.in_scope)){
-                table_data.push(Variables.get_rendered_var(expression, obj))
+                table_data.push(Variables.get_rendered_var(obj.expression, obj.mi_obj))
             }
         }
 
         Variables.el.html(Util.get_table(col_names, table_data))
     },
-    get_rendered_var: function(expression, obj){
-        console.log(obj.in_scope)
+    get_rendered_var: function(expression, mi_obj){
 
         let child_tree = `<ul>
 
         </ul>`
         let child_li = ''
-        for(let child of obj.children){
+        for(let child of mi_obj.children){
             child_li += `<li>${child.exp} (${child.type}): ${child.value}</li>`
 
             // TODO handle children of children
@@ -889,17 +890,17 @@ const Variables = {
             // }
         }
 
-        let delete_button = `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${obj.name}' />`
+        let delete_button = `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />`
 
         let expression_and_value = `
         <ul>
-        <li>${expression} (${obj.type}): ${obj.value}
+        <li>${expression} (${mi_obj.type}): ${mi_obj.value}
             <ul>
                 ${child_li}
             </ul>
         <ul>
         `
-        return [delete_button, expression_and_value, obj.name]
+        return [delete_button, expression_and_value, mi_obj.name]
     },
     update_variable_values: function(){
         GdbApi.run_gdb_command(`-var-update *`)
@@ -935,10 +936,13 @@ const AllLocalVariables = {
             table_data.push([obj.name, `<p class='pre'>${value_str}</p>`])
         }
 
-        Variables.el.html(Util.get_table(col_names, table_data))
+        AllLocalVariables.el.html(Util.get_table(col_names, table_data))
     },
     refresh_all_for_current_frame: function(){
         GdbApi.run_gdb_command(`-stack-list-locals --all-values`)
+    },
+    clear: function(){
+        AllLocalVariables.el.html('')
     }
 }
 
