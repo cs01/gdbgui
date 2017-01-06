@@ -111,6 +111,7 @@ body
         div.col-md-6.no_padding
             div.titlebar
                 span.lighttext All Local Variables
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Refresh
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
             div#all_local_variables.gdb_content_div

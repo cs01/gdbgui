@@ -6,6 +6,9 @@ body{
 table{
   font-size: 0.9em;
 }
+.monospace{
+  font-family: monospace;
+}
 .lighttext{
   color: #4a4a4a;
 }
@@ -75,11 +78,12 @@ table{
   background: rgba(255, 255, 0, 0.5);
 }
 .breakpoint td.gutter div{
-  background: blue;
+  background: #ff3838;
   width: 0.9em;
   height: 0.9em;
   border-radius: 50%;
   border-color: black;
+  margin-left: 5px;
 }
 .no_breakpoint td.gutter div{
   /*background: blue;*/
@@ -93,7 +97,7 @@ table{
 }
 .gutter{
   width: 0.9em;
-  padding-right: 5px;
+  padding-right: 30px;
   background: #d4ffab;
 }
 .pre{
@@ -104,7 +108,6 @@ pre{
 }
 .source_code:hover td, .source_code:hover td pre{
   background-color: lightblue;
-  cursor: pointer;
 }
 .source_code td{
   background-color: #f7f7f7
