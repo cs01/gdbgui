@@ -1,3 +1,4 @@
+/* styling for all html tags */
 body{
   background: #ccc;
   color: grey;
@@ -5,6 +6,14 @@ body{
 }
 table{
   font-size: 0.9em;
+}
+pre{
+  overflow: visible !important;
+}
+
+/* styling for generic classes */
+.pre{
+  white-space: pre;
 }
 .monospace{
   font-family: monospace;
@@ -16,12 +25,32 @@ table{
   /* glyphicons are too bold, make them lighter*/
     color: #848484;
 }
+/* components get their own titlebars */
 .titlebar{
   width: 100%;
   color: black;
   background-color: white;
 }
-#console, .gdb_console{
+.pointer{
+  cursor: pointer;
+}
+
+/* specific styling for ids */
+#always_on_top{
+  position: fixed;
+  top: 0;
+  margin-top: 0;
+  height: 102px;
+  width: 100%;
+  border-bottom: black;
+  border-style: solid;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  z-index: 1000;
+  background: #f1f1f1;
+  border-bottom-color: #ccc;
+}
+#console{
   font-size: 0.9em !important;
   background-color: #292929 !important;
   color: #f9f9f9 !important;
@@ -37,16 +66,10 @@ table{
   color: #f9f9f9 !important;
   font-family: monospace !important;
 }
-#stdout {
-  color: black;
-}
-#console, #stdout, #gdb_mi_output{
+#gdb_mi_output{
   font-family: monospace;
   overflow: auto;
   font-size: 0.9em;
-}
-.pointer{
-  cursor: pointer;
 }
 .sent_command:hover{
   /* lighten background */
@@ -58,15 +81,11 @@ table{
     opacity: 0.6;
     pointer-events: none;
 }
-.no_margin{
+.margin_sm{
   margin: 2px;
 }
 .no_padding{
   padding: 2px !important;
-}
-.code{
-  overflow: auto;
-  font-size: 0.9em;
 }
 .code pre, table.code {
     margin: 0px;
@@ -77,40 +96,38 @@ table{
 .highlight{
   background: rgba(255, 255, 0, 0.5);
 }
-.breakpoint td.gutter div{
-  background: #ff3838;
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  border-color: black;
-  margin-left: 5px;
+.right_border{
+  border-width: 0;
+  border-right: 1px;
+  border-style: solid;
+  border-color: #c7c7c7;
 }
-.no_breakpoint td.gutter div{
-  /*background: blue;*/
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  border-color: black;
+.line_num{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #ababab;
+  cursor: pointer;
 }
-.active_breakpoint{
-  background: red;
+/* the line number has its style changed if it has a breakpoint */
+.line_num.breakpoint{
+  background: #33cdff;
+  color: black;
+  border-style: solid;
+  border-color: #000000;
+  border-width: 1px;
 }
-.gutter{
-  width: 0.9em;
-  padding-right: 30px;
-  background: #d4ffab;
+/* set background color over souce code only */
+.source_code_row.line_of_code td{
+  background-color: #f7f7f7;
 }
-.pre{
-  white-space: pre;
+.line_of_code pre{
+  margin-left: 10px;
 }
-pre{
-  overflow: visible !important;
-}
-.source_code:hover td, .source_code:hover td pre{
+/* when hovering, set background color of entire row */
+.source_code_row:hover td, .source_code_row:hover td pre{
   background-color: lightblue;
-}
-.source_code td{
-  background-color: #f7f7f7
 }
 .padding_left{
   padding-left: 5px;
@@ -133,11 +150,14 @@ pre{
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
+/* auto-complete librarie's dropdown should only be 200px high, and should
+have scrollbar, so it doesn't take over the page */
 .awesomplete  ul {
   overflow: auto;
   max-height: 200px;
 }
 
+/* show a flash of color */
 .flash {
     -webkit-animation-name: flash-animation;
     -webkit-animation-duration: 1.0s;

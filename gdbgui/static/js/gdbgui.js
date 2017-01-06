@@ -207,10 +207,10 @@ const GdbConsoleComponent = {
         if(_.isString(s)){
             strings = [s]
         }
-        strings.map(string => GdbConsoleComponent.el.append(`<p class='no_margin output'>${Util.escape(string)}</p>`))
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
-        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='no_margin output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
+        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='margin_sm output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
         GdbConsoleComponent.scroll_to_bottom()
     },
     scroll_to_bottom: function(){
@@ -270,7 +270,7 @@ const GdbMiOutput = {
             'status': "text-danger",
             'console': "text-info",
         }
-        GdbMiOutput.el.append(`<p class='pre ${text_class[mi_obj.type]} no_margin output'>${mi_obj.type}:\n${JSON.stringify(mi_obj, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
+        GdbMiOutput.el.append(`<p class='pre ${text_class[mi_obj.type]} margin_sm output'>${mi_obj.type}:\n${JSON.stringify(mi_obj, null, 4).replace(/[^(\\)]\\n/g)}</span>`)
     },
     scroll_to_bottom: function(){
         GdbMiOutput.el.animate({'scrollTop': GdbMiOutput.el.prop('scrollHeight')})
@@ -336,20 +336,22 @@ const SourceCode = {
     rendered_source_file_fullname: null,
     rendered_source_file_line: null,
     init: function(){
-        $("body").on("click", ".breakpoint .gutter", SourceCode.click_breakpoint)
-        $("body").on("click", ".no_breakpoint .gutter", SourceCode.click_source_file_gutter_with_no_breakpoint)
+        $("body").on("click", ".source_code_row td .line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
     },
     cached_source_files: [],  // list with keys fullname, source_code
-    click_breakpoint: function(e){
+    click_gutter: function(e){
         let line = e.currentTarget.dataset.line
-        // todo: embed fullname in the dom instead of depending on state
-        Breakpoint.remove_breakpoint_if_present(SourceCode.rendered_source_file_fullname, line)
-    },
-    click_source_file_gutter_with_no_breakpoint: function(e){
-        let line = e.currentTarget.dataset.line
-        let cmd = [`-break-insert ${SourceCode.rendered_source_file_fullname}:${line}`, '-break-list']
-        GdbApi.run_gdb_command(cmd)
+        let has_breakpoint = (e.currentTarget.dataset.has_breakpoint === 'true')
+        if(has_breakpoint){
+            // clicked gutter with a breakpoint, remove it
+            Breakpoint.remove_breakpoint_if_present(SourceCode.rendered_source_file_fullname, line)
+
+        }else{
+            // clicked with no breakpoint, add it, and list all breakpoints to make sure breakpoint table is up to date
+            let cmd = [`-break-insert ${SourceCode.rendered_source_file_fullname}:${line}`, '-break-list']
+            GdbApi.run_gdb_command(cmd)
+        }
     },
     render_cached_source_file: function(){
         SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': true})
@@ -364,17 +366,23 @@ const SourceCode = {
             bkpt_lines = Breakpoint.get_breakpoint_lines_For_file(fullname)
 
         for (let line of source_code){
-            let breakpoint_class = (bkpt_lines.indexOf(line_num) !== -1) ? 'breakpoint': 'no_breakpoint';
+            let has_breakpoint = bkpt_lines.indexOf(line_num) !== -1
+            let breakpoint_class = has_breakpoint ? 'breakpoint' : ''
             let tags = ''
             if (line_num === current_line){
               tags = `id=current_line ${options.highlight ? 'class=highlight' : ''}`
             }
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
-            tbody.push(`<tr class='source_code ${breakpoint_class}'>
-                <td class='gutter pointer' data-line=${line_num}><div></div></td>
-                <td class='line_num'>${line_num}</td>
-                <td class='line_of_code'><pre ${tags}>${line}</pre></td>
+            tbody.push(`
+                <tr class='source_code_row'>
+                    <td class='right_border'>
+                        <div class='line_num ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>${line_num}</div>
+                    </td>
+
+                    <td class='line_of_code'>
+                        <pre ${tags}>${line}</pre>
+                    </td>
                 </tr>
                 `)
             line_num++;
