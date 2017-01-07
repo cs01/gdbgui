@@ -32,11 +32,11 @@ Browsers: Chrome
 
 ## Development
 
-`gdbgui` was designed to be easily hackable and extendtable.
+`gdbgui` was designed to be easily hackable and extendable. There is no build system necessary to run or develop this app.
 
 There are only three parts to gdb:
 
-1. `gdbgui.js`: There is only a single JavaScript file, and that file contains the majority of the app itself. It sends AJAX requests to interact with gdb, then gets the response and updates the DOM as necessary.
+1. `gdbgui.js`: There is just one JavaScript file, and that file contains the majority of the app itself. It sends AJAX requests to interact with gdb, then gets the response and updates the DOM as necessary.
 
 1. `gdbgui.jade`: HTML file that defines the frontend (Note: Jade/Pug is a more concise form of html. Also note: jade has been renamed to [pug](https://github.com/pugjs/pug), but the Python pypi package still maintains the jade name.)
 

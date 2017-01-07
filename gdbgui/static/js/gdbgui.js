@@ -3,7 +3,8 @@
  * an interactive ui for gdb. Besides libraries,
  * everything exists in this single js file. There
  * are several components, each of which have their
- * own top-level object.
+ * own top-level object. Each component is reponsible
+ * for its own data, state, event handling, and rendering.
  */
 
 (function ($, _, Awesomplete) {
@@ -48,6 +49,10 @@ const Status = {
     }
 }
 
+/**
+ * This object contains methods to interact with
+ * gdb, but does not directly render anything in the DOM.
+ */
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
@@ -66,7 +71,9 @@ const GdbApi = {
             let cmds = []
             let i = 0
             let cmd = e.currentTarget.dataset[`cmd${i}`]
-            while(cmd !== undefined && i < 10){
+            // extract all commands into an array, then run them
+            // (max of 100 commands)
+            while(cmd !== undefined && i < 100){
                 cmds.push(cmd)
                 i++
                 cmd = e.currentTarget.dataset[`cmd${i}`]
@@ -129,6 +136,10 @@ const GdbApi = {
             error: Status.render_ajax_error_msg,
         })
     },
+    /**
+     * read gdb's buffers for any asynchronous data that
+     * arrived since the last read
+     */
     get_gdb_response: function(){
         if(GdbApi.state.waiting_for_response === true){
             Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
@@ -147,6 +158,9 @@ const GdbApi = {
     },
 }
 
+/**
+ * Some general utility methods
+ */
 const Util = {
     get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
@@ -191,6 +205,11 @@ const Util = {
     }
 }
 
+/**
+ * A component to mimicks the gdb console.
+ * It stores previous commands, and allows you to enter new ones.
+ * It also displays any console output.
+ */
 const GdbConsoleComponent = {
     el: $('#console'),
     init: function(){
@@ -254,6 +273,14 @@ const History = {
     },
 }
 
+/**
+ * A component to display, in gory detail, what is
+ * returned from gdb's machine interface. This displays the
+ * data source that is fed to all components and UI elements
+ * in gdb gui, and is useful when debugging gdbgui, or
+ * a command that failed but didn't have a useful failure
+ * message in gdbgui.
+ */
 const GdbMiOutput = {
     el: $('#gdb_mi_output'),
     init: function(){
@@ -279,6 +306,9 @@ const GdbMiOutput = {
     }
 }
 
+/**
+ * The breakpoint table component
+ */
 const Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
@@ -331,6 +361,9 @@ const Breakpoint = {
     }
 }
 
+/**
+ * The source code component
+ */
 const SourceCode = {
     el: $('#code_table'),
     el_code_container: $('#code_container'),
@@ -456,6 +489,11 @@ const SourceCode = {
             // there is no line to scroll to
         }
     },
+    /**
+     * Current line has an id in the DOM and a variable
+     * Remove the id and highlighting in the DOM, and set the
+     * variable to null
+     */
     remove_current_line: function(){
         SourceCode.rendered_source_file_line = null
         let jq_current_line = $("#current_line")
@@ -464,6 +502,13 @@ const SourceCode = {
             jq_current_line.removeClass('highlight')  // remove current line id
         }
     },
+    /**
+     * Something in DOM triggered this callback to view a file.
+     * The current target must have data embedded in it with:
+     * fullname: full path of source code file to view
+     * line (optional): line number to scroll to
+     * hightlight (default: 'false'): if 'true', the line is highlighted
+     */
     click_view_file: function(e){
         let fullname = e.currentTarget.dataset['fullname'],
             line = e.currentTarget.dataset['line'],
@@ -472,6 +517,11 @@ const SourceCode = {
     }
 }
 
+/**
+ * The autocomplete dropdown of source files is complicated enough
+ * to have its own component. It uses the awesomeplete library,
+ * which is really nice: https://leaverou.github.io/awesomplete/
+ */
 const SourceFileAutocomplete = {
     el: $('#source_file_input'),
     init: function(){
@@ -511,13 +561,20 @@ const SourceFileAutocomplete = {
     },
 }
 
+/**
+ * The Disassembly component
+ */
 const Disassembly = {
     el_title: $('#disassembly_heading'),
     el: $('#disassembly'),
     init: function(){
         $('button#refresh_disassembly').click(Disassembly.refresh_disassembly)
     },
-    refresh_disassembly: function(e){
+    /**
+     * Fetch disassembly for current file/line. An error is raised
+     * if gdbgui doesn't have that state saved.
+     */
+    refresh_disassembly: function(){
         let file = SourceCode.rendered_source_file_fullname
         let line = SourceCode.rendered_source_file_line
         if (file !== null && line !== null){
@@ -529,6 +586,9 @@ const Disassembly = {
             Status.render('gdbgui is not sure which file and line to disassemble. Reach a breakpoint, then try again.')
         }
     },
+    /**
+     * Render disassembly table
+     */
     render_disasembly: function(asm_insns){
         let thead = ['line', 'function+offset address instruction', 'source']
         let data = []
@@ -553,6 +613,9 @@ const Disassembly = {
     },
 }
 
+/**
+ * The Stack component
+ */
 const Stack = {
     el: $('#stack'),
     init: function(){
@@ -587,6 +650,10 @@ const Stack = {
     }
 }
 
+
+/**
+ * The Registers component
+ */
 const Registers = {
     el: $('#registers'),
     register_names: [],
@@ -615,6 +682,12 @@ const Registers = {
     }
 }
 
+/**
+ * Preferences object
+ * The intent of this is to have UI inputs that set and store
+ * preferences. These preferences will be saved to localStorage
+ * between sessions. (This is still in work)
+ */
 const Prefs = {
     auto_reload_breakpoints: function(){
         // todo add checkboxes in a UI widget
@@ -622,6 +695,10 @@ const Prefs = {
     }
 }
 
+/**
+ * The BinaryLoader component allows the user to select their binary
+ * and specify inputs
+ */
 const BinaryLoader = {
     el: $('#binary'),
     el_past_binaries: $('#past_binaries'),
@@ -644,9 +721,21 @@ const BinaryLoader = {
         localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
         return null
     },
+    keydown_on_binary_input: function(e){
+        if(e.keyCode === ENTER_BUTTON_NUM) {
+            BinaryLoader.set_target_app()
+        }
+    },
+    render_past_binary_options_datalist: function(){
+        BinaryLoader.el_past_binaries.html(BinaryLoader.past_binaries.map(b => `<option>${b}</option`))
+    },
     click_set_target_app: function(e){
         BinaryLoader.set_target_app()
     },
+    /**
+     * Set the target application and arguments based on the
+     * current fields in the DOM
+     */
     set_target_app: function(){
         var binary_and_args = _.trim(BinaryLoader.el.val())
 
@@ -684,16 +773,11 @@ const BinaryLoader = {
     render: function(binary){
         BinaryLoader.el.val(binary)
     },
-    keydown_on_binary_input: function(e){
-        if(e.keyCode === ENTER_BUTTON_NUM) {
-            BinaryLoader.set_target_app()
-        }
-    },
-    render_past_binary_options_datalist: function(){
-        BinaryLoader.el_past_binaries.html(BinaryLoader.past_binaries.map(b => `<option>${b}</option`))
-    },
 }
 
+/**
+ * The GdbCommandInput component
+ */
 const GdbCommandInput = {
     el: $('#gdb_command'),
     init: function(){
@@ -722,6 +806,10 @@ const GdbCommandInput = {
     }
 }
 
+/**
+ * The Memory component allows the user to view
+ * data stored at memory locations
+ */
 const Memory = {
     el: $('#memory'),
     init: function(){
@@ -742,7 +830,12 @@ const Memory = {
 }
 
 /**
- * https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
+ * The Variables component allows the user to inspect expressions
+ * stored as variables in gdb
+ * see https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
+ *
+ * gdb assigns a unique variable name for each expression the user wants evaluated
+ * gdb returns
  */
 const Variables = {
     el: $('#variables'),
@@ -808,20 +901,10 @@ const Variables = {
             return undefined
         }
     },
-    get_obj_from_expression: function(expression){
-        let objs = Variables.state.variables.filter(v => v.expression === expression)
-        if(objs.length === 1){
-            return objs[0]
-        }
-        return undefined
-    },
-    get_expression_from_gdb_var_name: function(gdb_var_name){
-        let objs = Variables.state.variables.filter(v => v.gdb_var_name === gdb_var_name)
-        if(objs.length === 1){
-            return objs[0].expression
-        }
-        return undefined
-    },
+    /**
+     * Delete local copy of gdb variable (all its children are deleted too
+     * since they are stored as fields in the object)
+     */
     delete_local_gdb_var_data: function(gdb_var_name){
         _.remove(Variables.state.variables, v => v.name === gdb_var_name)
     },
@@ -833,6 +916,10 @@ const Variables = {
             }
         }
     },
+    /**
+     * Create a new variable in gdb. gdb automatically assigns
+     * a unique variable name
+     */
     create_variable: function(expression){
         if(Variables.waiting_for_create_var_response === true){
             Status.render(`cannot create a new variable before finishing creation of expression "${Variables.state.expression_being_created}"`)
@@ -847,16 +934,27 @@ const Variables = {
         GdbApi.run_gdb_command(`-var-create - * ${expression}`, Variables.callback_after_create_variable)
     },
     /**
-     * gdb returns objects for its variables that need a little more data
-     * add the children array
-     * parse numchild string to integer
-     * store whether the object is expanded or collapsed, showing children
+     * gdb returns objects for its variables,, but before we save that
+     * data locally, we want to add a little more metadata to make it more useful
+     *
+     * this method does the following:
+     * - add the children array
+     * - convert numchild string to integer
+     * - store whether the object is expanded or collapsed in the ui
      */
     prepare_gdb_obj_for_storage: function(obj){
         obj.children = []
         obj.numchild = parseInt(obj.numchild)
         obj.show_children_in_ui = false
     },
+    /**
+     * After a variable is created, we need to link the gdb
+     * variable name (which is automatically created by gdb),
+     * and the expression the user wanted to evailuate. The
+     * new variable is saved locally.
+     *
+     * The variable UI element is the re-rendered
+     */
     callback_after_create_variable: function(mi_response_array){
         Variables.state.waiting_for_create_var_response = false
 
@@ -890,18 +988,23 @@ const Variables = {
         }
         Variables.render()
     },
+    /**
+     * Send command to gdb to give us all the children and values
+     * for a gdb variable. Note that the gdb variable itself may be a child.
+     */
     get_children_for_var: function(gdb_variable_name){
         if(Variables.state.waiting_for_children_list_response === true){
-            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.children_being_retrieved_for_var}`)
+            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.gdb_parent_var_currently_fetching_children}`)
             return
         }
-        Variables.state.children_being_retrieved_for_var = gdb_variable_name
+        Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
         Variables.state.waiting_for_children_list_response = true
         GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`, Variables.callback_after_list_children)
     },
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
-     * We need to get the variable, then store this array as its children, and re-render.
+     * This method stores this child array data to the appropriate locally stored
+     * object, then re-renders the Variable UI element.
      */
     callback_after_list_children: function(mi_response_array){
         Variables.state.waiting_for_children_list_response = false
@@ -910,33 +1013,27 @@ const Variables = {
 
         let r = mi_response_array[0]
 
-        // add array of children, and initialize to empty
+        // prepare all the child objects we received for local storage
         r.payload.children.map(child_obj => Variables.prepare_gdb_obj_for_storage(child_obj))
 
-        let obj = Variables.get_obj_from_gdb_var_name(Variables.state.children_being_retrieved_for_var)
+        // get the parent object of these children
+        let parent_obj = Variables.get_obj_from_gdb_var_name(Variables.state.gdb_parent_var_currently_fetching_children)
 
-
-        if(obj){
-            obj.children = r.payload.children
+        if(parent_obj){
+            parent_obj.children = r.payload.children
         }else{
-            console.error(`attempted to save children for existing var, but couldn't find it: ${Variables.state.children_being_retrieved_for_var}`)
+            console.error(`attempted to save children for existing var, but couldn't find it: ${Variables.state.gdb_parent_var_currently_fetching_children}`)
         }
         Variables.render()
     },
     render: function(){
-        const col_names = ['', 'expression (type): value', 'gdb var']
-        const child_display = function(child){
-            return child.name
-        }
         let html = ''
-
+        const is_root = true
         for(let obj of Variables.state.variables){
-            if(obj.in_scope === 'true' || _.isUndefined(obj.in_scope)){
-                if(obj.numchild > 0) {
-                    html += Variables.get_ul_for_var_with_children(obj.expression, obj, true)
-                }else{
-                    html += Variables.get_ul_for_var_without_children(obj.expression, obj, true)
-                }
+            if(obj.numchild > 0) {
+                html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
+            }else{
+                html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
             }
         }
 
@@ -1030,6 +1127,9 @@ const Variables = {
     }
 }
 
+/**
+ * The All Local Variables component
+ */
 const AllLocalVariables = {
     el: $('#all_local_variables'),
     render: function(data){
@@ -1050,6 +1150,10 @@ const AllLocalVariables = {
     }
 }
 
+/**
+ * An object with methods for global events/callbacks
+ * that apply to the whole page
+ */
 const GlobalEvents = {
     // Initialize
     init: function(){
@@ -1081,6 +1185,12 @@ const GlobalEvents = {
     },
 }
 
+/**
+ * This is the main callback when receiving a response from gdb.
+ * This callback requires no state to handle the response.
+ * This callback calls the appropriate methods of other Components,
+ * and updates the status bar.
+ */
 const process_gdb_response = function(response_array){
 
     // update status with error or with last response
