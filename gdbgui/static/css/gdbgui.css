@@ -25,6 +25,9 @@ pre{
   /* glyphicons are too bold, make them lighter*/
     color: #848484;
 }
+.flex{
+  display: flex;
+}
 /* components get their own titlebars */
 .titlebar{
   width: 100%;
@@ -186,6 +189,8 @@ have scrollbar, so it doesn't take over the page */
     border: 0px;
 }
 #variables li:hover{
-  /* lighten background */
-  background-color: #ffffc0;
+  background-color: #c0eeff;
+}
+.toggle_children_visibility{
+  font-weight: bold;
 }

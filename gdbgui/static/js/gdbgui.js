@@ -672,7 +672,7 @@ const BinaryLoader = {
         }
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, `-break-insert main`, `-break-list`, `-exec-run`]
+        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, `-break-insert main`, `-break-list`]
 
         // reload breakpoints after sending to make sure they're up to date
         if (Prefs.auto_reload_breakpoints()){
@@ -784,7 +784,7 @@ const Variables = {
      */
     get_obj_from_gdb_var_name: function(gdb_var_name){
         // gdb provides names in dot notation
-        let gdb_var_names = Variables.state.children_being_retrieved_for_var.split('.'),
+        let gdb_var_names = gdb_var_name.split('.'),
             top_level_var_name = gdb_var_names[0],
             children_names = gdb_var_names.slice(1, gdb_var_names.length)
 
@@ -850,10 +850,12 @@ const Variables = {
      * gdb returns objects for its variables that need a little more data
      * add the children array
      * parse numchild string to integer
+     * store whether the object is expanded or collapsed, showing children
      */
     prepare_gdb_obj_for_storage: function(obj){
         obj.children = []
         obj.numchild = parseInt(obj.numchild)
+        obj.show_children_in_ui = false
     },
     callback_after_create_variable: function(mi_response_array){
         Variables.state.waiting_for_create_var_response = false
@@ -878,11 +880,6 @@ const Variables = {
 
                 // save this payload
                 Variables.save_new_variable(Variables.expression_being_created, r.payload)
-
-                // // fetch info on children if necessary
-                // if(parseInt(r.payload.numchild) > 0){
-                //     Variables.get_children_for_var(r.payload.name)
-                // }
 
             }else{
                 // this is an unexpected case. Let the status bar render some info to help debug the issue.
@@ -934,9 +931,8 @@ const Variables = {
         let html = ''
 
         for(let obj of Variables.state.variables){
-            console.log(obj.in_scope)
             if(obj.in_scope === 'true' || _.isUndefined(obj.in_scope)){
-                if(parseInt(obj.numchild) > 0){
+                if(obj.numchild > 0) {
                     html += Variables.get_ul_for_var_with_children(obj.expression, obj, true)
                 }else{
                     html += Variables.get_ul_for_var_without_children(obj.expression, obj, true)
@@ -947,24 +943,34 @@ const Variables = {
         Variables.el.html(html)
     },
     get_ul_for_var_with_children: function(expression, mi_obj, is_root=false){
-        let child_tree = '<ul>'
-        for(let child of mi_obj.children){
-            if(parseInt(child.numchild) > 0){
-                child_tree += `<li>${Variables.get_ul_for_var_with_children(child.exp, child)}</li>`
+        let child_tree = ''
+        if(mi_obj.show_children_in_ui){
+            child_tree = '<ul>'
+            if(mi_obj.children.length > 0){
+                for(let child of mi_obj.children){
+                    if(child.numchild > 0){
+                        child_tree += `<li>${Variables.get_ul_for_var_with_children(child.exp, child)}</li>`
+                    }else{
+                        child_tree += `<li>${Variables.get_ul_for_var_without_children(child.exp, child)}</li>`
+                    }
+                }
             }else{
-                child_tree += `<li>${Variables.get_ul_for_var_without_children(child.exp, child)}</li>`
+                child_tree += '<li>fetching from gdb...</li>'
             }
+
+            child_tree += '</ul>'
         }
-        child_tree += '</ul>'
 
         let delete_button = is_root ? `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
+        let expanded = mi_obj.show_children_in_ui ? 'expanded' : '',
+            plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
         let expression_and_value = `
         <ul class='variable'>
-            <li class='toggle_children_visibility pointer' data-gdb_variable_name='${mi_obj.name}'>
+            <li class='toggle_children_visibility pointer ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
                 ${delete_button}
-                + ${expression}: ${mi_obj.value} (${mi_obj.type}, ${mi_obj.name})
-                ${child_tree}
+                ${plus_or_minus} ${expression}: ${mi_obj.value} (${mi_obj.type})
             </li>
+            ${child_tree}
         </ul>
         `
         return expression_and_value
@@ -975,20 +981,28 @@ const Variables = {
             <ul class='variable'>
                 <li data-gdb_variable_name='${mi_obj.name}'>
                     ${delete_button}
-                    ${expression}: ${mi_obj.value} (${mi_obj.type}, ${mi_obj.name})
+                    ${expression}: ${mi_obj.value} (${mi_obj.type})
                 </li>
             </ul>
             `
     },
     click_toggle_children_visibility: function(e){
-        let children_uls = $(e.currentTarget).children('ul')
-        if(children_uls.length > 0){
-            // we have already fetched the data for these from gdb
-             $(e.currentTarget).children('ul').toggle()
+        let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
+        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+
+        if($(e.currentTarget).hasClass('expanded')){
+            // collapse
+            obj.show_children_in_ui = false
         }else{
-            // we need to fetch the child data
-            Variables.get_children_for_var(e.currentTarget.dataset.gdb_variable_name)
+            // show
+            obj.show_children_in_ui = true
+            if(obj.children.length === 0){
+                // need to fetch child data
+                Variables.get_children_for_var(gdb_var_name)
+            }
         }
+        $(e.currentTarget).toggleClass('expanded')
+        Variables.render()
     },
     update_variable_values: function(){
         GdbApi.run_gdb_command(`-var-update *`)
@@ -1003,6 +1017,8 @@ const Variables = {
         Variables.render()
     },
     click_delete_gdb_variable: function(e){
+        e.stopPropagation()
+
         // delete locally
         Variables.delete_local_gdb_var_data(e.currentTarget.dataset.gdb_variable)
 
