@@ -1,3 +1,4 @@
+/* styling for all html tags */
 body{
   background: #ccc;
   color: grey;
@@ -6,6 +7,17 @@ body{
 table{
   font-size: 0.9em;
 }
+pre{
+  overflow: visible !important;
+}
+
+/* styling for generic classes */
+.pre{
+  white-space: pre;
+}
+.monospace{
+  font-family: monospace;
+}
 .lighttext{
   color: #4a4a4a;
 }
@@ -13,97 +25,17 @@ table{
   /* glyphicons are too bold, make them lighter*/
     color: #848484;
 }
+.flex{
+  display: flex;
+}
+/* components get their own titlebars */
 .titlebar{
   width: 100%;
   color: black;
   background-color: white;
 }
-#console, .gdb_console{
-  font-size: 0.9em !important;
-  background-color: #292929 !important;
-  color: #f9f9f9 !important;
-  font-family: monospace !important;
-}
-#stdout {
-  color: black;
-}
-#console, #stdout, #gdb_mi_output{
-  font-family: monospace;
-  overflow: auto;
-  font-size: 0.9em;
-}
 .pointer{
   cursor: pointer;
-}
-.sent_command:hover{
-  /* lighten background */
-  background-color:rgba(255,255,255,0.5)
-}
-.disabled {
-    z-index: 1000;
-    background-color: lightgrey;
-    opacity: 0.6;
-    pointer-events: none;
-}
-.no_margin{
-  margin: 2px;
-}
-.no_padding{
-  padding: 2px !important;
-}
-.code{
-  overflow: auto;
-  font-size: 0.9em;
-}
-.code pre, table.code {
-    margin: 0px;
-    padding: 0px;
-    border-width: 0px;
-    width: 100%
-}
-.highlight{
-  background: rgba(255, 255, 0, 0.5);
-}
-.breakpoint td.gutter div{
-  background: blue;
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  border-color: black;
-}
-.no_breakpoint td.gutter div{
-  /*background: blue;*/
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  border-color: black;
-}
-.active_breakpoint{
-  background: red;
-}
-.gutter{
-  width: 0.9em;
-  padding-right: 5px;
-  background: #d4ffab;
-}
-.pre{
-  white-space: pre;
-}
-pre{
-  overflow: visible !important;
-}
-.source_code:hover td, .source_code:hover td pre{
-  background-color: lightblue;
-  cursor: pointer;
-}
-.source_code td{
-  background-color: #f7f7f7
-}
-.padding_left{
-  padding-left: 5px;
-}
-.line_of_code{
-  height: 18px
 }
 .gdb_content_div{
   overflow: auto;
@@ -114,17 +46,122 @@ pre{
   border-width: 1px;
   border-radius: 2px;
 }
+
+/* specific styling for ids */
+#always_on_top{
+  position: fixed;
+  top: 0;
+  margin-top: 0;
+  height: 102px;
+  width: 100%;
+  border-bottom: black;
+  border-style: solid;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  z-index: 1000;
+  background: #f1f1f1;
+  border-bottom-color: #ccc;
+}
+#console{
+  font-size: 0.9em !important;
+  background-color: #292929 !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
+}
+#gdb_command{
+  padding-left: 45px;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  font-size: 0.9em !important;
+  background-color: #3c3c3c !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
+}
+#gdb_mi_output{
+  font-family: monospace;
+  overflow: auto;
+  font-size: 0.9em;
+}
+.sent_command:hover{
+  /* lighten background */
+  background-color:rgba(255,255,255,0.1)
+}
+.disabled {
+    z-index: 1000;
+    background-color: lightgrey;
+    opacity: 0.6;
+    pointer-events: none;
+}
+.margin_sm{
+  margin: 2px;
+}
+.no_padding{
+  padding: 2px !important;
+}
+.code pre, table.code {
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+    width: 100%
+}
+.highlight{
+  background: rgba(255, 255, 0, 0.5);
+}
+.line_num_container{
+  width: 50px;
+  border-width: 0;
+  border-right: 1px;
+  border-style: solid;
+  border-color: #c7c7c7;
+}
+.line_num{
+  padding-left: 10px;
+  padding-right: 10px;
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #ababab;
+  cursor: pointer;
+}
+/* the line number has its style changed if it has a breakpoint */
+.line_num.breakpoint{
+  background: #33cdff;
+  color: black;
+  border-style: solid;
+  border-color: #000000;
+  border-width: 1px;
+}
+/* set background color over souce code only */
+.source_code_row.line_of_code td{
+  background-color: #f7f7f7;
+}
+.line_of_code pre{
+  margin-left: 10px;
+}
+/* when hovering, set background color of entire row */
+.source_code_row:hover td, .source_code_row:hover td pre{
+  background-color: lightblue;
+}
+.padding_left{
+  padding-left: 5px;
+}
+.line_of_code{
+  height: 18px
+}
 .dropdown-btn {
     vertical-align: top;
     height: 30px;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
+/* auto-complete librarie's dropdown should only be 200px high, and should
+have scrollbar, so it doesn't take over the page */
 .awesomplete  ul {
   overflow: auto;
   max-height: 200px;
 }
 
+/* show a flash of color */
 .flash {
     -webkit-animation-name: flash-animation;
     -webkit-animation-duration: 1.0s;
@@ -141,4 +178,19 @@ pre{
 @keyframes flash-animation {
     from { background: yellow; }
     to   { background: default; }
+}
+
+#variables li{
+  list-style: none;
+}
+
+#variables ul.variable{
+    padding-left: 5px;
+    border: 0px;
+}
+#variables li:hover{
+  background-color: #c0eeff;
+}
+.toggle_children_visibility{
+  font-weight: bold;
 }
