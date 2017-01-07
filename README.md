@@ -19,6 +19,7 @@ Made with a lightweight Python server (Flask), and JavaScript for the frontend. 
 
 Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in a browser and enjoy!
 
+
 ### Help
 
 `gdbgui -h` displays command line options, such as changing the port or host ip. For any other questions feel free to email me or create an issue in github.
@@ -28,7 +29,7 @@ Python versions: 2.7, 3.3, 3.4, 3.5, pypy
 
 Operating systems: Ubuntu 16.04
 
-Browsers: Chrome
+Browsers: Chrome, Firefox, Ubuntu Web Browser
 
 ## Development
 
@@ -56,12 +57,23 @@ To get started with development, set up a new virtual environment, then run
 
 Contributions and bug fixes are welcome!
 
+Since this lives in a browser, it's really extendable. Some ideas:
+
+* Embed a binary/decimal/hex calculator
+* Embed plotting tools to plot a variable's value over time
+* Add syntax highlighting
+* Semantic source code -- i.e. hover over a variable and immediately see its value.
+* Assign values to variables / memory addresses
+* Link to educational tools about register names/meanings, instruction names/meanings, how gdb works in general (https://jvns.ca/blog/2016/08/10/how-does-gdb-work/), etc
+* Warn you if you are using an old version of gdb and there is a new one available
+* Debug a program on a smartphone since gdbgui has a responsive UI!
+
 If you use this at your company or for your job, I would love to hear from you -- send me an email and let me know.
 
 
 ## Credits
 
-Inspiration was drawn from the following projects
+Inspiration was drawn from the following projects, as well as my own frustration while using gdb in the terminal =).
 
 * [sirnewton01 / godbg](https://github.com/sirnewton01/godbg)
 * [cyrus-and / gdb](https://github.com/cyrus-and/gdb)
@@ -77,9 +89,11 @@ Despite this list, gdbgui is quite usable in its current form
 * ~~only make gutter create/delete breakpoints, not anywhere in source file~~
 * ~~add ability to view/inspect variables~~
 * ~~add ability to view/inspect memory~~
-* add button to widen windows
-* add clear button to windows
+* add tabs for all open source files
+* add button to adjust window width
 * improve toolbar styling, change color when error occurs
 * add preference ui elements (auto-refresh various windows after command is sent; show/hide windows as desired)
 * make flash of color fade out when snapping to source code lines or restoring old history
 * add autocompletion and documentation of all commands
+* make panels movable and hidable
+* display hex and decimals for registers instead of just hex

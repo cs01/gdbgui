@@ -1162,9 +1162,9 @@ const GlobalEvents = {
     // Event handling
     register_events: function(){
         $(window).keydown(function(e){
-            if((event.keyCode === ENTER_BUTTON_NUM)) {
+            if((e.keyCode === ENTER_BUTTON_NUM)) {
                 // when pressing enter in an input, don't redirect entire page
-                event.preventDefault()
+                e.preventDefault()
             }
         })
 
