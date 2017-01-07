@@ -82,25 +82,6 @@ body
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-12.no_padding
-            //- text/buttons above the gdb console output
-            div.titlebar
-                span.lighttext gdb console
-                div.btn-group
-                    button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
-                        span.glyphicon.glyphicon-ban-circle.padding_left
-                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
-                        span.glyphicon.glyphicon-download.padding_left
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
-
-            //- gdb console output
-            div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
-
-            //- gdb console input
-            span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
-            input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
-
         div.col-md-6.no_padding
             div.titlebar
                 span.lighttext stack
@@ -161,6 +142,25 @@ body
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
             div#all_local_variables.gdb_content_div
 
+        div.col-md-12.no_padding
+            //- text/buttons above the gdb console output
+            div.titlebar
+                span.lighttext gdb console
+                div.btn-group
+                    button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
+                        span.glyphicon.glyphicon-ban-circle.padding_left
+                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
+                        span.glyphicon.glyphicon-download.padding_left
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
+
+            //- gdb console output
+            div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
+
+            //- gdb console input
+            span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
+            input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
+
         div.col-md-6.no_padding
             div.titlebar
                 span.lighttext gdb machine interface output
@@ -180,101 +180,5 @@ footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px
         br
         iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=follow&count=false", frameborder="0", scrolling="0", width="120px", height="20px")
         p
-
-datalist(id="gdb_command_reference")
-    //- TODO complete this list
-    option(value="Command Description")
-    option(value="help  List gdb command topics.")
-    option(value="help topic-classes  List gdb command within class.")
-    option(value="help command  Command description. ")
-    option(value="eg help show to list the show commands")
-    option(value="apropos search-word Search for commands and command topics containing search-word.")
-    option(value="info args")
-    option(value="i args  List program command line arguments")
-    option(value="info breakpoints  List breakpoints")
-    option(value="info break  List breakpoint numbers.")
-    option(value="info break breakpoint-number  List info about specific breakpoint.")
-    option(value="info watchpoints  List breakpoints")
-    option(value="info registers  List registers in use")
-    option(value="info threads  List threads in use")
-    option(value="info set  List set-able option")
-    option(value="Break and Watch ")
-    option(value="break funtion-name")
-    option(value="break line-number")
-    option(value="break ClassName::functionName Suspend program at specified function of line number.")
-    option(value="break +offset")
-    option(value="break -offset Set a breakpoint specified number of lines forward or back from the position at which execution stopped.")
-    option(value="break filename:function Don't specify path, just the file name and function name.")
-    option(value="break filename:line-number  Don't specify path, just the file name and line number.")
-    option(value="break Directory/Path/filename.cpp:62")
-    option(value="break *address  Suspend processing at an instruction address. Used when you do not have source.")
-    option(value="break line-number if condition  Where condition is an expression. i.e. x > 5")
-    option(value="Suspend when boolean expression is true.")
-    option(value="break line thread thread-number Break in thread at specified line number. Use info threads to display thread numbers.")
-    option(value="tbreak  Temporary break. Break once only. Break is then removed. See \"break\" above for options.")
-    option(value="watch condition Suspend processing when condition is met. i.e. x > 5")
-    option(value="clear")
-    option(value="clear function")
-    option(value="clear line-number Delete breakpoints as identified by command option.")
-    option(value="Delete all breakpoints in function")
-    option(value="Delete breakpoints at a given line")
-    option(value="delete")
-    option(value="d Delete all breakpoints, watchpoints, or catchpoints.")
-    option(value="delete breakpoint-number")
-    option(value="delete range  Delete the breakpoints, watchpoints, or catchpoints of the breakpoint ranges specified as arguments.")
-    option(value="disable breakpoint-number-or-range")
-    option(value="enable breakpoint-number-or-range Does not delete breakpoints. Just enables/disables them.")
-    option(value="Example:")
-    option(value="Show breakpoints: info break")
-    option(value="Disable: disable 2-9")
-    option(value="enable breakpoint-number once Enables once")
-    option(value="continue")
-    option(value="c Continue executing until next break point/watchpoint.")
-    option(value="continue number Continue but ignore current breakpoint number times. Usefull for breakpoints within a loop.")
-    option(value="finish  Continue to end of function.")
-    option(value="Line Execution  ")
-    option(value="step")
-    option(value="s")
-    option(value="step number-of-steps-to-perform Step to next line of code. Will step into a function.")
-    option(value="next")
-    option(value="n")
-    option(value="next number Execute next line of code. Will not enter functions.")
-    option(value="until")
-    option(value="until line-number Continue processing until you reach a specified line number. Also: function name, address, filename:function or")
-    option(value="filename:line-number.")
-    option(value="info signals")
-    option(value="info handle")
-    option(value="where Shows current line number and which function you are in.")
-    option(value="Stack ")
-    option(value="backtrace")
-    option(value="bt")
-    option(value="bt inner-function-nesting-depth")
-    option(value="bt -outer-function-nesting-depth  Show trace of where you are currently. Which functions you are in. Prints stack backtrace.")
-    option(value="backtrace full  Print values of local variables.")
-    option(value="frame")
-    option(value="frame number")
-    option(value="f number  Show current stack frame (function where you are stopped)")
-    option(value="Select frame number. can also user up/down to navigate frames")
-    option(value="up")
-    option(value="down")
-    option(value="up number")
-    option(value="down number Move up a single frame element in the call stack")
-    option(value="Move down a single frame")
-    option(value="Move up/down the specified number of frames in the stack.")
-    option(value="info frame  List address, language, address of arguments/local variables and which registers were saved in frame.")
-    option(value="info args")
-    option(value="info locals")
-    option(value="info catch  Info arguments of selected frame, local variables and exception handlers.")
-    option(value="Source Code ")
-    option(value="list")
-    option(value="l")
-    option(value="list line-number")
-    option(value="list function")
-    option(value="list -")
-    option(value="list start#,end#")
-    option(value="list filename:function  List source code.")
-    option(value="set listsize count")
-    option(value="show listsize Number of lines listed when list command given.")
-
 
 script(type="text/javascript" src='static/js/gdbgui.js')

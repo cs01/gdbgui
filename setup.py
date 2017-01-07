@@ -3,7 +3,7 @@ import sys
 
 # from distutils.core import setup,
 EXCLUDE_FROM_PACKAGES = []
-version = '0.0.0.7'
+version = '0.5'
 
 
 class TestCommand (Command):
