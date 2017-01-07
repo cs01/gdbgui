@@ -6,7 +6,7 @@ Add breakpoints, view sourcecode, stack traces, registers, disassembly, and more
 
 Made with a lightweight Python server (Flask), and JavaScript for the frontend. Simply run the server, view the page, and start debuggin'!
 
-![gdbgui](https://github.com/cs01/gdbgui/blob/master/gdbgui.png)
+![gdbgui](gdbgui.png)
 
 ## Install
 
