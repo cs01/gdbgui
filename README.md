@@ -14,7 +14,7 @@ Made with a lightweight Python server (Flask), and JavaScript for the frontend. 
 
 ## Run
 
-    > gdbgui
+    gdbgui
     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
 
 Open [http://127.0.0.1:5000/](http://127.0.0.1:5000/) in a browser and enjoy!
