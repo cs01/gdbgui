@@ -30,12 +30,14 @@ def client_error(obj):
 
 
 def get_extra_files():
+    extra_dirs = [STATIC_DIR, TEMPLATE_DIR]
     extra_files = []
-    for dirname, dirs, files in os.walk(TEMPLATE_DIR):
-        for filename in files:
-            filename = os.path.join(dirname, filename)
-            if os.path.isfile(filename):
-                extra_files.append(filename)
+    for extra_dir in extra_dirs:
+        for dirname, dirs, files in os.walk(extra_dir):
+            for filename in files:
+                filename = os.path.join(dirname, filename)
+                if os.path.isfile(filename):
+                    extra_files.append(filename)
     return extra_files
 
 
