@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+
+"""
+A Flask server that manages a gdb subprocess, and
+returns structured gdb output to the client
+"""
+
 from flask import Flask, render_template, jsonify
 import os
 import argparse
@@ -7,15 +13,15 @@ import signal
 from pygdbmi.gdbcontroller import GdbController
 import webbrowser
 
-
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
-DEFAULT_HOST = '0.0.0.0'
+DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+# templates are writte in jade/pug, so add that capability to flask
 app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
 
 gdb = None
@@ -30,6 +36,10 @@ def client_error(obj):
 
 
 def get_extra_files():
+    """returns a list of files that should be watched by the Flask server
+    when in debug mode to trigger a reload of the server
+
+    """
     extra_dirs = [STATIC_DIR, TEMPLATE_DIR]
     extra_files = []
     for extra_dir in extra_dirs:
@@ -112,7 +122,7 @@ def quit_backend():
     func()
 
 
-def open_browser(host, port):
+def open_webbrowser(host, port):
     if host.startswith('http'):
         url = '%s:%s' % (host, port)
     else:
@@ -121,7 +131,7 @@ def open_browser(host, port):
     webbrowser.open(url)
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, view=True):
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True):
     """Run the server of the gdb gui"""
     global gdb
     signal.signal(signal.SIGINT, signal_handler)
@@ -131,20 +141,24 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     app.config['TEMPLATES_AUTO_RELOAD'] = True
 
     if serve:
-        if view:
-            open_browser(host, port)
+        if open_browser and (not debug):
+            # if debug is true, this server reloads any time a file
+            # is changed, which would trigger the browser to open again. We
+            # don't want that, so (not debug) is part of the if statement
+            open_webbrowser(host, port)
         app.run(host=host, port=port, extra_files=get_extra_files())
 
 
 def main():
     """Entry point from command line"""
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", default=DEFAULT_PORT)
-    parser.add_argument("--host", default=DEFAULT_HOST)
-    parser.add_argument("--debug", action='store_true')
-    parser.add_argument("--view", action='store_true')
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
+    parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
+    parser.add_argument("--debug", help='The debug flag of this Flask application. '
+        'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
+    parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     args = parser.parse_args()
-    setup_backend(serve=True, host=args.host, port=args.port, debug=args.debug, view=args.view)
+    setup_backend(serve=True, host=args.host, port=args.port, debug=args.debug, open_browser=(not args.no_browser))
 
 
 if __name__ == '__main__':
