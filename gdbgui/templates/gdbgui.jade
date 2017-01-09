@@ -63,9 +63,9 @@ body
         //- source
         div.no_padding.col-md-12#source_div
 
-            div.titlebar
+            div.titlebar.flex
                 span#source_code_heading.lighttext (no source code file loaded)
-
+                input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='line', title='Enter line number, then press enter', style="width: 150px; position: inline")
             div
                 input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter source file path here, or select from dropdown', style="width: 500px")
 
@@ -105,7 +105,7 @@ body
                 span.lighttext variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
-                input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter')
+                input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:20px")
             div#variables.gdb_content_div
 
         div.col-md-6.no_padding

@@ -38,7 +38,7 @@ const Status = {
             if (mi_obj.payload.msg) {status.push(mi_obj.payload.msg)}
             if (mi_obj.payload.reason) {status.push(mi_obj.payload.reason)}
             if (mi_obj.payload.frame){
-                for(let i of ['file', 'func', 'line']){
+                for(let i of ['file', 'func', 'line', 'addr']){
                     if (i in mi_obj.payload.frame){
                         status.push(`${i}: ${mi_obj.payload.frame[i]}`)
                     }
