@@ -1,8 +1,9 @@
 /**
  * This is the main frontend file to make
- * an interactive ui for gdb. Besides libraries,
- * everything exists in this single js file. There
- * are several components, each of which have their
+ * an interactive ui for gdb. Everything exists in this single js
+ * file (besides libraries).
+ *
+ * There are several components, each of which have their
  * own top-level object. Each component is reponsible
  * for its own data, state, event handling, and rendering.
  */
@@ -10,8 +11,15 @@
 (function ($, _, Awesomplete) {
 "use strict";
 
+/**
+ * Constants
+ */
 const ENTER_BUTTON_NUM = 13
 
+/**
+ * The Status component display the most recent gdb status
+ * at the top of the page
+ */
 const Status = {
     el: $('#status'),
     render: function(status_str, error=false){
@@ -66,7 +74,6 @@ const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
         $("body").on("click", ".get_gdb_response", GdbApi.get_gdb_response)
-        $('#stop_gdb').click(GdbApi.stop_gdb)
     },
     state: {'waiting_for_response': false},
     click_gdb_cmd_button: function(e){
@@ -91,17 +98,6 @@ const GdbApi = {
         }else{
             console.error('expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element')
         }
-    },
-    stop_gdb: function(){
-        $.ajax({
-            url: "/stop_gdb",
-            cache: false,
-            type: 'GET',
-            success: function(data){
-                Status.render('gdb has exited')
-            },
-            error: Status.render_ajax_error_msg
-        })
     },
     /**
      * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -171,6 +167,11 @@ const GdbApi = {
  * Some general utility methods
  */
 const Util = {
+    /**
+     * Get html table
+     * @param columns: array of strings
+     * @param data: array of arrays of data
+     */
     get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
         result.push("<thead>")
@@ -192,6 +193,13 @@ const Util = {
         result.push("</table>")
         return result.join('\n')
     },
+    /**
+     * gdb will often return an array of objects
+     * Iterate through all of them and find all keys
+     * and corresponding data
+     * @param objs: array of response objects from gdb, such as breakpoints
+     * @return tuple of [column, data], compatible with Util.get_table
+     */
     get_table_data_from_objs: function(objs){
         // put keys of all objects into array
         let all_keys = _.flatten(objs.map(i => _.keys(i)))
@@ -207,6 +215,10 @@ const Util = {
         }
         return [columns, data]
     },
+    /**
+     * Escape gdb's output to be browser compatible
+     * @param s: string to mutate
+     */
     escape: function(s){
         return s.replace(/([^\\]\\n)/g, '<br>')
                 .replace(/\\t/g, '&nbsp')
@@ -252,6 +264,11 @@ const GdbConsoleComponent = {
     },
 }
 
+
+/**
+ * History component is not used, but could restore gdb's console history in browser
+ * for when the page is reloaded
+ */
 const History = {
     init: function(){
         $("body").on("click", ".sent_command", History.click_sent_command)

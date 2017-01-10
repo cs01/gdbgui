@@ -2,7 +2,7 @@ from setuptools import find_packages, setup, Command
 import sys
 
 EXCLUDE_FROM_PACKAGES = []
-version = '0.51'
+version = '0.5101'
 
 
 class TestCommand (Command):
@@ -27,12 +27,12 @@ setup(
     version=version,
     author='Chad Smith',
     author_email='chadsmith27@gmail.com',
-    description=('Debug C, C++, Go, with a simple, lightweight, graphical user interface.'),
+    description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
     url='https://github.com/cs01/gdbgui',
     license='BSD',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
-    keywords=['gdb', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui'],
+    keywords=['gdb', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui', 'c', 'c++', 'go', 'rust'],
     scripts=[],
     entry_points={
         'console_scripts': [
