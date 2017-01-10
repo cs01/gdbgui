@@ -28,7 +28,7 @@ body
                 form(role=form)
                     div.input-group.input-group-sm
                         span.input-group-btn
-                            button.btn.btn-primary#set_target_app(type="button") Load This Binary
+                            button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
                         input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
                         datalist#past_binaries
 
@@ -63,26 +63,31 @@ body
         //- source
         div.no_padding.col-md-12#source_div
 
-            div.titlebar.flex
-                span#source_code_heading.lighttext (no source code file loaded)
-                input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='line', title='Enter line number, then press enter', style="width: 150px; position: inline")
+            div.titlebar
             div
-                input#source_file_input.dropdown-input(autocomplete='off', placeholder='Enter source file path here, or select from dropdown', style="width: 500px")
+                div.flexrow
+                    input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-                button.dropdown-btn(type="button")
-                    span.caret
+                    button.dropdown-btn(type="button")
+                        span.caret
 
-                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
+                    button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
 
+            div.flex
+                //- display loaded file path and input to jump to line
+                span#source_code_heading.lighttext (no source code file loaded)
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
+                //- input to jump to a line in the source code
+                input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
 
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-6.no_padding
+        div.col-md-12.no_padding
             div.titlebar
                 span.lighttext stack
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
@@ -91,24 +96,24 @@ body
                     span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
-        div.col-md-6.no_padding
+        div.col-md-12.no_padding
             div.titlebar
                 span.lighttext breakpoints
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints (-break-list')") Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints (-break-list')") Refresh
+                    span.glyphicon.glyphicon-refresh.padding_left
             div#breakpoints.gdb_content_div
 
-        div.col-md-6.no_padding
+        div.col-md-12.no_padding
             div.titlebar.flex
                 span.lighttext variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
-                input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:20px")
+                input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
             div#variables.gdb_content_div
 
-        div.col-md-6.no_padding
+        div.col-md-2.no_padding
             div.titlebar
                 span.lighttext registers
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
@@ -116,9 +121,16 @@ body
                 button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x', title='Refresh all register names and values (-data-list-register-values x)') Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
-
-        div.col-md-6.no_padding
+        div.col-md-10.no_padding
             div.titlebar
+                span.lighttext memory
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
+            div#memory.gdb_content_div
+
+        div.row
+        div.col-md-6.no_padding
+            div.titlebar.flex
                 span.lighttext disassembly
                 span#disassembly_heading
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
@@ -129,30 +141,23 @@ body
 
         div.col-md-6.no_padding
             div.titlebar
-                span.lighttext memory
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
-            div#memory.gdb_content_div
-
-        div.col-md-6.no_padding
-            div.titlebar
                 span.lighttext All Local Variables
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Refresh
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Refresh
             div#all_local_variables.gdb_content_div
 
         div.col-md-12.no_padding
             //- text/buttons above the gdb console output
             div.titlebar
                 span.lighttext gdb console
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
                 div.btn-group
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
                     button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
                         span.glyphicon.glyphicon-download.padding_left
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
 
             //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
@@ -161,16 +166,22 @@ body
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
-        div.col-md-6.no_padding
-            div.titlebar
-                span.lighttext gdb machine interface output
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
-                        span.glyphicon.glyphicon-ban-circle.padding_left
-            div#gdb_mi_output.gdb_content_div
+        //- Uncomment to assist when developing/debugging gdbgui
+        //- div.col-md-6.no_padding
+        //-     div.titlebar
+        //-         span.lighttext gdb machine interface output
+        //-         span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
+        //-         span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
+        //-         button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
+        //-                 span.glyphicon.glyphicon-ban-circle.padding_left
+        //-     div#gdb_mi_output.gdb_content_div
 
 footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #f5f5f5')
+    span made by
+    =' '
+    a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
+    =' | '
+    a(href='http://grasssfedcom.com', target='_blank') grassfedcode.com
     div.row
         iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=star&count=false", frameborder="0", scrolling="0", width="70px", height="20px")
         br

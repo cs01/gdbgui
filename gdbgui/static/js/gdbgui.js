@@ -14,14 +14,18 @@ const ENTER_BUTTON_NUM = 13
 
 const Status = {
     el: $('#status'),
-    render: function(status){
-        Status.el.text(status)
+    render: function(status_str, error=false){
+        if(error){
+            Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
+        }else{
+            Status.el.html(status_str)
+        }
     },
     render_ajax_error_msg: function(data){
         if (data.responseJSON && data.responseJSON.message){
-            Status.render(_.escape(data.responseJSON.message))
+            Status.render(_.escape(data.responseJSON.message), true)
         }else{
-            Status.render(`${data.statusText} (${data.status} error)`)
+            Status.render(`${data.statusText} (${data.status} error)`, true)
         }
     },
     render_from_gdb_mi_response: function(mi_obj){
@@ -30,9 +34,14 @@ const Status = {
             return
         }
         // Update status
-        let status = [];
+        let status = [],
+            error = false
         if (mi_obj.message){
-            status.push(mi_obj.message)
+            if(mi_obj.message === 'error'){
+                error = true
+            }else{
+                status.push(mi_obj.message)
+            }
         }
         if (mi_obj.payload){
             if (mi_obj.payload.msg) {status.push(mi_obj.payload.msg)}
@@ -45,7 +54,7 @@ const Status = {
                 }
             }
         }
-        Status.render(status.join(', '))
+        Status.render(status.join(', '), error)
     }
 }
 
@@ -368,11 +377,13 @@ const SourceCode = {
     el: $('#code_table'),
     el_code_container: $('#code_container'),
     el_title: $('#source_code_heading'),
+    el_jump_to_line_input: $('#jump_to_line'),
     rendered_source_file_fullname: null,
     rendered_source_file_line: null,
     init: function(){
         $("body").on("click", ".source_code_row td .line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
+        SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
     },
     cached_source_files: [],  // list with keys fullname, source_code
     click_gutter: function(e){
@@ -394,7 +405,7 @@ const SourceCode = {
     is_cached: function(fullname){
         return SourceCode.cached_source_files.some(f => f.fullname === fullname)
     },
-    render_source_file: function(fullname, source_code, current_line=0, options={'highlight': false, 'scroll': false}){
+    render_source_file: function(fullname, source_code, current_line=1, options={'highlight': false, 'scroll': false}){
         current_line = parseInt(current_line)
         let line_num = 1,
             tbody = [],
@@ -423,6 +434,7 @@ const SourceCode = {
             line_num++;
         }
         SourceCode.el_title.text(fullname)
+        SourceCode.el_jump_to_line_input.val(current_line)
         SourceCode.el.html(tbody.join(''))
 
         SourceCode.rendered_source_file_fullname = fullname
@@ -432,14 +444,18 @@ const SourceCode = {
             SourceCode.make_current_line_visible()
         }
     },
+    make_current_line_visible: function(){
+        SourceCode.scroll_to_jq_selector($("#current_line"))
+    },
     // call this to rerender a file when breakpoints change, for example
     rerender: function(){
         if(_.isString(SourceCode.rendered_source_file_fullname)){
+            // TODO redraw only breakpoint rows, not the whole source file
             SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': false})
         }
     },
     // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=0, options={'highlight': false, 'scroll': false}){
+    fetch_and_render_file: function(fullname, current_line=1, options={'highlight': false, 'scroll': false}){
         if (!_.isString(fullname)){
             console.error('cannot render file without a name')
 
@@ -467,22 +483,25 @@ const SourceCode = {
             })
         }
     },
-    make_current_line_visible: function(){
-        const time_to_scroll = 0
-        let jq_current_line = $("#current_line")
-        if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
+    /**
+     * Scroll to a jQuery selection in the source code table
+     * Used to jump around to various lines
+     */
+    scroll_to_jq_selector: function(jq_selector){
+        if (jq_selector.length === 1){  // make sure a line is selected before trying to scroll to it
             let top_of_container = SourceCode.el_code_container.position().top,
                 height_of_container = SourceCode.el_code_container.height(),
                 bottom_of_container = top_of_container + height_of_container,
-                top_of_line = jq_current_line.position().top,
-                bottom_of_line = top_of_line+ jq_current_line.height(),
-                top_of_table = jq_current_line.closest('table').position().top
+                top_of_line = jq_selector.position().top,
+                bottom_of_line = top_of_line+ jq_selector.height(),
+                top_of_table = jq_selector.closest('table').position().top
 
             if ((top_of_line >= top_of_container) && (bottom_of_line < (bottom_of_container))){
                 // do nothing, it's already in view
             }else{
                 // line is out of view, scroll so it's in the middle of the table
-                SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + height_of_container/2)}, 0)
+                const time_to_scroll = 0
+                SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + height_of_container/2)}, time_to_scroll)
             }
 
         }else{
@@ -514,6 +533,16 @@ const SourceCode = {
             line = e.currentTarget.dataset['line'],
             highlight = e.currentTarget.dataset['highlight'] === 'true'
         SourceCode.fetch_and_render_file(fullname, line, {'highlight': highlight, 'scroll': true})
+    },
+    keydown_jump_to_line: function(e){
+        if (e.keyCode === ENTER_BUTTON_NUM){
+            let line = e.currentTarget.value
+            SourceCode.jump_to_line(line)
+        }
+    },
+    jump_to_line: function(line){
+        let jq_selector = $(`.line_num[data-line=${line}]`)
+        SourceCode.scroll_to_jq_selector(jq_selector)
     }
 }
 
@@ -551,14 +580,31 @@ const SourceFileAutocomplete = {
 
         // perform action when an item is selected
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
-            SourceCode.fetch_and_render_file(e.currentTarget.value)
+            let fullname = e.currentTarget.value,
+                line = 1
+            SourceCode.fetch_and_render_file(fullname, 1, {'highlight': false, 'scroll': true})
         })
     },
     keyup_source_file_input: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
-            SourceCode.fetch_and_render_file(e.currentTarget.value)
+            let user_input = _.trim(e.currentTarget.value)
+
+            if(user_input.length === 0){
+                return
+
+            }
+
+            // if user enterted "/path/to/file.c:line", be friendly and parse out the line for them
+            let user_input_array = user_input.split(':'),
+                file = user_input_array[0],
+                line = 1
+            if(user_input_array.length === 2){
+                line = user_input_array[1]
+            }
+
+            SourceCode.fetch_and_render_file(file, line, {'highlight': false, 'scroll': true})
         }
-    },
+    }
 }
 
 /**
