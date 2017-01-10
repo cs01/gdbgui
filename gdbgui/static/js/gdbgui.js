@@ -18,7 +18,7 @@ const Status = {
         if(error){
             Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
         }else{
-            Status.el.html(status_str)
+            Status.el.text(status_str)
         }
     },
     render_ajax_error_msg: function(data){

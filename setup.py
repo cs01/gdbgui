@@ -2,7 +2,7 @@ from setuptools import find_packages, setup, Command
 import sys
 
 EXCLUDE_FROM_PACKAGES = []
-version = '0.5'
+version = '0.51'
 
 
 class TestCommand (Command):
