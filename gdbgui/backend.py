@@ -12,6 +12,8 @@ from flask import request
 import signal
 from pygdbmi.gdbcontroller import GdbController
 import webbrowser
+import datetime
+
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
@@ -54,7 +56,8 @@ def get_extra_files():
 @app.route('/')
 def gdbgui():
     """Render the main gdbgui interface"""
-    return render_template('gdbgui.jade')
+    time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec)
 
 
 @app.route('/run_gdb_command', methods=['POST'])
