@@ -28,6 +28,10 @@ pre{
 .flex{
   display: flex;
 }
+.flexrow{
+  display: flex;
+  flex-direction: row;
+}
 /* components get their own titlebars */
 .titlebar{
   width: 100%;
@@ -45,43 +49,6 @@ pre{
   border-style: solid;
   border-width: 1px;
   border-radius: 2px;
-}
-
-/* specific styling for ids */
-#always_on_top{
-  position: fixed;
-  top: 0;
-  margin-top: 0;
-  height: 102px;
-  width: 100%;
-  border-bottom: black;
-  border-style: solid;
-  border-width: 0px;
-  border-bottom-width: 1px;
-  z-index: 1000;
-  background: #f1f1f1;
-  border-bottom-color: #ccc;
-}
-#console{
-  font-size: 0.9em !important;
-  background-color: #292929 !important;
-  color: #f9f9f9 !important;
-  font-family: monospace !important;
-}
-#gdb_command{
-  padding-left: 45px;
-  border-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  font-size: 0.9em !important;
-  background-color: #3c3c3c !important;
-  color: #f9f9f9 !important;
-  font-family: monospace !important;
-}
-#gdb_mi_output{
-  font-family: monospace;
-  overflow: auto;
-  font-size: 0.9em;
 }
 .sent_command:hover{
   /* lighten background */
@@ -154,13 +121,6 @@ pre{
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
-/* auto-complete librarie's dropdown should only be 200px high, and should
-have scrollbar, so it doesn't take over the page */
-.awesomplete  ul {
-  overflow: auto;
-  max-height: 200px;
-}
-
 /* show a flash of color */
 .flash {
     -webkit-animation-name: flash-animation;
@@ -180,6 +140,44 @@ have scrollbar, so it doesn't take over the page */
     to   { background: default; }
 }
 
+/* specific styling for ids */
+#always_on_top{
+  position: fixed;
+  top: 0;
+  margin-top: 0;
+  height: 102px;
+  width: 100%;
+  border-bottom: black;
+  border-style: solid;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  z-index: 1000;
+  background: #f1f1f1;
+  border-bottom-color: #ccc;
+}
+#console{
+  font-size: 0.9em !important;
+  background-color: #292929 !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
+}
+#gdb_command{
+  padding-left: 45px;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  font-size: 0.9em !important;
+  background-color: #3c3c3c !important;
+  color: #f9f9f9 !important;
+  font-family: monospace !important;
+}
+#gdb_mi_output{
+  font-family: monospace;
+  overflow: auto;
+  font-size: 0.9em;
+}
+
+/* styling for "Variables" component */
 #variables li{
   list-style: none;
 }
@@ -193,4 +191,18 @@ have scrollbar, so it doesn't take over the page */
 }
 .toggle_children_visibility{
   font-weight: bold;
+}
+
+
+/* Vendor Overrides */
+
+/* awesomeplete wraps inputs in a div, and the div is really small. Make it big. */
+div.awesomplete{
+  width: 100%;
+}
+/* auto-complete library (awesomplete) has unlimited dropdown size.
+Limit to 200px high, and add scrollbar, so it doesn't take over the page */
+.awesomplete  ul {
+  overflow: auto;
+  max-height: 200px;
 }
