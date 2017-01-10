@@ -5,7 +5,7 @@
 html
 head
     title gdbgui - gdb in a browser
-    link(href='static/css/gdbgui.css', rel='stylesheet')
+    link(href='static/css/gdbgui.css?_=#{timetag_to_prevent_caching}', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
     link(href='static/vendor/css/awesomeplete.css', rel='stylesheet')
@@ -192,4 +192,4 @@ footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px
         iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=follow&count=false", frameborder="0", scrolling="0", width="120px", height="20px")
         p
 
-script(type="text/javascript" src='static/js/gdbgui.js')
+script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')
