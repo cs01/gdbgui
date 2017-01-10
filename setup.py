@@ -1,7 +1,6 @@
 from setuptools import find_packages, setup, Command
 import sys
 
-# from distutils.core import setup,
 EXCLUDE_FROM_PACKAGES = []
 version = '0.5'
 
@@ -45,7 +44,7 @@ setup(
     cmdclass={'test': TestCommand},
     install_requires=[
         'Flask>=0.11.1',
-        'pygdbmi>=0.0.1.9',
+        'pygdbmi>=0.6',
         'pyjade>=4.0.0'
     ],
     classifiers=[
