@@ -188,8 +188,9 @@ pre{
 }
 /* Show type of variable in lighter text */
 .var_type{
-  font-color: ##a0a0a0;
+  color: #a0a0a0;
   margin-left: 5px;
+  font-style: italic;
 }
 
 /* Make refresh icon spin - http://www.bootply.com/128062*/

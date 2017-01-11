@@ -934,10 +934,16 @@ const Variables = {
         expression_being_created: null,
         variables: []
     },
+    /**
+     * Locally save the variable to our cached variables
+     */
     save_new_variable: function(expression, obj){
         obj.expression = expression
         Variables.state.variables.push(obj)
     },
+    /**
+     * Get child variable with a particular name
+     */
     get_child_with_name: function(children, name){
         for(let child of children){
             if(child.name === name){
@@ -996,7 +1002,8 @@ const Variables = {
     },
     /**
      * Create a new variable in gdb. gdb automatically assigns
-     * a unique variable name
+     * a unique variable name. Use custom callback callback_after_create_variable to handle
+     * gdb response
      */
     create_variable: function(expression){
         if(Variables.waiting_for_create_var_response === true){
@@ -1155,7 +1162,7 @@ const Variables = {
         return `<ul class='variable'>
             <li class='${toggle_classes} ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
                 ${delete_button}
-                ${plus_or_minus} ${expression}: ${mi_obj.value} <span class='var_type'>(${_.trim(mi_obj.type)})</span>
+                ${plus_or_minus} ${expression}: ${mi_obj.value} <span class='var_type'>${_.trim(mi_obj.type)}</span>
             </li>
             ${child_tree}
         </ul>
