@@ -35,7 +35,7 @@ body
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', data-cmd2='-stack-list-frames', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
-                        span.glyphicon.glyphicon-off.padding_left
+                        span.glyphicon.glyphicon-repeat.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-continue', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
                         span.glyphicon.glyphicon-play.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-next', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
@@ -45,9 +45,9 @@ body
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-return', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint at the 'main' function (-break-insert main)") Add Breakpoint to Main
-                        span.glyphicon.glyphicon-flag.padding_left
+                        span.glyphicon.glyphicon-record.padding_left
                     button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt', title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
-                        span.glyphicon.glyphicon-ban-circle.padding_left
+                        span.glyphicon.glyphicon-stop.padding_left
 
                     button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
 
