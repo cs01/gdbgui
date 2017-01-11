@@ -186,11 +186,26 @@ pre{
     padding-left: 5px;
     border: 0px;
 }
-#variables li:hover{
-  background-color: #c0eeff;
+/* Show type of variable in lighter text */
+.var_type{
+  font-color: ##a0a0a0;
+  margin-left: 5px;
 }
-.toggle_children_visibility{
-  font-weight: bold;
+
+/* Make refresh icon spin - http://www.bootply.com/128062*/
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
 }
 
 
