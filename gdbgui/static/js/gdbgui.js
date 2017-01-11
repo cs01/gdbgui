@@ -1229,6 +1229,58 @@ const AllLocalVariables = {
 }
 
 /**
+ * Component with checkboxes that allow the user to show/hide various components
+ */
+const ShowHideComponents = {
+    el: $('#show_hide_components'),
+    /**
+     * Set up events and render checkboxes
+     */
+    init: function(){
+        $("body").on("change", "input.componet_visibility_checkbox", ShowHideComponents.update_component_visibility_based_on_checkboxes)
+        ShowHideComponents.render()
+    },
+    /**
+     * Render the checkboxes and update visibility of components as defined by
+     * the checkboxes
+     */
+    render: function(){
+        let html = ''
+        for (let i of $('.allow_visibility_toggle')){
+            let name = $(i).data('name_for_visibility_toggling'),
+                visibile_on_load = ($(i).data('visibile_on_load') === 'true' || $(i).data('visibile_on_load') === undefined),
+                checked = visibile_on_load ? 'checked' : ''
+            html += ` <div class="checkbox">
+                  <label>
+                    <input type="checkbox" ${checked} class='componet_visibility_checkbox' data-name_for_visibility_toggling="${name}"> ${name}
+                  </label>
+            </div>  `
+        }
+        ShowHideComponents.el.html(html)
+        ShowHideComponents.update_component_visibility_based_on_checkboxes()
+    },
+    /**
+     * Update visibility of components as defined by
+     * the checkboxes
+     */
+    update_component_visibility_based_on_checkboxes: function(){
+        for (let el of $('.componet_visibility_checkbox')){
+            let jq_el = $(el)
+            let name = jq_el.data('name_for_visibility_toggling'),
+                el_to_toggle = $(`.allow_visibility_toggle[data-name_for_visibility_toggling='${name}']`)
+            if(jq_el.prop('checked')){
+                // make visible
+                el_to_toggle.removeClass('hidden')
+            } else {
+                // hide
+                el_to_toggle.addClass('hidden')
+            }
+        }
+    }
+}
+
+
+/**
  * An object with methods for global events/callbacks
  * that apply to the whole page
  */
@@ -1370,6 +1422,7 @@ BinaryLoader.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
+ShowHideComponents.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
