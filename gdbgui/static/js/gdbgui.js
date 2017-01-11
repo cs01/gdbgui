@@ -5,7 +5,8 @@
  *
  * There are several components, each of which have their
  * own top-level object. Each component is reponsible
- * for its own data, state, event handling, and rendering.
+ * for its own data, state, event handling, and rendering (to
+ * the extent that it's possible).
  */
 
 (function ($, _, Awesomplete) {
@@ -22,6 +23,12 @@ const ENTER_BUTTON_NUM = 13
  */
 const Status = {
     el: $('#status'),
+    /**
+     * Render a new status
+     * @param status_str: The string to render
+     * @param error: Whether this string relates to an error condition. If true,
+     *                  a red label appears
+     */
     render: function(status_str, error=false){
         if(error){
             Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
@@ -29,13 +36,21 @@ const Status = {
             Status.el.text(status_str)
         }
     },
-    render_ajax_error_msg: function(data){
-        if (data.responseJSON && data.responseJSON.message){
-            Status.render(_.escape(data.responseJSON.message), true)
+    /**
+     * Handle http responses with error codes
+     * @param response: response from server
+     */
+    render_ajax_error_msg: function(response){
+        if (response.responseJSON && response.responseJSON.message){
+            Status.render(_.escape(response.responseJSON.message), true)
         }else{
-            Status.render(`${data.statusText} (${data.status} error)`, true)
+            Status.render(`${response.statusText} (${response.status} error)`, true)
         }
     },
+    /**
+     * Render pygdbmi response
+     * @param mi_obj: gdb mi obj from pygdbmi
+     */
     render_from_gdb_mi_response: function(mi_obj){
         if(!mi_obj){
             Status.render('empty response')
@@ -1115,36 +1130,36 @@ const Variables = {
                     }
                 }
             }else{
-                child_tree += '<li>fetching from gdb...</li>'
+                child_tree += `<li><span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span></li>`
             }
 
             child_tree += '</ul>'
         }
 
-        let delete_button = is_root ? `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
-        let expanded = mi_obj.show_children_in_ui ? 'expanded' : '',
-            plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
-        let expression_and_value = `
-        <ul class='variable'>
-            <li class='toggle_children_visibility pointer ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
+        let plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
+        return Variables._get_ul_for_var(expression, mi_obj, is_root, plus_or_minus, child_tree, mi_obj.show_children_in_ui, mi_obj.numchild)
+    },
+    get_ul_for_var_without_children: function(expression, mi_obj, is_root=false){
+        return Variables._get_ul_for_var(expression, mi_obj, is_root)
+    },
+    /**
+     * Get ul for a variable with or without children
+     * @param is_root: true if it has children and
+     */
+    _get_ul_for_var: function(expression, mi_obj, is_root, plus_or_minus='', child_tree='', show_children_in_ui=false, numchild=0){
+        let
+            delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : '',
+            expanded = show_children_in_ui ? 'expanded' : '',
+            toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
+
+        return `<ul class='variable'>
+            <li class='${toggle_classes} ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
                 ${delete_button}
-                ${plus_or_minus} ${expression}: ${mi_obj.value} (${mi_obj.type})
+                ${plus_or_minus} ${expression}: ${mi_obj.value} <span class='var_type'>(${_.trim(mi_obj.type)})</span>
             </li>
             ${child_tree}
         </ul>
         `
-        return expression_and_value
-    },
-    get_ul_for_var_without_children: function(expression, mi_obj, is_root=false){
-        let delete_button = is_root ? `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
-        return `
-            <ul class='variable'>
-                <li data-gdb_variable_name='${mi_obj.name}'>
-                    ${delete_button}
-                    ${expression}: ${mi_obj.value} (${mi_obj.type})
-                </li>
-            </ul>
-            `
     },
     click_toggle_children_visibility: function(e){
         let gdb_var_name = e.currentTarget.dataset.gdb_variable_name

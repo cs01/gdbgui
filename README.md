@@ -1,7 +1,7 @@
 
 [![Build Status](https://travis-ci.org/cs01/gdbgui.svg?branch=master)](https://travis-ci.org/cs01/gdbgui)
 
-# A browser-based frontend/gui for GDB.
+# A browser-based frontend/gui for GDB
 Add breakpoints, view stack traces, and more! Simply run `gdbgui` from the terminal and your browser window will open a new tab. Now start debuggin'!
 
 ![gdbgui](gdbgui.png)
