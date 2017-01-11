@@ -980,8 +980,11 @@ const Variables = {
             }
             return obj
 
+        }else if (objs.length === 0){
+            console.error(`Couldnt find gdb variable ${top_level_var_name}. It looks like the server needs to be restarted.`)
+            return undefined
         }else{
-            console.error('couldnt find var')
+            console.error(`Somehow found multiple local gdb variables with the name ${top_level_var_name}. Not using any of them.`)
             return undefined
         }
     },
