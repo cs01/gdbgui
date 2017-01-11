@@ -61,7 +61,7 @@ body
 
 
         //- source
-        div.no_padding.col-md-12#source_div
+        div.no_padding.col-md-12#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
 
             div.titlebar
             div
@@ -87,7 +87,7 @@ body
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-12.no_padding
+        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
             div.titlebar
                 span.lighttext stack
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
@@ -96,7 +96,7 @@ body
                     span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
-        div.col-md-12.no_padding
+        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
             div.titlebar
                 span.lighttext breakpoints
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
@@ -105,7 +105,7 @@ body
                     span.glyphicon.glyphicon-refresh.padding_left
             div#breakpoints.gdb_content_div
 
-        div.col-md-12.no_padding
+        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
             div.titlebar.flex
                 span.lighttext variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
@@ -113,7 +113,7 @@ body
                 input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
             div#variables.gdb_content_div
 
-        div.col-md-2.no_padding
+        div.col-md-2.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
             div.titlebar
                 span.lighttext registers
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
@@ -121,7 +121,8 @@ body
                 button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x', title='Refresh all register names and values (-data-list-register-values x)') Refresh
                     span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
-        div.col-md-10.no_padding
+
+        div.col-md-10.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
             div.titlebar
                 span.lighttext memory
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
@@ -129,7 +130,7 @@ body
             div#memory.gdb_content_div
 
         div.row
-        div.col-md-6.no_padding
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="disassembly")
             div.titlebar.flex
                 span.lighttext disassembly
                 span#disassembly_heading
@@ -139,7 +140,7 @@ body
                     span.glyphicon.glyphicon-refresh.padding_left
             div#disassembly.gdb_content_div
 
-        div.col-md-6.no_padding
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="all local variables")
             div.titlebar
                 span.lighttext All Local Variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
@@ -147,7 +148,7 @@ body
                 button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Refresh
             div#all_local_variables.gdb_content_div
 
-        div.col-md-12.no_padding
+        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
             div.titlebar
                 span.lighttext gdb console
@@ -166,15 +167,19 @@ body
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
-        //- Uncomment to assist when developing/debugging gdbgui
-        //- div.col-md-6.no_padding
-        //-     div.titlebar
-        //-         span.lighttext gdb machine interface output
-        //-         span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
-        //-         span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
-        //-         button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
-        //-                 span.glyphicon.glyphicon-ban-circle.padding_left
-        //-     div#gdb_mi_output.gdb_content_div
+        div.col-md-6.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
+            div.titlebar
+                span.lighttext gdb machine interface output
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
+                button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
+                        span.glyphicon.glyphicon-ban-circle.padding_left
+            div#gdb_mi_output.gdb_content_div
+
+        div.col-md-6.no_padding
+            div.titlebar
+                span.lighttext show/hide components
+            div#show_hide_components
 
 footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #f5f5f5')
     span made by
