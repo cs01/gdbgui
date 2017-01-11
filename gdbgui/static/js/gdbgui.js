@@ -1042,7 +1042,7 @@ const Variables = {
      */
     callback_after_create_variable: function(mi_response_array){
         Variables.state.waiting_for_create_var_response = false
-
+        let status_rendered = false
         mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
 
         if(mi_response_array.length === 1){
@@ -1067,11 +1067,18 @@ const Variables = {
             }else{
                 // this is an unexpected case. Let the status bar render some info to help debug the issue.
                 Status.render_from_gdb_mi_response(r)
+                status_rendered = true
             }
         }else{
             process_gdb_response(mi_response_array)
         }
+
+        if(!status_rendered){
+            Status.render_from_gdb_mi_response(_.last(mi_response_array))
+        }
+
         Variables.render()
+
     },
     /**
      * Send command to gdb to give us all the children and values
@@ -1093,6 +1100,7 @@ const Variables = {
      */
     callback_after_list_children: function(mi_response_array){
         Variables.state.waiting_for_children_list_response = false
+        let status_rendered = false
 
         mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
 
@@ -1107,9 +1115,19 @@ const Variables = {
         if(parent_obj){
             parent_obj.children = r.payload.children
         }else{
-            console.error(`attempted to save children for existing var, but couldn't find it: ${Variables.state.gdb_parent_var_currently_fetching_children}`)
+            let err_text = `attempted to save children for existing var, but couldn't find it: ${Variables.state.gdb_parent_var_currently_fetching_children}.
+            You may need to restart gdbgui's server, then refresh this page.`
+
+            console.error(err_text)
+            Status.render(err_text)
+
+            status_rendered = true
         }
         Variables.render()
+
+        if(!status_rendered){
+            Status.render_from_gdb_mi_response(_.last(mi_response_array))
+        }
     },
     render: function(){
         let html = ''
