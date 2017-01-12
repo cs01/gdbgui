@@ -53,7 +53,7 @@ const Status = {
      */
     render_from_gdb_mi_response: function(mi_obj){
         if(!mi_obj){
-            Status.render('empty response')
+            Status.render('gdb did not write any new output')
             return
         }
         // Update status
@@ -1307,6 +1307,38 @@ const ShowHideComponents = {
     }
 }
 
+/**
+ * Component to shutdown gdbgui
+ */
+const ShutdownGdbgui = {
+    el: $('#shutdown_gdbgui'),
+    /**
+     * Set up events and render checkboxes
+     */
+    init: function(){
+        ShutdownGdbgui.el.click(ShutdownGdbgui.click_shutdown_button)
+    },
+    click_shutdown_button: function(){
+        if (window.confirm("This will end your gdbgui session. Continue?") === true) {
+            ShutdownGdbgui.shutdown()
+        } else {
+            // don't do anything
+        }
+    },
+    shutdown: function(){
+        $.ajax({
+            url: "/shutdown",
+            cache: false,
+            method: 'GET',
+            success: ShutdownGdbgui.close_window,
+            error: null,
+        })
+    },
+    close_window: function(data){
+        $('body').html(`<span style="font-family: arial">${data.message}</span>`)
+    }
+}
+
 
 /**
  * An object with methods for global events/callbacks
@@ -1451,6 +1483,7 @@ SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
 ShowHideComponents.init()
+ShutdownGdbgui.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 

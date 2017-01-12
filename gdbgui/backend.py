@@ -116,13 +116,18 @@ def signal_handler(signal, frame):
             exit(1)
 
 
-def quit_backend():
-    """Shutdown the flask server. Used when programmitcally testing gdbgui"""
+@app.route('/shutdown')
+def shutdown():
+    print('Shutdown call has been initiated by user')
+    print('Terminating gdb subprocess now!')
     gdb.exit()
     func = request.environ.get('werkzeug.server.shutdown')
     if func is None:
         raise RuntimeError('Not running with the Werkzeug Server')
-    func()
+    else:
+        print('Shutting down server now!')
+        func()
+    return jsonify({'message': 'gdb has been terminated, and the server is no longer running.'})
 
 
 def open_webbrowser(host, port):
