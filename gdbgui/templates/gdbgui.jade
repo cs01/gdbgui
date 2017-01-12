@@ -5,6 +5,9 @@
 html
 head
     title gdbgui - gdb in a browser
+
+    base(target='_blank')
+
     link(href='static/css/gdbgui.css?_=#{timetag_to_prevent_caching}', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
@@ -24,13 +27,17 @@ body
 
         div.row(style='max-height: 80px')
             div.col-md-12
-                //- binary selection
-                form(role=form)
-                    div.input-group.input-group-sm
-                        span.input-group-btn
-                            button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
-                        input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
-                        datalist#past_binaries
+                div
+                    //- binary selection
+                    form(role=form)
+                        div.input-group.input-group-sm
+                            span.input-group-btn
+                                button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
+                            input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
+                            datalist#past_binaries
+                            span(style="display:table-cell; width: 30px;")
+                                span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='font-size: 1.6em; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
+
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
@@ -44,12 +51,10 @@ body
                         span.glyphicon.glyphicon-arrow-down.padding_left
                     button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-return', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
                         span.glyphicon.glyphicon-arrow-up.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-insert main', data-cmd1='-break-list', title="Add breakpoint at the 'main' function (-break-insert main)") Add Breakpoint to Main
-                        span.glyphicon.glyphicon-record.padding_left
                     button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt', title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
                         span.glyphicon.glyphicon-stop.padding_left
 
-                    button.btn.btn-default.get_gdb_response(type="button") Get GDB Response
+                    button.btn.btn-default.get_gdb_response(type="button") Check for async gdb output
 
         div.row
             div(style="height: 20px; margin-top: 5px; margin-left: 15px")
@@ -64,17 +69,18 @@ body
         div.no_padding.col-md-12#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
 
             div.titlebar
-            div
-                div.flexrow
-                    input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-                    button.dropdown-btn(type="button")
-                        span.caret
+            div.flexrow
+                //- displays source file path input, and dropdown
+                input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-                    button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
+                button.dropdown-btn(type="button")
+                    span.caret
+
+                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
 
             div.flex
-                //- display loaded file path and input to jump to line
+                //- displays loaded file path and input to jump to line
                 span#source_code_heading.lighttext (no source code file loaded)
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
@@ -176,25 +182,42 @@ body
                         span.glyphicon.glyphicon-ban-circle.padding_left
             div#gdb_mi_output.gdb_content_div
 
-        div.col-md-6.no_padding
-            div.titlebar
-                span.lighttext show/hide components
-            div#show_hide_components
 
-footer(style='height:200px; width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #f5f5f5')
-    span made by
-    =' '
-    a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
-    =' | '
-    a(href='http://grasssfedcode.com', target='_blank') grassfedcode.com
-    div.row
-        iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=star&count=false", frameborder="0", scrolling="0", width="70px", height="20px")
-        br
-        iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=watch&count=false&v=2", frameborder="0", scrolling="0", width="70px", height="20px")
-        br
-        iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=fork&count=false", frameborder="0", scrolling="0", width="70px", height="20px")
-        br
-        iframe(src="https://ghbtns.com/github-btn.html?user=cs01&repo=gdbgui&type=follow&count=false", frameborder="0", scrolling="0", width="120px", height="20px")
-        p
+footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #242729; color: #9fa6ad;')
+    div.container
+        div.row
+            div.col-lg-3
+                h4.bold show/hide
+                div#show_hide_components
+
+            div.col-lg-3
+                h4.bold github
+                p
+                    a(href='https://github.com/cs01/gdbgui', target='_blank') https://github.com/cs01/gdbgui
+                p
+                    a(href='https://github.com/cs01/pygdbmi', target='_blank') https://github.com/cs01/pygdbmi
+
+            div.col-lg-3
+                h4.bold resources
+                ul
+                    li
+                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/') gdb documentation
+                    li
+                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI.html#GDB_002fMI') gdb machine interface (mi) documentation
+                    li
+                        a(href='http://www.thegeekstuff.com/2010/03/debug-c-program-using-gdb') How to Debug C Program using gdb in 6 Simple Steps
+                    li
+                        a(href='https://golang.org/doc/gdb') debugging go code with gdb
+                    li
+                        a(href='https://sourceware.org/gdb/current/onlinedocs/gdb/Rust.html') debugging rust with gdb
+                    li
+                        a(href='https://jvns.ca/blog/2016/08/10/how-does-gdb-work/') how gdb works
+
+            div.col-lg-3
+                h4.bold credits
+                ='Developed by '
+                a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
+                p
+                    a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
 
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')

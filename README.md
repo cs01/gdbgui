@@ -66,9 +66,7 @@ Since this lives in a browser, it's really extendable. Some ideas:
 * Add syntax highlighting
 * Semantic source code -- i.e. hover over a variable and immediately see its value.
 * Assign values to variables / memory addresses
-* Link to educational tools about register names/meanings, instruction names/meanings, how gdb works in general (https://jvns.ca/blog/2016/08/10/how-does-gdb-work/), etc
 * Warn you if you are using an old version of gdb and there is a new one available
-* Debug a program on a smartphone since gdbgui has a responsive UI!
 
 If you use this at your company or for your job, I would love to hear from you -- send me an email and let me know.
 
@@ -91,11 +89,9 @@ Despite this list, gdbgui is quite usable in its current form
 * ~~only make gutter create/delete breakpoints, not anywhere in source file~~
 * ~~add ability to view/inspect variables~~
 * ~~add ability to view/inspect memory~~
+* ~~improve toolbar styling, change color when error occurs~~
+* ~~add preference ui elements (auto-refresh various windows after command is sent; show/hide windows as desired)~~
 * add tabs for all open source files
-* add button to adjust window width
-* improve toolbar styling, change color when error occurs
-* add preference ui elements (auto-refresh various windows after command is sent; show/hide windows as desired)
 * make flash of color fade out when snapping to source code lines or restoring old history
 * add autocompletion and documentation of all commands
-* make panels movable and hidable
 * display hex and decimals for registers instead of just hex

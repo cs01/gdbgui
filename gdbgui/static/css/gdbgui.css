@@ -12,6 +12,9 @@ pre{
 }
 
 /* styling for generic classes */
+.bold{
+  font-weight: bold;
+}
 .pre{
   white-space: pre;
 }
@@ -140,7 +143,7 @@ pre{
     to   { background: default; }
 }
 
-/* specific styling for ids */
+/* specific styling for ids or components */
 #always_on_top{
   position: fixed;
   top: 0;
@@ -209,6 +212,14 @@ pre{
     to { transform: scale(1) rotate(360deg);}
 }
 
+
+footer a{
+  color: #ccc;
+}
+footer ul{
+  list-style: none;
+  padding: 0;
+}
 
 /* Vendor Overrides */
 
