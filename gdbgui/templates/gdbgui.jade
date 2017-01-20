@@ -1,10 +1,12 @@
 //- The jade project (and file extension) is now Pug, but
 //- as far as I know, the python package has not been renamed, so it remains
 //- a jade file for now
+//- explore instant conversion of html2jade: http://www.html2jade.org/
 
 html
 head
     title gdbgui - gdb in a browser
+
 
     base(target='_blank')
 
@@ -19,6 +21,7 @@ head
     script(type="text/javascript" src='static/vendor/js/lodash.min.js')
     script(type="text/javascript" src='static/vendor/js/moment.min.js')
     script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
+    script(type="text/javascript" src='//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js')
 
 body
 
@@ -41,20 +44,24 @@ body
 
                 //- premade buttons
                 div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-break-list', data-cmd1='-exec-run', data-cmd2='-stack-list-frames', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-run', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
                         span.glyphicon.glyphicon-repeat.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-continue', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
-                        span.glyphicon.glyphicon-play.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-next', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
-                        span.glyphicon.glyphicon-step-forward.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-step', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
-                        span.glyphicon.glyphicon-arrow-down.padding_left
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd0='-exec-return', data-cmd1='-var-update --all-values *', data-cmd2='-stack-list-frames', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
-                        span.glyphicon.glyphicon-arrow-up.padding_left
-                    button.btn.btn-default.gdb_cmd(type="button", data-cmd='-exec-interrupt', title="Interrupt the background execution of the target (-exec-interrupt)") Kill Target
-                        span.glyphicon.glyphicon-stop.padding_left
 
-                    button.btn.btn-default.get_gdb_response(type="button") Check for async gdb output
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
+                        span.glyphicon.glyphicon-play.padding_left
+
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
+                        span.glyphicon.glyphicon-step-forward.padding_left
+
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
+                        span.glyphicon.glyphicon-arrow-down.padding_left
+
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
+                        span.glyphicon.glyphicon-arrow-up.padding_left
+
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next-instruction', title="Executes one machine instruction. (-exec-next-instruction)") Next Instruction
+
+                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step-instruction', title="Resumes the inferior which executes one machine instruction. (-exec-step-instruction)") Step Instruction
 
         div.row
             div(style="height: 20px; margin-top: 5px; margin-left: 15px")
@@ -68,8 +75,6 @@ body
         //- source
         div.no_padding.col-md-12#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
 
-            div.titlebar
-
             div.flexrow
                 //- displays source file path input, and dropdown
                 input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
@@ -77,41 +82,39 @@ body
                 button.dropdown-btn(type="button")
                     span.caret
 
-                button.btn.btn-default.gdb_cmd.btn-xs(type="button", data-cmd='-file-list-exec-source-files') Populate List
-
             div.flex
                 //- displays loaded file path and input to jump to line
-                span#source_code_heading.lighttext (no source code file loaded)
+                span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
 
                 //- input to jump to a line in the source code
                 input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
 
+                label(style='margin-left: 10px; font-weight: normal;')
+                    input#checkbox_show_assembly(type='checkbox')
+                    ='show assembly'
+
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
             div.titlebar
                 span.lighttext stack
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-frames', title='Refresh stack (-stack-list-frames)') Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
             div#stack.gdb_content_div
 
-        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
             div.titlebar
                 span.lighttext breakpoints
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-break-list', title="Get table of all breakpoints (-break-list')") Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
             div#breakpoints.gdb_content_div
 
-        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
             div.titlebar.flex
                 span.lighttext variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
@@ -119,39 +122,28 @@ body
                 input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
             div#variables.gdb_content_div
 
-        div.col-md-2.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
             div.titlebar
                 span.lighttext registers
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd0='-data-list-register-names', data-cmd1='-data-list-register-values x', title='Refresh all register names and values (-data-list-register-values x)') Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
             div#registers.gdb_content_div
 
-        div.col-md-10.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
-            div.titlebar
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
+            div.titlebar.flex
                 span.lighttext memory
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
+                input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
+                input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
             div#memory.gdb_content_div
-
-        div.row
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="disassembly")
-            div.titlebar.flex
-                span.lighttext disassembly
-                span#disassembly_heading
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#disassembly" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs#refresh_disassembly(type='button', title='Render disassembly at current frame') Refresh
-                    span.glyphicon.glyphicon-refresh.padding_left
-            div#disassembly.gdb_content_div
 
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="all local variables")
             div.titlebar
                 span.lighttext All Local Variables
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Refresh
+                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Fetch
             div#all_local_variables.gdb_content_div
 
         div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
@@ -163,8 +155,6 @@ body
                 div.btn-group
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
-                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
-                        span.glyphicon.glyphicon-download.padding_left
 
             //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
@@ -189,6 +179,18 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
             div.col-lg-3
                 h4.bold show/hide
                 div#show_hide_components
+
+            div.col-lg-3
+                h4.bold preferences
+                div.checkbox
+                    label
+                        input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
+                        ='Auto add breakpoint to main'
+
+
+
+
+        div.row
 
             div.col-lg-3
                 h4.bold github
@@ -219,5 +221,6 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
                 a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
                 p
                     a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
+
 
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')
