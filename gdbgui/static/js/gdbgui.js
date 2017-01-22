@@ -171,6 +171,7 @@ const GdbApi = {
     refresh_stack: function(){
         let cmds = ['-stack-list-frames',
                     '-stack-info-frame',
+                    '-thread-info',
                     '-var-update --all-values *',
                     '-data-list-register-names',
                     '-data-list-register-values x']
@@ -403,7 +404,7 @@ const Breakpoint = {
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
         let links = []
         if ('fullname' in breakpoint){
-             links.push(`<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a>`)
+             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, 'false'))
         }
         links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
         bkpt[' '] = links.join(' | ')
@@ -765,6 +766,9 @@ const SourceCode = {
     },
     program_exited: function(){
         SourceCode.remove_highlight()
+    },
+    get_link_to_view_file: function(fullname, line=0, highlight='false'){
+        return `<a class='view_file pointer' data-fullname=${fullname} data-line=${line} data-highlight=${highlight}>View</a>`
     }
 }
 
@@ -1484,6 +1488,57 @@ const AllLocalVariables = {
 }
 
 /**
+ * The Threads component
+ */
+const Threads = {
+    el: $('#threads'),
+    state: {
+        'threads': [],
+        'current_thread_id': undefined
+    },
+    init: function(){
+        $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
+    },
+    clear: function(){
+        Threads.state.threads = []
+        Threads.state.current_thread_id = undefined
+        Threads.render()
+    },
+    click_select_thread_id: function(e){
+        GdbApi.run_gdb_command(`-thread-select ${e.currentTarget.dataset.thread_id}`)
+    },
+    render: function(){
+        if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
+            let tbody = []
+            for(let t of Threads.state.threads){
+                let highlight = ''
+                if(parseInt(t.id) === Threads.state.current_thread_id){
+                    highlight = 'highlight'
+                }
+                let view_link = SourceCode.get_link_to_view_file(t.frame.fullname, t.frame.line, 'true')
+                tbody.push(
+                [`
+                <tr class='${highlight} select_thread_id pointer' data-thread_id=${t.id}>
+                <td>
+                    ${view_link} id ${t.id} core ${t.core} ${t['target-id']} function ${t.frame.func || '?'} line ${t.frame.line || '?'} (${t.state})
+                </td>
+                </tr>`]
+                )
+            }
+            Threads.el.html(Util.get_table(['thread'], tbody))
+        }
+    },
+    set_threads: function(threads){
+        Threads.state.threads = threads
+        Threads.render()
+    },
+    set_thread_id: function(id){
+        Threads.state.current_thread_id = parseInt(id)
+        Threads.render()
+    }
+}
+
+/**
  * Component with checkboxes that allow the user to show/hide various components
  */
 const ShowHideComponents = {
@@ -1671,6 +1726,10 @@ const process_gdb_response = function(response_array){
             if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
                 Variables.gdb_created_children_variables(r)
             }
+            if('threads' in r.payload){
+                Threads.set_threads(r.payload.threads)
+                Threads.set_thread_id((r.payload['current-thread-id']))
+            }
             // if (your check here) {
             //      render your custom compenent here!
             // }
@@ -1700,6 +1759,10 @@ const process_gdb_response = function(response_array){
         if (r.payload && typeof r.payload.frame !== 'undefined') {
             // Stopped on a frame. We can render the file and highlight the line!
             SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, {'highlight': true, 'scroll': true})
+
+            if (r.payload['new-thread-id']){
+                Threads.set_thread_id(r.payload['new-thread-id'])
+            }
         }
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
@@ -1754,6 +1817,7 @@ BinaryLoader.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
+Threads.init()
 ShowHideComponents.init()
 ShutdownGdbgui.init()
 WebSocket.init()
