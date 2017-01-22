@@ -58,7 +58,7 @@ def gdb_background_thread():
             else:
                 # This is a problem. This thread shouldn't be running unless
                 # there is a gdb process providing output
-                print('gdb object could not be found. Exiting thread that reads gdb output.')
+                print('Thanks for using gdbgui!')
                 break
 
         except Exception as e:

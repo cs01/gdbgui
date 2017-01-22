@@ -443,11 +443,12 @@ const SourceCode = {
     el_jump_to_line_input: $('#jump_to_line'),
     state: {'rendered_source_file_fullname': null,
             'rendered_source_file_line': null,
+            'rendered_source_file_addr': null,
             'line_highlighted': false,
             'cached_source_files': [],  // list with keys fullname, source_code
     },
     init: function(){
-        $("body").on("click", ".source_code_row td .line_num", SourceCode.click_gutter)
+        $("body").on("click", ".source_code_row td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
         $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
@@ -466,7 +467,10 @@ const SourceCode = {
         }
     },
     render_cached_source_file: function(){
-        SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname, SourceCode.state.rendered_source_file_line, {'highlight': false, 'scroll': true})
+        SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
+            SourceCode.state.rendered_source_file_line,
+            SourceCode.state.rendered_source_file_addr,
+            {'highlight': false, 'scroll': true})
     },
     is_cached: function(fullname){
         return SourceCode.state.cached_source_files.some(f => f.fullname === fullname)
@@ -486,30 +490,44 @@ const SourceCode = {
      * @param line_num: line for which assembly html should be returned
      * @returns two <td> html elements with appropriate assembly code
      */
-    get_assembly_html_for_line: function(show_assembly, assembly, line_num){
-        let instruction_content = '',
-            func_and_addr_content = ''
+    get_assembly_html_for_line: function(show_assembly, assembly, line_num, addr){
+        let instruction_content = [],
+            func_and_addr_content = []
 
         if(show_assembly && assembly[line_num]){
+
             let instructions_for_this_line = assembly[line_num]
-            instruction_content = instructions_for_this_line.map(el => `${el.inst}`).join('<br>')
-            func_and_addr_content = instructions_for_this_line.map(el => `${el['func-name']}+${el['offset']} ${Memory.make_addr_into_link(el.address)}`).join('<br>')
+            for(let i of instructions_for_this_line){
+                let cls = ''
+                if(addr === i.address){
+                    cls = 'bold'
+                }
+                instruction_content.push(`<span class=${cls}>${i.inst}</span>`)
+                func_and_addr_content.push(`<span class='${cls}'> ${i['func-name']}+${i['offset']} ${Memory.make_addr_into_link(i.address)}</span>`)
+            }
+
+            instruction_content = instruction_content.join('<br>')
+            func_and_addr_content = func_and_addr_content.join('<br>')
+
+            // instruction_content = instructions_for_this_line.map(el => `${el.inst}`).join('<br>')
+            // func_and_addr_content = instructions_for_this_line.map(el => ).join('<br>')
         }
 
         return `
-        <td class='assembly'>
+        <td valign="top" class='assembly'>
 
             ${instruction_content}
         </td>
-        <td class='assembly'>
+        <td valign="top" class='assembly'>
             ${func_and_addr_content}
         </td>`
     },
-    render_source_file: function(fullname, source_code, current_line=1, options={'highlight': false, 'scroll': false}){
+    render_source_file: function(fullname, source_code, current_line=1, addr=undefined, options={'highlight': false, 'scroll': false}){
         current_line = parseInt(current_line)
         SourceCode.state.line_highlighted = options.highlight
         SourceCode.state.rendered_source_file_fullname = fullname
         SourceCode.state.rendered_source_file_line = current_line
+        SourceCode.state.rendered_source_file_addr = addr
 
         let assembly,
             show_assembly = SourceCode.show_assembly_box_is_checked()
@@ -537,12 +555,12 @@ const SourceCode = {
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
 
-            let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num)
+            let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num, addr)
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num_container right_border'>
-                        <div class='line_num ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>${line_num}</div>
+                    <td valign="top" class='line_num right_border  ${breakpoint_class}'  data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
+                        <div>${line_num}</div>
                     </td>
 
                     <td valign="top" class='line_of_code'>
@@ -592,20 +610,21 @@ const SourceCode = {
     re_render: function(){
         let fullname = SourceCode.state.rendered_source_file_fullname,
             current_line = SourceCode.state.rendered_source_file_line || 0,
+            addr = SourceCode.state.rendered_source_file_addr || 0,
             options = {'highlight': SourceCode.state.line_highlighted, 'scroll': false}
 
         // render file and pass current state
-        SourceCode.fetch_and_render_file(fullname, current_line, options)
+        SourceCode.fetch_and_render_file(fullname, current_line, addr, options)
     },
     // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=1, options={'highlight': false, 'scroll': false}){
+    fetch_and_render_file: function(fullname, current_line=1, addr='', options={'highlight': false, 'scroll': false}){
         if (!_.isString(fullname)){
             console.error('cannot render file without a name')
 
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
             let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
-            SourceCode.render_source_file(fullname, f.source_code, current_line, options)
+            SourceCode.render_source_file(fullname, f.source_code, current_line, addr, options)
 
         } else {
             $.ajax({
@@ -615,13 +634,13 @@ const SourceCode = {
                 data: {path: fullname},
                 success: function(response){
                     SourceCode.add_source_file_to_cache(fullname, response.source_code)
-                    SourceCode.render_source_file(fullname, response.source_code, current_line, options)
+                    SourceCode.render_source_file(fullname, response.source_code, current_line, addr, options)
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
                     let source_code = [`failed to fetch file ${fullname}`]
                     SourceCode.add_source_file_to_cache(fullname, source_code)
-                    SourceCode.render_source_file(fullname, source_code, 0, options)
+                    SourceCode.render_source_file(fullname, source_code, 0, addr, options)
                 }
             })
         }
@@ -751,8 +770,9 @@ const SourceCode = {
     click_view_file: function(e){
         let fullname = e.currentTarget.dataset['fullname'],
             line = e.currentTarget.dataset['line'],
-            highlight = e.currentTarget.dataset['highlight'] === 'true'
-        SourceCode.fetch_and_render_file(fullname, line, {'highlight': highlight, 'scroll': true})
+            highlight = e.currentTarget.dataset['highlight'] === 'true',
+            addr = e.currentTarget.dataset['addr']
+        SourceCode.fetch_and_render_file(fullname, line, addr, {'highlight': highlight, 'scroll': true})
     },
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -808,7 +828,7 @@ const SourceFileAutocomplete = {
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
             let fullname = e.currentTarget.value,
                 line = 1
-            SourceCode.fetch_and_render_file(fullname, 1, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(fullname, 1, undefined, {'highlight': false, 'scroll': true})
         })
     },
     keyup_source_file_input: function(e){
@@ -828,7 +848,7 @@ const SourceFileAutocomplete = {
                 line = user_input_array[1]
             }
 
-            SourceCode.fetch_and_render_file(file, line, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(file, line, undefined, {'highlight': false, 'scroll': true})
         }
     }
 }
@@ -864,7 +884,6 @@ const Stack = {
     click_select_frame: function(e){
         Stack.select_frame(e.currentTarget.dataset.framenum)
         SourceCode.click_view_file(e)
-        AllLocalVariables.clear()
     },
     select_frame: function(framenum){
         GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
@@ -1079,9 +1098,7 @@ const Memory = {
 
         let cmds = []
         if(start_addr && end_addr){
-            if(start_addr > end_addr){
-                end_addr = start_addr
-            } else if ((end_addr - start_addr) > MAX_ADDRESS_DELTA){
+            if(start_addr > end_addr || ((end_addr - start_addr) > MAX_ADDRESS_DELTA)){
                 end_addr = start_addr + MAX_ADDRESS_DELTA
                 Memory.el_end.val('0x' + end_addr.toString(16))
             }
@@ -1465,29 +1482,6 @@ const Variables = {
 }
 
 /**
- * The All Local Variables component
- */
-const AllLocalVariables = {
-    el: $('#all_local_variables'),
-    render: function(data){
-        const col_names = ['variable', 'value']
-        let table_data = []
-        for(let obj of data){
-            let value_str = JSON.stringify(obj.value, null, 4).replace(/[^(\\)]\\n/g)
-            table_data.push([obj.name, `<p class='pre'>${value_str}</p>`])
-        }
-
-        AllLocalVariables.el.html(Util.get_table(col_names, table_data))
-    },
-    refresh_all_for_current_frame: function(){
-        GdbApi.run_gdb_command(`-stack-list-locals --all-values`)
-    },
-    clear: function(){
-        AllLocalVariables.el.html('')
-    }
-}
-
-/**
  * The Threads component
  */
 const Threads = {
@@ -1688,7 +1682,7 @@ const process_gdb_response = function(response_array){
                 // breakpoint was created
                 Breakpoint.store_breakpoint(r.payload.bkpt)
                 Breakpoint.render_breakpoint_table()
-                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, {'highlight': false, 'scroll': true})
+                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined, {'highlight': false, 'scroll': true})
                 refresh_breakpoints = true
             }
             if ('BreakpointTable' in r.payload){
@@ -1713,9 +1707,9 @@ const process_gdb_response = function(response_array){
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
-            if ('locals' in r.payload){
-                AllLocalVariables.render(r.payload.locals)
-            }
+            // if ('locals' in r.payload){
+            //     AllLocalVariables.render(r.payload.locals)
+            // }
             if ('changelist' in r.payload){
                 Variables.handle_changelist(r.payload.changelist)
             }
@@ -1758,7 +1752,7 @@ const process_gdb_response = function(response_array){
 
         if (r.payload && typeof r.payload.frame !== 'undefined') {
             // Stopped on a frame. We can render the file and highlight the line!
-            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, {'highlight': true, 'scroll': true})
+            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
 
             if (r.payload['new-thread-id']){
                 Threads.set_thread_id(r.payload['new-thread-id'])
