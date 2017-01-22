@@ -901,26 +901,52 @@ const Registers = {
     el: $('#registers'),
     state: {
         register_names: [],
+        register_values: {},
     },
     render_registers(register_values){
         if(Registers.state.register_names.length === register_values.length){
             let columns = ['name', 'value (hex)', 'value (decimal)']
-            let register_table_data = []
+            , register_table_data = []
+            , hex_val_raw = ''
 
             for (let i in Registers.state.register_names){
                 let name = Registers.state.register_names[i]
-                let obj = _.find(register_values, v => v['number'] === i)
+                    , obj = _.find(register_values, v => v['number'] === i)
+                    , hex_val_raw = ''
+                    , disp_hex_val = ''
+                    , disp_dec_val = ''
 
                 if (obj){
-                    let hex_val = obj['value']
-                    if(obj['value'].indexOf('0x') === 0){
-                       hex_val = Memory.make_addr_into_link(hex_val)
+                    let old_hex_val = Registers.state.register_values[i]
+                        , changed = false
+                    hex_val_raw = obj['value']
+
+                    // if the value changed, highlight it
+                    if(old_hex_val !== undefined && hex_val_raw !== old_hex_val){
+                        changed = true
                     }
-                    register_table_data.push([name, hex_val, parseInt(obj['value'], 16).toString(10)])
-                }else{
-                    register_table_data.push([name, '', ''])
+
+                    // if hex value is a valid value, convert it to a link
+                    // and display decimal format too
+                    if(obj['value'].indexOf('0x') === 0){
+                       disp_hex_val = Memory.make_addr_into_link(hex_val_raw)
+                       disp_dec_val = parseInt(obj['value'], 16).toString(10)
+                    }
+
+                    if (changed){
+                        name = `<span class='highlight bold'>${name}</span>`
+                        disp_hex_val = `<span class='highlight bold'>${disp_hex_val}</span>`
+                        disp_dec_val = `<span class='highlight bold'>${disp_dec_val}</span>`
+                    }
+
                 }
+                // update cached value for this register
+                Registers.state.register_values[i] = hex_val_raw
+
+                register_table_data.push([name, disp_hex_val, disp_dec_val])
+
             }
+
             Registers.el.html(Util.get_table(columns, register_table_data))
         } else {
             console.error('Could not render registers. Length of names != length of values!')
@@ -1493,6 +1519,9 @@ const Threads = {
     init: function(){
         $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
     },
+    program_exited: function(){
+        Threads.clear()
+    },
     clear: function(){
         Threads.state.threads = []
         Threads.state.current_thread_id = undefined
@@ -1766,6 +1795,7 @@ const process_gdb_response = function(response_array){
                 Stack.program_exited()
                 Memory.program_exited()
                 Registers.program_exited()
+                Threads.program_exited()
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
                 refresh_stack = true
