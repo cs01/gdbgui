@@ -138,6 +138,13 @@ body
                 input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
             div#memory.gdb_content_div
 
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
+            div.titlebar.flex
+                span.lighttext threads
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
+            div#threads.gdb_content_div
+
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="all local variables")
             div.titlebar
                 span.lighttext All Local Variables
@@ -163,7 +170,7 @@ body
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
+        div.col-md-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
             div.titlebar
                 span.lighttext gdb machine interface output
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
