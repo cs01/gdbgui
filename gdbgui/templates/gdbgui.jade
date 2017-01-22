@@ -100,19 +100,12 @@ body
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
-            div.titlebar
-                span.lighttext stack
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-            div#stack.gdb_content_div
-
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
-            div.titlebar
-                span.lighttext breakpoints
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-            div#breakpoints.gdb_content_div
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
+            div.titlebar.flex
+                span.lighttext threads
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
+            div#threads.gdb_content_div
 
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
             div.titlebar.flex
@@ -121,6 +114,13 @@ body
                 span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
                 input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
             div#variables.gdb_content_div
+
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
+            div.titlebar
+                span.lighttext stack
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
+            div#stack.gdb_content_div
 
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
             div.titlebar
@@ -138,20 +138,12 @@ body
                 input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
             div#memory.gdb_content_div
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
-            div.titlebar.flex
-                span.lighttext threads
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
-            div#threads.gdb_content_div
-
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="all local variables")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
             div.titlebar
-                span.lighttext All Local Variables
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Fetch
-            div#all_local_variables.gdb_content_div
+                span.lighttext breakpoints
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+            div#breakpoints.gdb_content_div
 
         div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
