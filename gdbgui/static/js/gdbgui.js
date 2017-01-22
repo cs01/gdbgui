@@ -451,6 +451,7 @@ const SourceCode = {
         $("body").on("click", ".source_code_row td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
         $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
+        $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
     },
     click_gutter: function(e){
@@ -482,6 +483,13 @@ const SourceCode = {
             }
         }
         return null
+    },
+    refresh_cached_source_files: function(e){
+        SourceCode.clear_cached_source_files()
+        SourceCode.re_render()
+    },
+    clear_cached_source_files: function(){
+        SourceCode.state.cached_source_files = []
     },
     /**
      * Return html that can be displayed alongside source code
@@ -786,6 +794,7 @@ const SourceCode = {
     },
     program_exited: function(){
         SourceCode.remove_highlight()
+        SourceCode.clear_cached_source_files()
     },
     get_link_to_view_file: function(fullname, line=0, highlight='false'){
         return `<a class='view_file pointer' data-fullname=${fullname} data-line=${line} data-highlight=${highlight}>View</a>`
