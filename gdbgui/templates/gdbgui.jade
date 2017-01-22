@@ -85,8 +85,9 @@ body
             div.flex
                 //- displays loaded file path and input to jump to line
                 span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+                button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px;') reload
+                    span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
+
 
                 //- input to jump to a line in the source code
                 input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
@@ -94,6 +95,10 @@ body
                 label(style='margin-left: 10px; font-weight: normal;')
                     input#checkbox_show_assembly(type='checkbox')
                     ='show assembly'
+
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
 
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
