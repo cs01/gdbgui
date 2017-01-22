@@ -18,8 +18,13 @@ pre{
 .pre{
   white-space: pre;
 }
-.monospace, .memory_address{
+.monospace{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+.memory_address{
+  color: #337ab7;
+  text-decoration: none;
+  font-weight:
 }
 .lighttext{
   color: #4a4a4a;
@@ -122,14 +127,6 @@ td.assembly{
 .source_code_row:hover td, .source_code_row:hover td pre{
   background-color: #e2e2e2;
 }
-.memory_address{
-  color: rgb(51, 51, 51);
-  text-decoration: underline;
-}
-.memory_address:hover{
-  color: rgb(93, 93, 93);
-  text-decoration: none;
-}
 .padding_left{
   padding-left: 5px;
 }
@@ -202,6 +199,12 @@ td.assembly{
 #variables li{
   list-style: none;
 }
+
+#threads ul{
+  list-style: none;
+  padding: 0;
+}
+
 
 #variables ul.variable{
     padding-left: 5px;

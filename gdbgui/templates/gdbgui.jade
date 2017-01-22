@@ -120,13 +120,6 @@ body
                 input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
             div#variables.gdb_content_div
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
-            div.titlebar
-                span.lighttext stack
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-            div#stack.gdb_content_div
-
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
             div.titlebar
                 span.lighttext registers
@@ -143,13 +136,6 @@ body
                 input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
             div#memory.gdb_content_div
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
-            div.titlebar
-                span.lighttext breakpoints
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-            div#breakpoints.gdb_content_div
-
         div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
             div.titlebar
@@ -160,12 +146,22 @@ body
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
+                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
+                        span.glyphicon.glyphicon-download.padding_left
+
             //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
 
             //- gdb console input
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
+
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
+            div.titlebar
+                span.lighttext breakpoints
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+            div#breakpoints.gdb_content_div
 
         div.col-md-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
             div.titlebar

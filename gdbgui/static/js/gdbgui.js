@@ -212,20 +212,25 @@ const Util = {
      */
     get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
-        result.push("<thead>")
-        result.push("<tr>")
-        for (let h of columns){
-            result.push(`<th>${h}</th>`)
+        if(columns){
+            result.push("<thead>")
+            result.push("<tr>")
+            for (let h of columns){
+                result.push(`<th>${h}</th>`)
+            }
+            result.push("</tr>")
+            result.push("</thead>")
         }
-        result.push("</tr>")
-        result.push("</thead>")
-        result.push("<tbody>")
-        for(let row of data) {
-                result.push("<tr>")
-                for(let cell of row){
-                        result.push(`<td>${cell}</td>`)
-                }
-                result.push("</tr>")
+
+        if(data){
+            result.push("<tbody>")
+            for(let row of data) {
+                    result.push("<tr>")
+                    for(let cell of row){
+                            result.push(`<td>${cell}</td>`)
+                    }
+                    result.push("</tr>")
+            }
         }
         result.push("</tbody>")
         result.push("</table>")
@@ -400,11 +405,11 @@ const Breakpoint = {
         }
     },
     store_breakpoint: function(breakpoint){
-        let bkpt = _.assign(breakpoint)
+        let bkpt = $.extend(true, {}, breakpoint)
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
         let links = []
         if ('fullname' in breakpoint){
-             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, 'false'))
+             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, '', 'false'))
         }
         links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
         bkpt[' '] = links.join(' | ')
@@ -419,7 +424,7 @@ const Breakpoint = {
             Breakpoint.breakpoints.push(bkpt)
         }
     },
-    get_breakpoint_lines_For_file: function(fullname){
+    get_breakpoint_lines_for_file: function(fullname){
         return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line))
     },
     assign_breakpoints_from_mi_breakpoint_table: function(payload){
@@ -530,6 +535,9 @@ const SourceCode = {
             ${func_and_addr_content}
         </td>`
     },
+    /**
+     * Render a cached source file
+     */
     render_source_file: function(fullname, source_code, current_line=1, addr=undefined, options={'highlight': false, 'scroll': false}){
         current_line = parseInt(current_line)
         SourceCode.state.line_highlighted = options.highlight
@@ -551,7 +559,7 @@ const SourceCode = {
 
         let line_num = 1,
             tbody = [],
-            bkpt_lines = Breakpoint.get_breakpoint_lines_For_file(fullname)
+            bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(fullname)
 
         for (let line of source_code){
             let has_breakpoint = bkpt_lines.indexOf(line_num) !== -1
@@ -595,7 +603,7 @@ const SourceCode = {
     // re-render breakpoints on whichever file is loaded
     render_breakpoints: function(){
         if(_.isString(SourceCode.state.rendered_source_file_fullname)){
-            let jq_old_bkpts = $('div.line_num.breakpoint')
+            let jq_old_bkpts = $('.line_num.breakpoint')
             for(let old_bkpt of jq_old_bkpts){
                 // remove breakpoint class and set data.has_breakpoint to false
                 let jq_old_bkpt = $(old_bkpt)
@@ -603,11 +611,11 @@ const SourceCode = {
                 old_bkpt.dataset.has_breakpoint = 'false'
             }
 
-            let bkpt_lines = Breakpoint.get_breakpoint_lines_For_file(SourceCode.state.rendered_source_file_fullname)
-            , jq_lines = $('div.line_num')
+            let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(SourceCode.state.rendered_source_file_fullname)
+            , jq_lines = $('td.line_num')
 
             for(let bkpt_line of bkpt_lines){
-                let js_line = $(`div.line_num[data-line=${bkpt_line}]`)[0]
+                let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
                 if(js_line){
                     $(js_line).addClass('breakpoint')
                     js_line.dataset.has_breakpoint = 'true'
@@ -627,8 +635,7 @@ const SourceCode = {
     // fetch file and render it, or used cached file if we have it
     fetch_and_render_file: function(fullname, current_line=1, addr='', options={'highlight': false, 'scroll': false}){
         if (!_.isString(fullname)){
-            console.error('cannot render file without a name')
-
+            return
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
             let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
@@ -796,8 +803,14 @@ const SourceCode = {
         SourceCode.remove_highlight()
         SourceCode.clear_cached_source_files()
     },
-    get_link_to_view_file: function(fullname, line=0, highlight='false'){
-        return `<a class='view_file pointer' data-fullname=${fullname} data-line=${line} data-highlight=${highlight}>View</a>`
+    get_link_to_view_file: function(fullname, line=0, addr='', highlight='false', text='View'){
+        // create local copies so we don't modify the references
+        let _fullname = fullname
+            , _line = line
+            , _addr = addr
+            , _highlight = highlight
+            , _text = text
+        return `<a class='view_file pointer' data-fullname=${_fullname} data-line=${_line} data-addr=${_addr} data-highlight=${_highlight}>${_text}</a>`
     }
 }
 
@@ -861,47 +874,6 @@ const SourceFileAutocomplete = {
         }
     }
 }
-
-
-/**
- * The Stack component
- */
-const Stack = {
-    el: $('#stack'),
-    init: function(){
-        $("body").on("click", ".select_frame", Stack.click_select_frame)
-    },
-    render_stack: function(stack){
-        for (let s of stack){
-            if ('fullname' in s){
-                s[' '] = `<a class='select_frame pointer' data-fullname=${s.fullname} data-line=${s.line || ''} data-framenum=${s.level} data-highlight=true>View</a>`
-            }
-            if ('addr' in s){
-                s.addr = Memory.make_addr_into_link(s.addr)
-            }
-        }
-
-        let [columns, data] = Util.get_table_data_from_objs(stack)
-        Stack.el.html(Util.get_table(columns, data))
-    },
-    /**
-     * select a frame and jump to the line in source code
-     * triggered when clicking on an object with the "select_frame" class
-     * must have data attributes: framenum, fullname, line
-     *
-     */
-    click_select_frame: function(e){
-        Stack.select_frame(e.currentTarget.dataset.framenum)
-        SourceCode.click_view_file(e)
-    },
-    select_frame: function(framenum){
-        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
-    },
-    program_exited: function(){
-        Stack.render_stack([])
-    }
-}
-
 
 /**
  * The Registers component
@@ -1172,7 +1144,9 @@ const Memory = {
         Memory.el.html(table)
     },
     make_addr_into_link: function(addr, name=addr){
-        return `<a class='pointer memory_address' data-memory_address='${addr}'>${addr}</a>`
+        let _addr = addr
+            , _name = name
+        return `<a class='pointer memory_address' data-memory_address='${_addr}'>${_name}</a>`
     },
     add_value_to_cache: function(hex_str, hex_val){
         Memory.state.cache[hex_str] = hex_val
@@ -1523,10 +1497,15 @@ const Threads = {
     el: $('#threads'),
     state: {
         'threads': [],
-        'current_thread_id': undefined
+        'current_thread_id': undefined,
+        'stack': []
     },
     init: function(){
         $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
+        $("body").on("click", ".select_frame", Threads.click_select_frame)
+    },
+    set_stack: function(stack){
+        Threads.state.stack =  $.extend(true, [], stack)
     },
     program_exited: function(){
         Threads.clear()
@@ -1534,40 +1513,103 @@ const Threads = {
     clear: function(){
         Threads.state.threads = []
         Threads.state.current_thread_id = undefined
+        Threads.state.stack = []
         Threads.render()
     },
     click_select_thread_id: function(e){
         GdbApi.run_gdb_command(`-thread-select ${e.currentTarget.dataset.thread_id}`)
+        GdbApi.refresh_stack()
+    },
+    /**
+     * select a frame and jump to the line in source code
+     * triggered when clicking on an object with the "select_frame" class
+     * must have data attributes: framenum, fullname, line
+     *
+     */
+    click_select_frame: function(e){
+        Threads.select_frame(e.currentTarget.dataset.framenum)
+    },
+    select_frame: function(framenum){
+        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
+        GdbApi.refresh_stack()
     },
     render: function(){
         if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
             let tbody = []
             for(let t of Threads.state.threads){
-                let highlight = ''
+                let cls = ''
+                , stack = '?'
+                , select_thread_link = ''
                 if(parseInt(t.id) === Threads.state.current_thread_id){
-                    highlight = 'highlight'
+                    cls = 'bold'
+                } else {
+                    select_thread_link = `<a class='select_thread_id pointer' data-thread_id='${t.id}'>select this thread</a>`
                 }
-                let view_link = SourceCode.get_link_to_view_file(t.frame.fullname, t.frame.line, 'true')
-                tbody.push(
-                [`
-                <tr class='${highlight} select_thread_id pointer' data-thread_id=${t.id}>
-                <td>
-                    ${view_link} id ${t.id} core ${t.core} ${t['target-id']} function ${t.frame.func || '?'} line ${t.frame.line || '?'} (${t.state})
-                </td>
-                </tr>`]
-                )
+                // each thread has a frame, but only the current frame in the current thread
+                // is part of the stack
+                // get the frame, and if t's frame is part of the stack, render the whole stack
+                stack = Threads.get_stack_list([t.frame])
+
+                for (let s of Threads.state.stack){
+                    if(s.addr === t.frame.addr){
+                        stack = Threads.get_stack_list(Threads.state.stack)
+                        break
+                    }
+                }
+
+                tbody.push([`<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span>`, stack])
             }
-            Threads.el.html(Util.get_table(['thread'], tbody))
+            Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
+        }else{
+            Threads.el.html('')
         }
     },
+    get_stack_list: function(stack){
+        let _stack = $.extend(true, [], stack)
+            , stack_list = []
+
+
+        for (let s of _stack){
+            let fullname = '?'
+                , line = '?'
+                , addr_link = '?'
+
+            if ('fullname' in s){
+                fullname = s.fullname
+            }else if ('file' in s){
+                fullname = s.file
+            }
+            if ('addr' in s){
+                addr_link = Memory.make_addr_into_link(s.addr)
+            }
+            if('line' in s){
+                line = s.line
+            }
+
+            let hightlight = true
+                , view_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
+                , select_frame_link = ''
+
+            if(s.level){
+                select_frame_link = `<span class='pointer select_frame' data-framenum=${s.level}>select frame</span>`
+            }
+
+            stack_list.push(`<li>${view_link} ${addr_link} ${select_frame_link}</li>`)
+        }
+
+        return `<ul class='no_bullet'>
+            ${stack_list.join('')}
+        </ul>
+        `
+    },
     set_threads: function(threads){
-        Threads.state.threads = threads
+        Threads.state.threads = $.extend(true, [], threads)
         Threads.render()
     },
     set_thread_id: function(id){
         Threads.state.current_thread_id = parseInt(id)
         Threads.render()
-    }
+    },
 }
 
 /**
@@ -1728,7 +1770,11 @@ const process_gdb_response = function(response_array){
                 SourceCode.render_breakpoints()
             }
             if ('stack' in r.payload) {
-                Stack.render_stack(r.payload.stack)
+                Threads.set_stack(r.payload.stack)
+            }
+            if('threads' in r.payload){
+                Threads.set_threads(r.payload.threads)
+                Threads.set_thread_id((r.payload['current-thread-id']))
             }
             if ('register-names' in r.payload) {
                 Registers.set_register_names(r.payload['register-names'])
@@ -1757,10 +1803,6 @@ const process_gdb_response = function(response_array){
             }
             if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
                 Variables.gdb_created_children_variables(r)
-            }
-            if('threads' in r.payload){
-                Threads.set_threads(r.payload.threads)
-                Threads.set_thread_id((r.payload['current-thread-id']))
             }
             // if (your check here) {
             //      render your custom compenent here!
@@ -1801,7 +1843,6 @@ const process_gdb_response = function(response_array){
             if(r.payload.reason.includes('exited')){
                 // TODO emit event
                 SourceCode.program_exited()
-                Stack.program_exited()
                 Memory.program_exited()
                 Registers.program_exited()
                 Threads.program_exited()
@@ -1844,7 +1885,6 @@ GdbApi.init()
 GdbCommandInput.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
-Stack.init()
 SourceCode.init()
 BinaryLoader.init()
 SourceFileAutocomplete.init()
