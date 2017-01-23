@@ -85,8 +85,9 @@ body
             div.flex
                 //- displays loaded file path and input to jump to line
                 span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+                button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px;') reload
+                    span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
+
 
                 //- input to jump to a line in the source code
                 input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
@@ -95,24 +96,21 @@ body
                     input#checkbox_show_assembly(type='checkbox')
                     ='show assembly'
 
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+
+
             div#code_container.gdb_content_div(style="height: 300px")
                 table#code_table.code
                     tr
                         td Source code will be displayed here when applicable
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="stack")
-            div.titlebar
-                span.lighttext stack
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#stack" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#stack" data-resize_type="shrink")
-            div#stack.gdb_content_div
-
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
-            div.titlebar
-                span.lighttext breakpoints
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-            div#breakpoints.gdb_content_div
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
+            div.titlebar.flex
+                span.lighttext threads
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
+            div#threads.gdb_content_div
 
         div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
             div.titlebar.flex
@@ -138,14 +136,6 @@ body
                 input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
             div#memory.gdb_content_div
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="all local variables")
-            div.titlebar
-                span.lighttext All Local Variables
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#all_local_variables" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-stack-list-locals --all-values', title="Refresh all data names and values (-stack-list-locals --all-values')") Fetch
-            div#all_local_variables.gdb_content_div
-
         div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
             div.titlebar
@@ -156,6 +146,9 @@ body
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
+                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
+                        span.glyphicon.glyphicon-download.padding_left
+
             //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
 
@@ -163,7 +156,14 @@ body
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
+        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
+            div.titlebar
+                span.lighttext breakpoints
+                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+            div#breakpoints.gdb_content_div
+
+        div.col-md-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
             div.titlebar
                 span.lighttext gdb machine interface output
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
