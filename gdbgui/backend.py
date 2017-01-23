@@ -58,7 +58,7 @@ def gdb_background_thread():
             else:
                 # This is a problem. This thread shouldn't be running unless
                 # there is a gdb process providing output
-                print('gdb object could not be found. Exiting thread that reads gdb output.')
+                print('Thanks for using gdbgui!')
                 break
 
         except Exception as e:
@@ -92,7 +92,12 @@ def get_extra_files():
 @app.route('/')
 def gdbgui():
     """Render the main gdbgui interface"""
-    time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+    if app.debug:
+        # do not give unique timestamp to files because it wipes out
+        # breakpoints in chrome's debugger
+        time_sec = 0
+    else:
+        time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
     return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec)
 
 

@@ -19,7 +19,12 @@ pre{
   white-space: pre;
 }
 .monospace{
-  font-family: monospace;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+.memory_address{
+  color: #337ab7;
+  text-decoration: none;
+  font-weight:
 }
 .lighttext{
   color: #4a4a4a;
@@ -80,24 +85,21 @@ pre{
 .highlight{
   background: rgba(255, 255, 0, 0.5) !important;
 }
-.line_num_container{
+.line_num{
   width: 50px;
   border-width: 0;
   border-right: 1px;
   border-style: solid;
   border-color: #c7c7c7;
-}
-.line_num{
   padding-left: 10px;
   padding-right: 10px;
-  font-family: monospace;
   font-size: 0.9em;
   color: #ababab;
   cursor: pointer;
 }
 /* the line number has its style changed if it has a breakpoint */
 .line_num.breakpoint{
-  background: #33cdff;
+  background: #33cdff !important;
   color: black;
   border-style: solid;
   border-color: #000000;
@@ -111,8 +113,8 @@ td.assembly{
   word-wrap: break-word;
   overflow: auto;
 }
-.source_code_row{
-  font-family: monospace;
+#code_table{
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
 /* set background color over souce code only */
 .source_code_row.line_of_code td{
@@ -124,14 +126,6 @@ td.assembly{
 /* when hovering, set background color of entire row */
 .source_code_row:hover td, .source_code_row:hover td pre{
   background-color: #e2e2e2;
-}
-.memory_address{
-  color: rgb(51, 51, 51);
-  text-decoration: underline;
-}
-.memory_address:hover{
-  color: rgb(93, 93, 93);
-  text-decoration: none;
 }
 .padding_left{
   padding-left: 5px;
@@ -183,7 +177,7 @@ td.assembly{
   font-size: 0.9em !important;
   background-color: #292929 !important;
   color: #f9f9f9 !important;
-  font-family: monospace !important;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
 #gdb_command{
   padding-left: 45px;
@@ -193,10 +187,10 @@ td.assembly{
   font-size: 0.9em !important;
   background-color: #3c3c3c !important;
   color: #f9f9f9 !important;
-  font-family: monospace !important;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
 #gdb_mi_output{
-  font-family: monospace;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
   font-size: 0.9em;
 }
@@ -205,6 +199,12 @@ td.assembly{
 #variables li{
   list-style: none;
 }
+
+#threads ul{
+  list-style: none;
+  padding: 0;
+}
+
 
 #variables ul.variable{
     padding-left: 5px;
