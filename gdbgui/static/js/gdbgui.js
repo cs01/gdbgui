@@ -42,7 +42,7 @@ const Status = {
         if(error){
             Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
         }else{
-            Status.el.text(status_str)
+            Status.el.html(status_str)
         }
     },
     /**
@@ -152,8 +152,8 @@ const GdbApi = {
             cmds = [cmds]
         }
 
-        Status.render(`running command(s) "${cmd}"`)
-        Status.render(``)
+        // Status.render(`running command(s) "${cmd}"`)
+        Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
         History.save_to_history(cmds)
         // GdbConsoleComponent.add_sent_commands(cmds)
         $.ajax({
@@ -515,24 +515,15 @@ const SourceCode = {
                 if(addr === i.address){
                     cls = 'bold'
                 }
-                instruction_content.push(`<span class=${cls}>${i.inst}</span>`)
-                func_and_addr_content.push(`<span class='${cls}'> ${i['func-name']}+${i['offset']} ${Memory.make_addr_into_link(i.address)}</span>`)
+                instruction_content.push(`<span style="white-space: nowrap;" class=${cls}>${i.inst} ${i['func-name']}+${i['offset']} ${Memory.make_addr_into_link(i.address)}</span>`)
             }
 
             instruction_content = instruction_content.join('<br>')
-            func_and_addr_content = func_and_addr_content.join('<br>')
-
-            // instruction_content = instructions_for_this_line.map(el => `${el.inst}`).join('<br>')
-            // func_and_addr_content = instructions_for_this_line.map(el => ).join('<br>')
         }
 
         return `
         <td valign="top" class='assembly'>
-
             ${instruction_content}
-        </td>
-        <td valign="top" class='assembly'>
-            ${func_and_addr_content}
         </td>`
     },
     /**
@@ -575,12 +566,12 @@ const SourceCode = {
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border  ${breakpoint_class}'  data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
+                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
                         <div>${line_num}</div>
                     </td>
 
-                    <td valign="top" class='line_of_code'>
-                        <pre ${tags}>${line}</pre>
+                    <td valign="top" class='line_of_code' style='max-width: 80%; min_width: 200px;'>
+                        <pre ${tags} style='white-space: pre-wrap;'>${line}</pre>
                     </td>
 
                     ${assembly_for_line}

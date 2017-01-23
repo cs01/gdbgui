@@ -13,6 +13,7 @@ import webbrowser
 import datetime
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, send
+sys.path.append('/home/csmith/git/pygdbmi')
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
