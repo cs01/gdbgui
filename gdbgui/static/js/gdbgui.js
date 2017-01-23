@@ -1249,13 +1249,6 @@ const Variables = {
             return undefined
         }
     },
-    /**
-     * Delete local copy of gdb variable (all its children are deleted too
-     * since they are stored as fields in the object)
-     */
-    delete_local_gdb_var_data: function(gdb_var_name){
-        _.remove(Variables.state.variables, v => v.name === gdb_var_name)
-    },
     keydown_on_input: function(e){
         if((e.keyCode === ENTER_BUTTON_NUM)) {
             let expr = Variables.el_input.val()
@@ -1294,9 +1287,10 @@ const Variables = {
     prepare_gdb_obj_for_storage: function(obj){
         let new_obj = jQuery.extend(true, {'children': [],
                                     'numchild': parseInt(obj.numchild),
-                                    'show_children_in_ui': false}, obj)
+                                    'show_children_in_ui': false,
+                                    'in_scope': 'true', // this field will be returned by gdb mi as a string
+                                }, obj)
         return new_obj
-
     },
     /**
      * After a variable is created, we need to link the gdb
@@ -1376,10 +1370,15 @@ const Variables = {
         let html = ''
         const is_root = true
         for(let obj of Variables.state.variables){
-            if(obj.numchild > 0) {
-                html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
-            }else{
-                html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
+            if(obj.in_scope === 'true'){
+                if(obj.numchild > 0) {
+                    html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
+                }else{
+                    html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
+                }
+            }else if (obj.in_scope === 'invalid'){
+                console.log(`deleting invalid gdb var ${obj.name}`)
+                Variables.delete_gdb_variable(obj.name)
             }
         }
 
@@ -1477,17 +1476,24 @@ const Variables = {
         Variables.render()
     },
     click_delete_gdb_variable: function(e){
-        e.stopPropagation()
-
+        e.stopPropagation() // not sure if this is still needed
+        Variables.delete_gdb_variable(e.currentTarget.dataset.gdb_variable)
+    },
+    delete_gdb_variable: function(gdbvar){
         // delete locally
-        Variables.delete_local_gdb_var_data(e.currentTarget.dataset.gdb_variable)
-
+        Variables._delete_local_gdb_var_data(gdbvar)
         // delete in gdb too
-        GdbApi.run_gdb_command(`-var-delete ${e.currentTarget.dataset.gdb_variable}`)
-
+        GdbApi.run_gdb_command(`-var-delete ${gdbvar}`)
         // re-render variables in browser
         Variables.render()
-    }
+    },
+    /**
+     * Delete local copy of gdb variable (all its children are deleted too
+     * since they are stored as fields in the object)
+     */
+    _delete_local_gdb_var_data: function(gdb_var_name){
+        _.remove(Variables.state.variables, v => v.name === gdb_var_name)
+    },
 }
 
 /**
@@ -1570,9 +1576,9 @@ const Threads = {
 
 
         for (let s of _stack){
-            let fullname = '?'
-                , line = '?'
-                , addr_link = '?'
+            let fullname = 'unknown filename'
+                , line = 'unknown line'
+                , addr_link = 'unknown address'
 
             if ('fullname' in s){
                 fullname = s.fullname
