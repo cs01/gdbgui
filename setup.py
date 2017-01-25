@@ -2,7 +2,7 @@ from setuptools import find_packages, setup, Command
 import sys
 
 EXCLUDE_FROM_PACKAGES = []
-version = '0.5101'
+version = '0.7.2'
 
 
 class TestCommand (Command):
@@ -26,10 +26,10 @@ setup(
     name='gdbgui',
     version=version,
     author='Chad Smith',
-    author_email='chadsmith27@gmail.com',
+    author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
     url='https://github.com/cs01/gdbgui',
-    license='BSD',
+    license='MIT',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     keywords=['gdb', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui', 'c', 'c++', 'go', 'rust'],
@@ -44,12 +44,14 @@ setup(
     cmdclass={'test': TestCommand},
     install_requires=[
         'Flask>=0.11.1',
-        'pygdbmi>=0.6',
-        'pyjade>=4.0.0'
+        'pygdbmi>=0.7.1',
+        'pyjade>=4.0.0',
+        'Flask-SocketIO>=2.8.2',  # for websockets
+        'eventlet>=0.20.1',  # for websockets
     ],
     classifiers=[
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',

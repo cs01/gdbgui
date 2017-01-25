@@ -1,3 +1,4 @@
+
 /**
  * This is the main frontend file to make
  * an interactive ui for gdb. Everything exists in this single js
@@ -5,10 +6,11 @@
  *
  * There are several components, each of which have their
  * own top-level object. Each component is reponsible
- * for its own data, state, event handling, and rendering.
+ * for its own data, state, event handling, and rendering (to
+ * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete) {
+(function ($, _, Awesomplete, io, debug) {
 "use strict";
 
 /**
@@ -16,29 +18,52 @@
  */
 const ENTER_BUTTON_NUM = 13
 
+console.log(debug)
+/**
+ * Globals
+ */
+let globals = {
+    gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+    debug: debug
+}
+
+
 /**
  * The Status component display the most recent gdb status
  * at the top of the page
  */
 const Status = {
     el: $('#status'),
+    /**
+     * Render a new status
+     * @param status_str: The string to render
+     * @param error: Whether this string relates to an error condition. If true,
+     *                  a red label appears
+     */
     render: function(status_str, error=false){
         if(error){
             Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
         }else{
-            Status.el.text(status_str)
+            Status.el.html(status_str)
         }
     },
-    render_ajax_error_msg: function(data){
-        if (data.responseJSON && data.responseJSON.message){
-            Status.render(_.escape(data.responseJSON.message), true)
+    /**
+     * Handle http responses with error codes
+     * @param response: response from server
+     */
+    render_ajax_error_msg: function(response){
+        if (response.responseJSON && response.responseJSON.message){
+            Status.render(_.escape(response.responseJSON.message), true)
         }else{
-            Status.render(`${data.statusText} (${data.status} error)`, true)
+            Status.render(`${response.statusText} (${response.status} error)`, true)
         }
     },
+    /**
+     * Render pygdbmi response
+     * @param mi_obj: gdb mi obj from pygdbmi
+     */
     render_from_gdb_mi_response: function(mi_obj){
         if(!mi_obj){
-            Status.render('empty response')
             return
         }
         // Update status
@@ -129,9 +154,10 @@ const GdbApi = {
             cmds = [cmds]
         }
 
-        Status.render(`running command(s) "${cmd}"`)
+        // Status.render(`running command(s) "${cmd}"`)
+        Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
         History.save_to_history(cmds)
-        GdbConsoleComponent.add_sent_commands(cmds)
+        // GdbConsoleComponent.add_sent_commands(cmds)
         $.ajax({
             url: "/run_gdb_command",
             cache: false,
@@ -140,6 +166,21 @@ const GdbApi = {
             success: success_callback,
             error: Status.render_ajax_error_msg,
         })
+    },
+    refresh_breakpoints: function(){
+        GdbApi.run_gdb_command(['-break-list'])
+    },
+    refresh_stack: function(){
+        let cmds = ['-data-evaluate-expression fflush(0)',
+                    '-stack-list-frames',
+                    '-stack-info-frame',
+                    '-thread-info',
+                    '-var-update --all-values *',
+                    '-data-list-register-names',
+                    '-data-list-register-values x']
+        // re-fetch memory over desired range as specified by DOM
+        cmds.concat(Memory.get_gdb_commands_from_inputs())
+        GdbApi.run_gdb_command(cmds)
     },
     /**
      * read gdb's buffers for any asynchronous data that
@@ -174,20 +215,25 @@ const Util = {
      */
     get_table: function(columns, data) {
         var result = ["<table class='table table-striped table-bordered table-condensed'>"];
-        result.push("<thead>")
-        result.push("<tr>")
-        for (let h of columns){
-            result.push(`<th>${h}</th>`)
+        if(columns){
+            result.push("<thead>")
+            result.push("<tr>")
+            for (let h of columns){
+                result.push(`<th>${h}</th>`)
+            }
+            result.push("</tr>")
+            result.push("</thead>")
         }
-        result.push("</tr>")
-        result.push("</thead>")
-        result.push("<tbody>")
-        for(let row of data) {
-                result.push("<tr>")
-                for(let cell of row){
-                        result.push(`<td>${cell}</td>`)
-                }
-                result.push("</tr>")
+
+        if(data){
+            result.push("<tbody>")
+            for(let row of data) {
+                    result.push("<tr>")
+                    for(let cell of row){
+                            result.push(`<td>${cell}</td>`)
+                    }
+                    result.push("</tr>")
+            }
         }
         result.push("</tbody>")
         result.push("</table>")
@@ -223,6 +269,11 @@ const Util = {
         return s.replace(/([^\\]\\n)/g, '<br>')
                 .replace(/\\t/g, '&nbsp')
                 .replace(/\\"+/g, '"')
+    },
+    push_if_new: function(array, val){
+        if(array.indexOf(val) === -1){
+            array.push(val)
+        }
     }
 }
 
@@ -250,6 +301,9 @@ const GdbConsoleComponent = {
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
+        if(!_.isArray(cmds)){
+            cmds = [cmds]
+        }
         cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='margin_sm output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
         GdbConsoleComponent.scroll_to_bottom()
     },
@@ -311,21 +365,23 @@ const GdbMiOutput = {
     el: $('#gdb_mi_output'),
     init: function(){
         $('.clear_mi_output').click(GdbMiOutput.clear)
+        if(!debug){
+            GdbMiOutput.el.html('this widget is only enabled in debug mode')
+        }
     },
     clear: function(){
         GdbMiOutput.el.html('')
     },
     add_mi_output: function(mi_obj){
-        const text_class = {
-            'output': "",
-            'notify': "text-info",
-            'log': "text-primary",
-            'status': "text-danger",
-            'console': "text-info",
+        if(debug){
+            let mi_obj_dump = JSON.stringify(mi_obj, null, 4)
+            mi_obj_dump = mi_obj_dump.replace(/[^(\\)]\\n/g).replace("<", "&lt;").replace(">", "&gt;")
+            GdbMiOutput.el.append(`<p class='pre margin_sm output'>${mi_obj.type}:<br>${mi_obj_dump}</span>`)
+            return
+        }else{
+            // dont append to this in release mode
         }
-        let mi_obj_dump = JSON.stringify(mi_obj, null, 4)
-        mi_obj_dump = mi_obj_dump.replace(/[^(\\)]\\n/g).replace("<", "&lt;").replace(">", "&gt;")
-        GdbMiOutput.el.append(`<p class='pre ${text_class[mi_obj.type]} margin_sm output'>${mi_obj.type}:<br>${mi_obj_dump}</span>`)
+
     },
     scroll_to_bottom: function(){
         GdbMiOutput.el.animate({'scrollTop': GdbMiOutput.el.prop('scrollHeight')})
@@ -354,11 +410,11 @@ const Breakpoint = {
         }
     },
     store_breakpoint: function(breakpoint){
-        let bkpt = _.assign(breakpoint)
+        let bkpt = $.extend(true, {}, breakpoint)
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
         let links = []
         if ('fullname' in breakpoint){
-             links.push(`<a class='view_file pointer' data-fullname=${breakpoint.fullname || ''} data-line=${breakpoint.line || ''} data-highlight=false>View</a>`)
+             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, '', 'false'))
         }
         links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
         bkpt[' '] = links.join(' | ')
@@ -373,7 +429,7 @@ const Breakpoint = {
             Breakpoint.breakpoints.push(bkpt)
         }
     },
-    get_breakpoint_lines_For_file: function(fullname){
+    get_breakpoint_lines_for_file: function(fullname){
         return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line))
     },
     assign_breakpoints_from_mi_breakpoint_table: function(payload){
@@ -395,38 +451,111 @@ const SourceCode = {
     el_code_container: $('#code_container'),
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
-    rendered_source_file_fullname: null,
-    rendered_source_file_line: null,
+    state: {'rendered_source_file_fullname': null,
+            'rendered_source_file_line': null,
+            'rendered_source_file_addr': null,
+            'line_highlighted': false,
+            'cached_source_files': [],  // list with keys fullname, source_code
+    },
     init: function(){
-        $("body").on("click", ".source_code_row td .line_num", SourceCode.click_gutter)
+        $("body").on("click", ".source_code_row td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
+        $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
+        $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
     },
-    cached_source_files: [],  // list with keys fullname, source_code
     click_gutter: function(e){
         let line = e.currentTarget.dataset.line
         let has_breakpoint = (e.currentTarget.dataset.has_breakpoint === 'true')
         if(has_breakpoint){
             // clicked gutter with a breakpoint, remove it
-            Breakpoint.remove_breakpoint_if_present(SourceCode.rendered_source_file_fullname, line)
+            Breakpoint.remove_breakpoint_if_present(SourceCode.state.rendered_source_file_fullname, line)
 
         }else{
             // clicked with no breakpoint, add it, and list all breakpoints to make sure breakpoint table is up to date
-            let cmd = [`-break-insert ${SourceCode.rendered_source_file_fullname}:${line}`, '-break-list']
+            let cmd = [`-break-insert ${SourceCode.state.rendered_source_file_fullname}:${line}`, '-break-list']
             GdbApi.run_gdb_command(cmd)
         }
     },
     render_cached_source_file: function(){
-        SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': true})
+        SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
+            SourceCode.state.rendered_source_file_line,
+            SourceCode.state.rendered_source_file_addr,
+            {'highlight': false, 'scroll': true})
     },
     is_cached: function(fullname){
-        return SourceCode.cached_source_files.some(f => f.fullname === fullname)
+        return SourceCode.state.cached_source_files.some(f => f.fullname === fullname)
     },
-    render_source_file: function(fullname, source_code, current_line=1, options={'highlight': false, 'scroll': false}){
+    get_cached_assembly_for_file: function(fullname){
+        for(let file of SourceCode.state.cached_source_files){
+            if(file.fullname === fullname){
+                return file.assembly
+            }
+        }
+        return null
+    },
+    refresh_cached_source_files: function(e){
+        SourceCode.clear_cached_source_files()
+        SourceCode.re_render()
+    },
+    clear_cached_source_files: function(){
+        SourceCode.state.cached_source_files = []
+    },
+    /**
+     * Return html that can be displayed alongside source code
+     * @param show_assembly: Boolean
+     * @param assembly: Array of assembly data
+     * @param line_num: line for which assembly html should be returned
+     * @returns two <td> html elements with appropriate assembly code
+     */
+    get_assembly_html_for_line: function(show_assembly, assembly, line_num, addr){
+        let instruction_content = [],
+            func_and_addr_content = []
+
+        if(show_assembly && assembly[line_num]){
+
+            let instructions_for_this_line = assembly[line_num]
+            for(let i of instructions_for_this_line){
+                let cls = ''
+                if(addr === i.address){
+                    cls = 'bold'
+                }
+                instruction_content.push(`<span style="white-space: nowrap;" class=${cls}>${i.inst} ${i['func-name']}+${i['offset']} ${Memory.make_addr_into_link(i.address)}</span>`)
+            }
+
+            instruction_content = instruction_content.join('<br>')
+        }
+
+        return `
+        <td valign="top" class='assembly'>
+            ${instruction_content}
+        </td>`
+    },
+    /**
+     * Render a cached source file
+     */
+    render_source_file: function(fullname, source_code, current_line=1, addr=undefined, options={'highlight': false, 'scroll': false}){
         current_line = parseInt(current_line)
+        SourceCode.state.line_highlighted = options.highlight
+        SourceCode.state.rendered_source_file_fullname = fullname
+        SourceCode.state.rendered_source_file_line = current_line
+        SourceCode.state.rendered_source_file_addr = addr
+
+        let assembly,
+            show_assembly = SourceCode.show_assembly_box_is_checked()
+
+        if(show_assembly){
+            assembly = SourceCode.get_cached_assembly_for_file(fullname)
+
+            if(!assembly){
+                SourceCode.fetch_disassembly()
+                return  // when disassembly is returned, the source file will be rendered
+            }
+        }
+
         let line_num = 1,
             tbody = [],
-            bkpt_lines = Breakpoint.get_breakpoint_lines_For_file(fullname)
+            bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(fullname)
 
         for (let line of source_code){
             let has_breakpoint = bkpt_lines.indexOf(line_num) !== -1
@@ -437,15 +566,20 @@ const SourceCode = {
             }
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
+
+            let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num, addr)
+
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td class='line_num_container right_border'>
-                        <div class='line_num ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>${line_num}</div>
+                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
+                        <div>${line_num}</div>
                     </td>
 
-                    <td class='line_of_code'>
-                        <pre ${tags}>${line}</pre>
+                    <td valign="top" class='line_of_code' style='max-width: 80%; min_width: 200px;'>
+                        <pre ${tags} style='white-space: pre-wrap;'>${line}</pre>
                     </td>
+
+                    ${assembly_for_line}
                 </tr>
                 `)
             line_num++;
@@ -454,8 +588,6 @@ const SourceCode = {
         SourceCode.el_jump_to_line_input.val(current_line)
         SourceCode.el.html(tbody.join(''))
 
-        SourceCode.rendered_source_file_fullname = fullname
-        SourceCode.rendered_source_file_line = current_line
 
         if(options.scroll){
             SourceCode.make_current_line_visible()
@@ -464,22 +596,46 @@ const SourceCode = {
     make_current_line_visible: function(){
         SourceCode.scroll_to_jq_selector($("#current_line"))
     },
-    // call this to rerender a file when breakpoints change, for example
-    rerender: function(){
-        if(_.isString(SourceCode.rendered_source_file_fullname)){
-            // TODO redraw only breakpoint rows, not the whole source file
-            SourceCode.fetch_and_render_file(SourceCode.rendered_source_file_fullname, SourceCode.rendered_source_file_line, {'highlight': false, 'scroll': false})
+    // re-render breakpoints on whichever file is loaded
+    render_breakpoints: function(){
+        if(_.isString(SourceCode.state.rendered_source_file_fullname)){
+            let jq_old_bkpts = $('.line_num.breakpoint')
+            for(let old_bkpt of jq_old_bkpts){
+                // remove breakpoint class and set data.has_breakpoint to false
+                let jq_old_bkpt = $(old_bkpt)
+                jq_old_bkpt.removeClass('breakpoint')
+                old_bkpt.dataset.has_breakpoint = 'false'
+            }
+
+            let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(SourceCode.state.rendered_source_file_fullname)
+            , jq_lines = $('td.line_num')
+
+            for(let bkpt_line of bkpt_lines){
+                let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
+                if(js_line){
+                    $(js_line).addClass('breakpoint')
+                    js_line.dataset.has_breakpoint = 'true'
+                }
+            }
         }
     },
-    // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=1, options={'highlight': false, 'scroll': false}){
-        if (!_.isString(fullname)){
-            console.error('cannot render file without a name')
+    re_render: function(){
+        let fullname = SourceCode.state.rendered_source_file_fullname,
+            current_line = SourceCode.state.rendered_source_file_line || 0,
+            addr = SourceCode.state.rendered_source_file_addr || 0,
+            options = {'highlight': SourceCode.state.line_highlighted, 'scroll': false}
 
+        // render file and pass current state
+        SourceCode.fetch_and_render_file(fullname, current_line, addr, options)
+    },
+    // fetch file and render it, or used cached file if we have it
+    fetch_and_render_file: function(fullname, current_line=1, addr='', options={'highlight': false, 'scroll': false}){
+        if (!_.isString(fullname)){
+            return
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
-            let f = _.find(SourceCode.cached_source_files, i => i.fullname === fullname)
-            SourceCode.render_source_file(fullname, f.source_code, current_line, options)
+            let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
+            SourceCode.render_source_file(fullname, f.source_code, current_line, addr, options)
 
         } else {
             $.ajax({
@@ -488,16 +644,94 @@ const SourceCode = {
                 type: 'GET',
                 data: {path: fullname},
                 success: function(response){
-                    SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': response.source_code})
-                    SourceCode.render_source_file(fullname, response.source_code, current_line, options)
+                    SourceCode.add_source_file_to_cache(fullname, response.source_code)
+                    SourceCode.render_source_file(fullname, response.source_code, current_line, addr, options)
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
                     let source_code = [`failed to fetch file ${fullname}`]
-                    SourceCode.cached_source_files.push({'fullname': fullname, 'source_code': source_code})
-                    SourceCode.render_source_file(fullname, source_code, 0, options)
+                    SourceCode.add_source_file_to_cache(fullname, source_code)
+                    SourceCode.render_source_file(fullname, source_code, 0, addr, options)
                 }
             })
+        }
+    },
+    add_source_file_to_cache: function(fullname, source_code, assembly){
+        SourceCode.state.cached_source_files.push({'fullname': fullname, 'source_code': source_code, 'assembly': assembly})
+    },
+    /**
+     * gdb changed its api for the data-disassemble command
+     * see https://www.sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Data-Manipulation.html
+     * TODO not sure which version this change occured in. I know in 7.7 it needs the '3' option,
+     * and in 7.11 it needs the '4' option. I should test the various version at some point.
+     */
+    get_dissasembly_format_num: function(gdb_version){
+        if(gdb_version === undefined){
+            // assuming new version, but we shouldn't ever not know the version...
+            return 4
+        } else if (gdb_version <= 7.7){
+            // this option has been deprecated in newer versions, but is required in older ones
+            //
+            return 3
+        }else{
+            return 4
+        }
+    },
+    get_fetch_disassembly_command: function(){
+        if(SourceCode.state.rendered_source_file_fullname){
+            let mi_response_format = SourceCode.get_dissasembly_format_num(globals.gdb_version)
+            return `-data-disassemble -f ${SourceCode.state.rendered_source_file_fullname} -l 1 -- ${mi_response_format}`
+        }else{
+            // we don't have a file to fetch disassembly for
+            return null
+        }
+    },
+    show_assembly_box_is_checked: function(){
+        return $('#checkbox_show_assembly').prop('checked')
+    },
+    /**
+     * Fetch disassembly for current file/line. An error is raised
+     * if gdbgui doesn't have that state saved.
+     */
+    show_assembly_checkbox_changed: function(e){
+        if(SourceCode.show_assembly_box_is_checked()){
+            let cmd = SourceCode.get_fetch_disassembly_command()
+            if(cmd){
+                GdbApi.run_gdb_command(cmd)
+            }
+        }else{
+            SourceCode.re_render()
+        }
+    },
+    fetch_disassembly: function(){
+        let cmd = SourceCode.get_fetch_disassembly_command()
+        if(cmd){
+           GdbApi.run_gdb_command(cmd)
+        }
+    },
+    /**
+     * Save assembly and render source code if desired
+     */
+    save_new_assembly: function(mi_assembly){
+        if(!_.isArray(mi_assembly) || mi_assembly.length === 0){
+            console.error("Attempted to save unexpected assembly")
+        }
+
+        let assembly_to_save = {}
+        for(let obj of mi_assembly){
+            assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn
+        }
+
+        let fullname = mi_assembly[0].fullname
+        for (let cached_file of SourceCode.state.cached_source_files){
+            if(cached_file.fullname === fullname){
+                cached_file.assembly = assembly_to_save
+                if (SourceCode.state.rendered_source_file_fullname === fullname){
+                    // re render with our new disassembly
+                    SourceCode.re_render()
+                }
+                break
+            }
         }
     },
     /**
@@ -530,11 +764,10 @@ const SourceCode = {
      * Remove the id and highlighting in the DOM, and set the
      * variable to null
      */
-    remove_current_line: function(){
-        SourceCode.rendered_source_file_line = null
+    remove_highlight: function(){
+        SourceCode.state.line_highlighted = false
         let jq_current_line = $("#current_line")
         if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
-            jq_current_line.removeAttr('id')  // remove current line id
             jq_current_line.removeClass('highlight')  // remove current line id
         }
     },
@@ -548,8 +781,9 @@ const SourceCode = {
     click_view_file: function(e){
         let fullname = e.currentTarget.dataset['fullname'],
             line = e.currentTarget.dataset['line'],
-            highlight = e.currentTarget.dataset['highlight'] === 'true'
-        SourceCode.fetch_and_render_file(fullname, line, {'highlight': highlight, 'scroll': true})
+            highlight = e.currentTarget.dataset['highlight'] === 'true',
+            addr = e.currentTarget.dataset['addr']
+        SourceCode.fetch_and_render_file(fullname, line, addr, {'highlight': highlight, 'scroll': true})
     },
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -560,6 +794,19 @@ const SourceCode = {
     jump_to_line: function(line){
         let jq_selector = $(`.line_num[data-line=${line}]`)
         SourceCode.scroll_to_jq_selector(jq_selector)
+    },
+    program_exited: function(){
+        SourceCode.remove_highlight()
+        SourceCode.clear_cached_source_files()
+    },
+    get_link_to_view_file: function(fullname, line=0, addr='', highlight='false', text='View'){
+        // create local copies so we don't modify the references
+        let _fullname = fullname
+            , _line = line
+            , _addr = addr
+            , _highlight = highlight
+            , _text = text
+        return `<a class='view_file pointer' data-fullname=${_fullname} data-line=${_line} data-addr=${_addr} data-highlight=${_highlight}>${_text}</a>`
     }
 }
 
@@ -599,7 +846,7 @@ const SourceFileAutocomplete = {
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
             let fullname = e.currentTarget.value,
                 line = 1
-            SourceCode.fetch_and_render_file(fullname, 1, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(fullname, 1, undefined, {'highlight': false, 'scroll': true})
         })
     },
     keyup_source_file_input: function(e){
@@ -619,121 +866,64 @@ const SourceFileAutocomplete = {
                 line = user_input_array[1]
             }
 
-            SourceCode.fetch_and_render_file(file, line, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(file, line, undefined, {'highlight': false, 'scroll': true})
         }
     }
 }
-
-/**
- * The Disassembly component
- */
-const Disassembly = {
-    el_title: $('#disassembly_heading'),
-    el: $('#disassembly'),
-    init: function(){
-        $('button#refresh_disassembly').click(Disassembly.refresh_disassembly)
-    },
-    /**
-     * Fetch disassembly for current file/line. An error is raised
-     * if gdbgui doesn't have that state saved.
-     */
-    refresh_disassembly: function(){
-        let file = SourceCode.rendered_source_file_fullname
-        let line = SourceCode.rendered_source_file_line
-        if (file !== null && line !== null){
-            line = Math.max(line - 10, 1)
-            // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Data-Manipulation.html
-            const mi_response_format = 4
-            GdbApi.run_gdb_command(`-data-disassemble -f ${file} -l ${line} -- ${mi_response_format}`)
-        } else {
-            Status.render('gdbgui is not sure which file and line to disassemble. Reach a breakpoint, then try again.')
-        }
-    },
-    /**
-     * Render disassembly table
-     */
-    render_disasembly: function(asm_insns){
-        let thead = ['line', 'function+offset address instruction', 'source']
-        let data = []
-        let source_code = []
-        for (let file of SourceCode.cached_source_files){
-            if(file.fullname === asm_insns[0].fullname){
-                source_code = file.source_code
-                break
-            }
-        }
-        for(let i of asm_insns){
-            let assembly = i['line_asm_insn'].map(el => `${el['func-name']}+${el['offset']} ${Memory.make_addr_into_link(el.address)} ${el.inst}`)
-            let line_link = `<a class='view_file pointer' data-fullname=${i.fullname || ''} data-line=${i.line || ''} data-highlight=false>${i.line} view</a>`
-            let source_line = '(file not loaded)'
-            if(i.line <= source_code.length){
-                source_line = source_code[i.line - 1]
-            }
-            data.push([line_link, assembly.join('<br>'), source_line])
-        }
-        Disassembly.el_title.html(asm_insns['fullname'])
-        Disassembly.el.html(Util.get_table(thead, data))
-    },
-}
-
-/**
- * The Stack component
- */
-const Stack = {
-    el: $('#stack'),
-    init: function(){
-        $("body").on("click", ".select_frame", Stack.click_select_frame)
-    },
-    render_stack: function(stack){
-        for (let s of stack){
-            if ('fullname' in s){
-                s[' '] = `<a class='select_frame pointer' data-fullname=${s.fullname} data-line=${s.line || ''} data-framenum=${s.level} data-highlight=true>View</a>`
-            }
-            if ('addr' in s){
-                s.addr = Memory.make_addr_into_link(s.addr)
-            }
-        }
-
-        let [columns, data] = Util.get_table_data_from_objs(stack)
-        Stack.el.html(Util.get_table(columns, data))
-    },
-    /**
-     * select a frame and jump to the line in source code
-     * triggered when clicking on an object with the "select_frame" class
-     * must have data attributes: framenum, fullname, line
-     *
-     */
-    click_select_frame: function(e){
-        Stack.select_frame(e.currentTarget.dataset.framenum)
-        SourceCode.click_view_file(e)
-        AllLocalVariables.clear()
-    },
-    select_frame: function(framenum){
-        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
-    }
-}
-
 
 /**
  * The Registers component
  */
 const Registers = {
     el: $('#registers'),
-    register_names: [],
+    state: {
+        register_names: [],
+        register_values: {},
+    },
     render_registers(register_values){
-        if(Registers.register_names.length === register_values.length){
-            let columns = ['name', 'value']
-            let register_table_data = []
+        if(Registers.state.register_names.length === register_values.length){
+            let columns = ['name', 'value (hex)', 'value (decimal)']
+            , register_table_data = []
+            , hex_val_raw = ''
 
-            for (let i in Registers.register_names){
-                let name = Registers.register_names[i]
-                let obj = _.find(register_values, v => v['number'] === i)
+            for (let i in Registers.state.register_names){
+                let name = Registers.state.register_names[i]
+                    , obj = _.find(register_values, v => v['number'] === i)
+                    , hex_val_raw = ''
+                    , disp_hex_val = ''
+                    , disp_dec_val = ''
+
                 if (obj){
-                    register_table_data.push([name, obj['value']])
-                }else{
-                    register_table_data.push([name, ''])
+                    let old_hex_val = Registers.state.register_values[i]
+                        , changed = false
+                    hex_val_raw = obj['value']
+
+                    // if the value changed, highlight it
+                    if(old_hex_val !== undefined && hex_val_raw !== old_hex_val){
+                        changed = true
+                    }
+
+                    // if hex value is a valid value, convert it to a link
+                    // and display decimal format too
+                    if(obj['value'].indexOf('0x') === 0){
+                       disp_hex_val = Memory.make_addr_into_link(hex_val_raw)
+                       disp_dec_val = parseInt(obj['value'], 16).toString(10)
+                    }
+
+                    if (changed){
+                        name = `<span class='highlight bold'>${name}</span>`
+                        disp_hex_val = `<span class='highlight bold'>${disp_hex_val}</span>`
+                        disp_dec_val = `<span class='highlight bold'>${disp_dec_val}</span>`
+                    }
+
                 }
+                // update cached value for this register
+                Registers.state.register_values[i] = hex_val_raw
+
+                register_table_data.push([name, disp_hex_val, disp_dec_val])
+
             }
+
             Registers.el.html(Util.get_table(columns, register_table_data))
         } else {
             console.error('Could not render registers. Length of names != length of values!')
@@ -741,7 +931,10 @@ const Registers = {
     },
     set_register_names: function(names){
         // filter out non-empty names
-        Registers.register_names = names.filter(name => name)
+        Registers.state.register_names = names.filter(name => name)
+    },
+    program_exited: function(){
+        Registers.el.html('')
     }
 }
 
@@ -824,14 +1017,14 @@ const BinaryLoader = {
         }
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, `-break-insert main`, `-break-list`]
+        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, '-file-list-exec-source-files']
 
-        // reload breakpoints after sending to make sure they're up to date
-        if (Prefs.auto_reload_breakpoints()){
-            cmds.push('-break-list')
+        if($('#checkbox_auto_add_breakpoint_to_main').prop('checked')){
+            cmds.push('-break-insert main')
         }
-        GdbApi.run_gdb_command(cmds)
+        cmds.push('-break-list')
 
+        GdbApi.run_gdb_command(cmds)
     },
     render: function(binary){
         BinaryLoader.el.val(binary)
@@ -855,6 +1048,7 @@ const GdbCommandInput = {
     run_current_command: function(){
         let cmd = GdbCommandInput.el.val()
         GdbCommandInput.clear()
+        GdbConsoleComponent.add_sent_commands(cmd)
         GdbApi.run_gdb_command(cmd)
     },
     set_input_text: function(new_text){
@@ -875,20 +1069,91 @@ const GdbCommandInput = {
  */
 const Memory = {
     el: $('#memory'),
+    el_start: $('#memory_start_address'),
+    el_end: $('#memory_end_address'),
     init: function(){
         $("body").on("click", ".memory_address", Memory.click_memory_address)
+        Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
+        Memory.el_end.keydown(Memory.keydown_in_memory_inputs)
+    },
+    state: {
+        cache: {},
+    },
+    keydown_in_memory_inputs: function(e){
+        if (e.keyCode === ENTER_BUTTON_NUM){
+            Memory.fetch_memory_from_inputs()
+        }
     },
     click_memory_address: function(e){
         let addr = e.currentTarget.dataset['memory_address']
-        GdbApi.run_gdb_command(` -data-read-memory-bytes ${addr} 1`)
+        // set inputs in DOM
+        Memory.el_start.val('0x' + (parseInt(addr, 16)).toString(16))
+        Memory.el_end.val('0x' + (parseInt(addr,16) + 12).toString(16))
+
+        // fetch memory from whatever's in DOM
+        Memory.fetch_memory_from_inputs()
     },
-    render_memory: function(mi_memory_data){
-        let data = mi_memory_data.map(m => _.values(m))
-        let table = Util.get_table(_.keys(mi_memory_data[0]), data)
+    get_gdb_commands_from_inputs: function(){
+        const MAX_ADDRESS_DELTA = 100
+
+        let start_addr = parseInt(_.trim(Memory.el_start.val()), 16),
+            end_addr = parseInt(_.trim(Memory.el_end.val()), 16)
+
+        let cmds = []
+        if(start_addr && end_addr){
+            if(start_addr > end_addr || ((end_addr - start_addr) > MAX_ADDRESS_DELTA)){
+                end_addr = start_addr + MAX_ADDRESS_DELTA
+                Memory.el_end.val('0x' + end_addr.toString(16))
+            }
+
+            let cur_addr = start_addr
+            while(cur_addr <= end_addr){
+                cmds.push(`-data-read-memory-bytes ${'0x' + cur_addr.toString(16)} 1`)
+                cur_addr = cur_addr + 1
+            }
+        }
+        return cmds
+    },
+    fetch_memory_from_inputs: function(){
+        let cmds = Memory.get_gdb_commands_from_inputs()
+        Memory.clear_cache()
+        GdbApi.run_gdb_command(cmds)
+    },
+    render: function(){
+        if(!Memory.state.cache){
+            Memory.el.html('')
+            return
+        }
+
+        let data = []
+        for (let hex_addr in Memory.state.cache){
+            let hex_value = Memory.state.cache[hex_addr]
+            data.push([Memory.make_addr_into_link(hex_addr),
+                    Memory.make_addr_into_link('0x'+hex_value),
+                    parseInt(hex_value, 16).toString(10),
+                    String.fromCharCode(parseInt(hex_value, 16) || ' ')
+                ]
+            )
+
+        }
+        let table = Util.get_table(['address', 'value (hex)', 'value (decimal)', 'value (char)'], data)
         Memory.el.html(table)
     },
-    make_addr_into_link: function(addr){
-        return `<a class='pointer memory_address' data-memory_address='${addr}'>${addr}</a>`
+    make_addr_into_link: function(addr, name=addr){
+        let _addr = addr
+            , _name = name
+        return `<a class='pointer memory_address' data-memory_address='${_addr}'>${_name}</a>`
+    },
+    add_value_to_cache: function(hex_str, hex_val){
+        Memory.state.cache[hex_str] = hex_val
+        Memory.render()
+    },
+    clear_cache: function(){
+        Memory.state.cache = []
+    },
+    program_exited: function(){
+        Memory.clear_cache()
+        Memory.render()
     }
 }
 
@@ -919,10 +1184,17 @@ const Variables = {
         expression_being_created: null,
         variables: []
     },
+    /**
+     * Locally save the variable to our cached variables
+     */
     save_new_variable: function(expression, obj){
-        obj.expression = expression
-        Variables.state.variables.push(obj)
+        let new_obj = Variables.prepare_gdb_obj_for_storage(obj)
+        new_obj.expression = expression
+        Variables.state.variables.push(new_obj)
     },
+    /**
+     * Get child variable with a particular name
+     */
     get_child_with_name: function(children, name){
         for(let child of children){
             if(child.name === name){
@@ -954,22 +1226,24 @@ const Variables = {
                 // append the '.' and field name to find as a child of the object we're looking at
                 name_to_find += `.${children_names[i]}`
 
-                // our new object is this child
-                obj = Variables.get_child_with_name(obj.children, name_to_find)
+                let child_obj = Variables.get_child_with_name(obj.children, name_to_find)
+
+                if(child_obj){
+                    // our new object to search is this child
+                    obj = child_obj
+                }else{
+                    console.error(`could not find ${name_to_find}`)
+                }
             }
             return obj
 
+        }else if (objs.length === 0){
+            console.error(`Couldnt find gdb variable ${top_level_var_name}. This is likely because the page was refreshed, so gdb's variables are out of sync with the browsers variables.`)
+            return undefined
         }else{
-            console.error('couldnt find var')
+            console.error(`Somehow found multiple local gdb variables with the name ${top_level_var_name}. Not using any of them. File a bug report with the developer.`)
             return undefined
         }
-    },
-    /**
-     * Delete local copy of gdb variable (all its children are deleted too
-     * since they are stored as fields in the object)
-     */
-    delete_local_gdb_var_data: function(gdb_var_name){
-        _.remove(Variables.state.variables, v => v.name === gdb_var_name)
     },
     keydown_on_input: function(e){
         if((e.keyCode === ENTER_BUTTON_NUM)) {
@@ -981,7 +1255,8 @@ const Variables = {
     },
     /**
      * Create a new variable in gdb. gdb automatically assigns
-     * a unique variable name
+     * a unique variable name. Use custom callback callback_after_create_variable to handle
+     * gdb response
      */
     create_variable: function(expression){
         if(Variables.waiting_for_create_var_response === true){
@@ -994,7 +1269,7 @@ const Variables = {
         // * means evaluate it at the current frame
         // need to use custom callback due to stateless nature of gdb's response
         // Variables.callback_after_create_variable
-        GdbApi.run_gdb_command(`-var-create - * ${expression}`, Variables.callback_after_create_variable)
+        GdbApi.run_gdb_command(`-var-create - * ${expression}`)
     },
     /**
      * gdb returns objects for its variables,, but before we save that
@@ -1006,9 +1281,12 @@ const Variables = {
      * - store whether the object is expanded or collapsed in the ui
      */
     prepare_gdb_obj_for_storage: function(obj){
-        obj.children = []
-        obj.numchild = parseInt(obj.numchild)
-        obj.show_children_in_ui = false
+        let new_obj = jQuery.extend(true, {'children': [],
+                                    'numchild': parseInt(obj.numchild),
+                                    'show_children_in_ui': false,
+                                    'in_scope': 'true', // this field will be returned by gdb mi as a string
+                                }, obj)
+        return new_obj
     },
     /**
      * After a variable is created, we need to link the gdb
@@ -1018,90 +1296,104 @@ const Variables = {
      *
      * The variable UI element is the re-rendered
      */
-    callback_after_create_variable: function(mi_response_array){
+    gdb_created_root_variable: function(r){
         Variables.state.waiting_for_create_var_response = false
 
-        mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
-
-        if(mi_response_array.length === 1){
-            let r = mi_response_array[0]
-            if(r.type === 'result' && r.message === 'done'){
-               // an example payload:
-               // "payload": {
-               //      "has_more": "0",
-               //      "name": "var2",
-               //      "numchild": "0",
-               //      "thread-id": "1",
-               //      "type": "int",
-               //      "value": "0"
-               //  },
-
-               // add the children key and initialize to empty array
-                Variables.prepare_gdb_obj_for_storage(r.payload)
-
-                // save this payload
-                Variables.save_new_variable(Variables.expression_being_created, r.payload)
-
-            }else{
-                // this is an unexpected case. Let the status bar render some info to help debug the issue.
-                Status.render_from_gdb_mi_response(r)
-            }
+        if(Variables.expression_being_created){
+            // example payload:
+            // "payload": {
+            //      "has_more": "0",
+            //      "name": "var2",
+            //      "numchild": "0",
+            //      "thread-id": "1",
+            //      "type": "int",
+            //      "value": "0"
+            //  },
+            Variables.save_new_variable(Variables.expression_being_created, r.payload)
+            Variables.state.expression_being_created = null
+            // automatically fetch first level of children for root variables
+            Variables.fetch_and_show_children_for_var(r.payload.name)
         }else{
-            process_gdb_response(mi_response_array)
+            console.error('could no create new var')
         }
+
         Variables.render()
-    },
-    /**
-     * Send command to gdb to give us all the children and values
-     * for a gdb variable. Note that the gdb variable itself may be a child.
-     */
-    get_children_for_var: function(gdb_variable_name){
-        if(Variables.state.waiting_for_children_list_response === true){
-            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.gdb_parent_var_currently_fetching_children}`)
-            return
-        }
-        Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
-        Variables.state.waiting_for_children_list_response = true
-        GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`, Variables.callback_after_list_children)
     },
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
      * This method stores this child array data to the appropriate locally stored
      * object, then re-renders the Variable UI element.
      */
-    callback_after_list_children: function(mi_response_array){
+    gdb_created_children_variables: function(r){
+        // example reponse payload:
+        // "payload": {
+        //         "has_more": "0",
+        //         "numchild": "2",
+        //         "children": [
+        //             {
+        //                 "name": "var9.a",
+        //                 "thread-id": "1",
+        //                 "numchild": "0",
+        //                 "value": "4195840",
+        //                 "exp": "a",
+        //                 "type": "int"
+        //             },
+        //             {
+        //                 "name": "var9.b",
+        //                 "thread-id": "1",
+        //                 "numchild": "0",
+        //                 "value": "0",
+        //                 "exp": "b",
+        //                 "type": "float"
+        //             },
+        //         ]
+        //     }
+
+        let parent_name = Variables.state.gdb_parent_var_currently_fetching_children
+        Variables.state.gdb_parent_var_currently_fetching_children = null
         Variables.state.waiting_for_children_list_response = false
 
-        mi_response_array.map(r => GdbMiOutput.add_mi_output(r))
-
-        let r = mi_response_array[0]
-
-        // prepare all the child objects we received for local storage
-        r.payload.children.map(child_obj => Variables.prepare_gdb_obj_for_storage(child_obj))
-
         // get the parent object of these children
-        let parent_obj = Variables.get_obj_from_gdb_var_name(Variables.state.gdb_parent_var_currently_fetching_children)
-
+        let parent_obj = Variables.get_obj_from_gdb_var_name(parent_name)
         if(parent_obj){
-            parent_obj.children = r.payload.children
-        }else{
-            console.error(`attempted to save children for existing var, but couldn't find it: ${Variables.state.gdb_parent_var_currently_fetching_children}`)
+            // prepare all the child objects we received for local storage
+            let children = r.payload.children.map(child_obj => Variables.prepare_gdb_obj_for_storage(child_obj))
+            // save these children as a field to their parent
+            parent_obj.children = children
         }
+
+        // if this field is an anonymous struct, the user will want to
+        // see this expanded by default
+        for(let child of parent_obj.children){
+            if (child.exp === '<anonymous struct>'){
+                Variables.fetch_and_show_children_for_var(child.name)
+            }
+        }
+        // re-render
         Variables.render()
     },
     render: function(){
         let html = ''
         const is_root = true
         for(let obj of Variables.state.variables){
-            if(obj.numchild > 0) {
-                html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
-            }else{
-                html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
+            if(obj.in_scope === 'true'){
+                if(obj.numchild > 0) {
+                    html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
+                }else{
+                    html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
+                }
+            }else if (obj.in_scope === 'invalid'){
+                console.log(`deleting invalid gdb var ${obj.name}`)
+                Variables.delete_gdb_variable(obj.name)
             }
         }
 
         Variables.el.html(html)
     },
+    /**
+     * get unordered list for a variable that has children
+     * @return unordered list, expanded or collapsed based on the key "show_children_in_ui"
+     */
     get_ul_for_var_with_children: function(expression, mi_obj, is_root=false){
         let child_tree = ''
         if(mi_obj.show_children_in_ui){
@@ -1115,54 +1407,81 @@ const Variables = {
                     }
                 }
             }else{
-                child_tree += '<li>fetching from gdb...</li>'
+                child_tree += `<li><span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span></li>`
             }
 
             child_tree += '</ul>'
         }
 
-        let delete_button = is_root ? `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
-        let expanded = mi_obj.show_children_in_ui ? 'expanded' : '',
-            plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
-        let expression_and_value = `
-        <ul class='variable'>
-            <li class='toggle_children_visibility pointer ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
+        let plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
+        return Variables._get_ul_for_var(expression, mi_obj, is_root, plus_or_minus, child_tree, mi_obj.show_children_in_ui, mi_obj.numchild)
+    },
+    get_ul_for_var_without_children: function(expression, mi_obj, is_root=false){
+        return Variables._get_ul_for_var(expression, mi_obj, is_root)
+    },
+    /**
+     * Get ul for a variable with or without children
+     * @param is_root: true if it has children and
+     */
+    _get_ul_for_var: function(expression, mi_obj, is_root, plus_or_minus='', child_tree='', show_children_in_ui=false, numchild=0){
+        let
+            delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : '',
+            expanded = show_children_in_ui ? 'expanded' : '',
+            toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
+
+        return `<ul class='variable'>
+            <li class='${toggle_classes} ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
                 ${delete_button}
-                ${plus_or_minus} ${expression}: ${mi_obj.value} (${mi_obj.type})
+                ${plus_or_minus} ${expression}: ${mi_obj.value} <span class='var_type'>${_.trim(mi_obj.type)}</span>
             </li>
             ${child_tree}
         </ul>
         `
-        return expression_and_value
     },
-    get_ul_for_var_without_children: function(expression, mi_obj, is_root=false){
-        let delete_button = is_root ? `<span class='glyphicon glyphicon-remove delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
-        return `
-            <ul class='variable'>
-                <li data-gdb_variable_name='${mi_obj.name}'>
-                    ${delete_button}
-                    ${expression}: ${mi_obj.value} (${mi_obj.type})
-                </li>
-            </ul>
-            `
+    fetch_and_show_children_for_var: function(gdb_var_name){
+        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        // show
+        obj.show_children_in_ui = true
+        if(obj.numchild > 0 && obj.children.length === 0){
+            // need to fetch child data
+            Variables._get_children_for_var(gdb_var_name)
+        }else{
+            // already have child data, just render now that we
+            // set show_children_in_ui to true
+            Variables.render()
+        }
+    },
+    hide_children_in_ui: function(gdb_var_name){
+        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        if(obj){
+            obj.show_children_in_ui = false
+            Variables.render()
+        }
     },
     click_toggle_children_visibility: function(e){
         let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
-        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
-
         if($(e.currentTarget).hasClass('expanded')){
             // collapse
-            obj.show_children_in_ui = false
+            Variables.hide_children_in_ui(gdb_var_name)
         }else{
-            // show
-            obj.show_children_in_ui = true
-            if(obj.children.length === 0){
-                // need to fetch child data
-                Variables.get_children_for_var(gdb_var_name)
-            }
+            // expand
+            Variables.fetch_and_show_children_for_var(gdb_var_name)
         }
         $(e.currentTarget).toggleClass('expanded')
-        Variables.render()
+
+    },
+    /**
+     * Send command to gdb to give us all the children and values
+     * for a gdb variable. Note that the gdb variable itself may be a child.
+     */
+    _get_children_for_var: function(gdb_variable_name){
+        if(Variables.state.waiting_for_children_list_response === true){
+            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.gdb_parent_var_currently_fetching_children}`)
+            return
+        }
+        Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
+        Variables.state.waiting_for_children_list_response = true
+        GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`)
     },
     update_variable_values: function(){
         GdbApi.run_gdb_command(`-var-update *`)
@@ -1177,41 +1496,219 @@ const Variables = {
         Variables.render()
     },
     click_delete_gdb_variable: function(e){
-        e.stopPropagation()
-
+        e.stopPropagation() // not sure if this is still needed
+        Variables.delete_gdb_variable(e.currentTarget.dataset.gdb_variable)
+    },
+    delete_gdb_variable: function(gdbvar){
         // delete locally
-        Variables.delete_local_gdb_var_data(e.currentTarget.dataset.gdb_variable)
-
+        Variables._delete_local_gdb_var_data(gdbvar)
         // delete in gdb too
-        GdbApi.run_gdb_command(`-var-delete ${e.currentTarget.dataset.gdb_variable}`)
-
+        GdbApi.run_gdb_command(`-var-delete ${gdbvar}`)
         // re-render variables in browser
         Variables.render()
+    },
+    /**
+     * Delete local copy of gdb variable (all its children are deleted too
+     * since they are stored as fields in the object)
+     */
+    _delete_local_gdb_var_data: function(gdb_var_name){
+        _.remove(Variables.state.variables, v => v.name === gdb_var_name)
+    },
+}
+
+/**
+ * The Threads component
+ */
+const Threads = {
+    el: $('#threads'),
+    state: {
+        'threads': [],
+        'current_thread_id': undefined,
+        'stack': []
+    },
+    init: function(){
+        $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
+        $("body").on("click", ".select_frame", Threads.click_select_frame)
+    },
+    set_stack: function(stack){
+        Threads.state.stack =  $.extend(true, [], stack)
+    },
+    program_exited: function(){
+        Threads.clear()
+    },
+    clear: function(){
+        Threads.state.threads = []
+        Threads.state.current_thread_id = undefined
+        Threads.state.stack = []
+        Threads.render()
+    },
+    click_select_thread_id: function(e){
+        GdbApi.run_gdb_command(`-thread-select ${e.currentTarget.dataset.thread_id}`)
+        GdbApi.refresh_stack()
+    },
+    /**
+     * select a frame and jump to the line in source code
+     * triggered when clicking on an object with the "select_frame" class
+     * must have data attributes: framenum, fullname, line
+     *
+     */
+    click_select_frame: function(e){
+        Threads.select_frame(e.currentTarget.dataset.framenum)
+    },
+    select_frame: function(framenum){
+        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
+        GdbApi.refresh_stack()
+    },
+    render: function(){
+        if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
+            let tbody = []
+            for(let t of Threads.state.threads){
+                let cls = ''
+                , stack = '?'
+                , select_thread_link = ''
+                if(parseInt(t.id) === Threads.state.current_thread_id){
+                    cls = 'bold'
+                } else {
+                    select_thread_link = `<a class='select_thread_id pointer' data-thread_id='${t.id}'>select this thread</a>`
+                }
+                // each thread has a frame, but only the current frame in the current thread
+                // is part of the stack
+                // get the frame, and if t's frame is part of the stack, render the whole stack
+                stack = Threads.get_stack_list([t.frame])
+
+                for (let s of Threads.state.stack){
+                    if(s.addr === t.frame.addr){
+                        stack = Threads.get_stack_list(Threads.state.stack)
+                        break
+                    }
+                }
+
+                tbody.push([`<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span>`, stack])
+            }
+            Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
+        }else{
+            Threads.el.html('')
+        }
+    },
+    get_stack_list: function(stack){
+        let _stack = $.extend(true, [], stack)
+            , stack_list = []
+
+        for (let s of _stack){
+            let fullname = 'unknown filename'
+                , line = 'unknown line'
+                , addr_link = 'unknown address'
+
+            if ('fullname' in s){
+                fullname = s.fullname
+            }else if ('file' in s){
+                fullname = s.file
+            }
+            if ('addr' in s){
+                addr_link = Memory.make_addr_into_link(s.addr)
+            }
+            if('line' in s){
+                line = s.line
+            }
+
+            let hightlight = true
+                ,select_frame_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
+
+            if(s.level){
+                select_frame_link = `<a title='select frame and jump to file' class='pointer select_frame' data-framenum=${s.level}>${fullname}:${line}</a>`
+            }
+
+            stack_list.push(`<li>${select_frame_link} @ ${addr_link}</li>`)
+        }
+
+        return `<ul class='no_bullet'>
+            ${stack_list.join('')}
+        </ul>
+        `
+    },
+    set_threads: function(threads){
+        Threads.state.threads = $.extend(true, [], threads)
+        Threads.render()
+    },
+    set_thread_id: function(id){
+        Threads.state.current_thread_id = parseInt(id)
+        Threads.render()
+    },
+}
+
+/**
+ * Component with checkboxes that allow the user to show/hide various components
+ */
+const ShowHideComponents = {
+    el: $('#show_hide_components'),
+    /**
+     * Set up events and render checkboxes
+     */
+    init: function(){
+        $("body").on("change", "input.componet_visibility_checkbox", ShowHideComponents.update_component_visibility_based_on_checkboxes)
+        ShowHideComponents.render()
+    },
+    /**
+     * Render the checkboxes and update visibility of components as defined by
+     * the checkboxes
+     */
+    render: function(){
+        let html = ''
+        for (let i of $('.allow_visibility_toggle')){
+            let name = $(i).data('name_for_visibility_toggling'),
+                visibile_on_load = ($(i).data('visibile_on_load') === 'true' || $(i).data('visibile_on_load') === undefined),
+                checked = visibile_on_load ? 'checked' : ''
+            html += ` <div class="checkbox">
+                  <label>
+                    <input type="checkbox" ${checked} class='componet_visibility_checkbox' data-name_for_visibility_toggling="${name}"> ${name}
+                  </label>
+            </div>  `
+        }
+        ShowHideComponents.el.html(html)
+        ShowHideComponents.update_component_visibility_based_on_checkboxes()
+    },
+    /**
+     * Update visibility of components as defined by
+     * the checkboxes
+     */
+    update_component_visibility_based_on_checkboxes: function(){
+        for (let el of $('.componet_visibility_checkbox')){
+            let jq_el = $(el)
+            let name = jq_el.data('name_for_visibility_toggling'),
+                el_to_toggle = $(`.allow_visibility_toggle[data-name_for_visibility_toggling='${name}']`)
+            if(jq_el.prop('checked')){
+                // make visible
+                el_to_toggle.removeClass('hidden')
+            } else {
+                // hide
+                el_to_toggle.addClass('hidden')
+            }
+        }
     }
 }
 
 /**
- * The All Local Variables component
+ * Component to shutdown gdbgui
  */
-const AllLocalVariables = {
-    el: $('#all_local_variables'),
-    render: function(data){
-        const col_names = ['variable', 'value']
-        let table_data = []
-        for(let obj of data){
-            let value_str = JSON.stringify(obj.value, null, 4).replace(/[^(\\)]\\n/g)
-            table_data.push([obj.name, `<p class='pre'>${value_str}</p>`])
+const ShutdownGdbgui = {
+    el: $('#shutdown_gdbgui'),
+    /**
+     * Set up events and render checkboxes
+     */
+    init: function(){
+        ShutdownGdbgui.el.click(ShutdownGdbgui.click_shutdown_button)
+    },
+    click_shutdown_button: function(){
+        if (window.confirm("This will end your gdbgui session. Continue?") === true) {
+            // ShutdownGdbgui.shutdown()
+            window.location = '/shutdown'
+        } else {
+            // don't do anything
         }
+    },
 
-        AllLocalVariables.el.html(Util.get_table(col_names, table_data))
-    },
-    refresh_all_for_current_frame: function(){
-        GdbApi.run_gdb_command(`-stack-list-locals --all-values`)
-    },
-    clear: function(){
-        AllLocalVariables.el.html('')
-    }
 }
+
 
 /**
  * An object with methods for global events/callbacks
@@ -1248,6 +1745,26 @@ const GlobalEvents = {
     },
 }
 
+const WebSocket = {
+    init: function(){
+        var socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
+
+        socket.on('connect', function(){
+            // console.log('connected')
+            // socket.emit('my_event', {data: 'I\'m connected!'});
+        });
+
+        socket.on('gdb_response', function(response_array) {
+            // console.log(response_array)
+            process_gdb_response(response_array)
+        });
+
+        socket.on('disconnect', function(){
+            // console.log('disconnected')
+        });
+    }
+}
+
 /**
  * This is the main callback when receiving a response from gdb.
  * This callback requires no state to handle the response.
@@ -1257,7 +1774,9 @@ const GlobalEvents = {
 const process_gdb_response = function(response_array){
 
     // update status with error or with last response
-    let update_status = true
+    let update_status = true,
+        refresh_breakpoints = false,
+        refresh_stack = false
 
     for (let r of response_array){
         if (r.type === 'result' && r.message === 'done' && r.payload){
@@ -1267,14 +1786,19 @@ const process_gdb_response = function(response_array){
                 // breakpoint was created
                 Breakpoint.store_breakpoint(r.payload.bkpt)
                 Breakpoint.render_breakpoint_table()
-                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, {'highlight': false, 'scroll': true})
+                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined, {'highlight': false, 'scroll': true})
+                refresh_breakpoints = true
             }
             if ('BreakpointTable' in r.payload){
                 Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
-                SourceCode.rerender()
+                SourceCode.render_breakpoints()
             }
             if ('stack' in r.payload) {
-                Stack.render_stack(r.payload.stack)
+                Threads.set_stack(r.payload.stack)
+            }
+            if('threads' in r.payload){
+                Threads.set_threads(r.payload.threads)
+                Threads.set_thread_id((r.payload['current-thread-id']))
             }
             if ('register-names' in r.payload) {
                 Registers.set_register_names(r.payload['register-names'])
@@ -1283,20 +1807,26 @@ const process_gdb_response = function(response_array){
                 Registers.render_registers(r.payload['register-values'])
             }
             if ('asm_insns' in r.payload) {
-                Disassembly.render_disasembly(r.payload.asm_insns)
+                SourceCode.save_new_assembly(r.payload.asm_insns)
             }
             if ('files' in r.payload){
                 SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
-                SourceFileAutocomplete.input.evaluate()
             }
             if ('memory' in r.payload){
-                Memory.render_memory(r.payload.memory)
+                Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
-            if ('locals' in r.payload){
-                AllLocalVariables.render(r.payload.locals)
-            }
+            // if ('locals' in r.payload){
+            //     AllLocalVariables.render(r.payload.locals)
+            // }
             if ('changelist' in r.payload){
                 Variables.handle_changelist(r.payload.changelist)
+            }
+            if ('name' in r.payload && 'thread-id' in r.payload && 'has_more' in r.payload &&
+                'value' in r.payload && !('children' in r.payload)){
+                Variables.gdb_created_root_variable(r)
+            }
+            if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
+                Variables.gdb_created_children_variables(r)
             }
             // if (your check here) {
             //      render your custom compenent here!
@@ -1304,6 +1834,16 @@ const process_gdb_response = function(response_array){
 
         } else if (r.type === 'console'){
             GdbConsoleComponent.add(r.payload)
+            if(globals.gdb_version === undefined){
+                // parse gdb version from string such as
+                // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
+                let m = /GNU gdb \(.*\)\s*(.*)\./g
+                let a = m.exec(r.payload)
+                if(_.isArray(a) && a.length === 2){
+                    globals.gdb_version = parseFloat(a[1])
+                    localStorage.setItem('gdb_version', globals.gdb_version)
+                }
+            }
         }
 
         if (r.type === 'output'){
@@ -1316,11 +1856,25 @@ const process_gdb_response = function(response_array){
 
         if (r.payload && typeof r.payload.frame !== 'undefined') {
             // Stopped on a frame. We can render the file and highlight the line!
-            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, {'highlight': true, 'scroll': true})
+            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
+
+            if (r.payload['new-thread-id']){
+                Threads.set_thread_id(r.payload['new-thread-id'])
+            }
         }
 
-        if (r.message && r.message === 'stopped' && r.payload && r.payload.reason && r.payload.reason.includes('exited')){
-            SourceCode.remove_current_line()
+        if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
+            if(r.payload.reason.includes('exited')){
+                // TODO emit event
+                SourceCode.program_exited()
+                Memory.program_exited()
+                Registers.program_exited()
+                Threads.program_exited()
+
+            }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
+                refresh_stack = true
+                refresh_breakpoints = true
+            }
         }
 
         if(update_status && _.isString(r.message) && (r.message.indexOf('error') !== -1 || r.message.indexOf('not found') !== -1)){
@@ -1340,6 +1894,13 @@ const process_gdb_response = function(response_array){
         GdbMiOutput.scroll_to_bottom()
         GdbConsoleComponent.scroll_to_bottom()
     }
+
+    if(refresh_breakpoints === true){
+        GdbApi.refresh_breakpoints()
+    }
+    if(refresh_stack === true){
+        GdbApi.refresh_stack()
+    }
 }
 
 // initialize components
@@ -1348,14 +1909,16 @@ GdbApi.init()
 GdbCommandInput.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
-Stack.init()
 SourceCode.init()
-Disassembly.init()
 BinaryLoader.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
+Threads.init()
+ShowHideComponents.init()
+ShutdownGdbgui.init()
+WebSocket.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-})(jQuery, _, Awesomplete)
+})(jQuery, _, Awesomplete, io, debug)
