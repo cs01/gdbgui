@@ -1306,6 +1306,8 @@ const Variables = {
             //  },
             Variables.save_new_variable(Variables.expression_being_created, r.payload)
             Variables.state.expression_being_created = null
+            // automatically fetch first level of children for root variables
+            Variables.fetch_and_show_children_for_var(r.payload.name)
         }else{
             console.error('could no create new var')
         }
@@ -1353,6 +1355,14 @@ const Variables = {
             let children = r.payload.children.map(child_obj => Variables.prepare_gdb_obj_for_storage(child_obj))
             // save these children as a field to their parent
             parent_obj.children = children
+        }
+
+        // if this field is an anonymous struct, the user will want to
+        // see this expanded by default
+        for(let child of parent_obj.children){
+            if (child.exp === '<anonymous struct>'){
+                Variables.fetch_and_show_children_for_var(child.name)
+            }
         }
         // re-render
         Variables.render()
@@ -1423,23 +1433,37 @@ const Variables = {
         </ul>
         `
     },
+    fetch_and_show_children_for_var: function(gdb_var_name){
+        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        // show
+        obj.show_children_in_ui = true
+        if(obj.numchild > 0 && obj.children.length === 0){
+            // need to fetch child data
+            Variables._get_children_for_var(gdb_var_name)
+        }else{
+            // already have child data, just render now that we
+            // set show_children_in_ui to true
+            Variables.render()
+        }
+    },
+    hide_children_in_ui: function(gdb_var_name){
+        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        if(obj){
+            obj.show_children_in_ui = false
+            Variables.render()
+        }
+    },
     click_toggle_children_visibility: function(e){
         let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
-        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
-
         if($(e.currentTarget).hasClass('expanded')){
             // collapse
-            obj.show_children_in_ui = false
+            Variables.hide_children_in_ui(gdb_var_name)
         }else{
-            // show
-            obj.show_children_in_ui = true
-            if(obj.children.length === 0){
-                // need to fetch child data
-                Variables._get_children_for_var(gdb_var_name)
-            }
+            // expand
+            Variables.fetch_and_show_children_for_var(gdb_var_name)
         }
         $(e.currentTarget).toggleClass('expanded')
-        Variables.render()
+
     },
     /**
      * Send command to gdb to give us all the children and values
@@ -1565,7 +1589,6 @@ const Threads = {
         let _stack = $.extend(true, [], stack)
             , stack_list = []
 
-
         for (let s of _stack){
             let fullname = 'unknown filename'
                 , line = 'unknown line'
@@ -1584,14 +1607,13 @@ const Threads = {
             }
 
             let hightlight = true
-                , view_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
-                , select_frame_link = ''
+                ,select_frame_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
 
             if(s.level){
-                select_frame_link = `<span class='pointer select_frame' data-framenum=${s.level}>select frame</span>`
+                select_frame_link = `<a title='select frame and jump to file' class='pointer select_frame' data-framenum=${s.level}>${fullname}:${line}</a>`
             }
 
-            stack_list.push(`<li>${view_link} ${addr_link} ${select_frame_link}</li>`)
+            stack_list.push(`<li>${select_frame_link} @ ${addr_link}</li>`)
         }
 
         return `<ul class='no_bullet'>
