@@ -1,5 +1,5 @@
 Flask==0.11.1
-pygdbmi==0.7
+pygdbmi==0.7.1
 pyjade==4.0.0
 Flask-SocketIO==2.8.2
 eventlet==0.20.1
