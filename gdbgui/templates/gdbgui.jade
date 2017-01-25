@@ -29,7 +29,7 @@ body
     div.container-fluid#always_on_top
 
         div.row(style='max-height: 80px')
-            div.col-md-12
+            div.col-lg-12
                 div
                     //- binary selection
                     form(role=form)
@@ -71,72 +71,81 @@ body
     //- the div after the "always on top" div must givei a margin on top at least as tall as the "always on top" div
     div.container-fluid(style="margin-top: 110px")
 
+        div.main_widgets
+            //- source
+            div.no_padding.col-lg-7#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
 
-        //- source
-        div.no_padding.col-md-12#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
+                div.flexrow
+                    //- displays source file path input, and dropdown
+                    input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-            div.flexrow
-                //- displays source file path input, and dropdown
-                input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
+                    button.dropdown-btn(type="button")
+                        span.caret
 
-                button.dropdown-btn(type="button")
-                    span.caret
-
-            div.flex
-                //- displays loaded file path and input to jump to line
-                span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
-                button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px;') reload
-                    span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
-
-
-                //- input to jump to a line in the source code
-                input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
-
-                label(style='margin-left: 10px; font-weight: normal;')
-                    input#checkbox_show_assembly(type='checkbox')
-                    ='show assembly'
-
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+                div.flexrow
+                    //- displays loaded file path and input to jump to line
+                    span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
+                    button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px;') reload
+                        span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
 
 
-            div#code_container.gdb_content_div(style="height: 300px")
-                table#code_table.code
-                    tr
-                        td Source code will be displayed here when applicable
+                    //- input to jump to a line in the source code
+                    input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
-            div.titlebar.flex
-                span.lighttext threads
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
-            div#threads.gdb_content_div
+                    label(style='margin-left: 10px; font-weight: normal;')
+                        input#checkbox_show_assembly(type='checkbox')
+                        ='show assembly'
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
-            div.titlebar.flex
-                span.lighttext variables
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
-                input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
-            div#variables.gdb_content_div
+                    span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
+                    span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
-            div.titlebar
-                span.lighttext registers
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-            div#registers.gdb_content_div
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
-            div.titlebar.flex
-                span.lighttext memory
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
-                input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
-                input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
-            div#memory.gdb_content_div
+                div
+                    div#code_container.gdb_content_div(style='height: 50%;')
+                        table#code_table.code
+                            tr
+                                td Source code will be displayed here when applicable
 
-        div.col-md-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
+            div.col-lg-5
+                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
+                    div.titlebar.flex
+                        span.lighttext threads
+                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
+                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
+                    div#threads.gdb_content_div
+
+                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
+                    div.titlebar.flex
+                        span.lighttext variables
+                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
+                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
+                        input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
+                    div#variables.gdb_content_div
+
+                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
+                    div.titlebar
+                        span.lighttext registers
+                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
+                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
+                    div#registers.gdb_content_div
+
+                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
+                    div.titlebar.flex
+                        span.lighttext memory
+                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
+                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
+                        input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
+                        input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
+                    div#memory.gdb_content_div
+
+                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
+                    div.titlebar
+                        span.lighttext breakpoints
+                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
+                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
+                    div#breakpoints.gdb_content_div
+
+        div.col-lg-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
             div.titlebar
                 span.lighttext gdb console
@@ -146,9 +155,6 @@ body
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
 
-                    button.btn.btn-default.btn-xs.gdb_cmd(type='button', data-cmd='-data-evaluate-expression fflush(0)', title='Flush output buffers by evaluating fflush(0) call (-data-evaluate-expression fflush(0))') Flush Output
-                        span.glyphicon.glyphicon-download.padding_left
-
             //- gdb console output
             div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
 
@@ -156,14 +162,9 @@ body
             span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
             input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
 
-        div.col-md-6.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
-            div.titlebar
-                span.lighttext breakpoints
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-            div#breakpoints.gdb_content_div
 
-        div.col-md-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
+
+        div.col-lg-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
             div.titlebar
                 span.lighttext gdb machine interface output
                 span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
@@ -222,5 +223,6 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
                 p
                     a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
 
-
+script.
+    debug = #{debug}
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')

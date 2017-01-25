@@ -40,6 +40,10 @@ pre{
   display: flex;
   flex-direction: row;
 }
+.flexcol{
+  display: flex;
+  flex-direction: column;
+}
 /* components get their own titlebars */
 .titlebar{
   width: 100%;
