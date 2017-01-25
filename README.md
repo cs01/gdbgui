@@ -1,9 +1,11 @@
-
 [![Build Status](https://travis-ci.org/cs01/gdbgui.svg?branch=master)](https://travis-ci.org/cs01/gdbgui)
+[![pypi](https://img.shields.io/badge/pypi-v0.7-blue.svg)](https://pypi.python.org/pypi/gdbgui/0.7.1)
+[![pypi](https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg)]()
+[![Say Thanks!](https://img.shields.io/badge/SayThanks.io-☼-blue.svg)](https://saythanks.io/to/grassfedcode)
 
 # A browser-based frontend/gui for GDB
 ![gdbgui](gdbgui.png)
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more! Simply run `gdbgui` from the terminal a new tab will open in your browser.
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run `gdbgui` from the terminal a new tab will open in your browser.
 
 ## Install
 

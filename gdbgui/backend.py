@@ -8,12 +8,10 @@ returns structured gdb output to the client
 import os
 import argparse
 import signal
-import sys
 import webbrowser
 import datetime
 from flask import Flask, request, render_template, jsonify
-from flask_socketio import SocketIO, send
-sys.path.append('/home/csmith/git/pygdbmi')
+from flask_socketio import SocketIO
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -24,16 +22,16 @@ DEFAULT_PORT = 5000
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 gdb = GdbController(gdb_args=['-nx', '--interpreter=mi2'])
-thread = None
+_thread = None
 socketio = SocketIO(async_mode='eventlet')
 
 
 @socketio.on('connect', namespace='/gdb_listener')
 def client_connected():
     print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
-    global thread
-    if thread is None:
-        thread = socketio.start_background_task(target=gdb_background_thread)
+    global _thread
+    if _thread is None:
+        _thread = socketio.start_background_task(target=gdb_background_thread)
         print('Created background thread to read gdb responses')
 
 
