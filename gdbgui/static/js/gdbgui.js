@@ -10,7 +10,7 @@
  * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete) {
+(function ($, _, Awesomplete, io, debug) {
 "use strict";
 
 /**
@@ -18,11 +18,13 @@
  */
 const ENTER_BUTTON_NUM = 13
 
+console.log(debug)
 /**
  * Globals
  */
 let globals = {
     gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+    debug: debug
 }
 
 
@@ -169,7 +171,8 @@ const GdbApi = {
         GdbApi.run_gdb_command(['-break-list'])
     },
     refresh_stack: function(){
-        let cmds = ['-stack-list-frames',
+        let cmds = ['-data-evaluate-expression fflush(0)',
+                    '-stack-list-frames',
                     '-stack-info-frame',
                     '-thread-info',
                     '-var-update --all-values *',
@@ -362,21 +365,23 @@ const GdbMiOutput = {
     el: $('#gdb_mi_output'),
     init: function(){
         $('.clear_mi_output').click(GdbMiOutput.clear)
+        if(!debug){
+            GdbMiOutput.el.html('this widget is only enabled in debug mode')
+        }
     },
     clear: function(){
         GdbMiOutput.el.html('')
     },
     add_mi_output: function(mi_obj){
-        const text_class = {
-            'output': "",
-            'notify': "text-info",
-            'log': "text-primary",
-            'status': "text-danger",
-            'console': "text-info",
+        if(debug){
+            let mi_obj_dump = JSON.stringify(mi_obj, null, 4)
+            mi_obj_dump = mi_obj_dump.replace(/[^(\\)]\\n/g).replace("<", "&lt;").replace(">", "&gt;")
+            GdbMiOutput.el.append(`<p class='pre margin_sm output'>${mi_obj.type}:<br>${mi_obj_dump}</span>`)
+            return
+        }else{
+            // dont append to this in release mode
         }
-        let mi_obj_dump = JSON.stringify(mi_obj, null, 4)
-        mi_obj_dump = mi_obj_dump.replace(/[^(\\)]\\n/g).replace("<", "&lt;").replace(">", "&gt;")
-        GdbMiOutput.el.append(`<p class='pre ${text_class[mi_obj.type]} margin_sm output'>${mi_obj.type}:<br>${mi_obj_dump}</span>`)
+
     },
     scroll_to_bottom: function(){
         GdbMiOutput.el.animate({'scrollTop': GdbMiOutput.el.prop('scrollHeight')})
@@ -1916,4 +1921,4 @@ WebSocket.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-})(jQuery, _, Awesomplete, io)
+})(jQuery, _, Awesomplete, io, debug)
