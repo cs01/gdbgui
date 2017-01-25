@@ -1,0 +1,82 @@
+//- The jade project (and file extension) is now Pug, but
+//- as far as I know, the python package has not been renamed, so it remains
+//- a jade file for now
+//- explore instant conversion of html2jade: http://www.html2jade.org/
+
+html
+head
+    title gdbgui - gdb in a browser
+
+
+    base(target='_blank')
+
+    link(href='static/css/gdbgui.css?_=#{timetag_to_prevent_caching}', rel='stylesheet')
+    link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
+
+    script(type="text/javascript" src='static/vendor/js/jquery.min.js')
+    script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
+    script(type="text/javascript" src='static/vendor/js/lodash.min.js')
+    script.
+        (function(){
+            $.ajax({
+                url: "/_shutdown",
+                cache: false,
+                method: 'GET',
+                success: null,
+                error: null,
+            })
+
+        })()
+
+body
+
+    div.container-fluid
+        p
+        h1 This window can be closed. The server has been shut down.
+        p
+        h3 To use gdbgui again, the server must be restarted from the command line.
+        p Is gdbgui making you more productive?
+            =' '
+            a(href='https://saythanks.io/to/grassfedcode')
+                img(src="https://img.shields.io/badge/SayThanks.io-☼-blue.svg", title='Say Thanks!')
+        p Want to change something about gdbgui? Create an issue or pull request on
+            =' '
+            a(href='https://github.com/cs01/gdbgui') github
+
+
+
+
+
+footer(style='width:100%; height=1000px; margin:0; margin-top: 50px; padding:20px; background-color: #242729; color: #9fa6ad;')
+    div.container-fluid(syle='height: 100%')
+        div.row
+            div.col-lg-3
+                h4.bold github
+                p
+                    a(href='https://github.com/cs01/gdbgui') https://github.com/cs01/gdbgui
+                p
+                    a(href='https://github.com/cs01/pygdbmi') https://github.com/cs01/pygdbmi
+
+            div.col-lg-3
+                h4.bold resources
+                ul
+                    li
+                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/') gdb documentation
+                    li
+                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI.html#GDB_002fMI') gdb machine interface (mi) documentation
+                    li
+                        a(href='http://www.thegeekstuff.com/2010/03/debug-c-program-using-gdb') How to Debug C Program using gdb in 6 Simple Steps
+                    li
+                        a(href='https://golang.org/doc/gdb') debugging go code with gdb
+                    li
+                        a(href='https://sourceware.org/gdb/current/onlinedocs/gdb/Rust.html') debugging rust with gdb
+                    li
+                        a(href='https://jvns.ca/blog/2016/08/10/how-does-gdb-work/') how gdb works
+
+            div.col-lg-3
+                h4.bold credits
+                ='Developed by '
+                a(href='https://linkedin.com/in/chadsmith27') Chad Smith
+                p
+                    a(href='http://grassfedcode.com') grassfedcode.com
+

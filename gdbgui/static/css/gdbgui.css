@@ -12,11 +12,19 @@ pre{
 }
 
 /* styling for generic classes */
+.bold{
+  font-weight: bold;
+}
 .pre{
   white-space: pre;
 }
 .monospace{
-  font-family: monospace;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
+.memory_address{
+  color: #337ab7;
+  text-decoration: none;
+  font-weight:
 }
 .lighttext{
   color: #4a4a4a;
@@ -32,11 +40,16 @@ pre{
   display: flex;
   flex-direction: row;
 }
+.flexcol{
+  display: flex;
+  flex-direction: column;
+}
 /* components get their own titlebars */
 .titlebar{
   width: 100%;
   color: black;
   background-color: white;
+  height: 25px;
 }
 .pointer{
   cursor: pointer;
@@ -70,44 +83,55 @@ pre{
     margin: 0px;
     padding: 0px;
     border-width: 0px;
-    width: 100%
+    width: 100%;
+    background-color: transparent;
 }
 .highlight{
-  background: rgba(255, 255, 0, 0.5);
+  background: rgba(255, 255, 0, 0.5) !important;
 }
-.line_num_container{
+.line_num{
   width: 50px;
   border-width: 0;
   border-right: 1px;
   border-style: solid;
   border-color: #c7c7c7;
-}
-.line_num{
   padding-left: 10px;
   padding-right: 10px;
-  font-family: monospace;
   font-size: 0.9em;
   color: #ababab;
   cursor: pointer;
 }
 /* the line number has its style changed if it has a breakpoint */
 .line_num.breakpoint{
-  background: #33cdff;
+  background: #33cdff !important;
   color: black;
   border-style: solid;
   border-color: #000000;
   border-width: 1px;
 }
+td.assembly{
+  /*background-color: white;*/
+  padding-bottom: 6px;
+/*  min-width: 100px;
+  max-width: 200px;*/
+  /*overflow: auto;*/
+  white-space: nowrap;
+  /*word-wrap: break-word;*/
+}
+#code_table{
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+}
 /* set background color over souce code only */
 .source_code_row.line_of_code td{
   background-color: #f7f7f7;
+  max-width: 80%;
 }
 .line_of_code pre{
   margin-left: 10px;
 }
 /* when hovering, set background color of entire row */
 .source_code_row:hover td, .source_code_row:hover td pre{
-  background-color: lightblue;
+  background-color: #e2e2e2;
 }
 .padding_left{
   padding-left: 5px;
@@ -140,7 +164,7 @@ pre{
     to   { background: default; }
 }
 
-/* specific styling for ids */
+/* specific styling for ids or components */
 #always_on_top{
   position: fixed;
   top: 0;
@@ -159,7 +183,7 @@ pre{
   font-size: 0.9em !important;
   background-color: #292929 !important;
   color: #f9f9f9 !important;
-  font-family: monospace !important;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
 #gdb_command{
   padding-left: 45px;
@@ -169,10 +193,10 @@ pre{
   font-size: 0.9em !important;
   background-color: #3c3c3c !important;
   color: #f9f9f9 !important;
-  font-family: monospace !important;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
 #gdb_mi_output{
-  font-family: monospace;
+  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
   font-size: 0.9em;
 }
@@ -182,17 +206,47 @@ pre{
   list-style: none;
 }
 
+#threads ul{
+  list-style: none;
+  padding: 0;
+}
+
+
 #variables ul.variable{
     padding-left: 5px;
     border: 0px;
 }
-#variables li:hover{
-  background-color: #c0eeff;
-}
-.toggle_children_visibility{
-  font-weight: bold;
+/* Show type of variable in lighter text */
+.var_type{
+  color: #a0a0a0;
+  margin-left: 5px;
+  font-style: italic;
 }
 
+/* Make refresh icon spin - http://www.bootply.com/128062*/
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+
+
+footer a{
+  color: #ccc;
+}
+footer ul{
+  list-style: none;
+  padding: 0;
+}
 
 /* Vendor Overrides */
 
