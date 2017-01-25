@@ -106,12 +106,13 @@ pre{
   border-width: 1px;
 }
 td.assembly{
-  color: #333;
+  /*background-color: white;*/
   padding-bottom: 6px;
-  min-width: 100px;
-  max-width: 200px;
-  word-wrap: break-word;
-  overflow: auto;
+/*  min-width: 100px;
+  max-width: 200px;*/
+  /*overflow: auto;*/
+  white-space: nowrap;
+  /*word-wrap: break-word;*/
 }
 #code_table{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -119,6 +120,7 @@ td.assembly{
 /* set background color over souce code only */
 .source_code_row.line_of_code td{
   background-color: #f7f7f7;
+  max-width: 80%;
 }
 .line_of_code pre{
   margin-left: 10px;
