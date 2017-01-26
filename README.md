@@ -4,7 +4,8 @@
 [![Say Thanks!](https://img.shields.io/badge/SayThanks.io-☼-blue.svg)](https://saythanks.io/to/grassfedcode)
 
 # A browser-based frontend/gui for GDB
-![gdbgui](gdbgui.png)
+![gdbgui](screencast.gif)
+
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run `gdbgui` from the terminal a new tab will open in your browser.
 
 ## Install
@@ -17,7 +18,6 @@ A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view st
 
 A new tab in your browser will open with gdbgui in it.
 
-![gdbgui](screencast.gif)
 
 
 ### Help
@@ -63,10 +63,9 @@ Contributions and bug fixes are welcome!
 If you use this at your company or for your job, I would love to hear from you -- send me an email and let me know.
 
 
-## Possible Improvements
+## Future Improvements
 
-* Add syntax highlighting
-* Hover over a variable and immediately see its value.
+* Hover over a variable in source code to see its value
+* Embed plotting tools to plot a variable's value over time
 * Assign values to variables / memory addresses
 * Embed a binary/decimal/hex calculator
-* Embed plotting tools to plot a variable's value over time
