@@ -134,15 +134,33 @@ def _shutdown():
         socketio.stop()
 
 
+@app.route('/get_last_modified_unix_sec')
+def get_last_modified_unix_sec():
+    """Read a file and return its contents as an array"""
+    path = request.args.get('path')
+    if path and os.path.isfile(path):
+        try:
+            last_modified = os.path.getmtime(path)
+            return jsonify({'path': path,
+                            'last_modified_unix_sec': last_modified})
+        except Exception as e:
+            return client_error({'message': '%s' % e})
+
+    else:
+        return client_error({'message': 'File not found: %s' % path})
+
+
 @app.route('/read_file')
 def read_file():
     """Read a file and return its contents as an array"""
     path = request.args.get('path')
     if path and os.path.isfile(path):
         try:
+            last_modified = os.path.getmtime(path)
             with open(path, 'r') as f:
                 return jsonify({'source_code': f.read().splitlines(),
-                                'path': path})
+                                'path': path,
+                                'last_modified_unix_sec': last_modified})
         except Exception as e:
             return client_error({'message': '%s' % e})
 
