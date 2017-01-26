@@ -25,7 +25,10 @@ console.log(debug)
  */
 let globals = {
     gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
-    debug: debug
+    debug: debug,
+    inferior_binary_path: null,
+    inferior_binary_path_last_modified_unix_sec: null,
+    warning_shown_for_old_binary: false
 }
 
 
@@ -203,6 +206,21 @@ const GdbApi = {
             error: Status.render_ajax_error_msg,
         })
     },
+    get_inferior_binary_last_modified_unix_sec(path){
+        $.ajax({
+            url: "/get_last_modified_unix_sec",
+            cache: false,
+            method: 'GET',
+            data: {'path': path},
+            success: GdbApi._recieve_last_modified_unix_sec,
+            error: Status.render_ajax_error_msg,
+        })
+    },
+    _recieve_last_modified_unix_sec(data){
+        if(data.path === globals.inferior_binary_path){
+            globals.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
+        }
+    }
 }
 
 /**
@@ -533,9 +551,27 @@ const SourceCode = {
         </td>`
     },
     /**
+     * Show modal warning if user is trying to show a file that was modified after the binary was compiled
+     */
+    show_modal_if_file_modified_after_binary(fullname){
+        let obj = SourceCode.get_source_file_from_cache(fullname)
+        if(obj && globals.inferior_binary_path){
+            if((obj.last_modified_unix_sec > globals.inferior_binary_path_last_modified_unix_sec)
+                    && globals.warning_shown_for_old_binary !== true){
+                Modal.render('Warning', `This source file was modified after the binary was compiled. Therefore, the source code may not
+                    match the binary.
+                    <p>Source file: ${fullname}, modified at ${obj.last_modified_unix_sec}
+                    <p>Binary: ${globals.inferior_binary_path}, modified at ${globals.inferior_binary_path_last_modified_unix_sec}`)
+                globals.warning_shown_for_old_binary = true
+            }
+        }
+    },
+    /**
      * Render a cached source file
      */
     render_source_file: function(fullname, source_code, current_line=1, addr=undefined, options={'highlight': false, 'scroll': false}){
+        SourceCode.show_modal_if_file_modified_after_binary(fullname)
+
         current_line = parseInt(current_line)
         SourceCode.state.line_highlighted = options.highlight
         SourceCode.state.rendered_source_file_fullname = fullname
@@ -645,20 +681,29 @@ const SourceCode = {
                 type: 'GET',
                 data: {path: fullname},
                 success: function(response){
-                    SourceCode.add_source_file_to_cache(fullname, response.source_code)
+                    SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
                     SourceCode.render_source_file(fullname, response.source_code, current_line, addr, options)
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
                     let source_code = [`failed to fetch file ${fullname}`]
-                    SourceCode.add_source_file_to_cache(fullname, source_code)
+                    SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
                     SourceCode.render_source_file(fullname, source_code, 0, addr, options)
                 }
             })
         }
     },
-    add_source_file_to_cache: function(fullname, source_code, assembly){
-        SourceCode.state.cached_source_files.push({'fullname': fullname, 'source_code': source_code, 'assembly': assembly})
+    add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec){
+        SourceCode.state.cached_source_files.push({'fullname': fullname, 'source_code': source_code, 'assembly': assembly,
+            'last_modified_unix_sec': last_modified_unix_sec})
+    },
+    get_source_file_from_cache(fullname){
+        for(let sf of SourceCode.state.cached_source_files){
+            if (sf.fullname === fullname){
+                return sf
+            }
+        }
+        return null
     },
     /**
      * gdb changed its api for the data-disassemble command
@@ -1026,6 +1071,9 @@ const BinaryLoader = {
         cmds.push('-break-list')
 
         GdbApi.run_gdb_command(cmds)
+
+        globals.inferior_binary_path = binary
+        GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
     },
     render: function(binary){
         BinaryLoader.el.val(binary)
@@ -1836,16 +1884,14 @@ const process_gdb_response = function(response_array){
                     SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
                 }else{
                     Modal.render('Warning',
-                     'This binary was not compiled with debug symbols. Recompile with the -g flag.',
+                     `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.<p>
+                     See more at <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
                      '')
                 }
             }
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
-            // if ('locals' in r.payload){
-            //     AllLocalVariables.render(r.payload.locals)
-            // }
             if ('changelist' in r.payload){
                 Variables.handle_changelist(r.payload.changelist)
             }
@@ -1898,6 +1944,9 @@ const process_gdb_response = function(response_array){
                 Memory.program_exited()
                 Registers.program_exited()
                 Threads.program_exited()
+                globals.inferior_binary_path = null
+                globals.inferior_binary_path_last_modified_unix_sec = 0
+                globals.warning_shown_for_old_binary = false
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
                 refresh_stack = true
