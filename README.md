@@ -17,6 +17,8 @@ A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view st
 
 A new tab in your browser will open with gdbgui in it.
 
+![gdbgui](screencast.gif)
+
 
 ### Help
 
