@@ -223,6 +223,21 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
                 p
                     a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
 
+
+//- modal window, hidden by default
+#gdb_modal.modal.fade(role='dialog')
+    .modal-dialog
+        .modal-content(style='padding: 20px;')
+            #modal_header
+                button.close(type='button', data-dismiss='modal') ×
+
+            h4#modal_title Modal Header
+
+            #modal_body(style='margin-top: 20px;')
+
+            #modal_footer(style='margin-top: 20px;')
+                button.btn.btn-default(type='button', data-dismiss='modal') Close
+
 script.
     debug = #{debug}
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')

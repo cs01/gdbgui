@@ -1,4 +1,5 @@
 
+
 /**
  * This is the main frontend file to make
  * an interactive ui for gdb. Everything exists in this single js
@@ -1750,19 +1751,40 @@ const WebSocket = {
         var socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
 
         socket.on('connect', function(){
-            // console.log('connected')
-            // socket.emit('my_event', {data: 'I\'m connected!'});
+            if(globals.debug){
+                console.log('connected')
+                // socket.emit('my_event', {data: 'I\'m connected!'});
+            }
         });
 
         socket.on('gdb_response', function(response_array) {
-            // console.log(response_array)
             process_gdb_response(response_array)
         });
 
         socket.on('disconnect', function(){
-            // console.log('disconnected')
+            if(globals.debug){
+                console.log('disconnected')
+            }
         });
     }
+}
+
+
+/**
+ * Modal component that is hidden by default, but shown
+ * when render is called. The user must close the modal to
+ * resume using the GUI.
+ */
+const Modal = {
+    /**
+     * Call when an important modal message must be shown
+     */
+    render: function(title, body){
+        $('#modal_title').html(title)
+        $('#modal_body').html(body)
+        $('#gdb_modal').modal('show');
+    }
+
 }
 
 /**
@@ -1810,7 +1832,13 @@ const process_gdb_response = function(response_array){
                 SourceCode.save_new_assembly(r.payload.asm_insns)
             }
             if ('files' in r.payload){
-                SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                if(r.payload.files.length > 0){
+                    SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                }else{
+                    Modal.render('Warning',
+                     'This binary was not compiled with debug symbols. Recompile with the -g flag.',
+                     '')
+                }
             }
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
