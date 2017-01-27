@@ -159,7 +159,6 @@ const GdbApi = {
 
         // Status.render(`running command(s) "${cmd}"`)
         Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
-        History.save_to_history(cmds)
         WebSocket.run_gdb_command(cmds)
     },
     refresh_breakpoints: function(){
@@ -281,18 +280,21 @@ const GdbConsoleComponent = {
     init: function(){
         $('.clear_console').click(GdbConsoleComponent.clear_console)
         $("body").on("click", ".sent_command", GdbConsoleComponent.click_sent_command)
-        // TODO when focus is in input and up/down arrows are pressed, cycle through history and populate
-        // input with old history entry
     },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
     },
-    add: function(s){
-        let strings = s
+    add: function(s, error=false){
+        let strings = s,
+            cls = ''
         if(_.isString(s)){
             strings = [s]
         }
-        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output'>${Util.escape(string)}</p>`))
+        if(error){
+            cls = 'error'
+            print('error!!')
+        }
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
         if(!_.isArray(cmds)){
@@ -309,41 +311,6 @@ const GdbConsoleComponent = {
         // with it
         let previous_cmd_from_history = (e.currentTarget.dataset.cmd)
         GdbCommandInput.set_input_text(previous_cmd_from_history)
-    },
-}
-
-
-/**
- * History component is not used, but could restore gdb's console history in browser
- * for when the page is reloaded
- */
-const History = {
-    init: function(){
-        $("body").on("click", ".sent_command", History.click_sent_command)
-
-        try{
-            History.items = _.uniq(JSON.parse(localStorage.getItem('history')))
-        }catch(err){
-            History.items = []
-        }
-    },
-    onclose: function(){
-        localStorage.setItem('history', JSON.stringify(History.items) || [])
-        return null
-    },
-    save_to_history: function(cmds){
-        if (!_.isArray(cmds)){
-            cmds = [cmds]
-        }
-
-        if (_.isArray(History.items)){
-            _.remove(History.items, i => cmds.indexOf(i) !== -1)
-            for(let cmd of cmds){
-                History.items.unshift(cmd)
-            }
-        }else{
-            History.items = cmds
-        }
     },
 }
 
@@ -966,9 +933,8 @@ const Registers = {
  * between sessions. (This is still in work)
  */
 const Prefs = {
-    auto_reload_breakpoints: function(){
-        // todo add checkboxes in a UI widget
-        return true
+    auto_add_breakpoint_to_main: function(){
+        return $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
     }
 }
 
@@ -1040,8 +1006,11 @@ const BinaryLoader = {
         // tell gdb which arguments to use when calling the binary, before loading the binary
         cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, '-file-list-exec-source-files']
 
-        if($('#checkbox_auto_add_breakpoint_to_main').prop('checked')){
-            cmds.push('-break-insert main')
+        if(Prefs.auto_add_breakpoint_to_main()){
+            let existing_main_breakpoint = _.filter(Breakpoint.breakpoints, b => b.func === 'main')
+            if (existing_main_breakpoint.length === 0){
+                cmds.push('-break-insert main')
+            }
         }
         cmds.push('-break-list')
 
@@ -1900,7 +1869,7 @@ const process_gdb_response = function(response_array){
             }
 
         } else if (r.type === 'console'){
-            GdbConsoleComponent.add(r.payload)
+            GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
             if(globals.gdb_version === undefined){
                 // parse gdb version from string such as
                 // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
@@ -1913,7 +1882,7 @@ const process_gdb_response = function(response_array){
             }
         }else if (r.type === 'output'){
             // output of program
-            GdbConsoleComponent.add(r.payload)
+            GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
         }else{
             // gdb mi output
             GdbMiOutput.add_mi_output(r)
