@@ -102,7 +102,6 @@ const Status = {
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
-        $("body").on("click", ".get_gdb_response", GdbApi.get_gdb_response)
     },
     state: {'waiting_for_response': false},
     click_gdb_cmd_button: function(e){
@@ -161,15 +160,7 @@ const GdbApi = {
         // Status.render(`running command(s) "${cmd}"`)
         Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
         History.save_to_history(cmds)
-        // GdbConsoleComponent.add_sent_commands(cmds)
-        $.ajax({
-            url: "/run_gdb_command",
-            cache: false,
-            method: 'POST',
-            data: {'cmd': cmd},
-            success: success_callback,
-            error: Status.render_ajax_error_msg,
-        })
+        WebSocket.run_gdb_command(cmds)
     },
     refresh_breakpoints: function(){
         GdbApi.run_gdb_command(['-break-list'])
@@ -186,26 +177,6 @@ const GdbApi = {
         cmds.concat(Memory.get_gdb_commands_from_inputs())
         GdbApi.run_gdb_command(cmds)
     },
-    /**
-     * read gdb's buffers for any asynchronous data that
-     * arrived since the last read
-     */
-    get_gdb_response: function(){
-        if(GdbApi.state.waiting_for_response === true){
-            Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
-            return
-        }else{
-            // todo
-            // GdbApi.state.waiting_for_response = true
-        }
-        Status.render(`Getting GDB response`)
-        $.ajax({
-            url: "/get_gdb_response",
-            cache: false,
-            success: process_gdb_response,
-            error: Status.render_ajax_error_msg,
-        })
-    },
     get_inferior_binary_last_modified_unix_sec(path){
         $.ajax({
             url: "/get_last_modified_unix_sec",
@@ -218,8 +189,12 @@ const GdbApi = {
     },
     _recieve_last_modified_unix_sec(data){
         if(data.path === globals.inferior_binary_path){
+            globals.inferior_binary_path = null
             globals.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
         }
+    },
+    _error_getting_last_modified_unix_sec(data){
+        // todo
     }
 }
 
@@ -1796,25 +1771,33 @@ const GlobalEvents = {
 
 const WebSocket = {
     init: function(){
-        var socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
+        WebSocket.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
 
-        socket.on('connect', function(){
+        WebSocket.socket.on('connect', function(){
             if(globals.debug){
                 console.log('connected')
                 // socket.emit('my_event', {data: 'I\'m connected!'});
             }
         });
 
-        socket.on('gdb_response', function(response_array) {
+        WebSocket.socket.on('gdb_response', function(response_array) {
             process_gdb_response(response_array)
         });
 
-        socket.on('disconnect', function(){
+        WebSocket.socket.on('error_running_gdb_command', function(data) {
+            Status.render(`Error occured on server when running gdb command: ${data.message}`, true)
+        });
+
+        WebSocket.socket.on('disconnect', function(){
             if(globals.debug){
                 console.log('disconnected')
             }
         });
-    }
+    },
+    run_gdb_command: function(cmd){
+        WebSocket.socket.emit('run_gdb_command', {cmd: cmd});
+    },
+
 }
 
 
@@ -1882,7 +1865,7 @@ const process_gdb_response = function(response_array){
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
                     SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
-                }else{
+                }else if (globals.inferior_binary_path){
                     Modal.render('Warning',
                      `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.<p>
                      See more at <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
@@ -1905,6 +1888,16 @@ const process_gdb_response = function(response_array){
             // if (your check here) {
             //      render your custom compenent here!
             // }
+        } else if (r.type === 'result' && r.message === 'error'){
+            if(r.payload.msg === `${globals.inferior_binary_path}: No such file or directory.`){
+                SourceCode.program_exited()
+                Memory.program_exited()
+                Registers.program_exited()
+                Threads.program_exited()
+                globals.inferior_binary_path = null
+                globals.inferior_binary_path_last_modified_unix_sec = 0
+                globals.warning_shown_for_old_binary = false
+            }
 
         } else if (r.type === 'console'){
             GdbConsoleComponent.add(r.payload)
@@ -1918,9 +1911,7 @@ const process_gdb_response = function(response_array){
                     localStorage.setItem('gdb_version', globals.gdb_version)
                 }
             }
-        }
-
-        if (r.type === 'output'){
+        }else if (r.type === 'output'){
             // output of program
             GdbConsoleComponent.add(r.payload)
         }else{
