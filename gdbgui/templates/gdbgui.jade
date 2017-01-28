@@ -99,8 +99,6 @@ body
                         input#checkbox_show_assembly(type='checkbox')
                         ='show assembly'
 
-                    span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-                    span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
 
 
                 div
@@ -112,31 +110,23 @@ body
             div.col-lg-5
                 div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
                     div.titlebar.flex
-                        span.lighttext threads
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
+                        span.lighttext call stack
                     div#threads.gdb_content_div
 
                 div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
                     div.titlebar.flex
                         span.lighttext variables
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
                         input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
                     div#variables.gdb_content_div
 
                 div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
                     div.titlebar
                         span.lighttext registers
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
                     div#registers.gdb_content_div
 
                 div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
                     div.titlebar.flex
                         span.lighttext memory
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
                         input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
                         input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
                     div#memory.gdb_content_div
@@ -144,16 +134,12 @@ body
                 div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
                     div.titlebar
                         span.lighttext breakpoints
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
                     div#breakpoints.gdb_content_div
 
         div.col-lg-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
             //- text/buttons above the gdb console output
             div.titlebar
                 span.lighttext gdb console
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
                 div.btn-group
                     button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
                         span.glyphicon.glyphicon-ban-circle.padding_left
@@ -170,8 +156,6 @@ body
         div.col-lg-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
             div.titlebar
                 span.lighttext gdb machine interface output
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
                 button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
                         span.glyphicon.glyphicon-ban-circle.padding_left
             div#gdb_mi_output.gdb_content_div

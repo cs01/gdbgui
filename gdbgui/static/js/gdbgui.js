@@ -356,8 +356,23 @@ const Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
     render_breakpoint_table: function(){
-        let [columns, data] = Util.get_table_data_from_objs(Breakpoint.breakpoints)
-        Breakpoint.el.html(Util.get_table(columns, data))
+        let bkpt_html = ''
+        for (let b of Breakpoint.breakpoints){
+            let checked = b.enabled === 'y' ? 'checked' : ''
+
+            bkpt_html += `
+            <span ${SourceCode.get_attrs_to_view_file(b.fullname, b.line, '', 'false')}>
+                <div class=breakpoint>
+                    <input type='checkbox' ${checked}/> <span>${b.func}:${b.line}</span><br>
+                    <span>thread groups: ${b['thread-groups']}</span>
+                </div>
+            </span>
+            `
+        }
+
+        // let [columns, data] = Util.get_table_data_from_objs(Breakpoint.breakpoints)
+        // Breakpoint.el.html(Util.get_table(columns, data))
+        Breakpoint.el.html(bkpt_html)
     },
     remove_stored_breakpoints: function(){
         Breakpoint.breakpoints = []
@@ -786,6 +801,9 @@ const SourceCode = {
     program_exited: function(){
         SourceCode.remove_highlight()
         SourceCode.clear_cached_source_files()
+    },
+    get_attrs_to_view_file: function(fullname, line=0, addr='', highlight='false'){
+        return `class='view_file pointer' data-fullname=${fullname} data-line=${line} data-addr=${addr} data-highlight=${highlight}`
     },
     get_link_to_view_file: function(fullname, line=0, addr='', highlight='false', text='View'){
         // create local copies so we don't modify the references
@@ -1578,7 +1596,8 @@ const Threads = {
 
                 tbody.push([`<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span>`, stack])
             }
-            Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
+
+            // Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
         }else{
             Threads.el.html('')
         }

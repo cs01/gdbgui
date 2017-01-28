@@ -97,7 +97,7 @@ def gdb_background_thread():
                 break
 
         except Exception as e:
-            if app.debug:
+            if app and app.debug:
                 print(e)
 
 

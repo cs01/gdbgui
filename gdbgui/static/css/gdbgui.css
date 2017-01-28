@@ -51,7 +51,7 @@ pre{
 .titlebar{
   width: 100%;
   color: black;
-  background-color: white;
+  background-color: #f7f7f7;
   height: 25px;
 }
 .pointer{
@@ -60,8 +60,8 @@ pre{
 .gdb_content_div{
   overflow: auto;
   height: 150px;
-  background-color: #f7f7f7;
-  border-color: grey;
+  background-color: white;
+  border-color: #e0e0e0;
   border-style: solid;
   border-width: 1px;
   border-radius: 2px;
@@ -91,6 +91,9 @@ pre{
 }
 .highlight{
   background: rgba(255, 255, 0, 0.5) !important;
+}
+.breakpoint:hover{
+  background-color: #e2e2e2;
 }
 .line_num{
   width: 50px;
