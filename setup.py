@@ -38,7 +38,7 @@ setup(
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
     long_description=readme,
     url='https://github.com/cs01/gdbgui',
-    license='MIT',
+    license='License :: Free for non-commercial use',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     keywords=['gdb', 'debug', 'c', 'c++', 'go', 'rust', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui'],
