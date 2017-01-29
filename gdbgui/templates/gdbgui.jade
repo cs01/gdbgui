@@ -210,6 +210,11 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
                 p
                     a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
 
+            div.col-lg-3
+                h4.bold gdbgui version
+                #{gdbgui_version}
+                p
+                a(href='https://pypi.python.org/pypi/gdbgui/') Check for updates
 
 //- modal window, hidden by default
 #gdb_modal.modal.fade(role='dialog')
@@ -227,4 +232,5 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
 
 script.
     debug = #{debug}
+    gdbgui_version = '#{gdbgui_version}'
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')
