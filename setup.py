@@ -5,8 +5,7 @@ from setuptools import find_packages, setup, Command
 
 EXCLUDE_FROM_PACKAGES = []
 
-with open('README.rst', 'r') as f:
-    readme = f.read()
+readme = open('README.rst', 'r').read()
 
 with open('gdbgui/__init__.py', 'r') as fd:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',

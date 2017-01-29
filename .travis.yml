@@ -22,6 +22,9 @@ before_install:
 script:
   # command to run unit tests
   - python setup.py test
+  # ensure README.rst has no syntax errors so it displays nicely
+  # on the pypi website
+  - python setup.py checkdocs
 addons:
   apt:
     packages:
