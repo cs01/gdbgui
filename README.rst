@@ -1,7 +1,7 @@
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-v0.7.2.3-blue.svg
+.. image:: https://img.shields.io/badge/pypi-v0.7.2.4-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
@@ -16,7 +16,7 @@
 A browser-based frontend/gui for GDB
 ====================================
 
-.. figure:: screencast.gif
+.. figure:: https://github.com/cs01/gdbgui/raw/master/screencast.gif
    :alt: gdbgui
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
@@ -60,11 +60,12 @@ Browsers: Chrome, Firefox, Ubuntu Web Browser
 
 Development
 -----------
+Contributions and bug fixes are welcome!
 
 ``gdbgui`` was designed to be easily hackable and extendable. There is
 no build system necessary to run or develop this app.
 
-There are only three parts to gdb:
+There are three parts to gdb:
 
 1. ``gdbgui.js``: There is just one JavaScript file, and that file
    contains the majority of the app itself. It sends AJAX requests to
@@ -91,7 +92,7 @@ run
     git clone https://github.com/cs01/gdbgui
     cd gdbgui
     pip install -r gdbgui/requirements.txt
-    python -m gdbgui.backend --debug
+    python -m gdbgui/backend.py --debug
 
 Testing
 ~~~~~~~
@@ -99,13 +100,6 @@ Testing
 ``python setup.py test`` runs unit tests located in
 ``gdbgui/tests/test_app.py``. Add new tests there as necessary.
 
-Contributing
-------------
-
-Contributions and bug fixes are welcome!
-
-If you use this at your company or for your job, I would love to hear
-from you -- send me an email and let me know.
 
 Future Improvements
 -------------------
