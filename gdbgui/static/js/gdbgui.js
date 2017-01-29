@@ -11,24 +11,22 @@
  * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete, io, debug) {
+(function ($, _, Awesomplete, io, moment, debug) {
 "use strict";
 
 /**
  * Constants
  */
 const ENTER_BUTTON_NUM = 13
+, DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
 
-console.log(debug)
 /**
  * Globals
  */
 let globals = {
-    gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
-    debug: debug,
-    inferior_binary_path: null,
-    inferior_binary_path_last_modified_unix_sec: null,
-    warning_shown_for_old_binary: false
+    state: {
+        debug: debug,  // if gdbgui is run in debug mode
+    }
 }
 
 
@@ -103,7 +101,12 @@ const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
     },
-    state: {'waiting_for_response': false},
+    state: {
+        gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+        inferior_binary_path: null,
+        inferior_binary_path_last_modified_unix_sec: null,
+        warning_shown_for_old_binary: false
+    },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
             // run single command
@@ -144,36 +147,39 @@ const GdbApi = {
             return
         }
 
-        if(GdbApi.state.waiting_for_response === true){
-            Status.render('Cannot send command while waiting for response. If gdb is hung, kill the server with CTRL+C, then start server again and reload page.')
-            return
-        }else{
-            // todo
-            // GdbApi.state.waiting_for_response = true
-        }
-
         let cmds = cmd
         if(_.isString(cmds)){
             cmds = [cmds]
         }
 
-        // Status.render(`running command(s) "${cmd}"`)
         Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
         WebSocket.run_gdb_command(cmds)
     },
     refresh_breakpoints: function(){
         GdbApi.run_gdb_command(['-break-list'])
     },
-    refresh_stack: function(){
-        let cmds = ['-data-evaluate-expression fflush(0)',
-                    '-stack-list-frames',
-                    '-stack-info-frame',
-                    '-thread-info',
-                    '-var-update --all-values *',
-                    '-data-list-register-names',
-                    '-data-list-register-values x']
-        // re-fetch memory over desired range as specified by DOM
-        cmds.concat(Memory.get_gdb_commands_from_inputs())
+    refresh_state_for_gdb_pause: function(){
+        let cmds = [
+            // flush inferior process' output (if any)
+            // by default, it only flushes when the program terminates
+            '-data-evaluate-expression fflush(0)',
+            // List the frames currently on the stack.
+            '-stack-list-frames',
+            // Get info on selected frame
+            '-stack-info-frame',
+            // get info on current thread
+            '-thread-info',
+            // update all user-defined variables in gdb
+            '-var-update --all-values *',
+        ]
+
+        // update registers
+        cmds = cmds.concat(Registers.get_update_cmds())
+
+        // re-fetch memory over desired range as specified by DOM inputs
+        cmds = cmds.concat(Memory.get_gdb_commands_from_inputs())
+
+        // and finally run the commands
         GdbApi.run_gdb_command(cmds)
     },
     get_inferior_binary_last_modified_unix_sec(path){
@@ -183,17 +189,16 @@ const GdbApi = {
             method: 'GET',
             data: {'path': path},
             success: GdbApi._recieve_last_modified_unix_sec,
-            error: Status.render_ajax_error_msg,
+            error: GdbApi._error_getting_last_modified_unix_sec,
         })
     },
     _recieve_last_modified_unix_sec(data){
-        if(data.path === globals.inferior_binary_path){
-            globals.inferior_binary_path = null
-            globals.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
+        if(data.path === GdbApi.state.inferior_binary_path){
+            GdbApi.state.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
         }
     },
     _error_getting_last_modified_unix_sec(data){
-        // todo
+        GdbApi.state.inferior_binary_path = null
     }
 }
 
@@ -285,15 +290,8 @@ const GdbConsoleComponent = {
         GdbConsoleComponent.el.html('')
     },
     add: function(s, error=false){
-        let strings = s,
-            cls = ''
-        if(_.isString(s)){
-            strings = [s]
-        }
-        if(error){
-            cls = 'error'
-            print('error!!')
-        }
+        let strings = _.isString(s) ? [s] : s,
+            cls = error ? 'error' : ''
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
@@ -496,15 +494,16 @@ const SourceCode = {
      * Show modal warning if user is trying to show a file that was modified after the binary was compiled
      */
     show_modal_if_file_modified_after_binary(fullname){
-        let obj = SourceCode.get_source_file_from_cache(fullname)
-        if(obj && globals.inferior_binary_path){
-            if((obj.last_modified_unix_sec > globals.inferior_binary_path_last_modified_unix_sec)
-                    && globals.warning_shown_for_old_binary !== true){
-                Modal.render('Warning', `This source file was modified after the binary was compiled. Therefore, the source code may not
+        let obj = SourceCode.get_source_file_obj_from_cache(fullname)
+        if(obj && GdbApi.state.inferior_binary_path){
+            if((obj.last_modified_unix_sec > GdbApi.state.inferior_binary_path_last_modified_unix_sec)
+                    && GdbApi.state.warning_shown_for_old_binary !== true){
+                Modal.render('Warning', `A source file was modified <bold>after</bold> the binary was compiled. Recompile the binary, then try again. Otherwise the source code may not
                     match the binary.
-                    <p>Source file: ${fullname}, modified at ${obj.last_modified_unix_sec}
-                    <p>Binary: ${globals.inferior_binary_path}, modified at ${globals.inferior_binary_path_last_modified_unix_sec}`)
-                globals.warning_shown_for_old_binary = true
+                    <p>
+                    <p>Source file: ${fullname}, modified ${moment(obj.last_modified_unix_sec * 1000).format(DATE_FORMAT)}
+                    <p>Binary: ${GdbApi.state.inferior_binary_path}, modified ${moment(GdbApi.state.inferior_binary_path_last_modified_unix_sec * 1000).format(DATE_FORMAT)}`)
+                GdbApi.state.warning_shown_for_old_binary = true
             }
         }
     },
@@ -639,7 +638,7 @@ const SourceCode = {
         SourceCode.state.cached_source_files.push({'fullname': fullname, 'source_code': source_code, 'assembly': assembly,
             'last_modified_unix_sec': last_modified_unix_sec})
     },
-    get_source_file_from_cache(fullname){
+    get_source_file_obj_from_cache(fullname){
         for(let sf of SourceCode.state.cached_source_files){
             if (sf.fullname === fullname){
                 return sf
@@ -667,7 +666,7 @@ const SourceCode = {
     },
     get_fetch_disassembly_command: function(){
         if(SourceCode.state.rendered_source_file_fullname){
-            let mi_response_format = SourceCode.get_dissasembly_format_num(globals.gdb_version)
+            let mi_response_format = SourceCode.get_dissasembly_format_num(GdbApi.state.gdb_version)
             return `-data-disassemble -f ${SourceCode.state.rendered_source_file_fullname} -l 1 -- ${mi_response_format}`
         }else{
             // we don't have a file to fetch disassembly for
@@ -868,6 +867,17 @@ const Registers = {
         register_names: [],
         register_values: {},
     },
+    get_update_cmds: function(){
+        let cmds = []
+        if(Registers.state.register_names.length === 0){
+            // only fetch register names when we don't have them
+            // assumption is that the names don't change over time
+            cmds.push('-data-list-register-names')
+        }
+        // update all registers values
+        cmds.push('-data-list-register-values x')
+        return cmds
+    },
     render_registers(register_values){
         if(Registers.state.register_names.length === register_values.length){
             let columns = ['name', 'value (hex)', 'value (decimal)']
@@ -982,8 +992,8 @@ const BinaryLoader = {
     set_target_app: function(){
         var binary_and_args = _.trim(BinaryLoader.el.val())
 
-        if (binary_and_args === ''){
-            Status.render('enter a binary path before attempting to load')
+        if (_.trim(binary_and_args) === ''){
+            Status.render('enter a binary path and arguments before attempting to load')
             return
         }
 
@@ -1004,8 +1014,11 @@ const BinaryLoader = {
         }
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = [`-exec-arguments ${args}`, `-file-exec-and-symbols ${binary}`, '-file-list-exec-source-files']
+        cmds = [`-exec-arguments ${args}`,
+                `-file-exec-and-symbols ${binary}`,
+                '-file-list-exec-source-files']
 
+        // add breakpoint if we don't already have one
         if(Prefs.auto_add_breakpoint_to_main()){
             let existing_main_breakpoint = _.filter(Breakpoint.breakpoints, b => b.func === 'main')
             if (existing_main_breakpoint.length === 0){
@@ -1016,7 +1029,7 @@ const BinaryLoader = {
 
         GdbApi.run_gdb_command(cmds)
 
-        globals.inferior_binary_path = binary
+        GdbApi.state.inferior_binary_path = binary
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
     },
     render: function(binary){
@@ -1376,7 +1389,6 @@ const Variables = {
                     html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
                 }
             }else if (obj.in_scope === 'invalid'){
-                console.log(`deleting invalid gdb var ${obj.name}`)
                 Variables.delete_gdb_variable(obj.name)
             }
         }
@@ -1537,7 +1549,7 @@ const Threads = {
     },
     click_select_thread_id: function(e){
         GdbApi.run_gdb_command(`-thread-select ${e.currentTarget.dataset.thread_id}`)
-        GdbApi.refresh_stack()
+        GdbApi.refresh_state_for_gdb_pause()
     },
     /**
      * select a frame and jump to the line in source code
@@ -1550,7 +1562,7 @@ const Threads = {
     },
     select_frame: function(framenum){
         GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
-        GdbApi.refresh_stack()
+        GdbApi.refresh_state_for_gdb_pause()
     },
     render: function(){
         if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
@@ -1743,7 +1755,7 @@ const WebSocket = {
         WebSocket.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
 
         WebSocket.socket.on('connect', function(){
-            if(globals.debug){
+            if(globals.state.debug){
                 console.log('connected')
                 // socket.emit('my_event', {data: 'I\'m connected!'});
             }
@@ -1758,7 +1770,7 @@ const WebSocket = {
         });
 
         WebSocket.socket.on('disconnect', function(){
-            if(globals.debug){
+            if(globals.state.debug){
                 console.log('disconnected')
             }
         });
@@ -1798,7 +1810,7 @@ const process_gdb_response = function(response_array){
     // update status with error or with last response
     let update_status = true,
         refresh_breakpoints = false,
-        refresh_stack = false
+        refresh_state_for_gdb_pause = false
 
     for (let r of response_array){
         if (r.type === 'result' && r.message === 'done' && r.payload){
@@ -1834,10 +1846,12 @@ const process_gdb_response = function(response_array){
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
                     SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
-                }else if (globals.inferior_binary_path){
+                }else if (GdbApi.state.inferior_binary_path){
                     Modal.render('Warning',
-                     `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.<p>
-                     See more at <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
+                     `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
+                     <p>
+                     <p>
+                     Read more: <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
                      '')
                 }
             }
@@ -1858,26 +1872,35 @@ const process_gdb_response = function(response_array){
             //      render your custom compenent here!
             // }
         } else if (r.type === 'result' && r.message === 'error'){
-            if(r.payload.msg === `${globals.inferior_binary_path}: No such file or directory.`){
+            // this is also special gdb mi output, but some sort of error occured
+
+            // render it in the status bar, and don't render the last response in the array as it does by default
+            if(update_status){
+                Status.render_from_gdb_mi_response(r)
+                update_status = false
+            }
+
+            // we tried to load a binary, but gdb couldn't find it
+            if(r.payload.msg === `${GdbApi.state.inferior_binary_path}: No such file or directory.`){
                 SourceCode.program_exited()
                 Memory.program_exited()
                 Registers.program_exited()
                 Threads.program_exited()
-                globals.inferior_binary_path = null
-                globals.inferior_binary_path_last_modified_unix_sec = 0
-                globals.warning_shown_for_old_binary = false
+                GdbApi.state.inferior_binary_path = null
+                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
+                GdbApi.state.warning_shown_for_old_binary = false
             }
 
         } else if (r.type === 'console'){
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
-            if(globals.gdb_version === undefined){
+            if(GdbApi.state.gdb_version === undefined){
                 // parse gdb version from string such as
                 // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
                 let m = /GNU gdb \(.*\)\s*(.*)\./g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
-                    globals.gdb_version = parseFloat(a[1])
-                    localStorage.setItem('gdb_version', globals.gdb_version)
+                    GdbApi.state.gdb_version = parseFloat(a[1])
+                    localStorage.setItem('gdb_version', GdbApi.state.gdb_version)
                 }
             }
         }else if (r.type === 'output'){
@@ -1888,15 +1911,6 @@ const process_gdb_response = function(response_array){
             GdbMiOutput.add_mi_output(r)
         }
 
-        if (r.payload && typeof r.payload.frame !== 'undefined') {
-            // Stopped on a frame. We can render the file and highlight the line!
-            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
-
-            if (r.payload['new-thread-id']){
-                Threads.set_thread_id(r.payload['new-thread-id'])
-            }
-        }
-
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
             if(r.payload.reason.includes('exited')){
                 // TODO emit event
@@ -1904,22 +1918,30 @@ const process_gdb_response = function(response_array){
                 Memory.program_exited()
                 Registers.program_exited()
                 Threads.program_exited()
-                globals.inferior_binary_path = null
-                globals.inferior_binary_path_last_modified_unix_sec = 0
-                globals.warning_shown_for_old_binary = false
+                GdbApi.state.inferior_binary_path = null
+                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
+                GdbApi.state.warning_shown_for_old_binary = false
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
-                refresh_stack = true
+                refresh_state_for_gdb_pause = true
                 refresh_breakpoints = true
-            }
-        }
 
-        if(update_status && _.isString(r.message) && (r.message.indexOf('error') !== -1 || r.message.indexOf('not found') !== -1)){
-            Status.render_from_gdb_mi_response(r)
-            update_status = false
+                if (r.payload && typeof r.payload.frame !== 'undefined') {
+                    // Stopped on a frame. We can render the file and highlight the line!
+                    SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
+
+                }
+                if (r.payload['new-thread-id']){
+                    Threads.set_thread_id(r.payload['new-thread-id'])
+                }
+            }else{
+                console.log('TODO handle new reason for stopping')
+                console.log(r)
+            }
         }
     }
 
+    // perform any final actions
     if(update_status){
         // render response of last element of array
         Status.render_from_gdb_mi_response(_.last(response_array))
@@ -1935,8 +1957,8 @@ const process_gdb_response = function(response_array){
     if(refresh_breakpoints === true){
         GdbApi.refresh_breakpoints()
     }
-    if(refresh_stack === true){
-        GdbApi.refresh_stack()
+    if(refresh_state_for_gdb_pause === true){
+        GdbApi.refresh_state_for_gdb_pause()
     }
 }
 
@@ -1958,4 +1980,4 @@ WebSocket.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-})(jQuery, _, Awesomplete, io, debug)
+})(jQuery, _, Awesomplete, io, moment, debug)
