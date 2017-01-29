@@ -1,7 +1,7 @@
 # https://docs.travis-ci.com/user/multi-os/
 os:
   - linux
-  - osx
+  # - osx  no osx for now (travis build server doesn't work build it)
 matrix:
   allow_failures:
     - os: osx
