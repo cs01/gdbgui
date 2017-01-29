@@ -1,8 +1,16 @@
-from setuptools import find_packages, setup, Command
 import sys
+import re
+from setuptools import find_packages, setup, Command
+
 
 EXCLUDE_FROM_PACKAGES = []
-version = '0.7.2.1'
+
+with open('README.rst', 'r') as f:
+    readme = f.read()
+
+with open('gdbgui/__init__.py', 'r') as fd:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        fd.read(), re.MULTILINE).group(1)
 
 
 class TestCommand (Command):
@@ -28,14 +36,16 @@ setup(
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
+    long_description=readme,
     url='https://github.com/cs01/gdbgui',
-    license='MIT',
+    license='License :: Free for non-commercial use',
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
-    keywords=['gdb', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui', 'c', 'c++', 'go', 'rust'],
+    keywords=['gdb', 'debug', 'c', 'c++', 'go', 'rust', 'python', 'machine-interface', 'parse', 'frontend', 'flask', 'browser', 'gui'],
     scripts=[],
     entry_points={
         'console_scripts': [
+            # run gdbgui from terminal and automatically launch the server and a tab in a browser
             'gdbgui = gdbgui.backend:main'
         ],
     },

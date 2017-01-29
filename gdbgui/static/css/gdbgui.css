@@ -18,6 +18,9 @@ pre{
 .pre{
   white-space: pre;
 }
+.error{
+  color: red;
+}
 .monospace{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }

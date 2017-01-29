@@ -11,8 +11,10 @@ import signal
 import webbrowser
 import datetime
 import json
+import sys
+from gdbgui import __version__
 from flask import Flask, request, render_template, jsonify
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, emit
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -20,20 +22,53 @@ TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
+DEFAULT_GDB_EXECUTABLE = 'gdb'
+IS_A_TTY = sys.stdout.isatty()
+
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-gdb = GdbController(gdb_args=['-nx', '--interpreter=mi2'])
-_thread = None
 socketio = SocketIO(async_mode='eventlet')
+_gdb = None
+_gdb_reader_thread = None
+
+
+def colorize(text):
+    if IS_A_TTY:
+        return '\x1b[6;30;42m' + text + '\x1b[0m'
+    else:
+        return text
 
 
 @socketio.on('connect', namespace='/gdb_listener')
 def client_connected():
-    print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
-    global _thread
-    if _thread is None:
-        _thread = socketio.start_background_task(target=gdb_background_thread)
-        print('Created background thread to read gdb responses')
+    if app.debug:
+        print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
+
+    global _gdb_reader_thread
+    if _gdb_reader_thread is None:
+        _gdb_reader_thread = socketio.start_background_task(target=read_and_forward_gdb_output)
+        if app.debug:
+            print('Created background thread to read gdb responses')
+
+
+@socketio.on('run_gdb_command', namespace='/gdb_listener')
+def run_gdb_command(message):
+    """
+    Endpoint for a websocket route.
+    Runs a gdb command.
+    Responds only if an error occurs when trying to write the command to
+    gdb
+    """
+    if _gdb is not None:
+        try:
+            # the command (string) or commands (list) to run
+            cmd = message['cmd']
+            _gdb.write(cmd, read_response=False)
+
+        except Exception as e:
+            emit('error_running_gdb_command', {'message': str(e)})
+    else:
+        emit('error_running_gdb_command', {'message': 'gdb is not running'})
 
 
 @socketio.on('Client disconnected')
@@ -41,28 +76,29 @@ def test_disconnect():
     print('Client websocket disconnected', request.sid)
 
 
-def gdb_background_thread():
+def read_and_forward_gdb_output():
     """A task that runs on a different thread, and emits websocket messages
     of gdb responses"""
 
     while True:
         try:
             socketio.sleep(0.05)
-            if gdb is not None:
-                response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
+            if _gdb is not None:
+                response = _gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
                 if response:
                     socketio.emit('gdb_response', response, namespace='/gdb_listener')
                 else:
                     # there was no queued response from gdb, not a problem
                     pass
             else:
-                # This is a problem. This thread shouldn't be running unless
-                # there is a gdb process providing output
-                print('Thanks for using gdbgui!')
+                # gdb process was likely killed by user. Stop trying to read from it
+                if app and app.debug:
+                    print('thread to read gdb vars is exiting since gdb controller object was not found')
                 break
 
         except Exception as e:
-            print(e)
+            if app and app.debug:
+                print(e)
 
 
 def server_error(obj):
@@ -98,7 +134,7 @@ def gdbgui():
         time_sec = 0
     else:
         time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec, debug=json.dumps(app.debug))
+    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec, debug=json.dumps(app.debug), gdbgui_version=__version__)
 
 
 @app.route('/shutdown')
@@ -107,31 +143,17 @@ def shutdown_webview():
     return render_template('shutdown.jade', timetag_to_prevent_caching=0)
 
 
-@app.route('/run_gdb_command', methods=['POST'])
-def run_gdb_command():
-    """Run a gdb command. TODO make this a websocket endpoint"""
-    if gdb is not None:
-        try:
-            # the command (string) or commands (list) to run
-            cmd = request.form.get('cmd') or request.form.getlist('cmd[]')
-            gdb.write(cmd, read_response=False)
-            return jsonify([])
-
-        except Exception as e:
-            return server_error({'message': str(e)})
-    else:
-        return client_error({'message': 'gdb is not running'})
-
-
 @app.route('/_shutdown')
 def _shutdown():
     pid = os.getpid()
-    print('received user request to shut down gdbgui')
 
     if app.debug:
         os.kill(pid, signal.SIGINT)
     else:
         socketio.stop()
+
+    if app.debug:
+        print('received user request to shut down gdbgui')
 
 
 @app.route('/get_last_modified_unix_sec')
@@ -144,10 +166,10 @@ def get_last_modified_unix_sec():
             return jsonify({'path': path,
                             'last_modified_unix_sec': last_modified})
         except Exception as e:
-            return client_error({'message': '%s' % e})
+            return client_error({'message': '%s' % e, 'path': path})
 
     else:
-        return client_error({'message': 'File not found: %s' % path})
+        return client_error({'message': 'File not found: %s' % path, 'path': path})
 
 
 @app.route('/read_file')
@@ -168,8 +190,11 @@ def read_file():
         return client_error({'message': 'File not found: %s' % path})
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False):
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False, gdb_path=DEFAULT_GDB_EXECUTABLE):
     """Run the server of the gdb gui"""
+    global _gdb
+    _gdb = GdbController(gdb_path=gdb_path, gdb_args=['-nx', '--interpreter=mi2'])
+
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
@@ -180,7 +205,9 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     socketio.init_app(app)
 
     if open_browser is True and debug is False and testing is False:
-        print('Opening gdbgui in browser (%s)' % (url_with_prefix))
+
+        text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
+        print(colorize(text))
         webbrowser.open(url_with_prefix)
 
     if testing is False:
@@ -193,11 +220,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
     parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
+    parser.add_argument("--gdb", help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
     parser.add_argument("--debug", help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     args = parser.parse_args()
-    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
+    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), gdb_path=args.gdb)
 
 
 if __name__ == '__main__':
