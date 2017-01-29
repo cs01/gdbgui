@@ -1,12 +1,23 @@
-|Build Status| |pypi| |pypi| |Say Thanks!|
+.. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
+  :target: https://travis-ci.org/cs01/gdbgui
+
+.. image:: https://img.shields.io/badge/pypi-v0.7.2.3-blue.svg
+  :target: https://pypi.python.org/pypi/gdbgui/
+
+.. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
+  :target: https://pypi.python.org/pypi/gdbgui/
+
+.. image:: https://img.shields.io/badge/SayThanks.io-☼-blue.svg
+  :target: https://saythanks.io/to/grassfedcode
+
+
+
 
 A browser-based frontend/gui for GDB
 ====================================
 
 .. figure:: screencast.gif
    :alt: gdbgui
-
-   gdbgui
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
 view stack traces, and more in C, C++, Go, and Rust! Simply run
@@ -103,12 +114,3 @@ Future Improvements
 -  Embed plotting tools to plot a variable's value over time
 -  Assign values to variables / memory addresses
 -  Embed a binary/decimal/hex calculator
-
-.. |Build Status| image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
-   :target: https://travis-ci.org/cs01/gdbgui
-.. |pypi| image:: https://img.shields.io/badge/pypi-v0.7.2.2-blue.svg
-   :target: https://pypi.python.org/pypi/gdbgui/0.7.2.1
-.. |pypi| image:: https://img.shields.io/badge/python-2.7,%203.3,%203.4,%203.5,%20pypy-blue.svg
-   :target: 
-.. |Say Thanks!| image:: https://img.shields.io/badge/SayThanks.io-☼-blue.svg
-   :target: https://saythanks.io/to/grassfedcode
