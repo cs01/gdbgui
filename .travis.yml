@@ -1,7 +1,8 @@
 # https://docs.travis-ci.com/user/multi-os/
 os:
   - linux
-  - osx
+  # no osx for now (travis build server doesn't work build it)
+  # - osx
 matrix:
   allow_failures:
     - os: osx
@@ -14,16 +15,17 @@ python:
   - "3.5"
   - "pypy"
 before_install:
+  # install collective.checkdocs to allow for python setup.py test command to work
+  - pip install collective.checkdocs
   # commands for linux
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install gdb          ; fi
   # commands for osx
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update          ; fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install homebrew/dupes/gdb; fi
 script:
-  # command to run unit tests
+  # run unit tests
   - python setup.py test
-addons:
-  apt:
-    packages:
-      - graphviz
 
+  # ensure README.rst has no syntax errors so it displays nicely
+  # on the pypi website
+  - python setup.py checkdocs
