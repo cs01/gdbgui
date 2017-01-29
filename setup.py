@@ -1,11 +1,16 @@
 import sys
+import re
 from setuptools import find_packages, setup, Command
-from gdbgui.meta import VERSION
+
 
 EXCLUDE_FROM_PACKAGES = []
 
 with open('README.rst', 'r') as f:
     readme = f.read()
+
+with open('gdbgui/__init__.py', 'r') as fd:
+    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
+                        fd.read(), re.MULTILINE).group(1)
 
 
 class TestCommand (Command):
@@ -27,7 +32,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version=VERSION,
+    version=version,
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
