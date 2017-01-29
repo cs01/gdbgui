@@ -11,7 +11,7 @@
  * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete, io, moment, debug) {
+(function ($, _, Awesomplete, io, moment, debug, gdbgui_version) {
 "use strict";
 
 /**
@@ -26,6 +26,7 @@ const ENTER_BUTTON_NUM = 13
 let globals = {
     state: {
         debug: debug,  // if gdbgui is run in debug mode
+        gdbgui_version: gdbgui_version
     }
 }
 
@@ -1980,4 +1981,4 @@ WebSocket.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-})(jQuery, _, Awesomplete, io, moment, debug)
+})(jQuery, _, Awesomplete, io, moment, debug, gdbgui_version)

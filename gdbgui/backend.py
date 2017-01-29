@@ -12,6 +12,7 @@ import webbrowser
 import datetime
 import json
 import sys
+import meta
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
 from pygdbmi.gdbcontroller import GdbController
@@ -133,7 +134,7 @@ def gdbgui():
         time_sec = 0
     else:
         time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec, debug=json.dumps(app.debug))
+    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec, debug=json.dumps(app.debug), gdbgui_meta=meta.VERSION)
 
 
 @app.route('/shutdown')
