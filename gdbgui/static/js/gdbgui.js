@@ -101,12 +101,47 @@ const Status = {
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
+        $('#run_button').click(GdbApi.click_run_button)
+        $('#continue_button').click(GdbApi.click_continue_button)
+        $('#next_button').click(GdbApi.click_next_button)
+        $('#step_button').click(GdbApi.click_step_button)
+        $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
+        $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
+
+        window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
+        window.addEventListener('event_breakpoint_created', GdbApi.event_breakpoint_created)
     },
     state: {
         gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
         inferior_binary_path: null,
         inferior_binary_path_last_modified_unix_sec: null,
         warning_shown_for_old_binary: false
+    },
+    click_run_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-run')
+    },
+    click_continue_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-continue')
+    },
+    click_next_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next')
+    },
+    click_step_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step')
+    },
+    click_next_instruction_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next-instruction')
+    },
+    click_step_instruction_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step-instruction')
     },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
@@ -130,6 +165,20 @@ const GdbApi = {
         }else{
             console.error('expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element')
         }
+    },
+    event_inferior_program_exited: function(){
+        GdbApi.state.inferior_binary_path = null
+        GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
+        GdbApi.state.warning_shown_for_old_binary = false
+    },
+    event_inferior_program_running: function(){
+        // do nothing
+    },
+    event_inferior_program_paused: function(){
+        GdbApi.refresh_state_for_gdb_pause()
+    },
+    event_breakpoint_created: function(){
+        GdbApi.refresh_breakpoints()
     },
     /**
      * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -354,6 +403,9 @@ const GdbMiOutput = {
 const Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
+    init: function(){
+        Breakpoint.render_breakpoint_table()
+    },
     render_breakpoint_table: function(){
         let bkpt_html = ''
         for (let b of Breakpoint.breakpoints){
@@ -369,8 +421,9 @@ const Breakpoint = {
             `
         }
 
-        // let [columns, data] = Util.get_table_data_from_objs(Breakpoint.breakpoints)
-        // Breakpoint.el.html(Util.get_table(columns, data))
+        if(bkpt_html === ''){
+            bkpt_html = '<span class=placeholder>no breakpoints</span>'
+        }
         Breakpoint.el.html(bkpt_html)
     },
     remove_stored_breakpoints: function(){
@@ -438,6 +491,16 @@ const SourceCode = {
         $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
         $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
+
+        window.addEventListener('event_inferior_program_exited', SourceCode.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', SourceCode.event_inferior_program_running)
+    },
+    event_inferior_program_exited: function(e){
+        SourceCode.remove_highlight()
+        SourceCode.clear_cached_source_files()
+    },
+    event_inferior_program_running: function(e){
+        SourceCode.remove_highlight()
     },
     click_gutter: function(e){
         let line = e.currentTarget.dataset.line
@@ -798,10 +861,6 @@ const SourceCode = {
         let jq_selector = $(`.line_num[data-line=${line}]`)
         SourceCode.scroll_to_jq_selector(jq_selector)
     },
-    program_exited: function(){
-        SourceCode.remove_highlight()
-        SourceCode.clear_cached_source_files()
-    },
     get_attrs_to_view_file: function(fullname, line=0, addr='', highlight='false'){
         return `class='view_file pointer' data-fullname=${fullname} data-line=${line} data-addr=${addr} data-highlight=${highlight}`
     },
@@ -886,6 +945,11 @@ const Registers = {
         register_names: [],
         register_values: {},
     },
+    init: function(){
+        Registers.render_not_paused()
+        window.addEventListener('event_inferior_program_exited', Registers.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Registers.event_inferior_program_running)
+    },
     get_update_cmds: function(){
         let cmds = []
         if(Registers.state.register_names.length === 0){
@@ -896,6 +960,9 @@ const Registers = {
         // update all registers values
         cmds.push('-data-list-register-values x')
         return cmds
+    },
+    render_not_paused: function(){
+        Registers.el.html('<span class=placeholder>not paused</span>')
     },
     render_registers(register_values){
         if(Registers.state.register_names.length === register_values.length){
@@ -950,9 +1017,12 @@ const Registers = {
         // filter out non-empty names
         Registers.state.register_names = names.filter(name => name)
     },
-    program_exited: function(){
-        Registers.el.html('')
-    }
+    event_inferior_program_exited: function(){
+        Registers.render_not_paused()
+    },
+    event_inferior_program_running: function(){
+        Registers.render_not_paused()
+    },
 }
 
 /**
@@ -1046,6 +1116,7 @@ const BinaryLoader = {
         }
         cmds.push('-break-list')
 
+        window.dispatchEvent(new Event('event_inferior_program_exited'))
         GdbApi.run_gdb_command(cmds)
 
         GdbApi.state.inferior_binary_path = binary
@@ -1100,6 +1171,11 @@ const Memory = {
         $("body").on("click", ".memory_address", Memory.click_memory_address)
         Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
         Memory.el_end.keydown(Memory.keydown_in_memory_inputs)
+        Memory.render()
+
+        window.addEventListener('event_inferior_program_exited', Memory.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Memory.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', Memory.event_inferior_program_paused)
     },
     state: {
         cache: {},
@@ -1110,6 +1186,8 @@ const Memory = {
         }
     },
     click_memory_address: function(e){
+        e.stopPropagation()
+
         let addr = e.currentTarget.dataset['memory_address']
         // set inputs in DOM
         Memory.el_start.val('0x' + (parseInt(addr, 16)).toString(16))
@@ -1145,8 +1223,8 @@ const Memory = {
         GdbApi.run_gdb_command(cmds)
     },
     render: function(){
-        if(!Memory.state.cache){
-            Memory.el.html('')
+        if(_.keys(Memory.state.cache).length === 0){
+            Memory.el.html('<span class=placeholder>no memory requested</span>')
             return
         }
 
@@ -1164,6 +1242,9 @@ const Memory = {
         let table = Util.get_table(['address', 'value (hex)', 'value (decimal)', 'value (char)'], data)
         Memory.el.html(table)
     },
+    render_not_paused: function(){
+        Memory.el.html('<span class=placeholder>not paused</span>')
+    },
     make_addr_into_link: function(addr, name=addr){
         let _addr = addr
             , _name = name
@@ -1174,10 +1255,16 @@ const Memory = {
         Memory.render()
     },
     clear_cache: function(){
-        Memory.state.cache = []
+        Memory.state.cache = {}
     },
-    program_exited: function(){
+    event_inferior_program_exited: function(){
         Memory.clear_cache()
+        Memory.render_not_paused()
+    },
+    event_inferior_program_running: function(){
+        Memory.render_not_paused()
+    },
+    event_inferior_program_paused: function(){
         Memory.render()
     }
 }
@@ -1411,7 +1498,9 @@ const Variables = {
                 Variables.delete_gdb_variable(obj.name)
             }
         }
-
+        if(html === ''){
+            html = '<span class=placeholder>no expressions in this context</span>'
+        }
         Variables.el.html(html)
     },
     /**
@@ -1553,12 +1642,25 @@ const Threads = {
     init: function(){
         $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
         $("body").on("click", ".select_frame", Threads.click_select_frame)
+        Threads.render()
+
+        window.addEventListener('event_inferior_program_exited', Threads.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Threads.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', Threads.event_inferior_program_paused)
     },
     set_stack: function(stack){
         Threads.state.stack =  $.extend(true, [], stack)
     },
-    program_exited: function(){
+    event_inferior_program_exited: function(){
         Threads.clear()
+        Threads.render()
+    },
+    event_inferior_program_running: function(){
+        Threads.clear()
+        Threads.render()
+    },
+    event_inferior_program_paused: function(){
+        Threads.render()
     },
     clear: function(){
         Threads.state.threads = []
@@ -1607,12 +1709,12 @@ const Threads = {
                     }
                 }
 
-                tbody.push([`<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span>`, stack])
+                tbody += `<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span> ${stack}`
             }
 
-            // Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
+            Threads.el.html(tbody)
         }else{
-            Threads.el.html('')
+            Threads.el.html('<span class=placeholder>not paused</span>')
         }
     },
     get_stack_list: function(stack){
@@ -1664,50 +1766,29 @@ const Threads = {
 /**
  * Component with checkboxes that allow the user to show/hide various components
  */
-const ShowHideComponents = {
-    el: $('#show_hide_components'),
+const VisibilityToggler = {
     /**
      * Set up events and render checkboxes
      */
     init: function(){
-        $("body").on("change", "input.componet_visibility_checkbox", ShowHideComponents.update_component_visibility_based_on_checkboxes)
-        ShowHideComponents.render()
-    },
-    /**
-     * Render the checkboxes and update visibility of components as defined by
-     * the checkboxes
-     */
-    render: function(){
-        let html = ''
-        for (let i of $('.allow_visibility_toggle')){
-            let name = $(i).data('name_for_visibility_toggling'),
-                visibile_on_load = ($(i).data('visibile_on_load') === 'true' || $(i).data('visibile_on_load') === undefined),
-                checked = visibile_on_load ? 'checked' : ''
-            html += ` <div class="checkbox">
-                  <label>
-                    <input type="checkbox" ${checked} class='componet_visibility_checkbox' data-name_for_visibility_toggling="${name}"> ${name}
-                  </label>
-            </div>  `
-        }
-        ShowHideComponents.el.html(html)
-        ShowHideComponents.update_component_visibility_based_on_checkboxes()
+        $("body").on("click", ".visibility_toggler", VisibilityToggler.click_visibility_toggler)
     },
     /**
      * Update visibility of components as defined by
      * the checkboxes
      */
-    update_component_visibility_based_on_checkboxes: function(){
-        for (let el of $('.componet_visibility_checkbox')){
-            let jq_el = $(el)
-            let name = jq_el.data('name_for_visibility_toggling'),
-                el_to_toggle = $(`.allow_visibility_toggle[data-name_for_visibility_toggling='${name}']`)
-            if(jq_el.prop('checked')){
-                // make visible
-                el_to_toggle.removeClass('hidden')
-            } else {
-                // hide
-                el_to_toggle.addClass('hidden')
-            }
+    click_visibility_toggler: function(e){
+        if(e.target.nodeName === 'INPUT'){
+            return
+        }
+        // toggle visiblity of target
+        $(e.currentTarget.dataset.visibility_target_selector_string).toggleClass('hidden')
+
+        // make triangle point down or to the right
+        if($(e.currentTarget.dataset.visibility_target_selector_string).hasClass('hidden')){
+            $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-right').removeClass('glyphicon-chevron-down')
+        }else{
+            $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-right')
         }
     }
 }
@@ -1828,9 +1909,7 @@ const Modal = {
 const process_gdb_response = function(response_array){
 
     // update status with error or with last response
-    let update_status = true,
-        refresh_breakpoints = false,
-        refresh_state_for_gdb_pause = false
+    let update_status = true
 
     for (let r of response_array){
         if (r.type === 'result' && r.message === 'done' && r.payload){
@@ -1839,9 +1918,8 @@ const process_gdb_response = function(response_array){
             if ('bkpt' in r.payload){
                 // breakpoint was created
                 Breakpoint.store_breakpoint(r.payload.bkpt)
-                Breakpoint.render_breakpoint_table()
                 SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined, {'highlight': false, 'scroll': true})
-                refresh_breakpoints = true
+                window.dispatchEvent(new Event('event_breakpoint_created'))
             }
             if ('BreakpointTable' in r.payload){
                 Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
@@ -1902,13 +1980,7 @@ const process_gdb_response = function(response_array){
 
             // we tried to load a binary, but gdb couldn't find it
             if(r.payload.msg === `${GdbApi.state.inferior_binary_path}: No such file or directory.`){
-                SourceCode.program_exited()
-                Memory.program_exited()
-                Registers.program_exited()
-                Threads.program_exited()
-                GdbApi.state.inferior_binary_path = null
-                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
-                GdbApi.state.warning_shown_for_old_binary = false
+                window.dispatchEvent(new Event('event_inferior_program_exited'))
             }
 
         } else if (r.type === 'console'){
@@ -1933,19 +2005,9 @@ const process_gdb_response = function(response_array){
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
             if(r.payload.reason.includes('exited')){
-                // TODO emit event
-                SourceCode.program_exited()
-                Memory.program_exited()
-                Registers.program_exited()
-                Threads.program_exited()
-                GdbApi.state.inferior_binary_path = null
-                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
-                GdbApi.state.warning_shown_for_old_binary = false
+                window.dispatchEvent(new Event('event_inferior_program_exited'))
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
-                refresh_state_for_gdb_pause = true
-                refresh_breakpoints = true
-
                 if (r.payload && typeof r.payload.frame !== 'undefined') {
                     // Stopped on a frame. We can render the file and highlight the line!
                     SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
@@ -1954,6 +2016,8 @@ const process_gdb_response = function(response_array){
                 if (r.payload['new-thread-id']){
                     Threads.set_thread_id(r.payload['new-thread-id'])
                 }
+                window.dispatchEvent(new Event('event_inferior_program_paused'))
+
             }else{
                 console.log('TODO handle new reason for stopping')
                 console.log(r)
@@ -1973,13 +2037,6 @@ const process_gdb_response = function(response_array){
         GdbMiOutput.scroll_to_bottom()
         GdbConsoleComponent.scroll_to_bottom()
     }
-
-    if(refresh_breakpoints === true){
-        GdbApi.refresh_breakpoints()
-    }
-    if(refresh_state_for_gdb_pause === true){
-        GdbApi.refresh_state_for_gdb_pause()
-    }
 }
 
 // initialize components
@@ -1989,12 +2046,14 @@ GdbCommandInput.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
 SourceCode.init()
+Breakpoint.init()
 BinaryLoader.init()
+Registers.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
 Threads.init()
-ShowHideComponents.init()
+VisibilityToggler.init()
 ShutdownGdbgui.init()
 WebSocket.init()
 
