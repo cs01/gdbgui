@@ -4,9 +4,6 @@ body{
   color: grey;
   border-color: grey;
 }
-table{
-  font-size: 0.9em;
-}
 pre{
   overflow: visible !important;
 }
@@ -36,6 +33,13 @@ pre{
   /* glyphicons are too bold, make them lighter*/
     color: #848484;
 }
+.visibility_toggler{
+  cursor: pointer;
+}
+.placeholder{
+  color: #ccc;
+  font-style: italic;
+}
 .flex{
   display: flex;
 }
@@ -52,19 +56,16 @@ pre{
   width: 100%;
   color: black;
   background-color: #f7f7f7;
-  height: 25px;
+  border-color: #c3c3c3;
+  border-width: 1px;
+  border-style: solid;
 }
 .pointer{
   cursor: pointer;
 }
 .gdb_content_div{
-  overflow: auto;
-  height: 150px;
+  flex-direction: column;
   background-color: white;
-  border-color: #e0e0e0;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 2px;
 }
 .sent_command:hover{
   /* lighten background */
@@ -175,7 +176,7 @@ td.assembly{
   position: fixed;
   top: 0;
   margin-top: 0;
-  height: 102px;
+  height: 80px;
   width: 100%;
   border-bottom: black;
   border-style: solid;
@@ -190,6 +191,8 @@ td.assembly{
   background-color: #292929 !important;
   color: #f9f9f9 !important;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
+  height: 150px;
+  width: 100%;
 }
 #gdb_command{
   padding-left: 45px;
@@ -205,6 +208,8 @@ td.assembly{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
   font-size: 0.9em;
+  height: 500px;
+  width: 100%;
 }
 
 /* styling for "Variables" component */
