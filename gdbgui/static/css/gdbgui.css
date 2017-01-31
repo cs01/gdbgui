@@ -7,7 +7,9 @@ body{
 pre{
   overflow: visible !important;
 }
-
+td{
+  vertical-align: top;
+}
 /* styling for generic classes */
 .bold{
   font-weight: bold;
@@ -55,7 +57,7 @@ pre{
 .titlebar{
   width: 100%;
   color: black;
-  background-color: #f7f7f7;
+  background-color: #ddf1ff;
   border-color: #c3c3c3;
   border-width: 1px;
   border-style: solid;
@@ -117,13 +119,9 @@ pre{
   border-width: 1px;
 }
 td.assembly{
-  /*background-color: white;*/
   padding-bottom: 6px;
-/*  min-width: 100px;
-  max-width: 200px;*/
-  /*overflow: auto;*/
   white-space: nowrap;
-  /*word-wrap: break-word;*/
+  font-size: 0.9em;
 }
 #code_table{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -176,23 +174,22 @@ td.assembly{
   position: fixed;
   top: 0;
   margin-top: 0;
-  height: 80px;
   width: 100%;
   border-bottom: black;
   border-style: solid;
   border-width: 0px;
-  border-bottom-width: 1px;
   z-index: 1000;
   background: #f1f1f1;
-  border-bottom-color: #ccc;
 }
 #console{
   font-size: 0.9em !important;
   background-color: #292929 !important;
   color: #f9f9f9 !important;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
-  height: 150px;
   width: 100%;
+  margin-bottom: 12px;
+  height: 200px;
+  overflow: auto;
 }
 #gdb_command{
   padding-left: 45px;

@@ -105,6 +105,7 @@ const GdbApi = {
         $('#continue_button').click(GdbApi.click_continue_button)
         $('#next_button').click(GdbApi.click_next_button)
         $('#step_button').click(GdbApi.click_step_button)
+        $('#return_button').click(GdbApi.click_return_button)
         $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
         $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
 
@@ -134,6 +135,10 @@ const GdbApi = {
     click_step_button: function(e){
         window.dispatchEvent(new Event('event_inferior_program_running'))
         GdbApi.run_gdb_command('-exec-step')
+    },
+    click_return_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-return')
     },
     click_next_instruction_button: function(e){
         window.dispatchEvent(new Event('event_inferior_program_running'))
@@ -404,18 +409,35 @@ const Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
     init: function(){
+        $("body").on("click", ".toggle_breakpoint_enable", Breakpoint.toggle_breakpoint_enable)
         Breakpoint.render_breakpoint_table()
+    },
+    toggle_breakpoint_enable: function(e){
+        if($(e.currentTarget).prop('checked')){
+            GdbApi.run_gdb_command(`-break-enable ${e.currentTarget.dataset.breakpoint_num}`)
+        }else{
+            GdbApi.run_gdb_command(`-break-disable ${e.currentTarget.dataset.breakpoint_num}`)
+        }
     },
     render_breakpoint_table: function(){
         let bkpt_html = ''
         for (let b of Breakpoint.breakpoints){
             let checked = b.enabled === 'y' ? 'checked' : ''
 
+            let source_line
+            try{
+                source_line = `<span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}</span><br>`
+            }catch(err){
+                source_line = ''
+            }
+
+
             bkpt_html += `
             <span ${SourceCode.get_attrs_to_view_file(b.fullname, b.line, '', 'false')}>
                 <div class=breakpoint>
-                    <input type='checkbox' ${checked}/> <span>${b.func}:${b.line}</span><br>
-                    <span>thread groups: ${b['thread-groups']}</span>
+                    <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'/>
+                    <span>${b.func}:${b.line}</span> <span style='color: #bbbbbb; font-style: italic;'>thread groups: ${b['thread-groups']}</span><br>
+                    ${source_line}
                 </div>
             </span>
             `
@@ -1005,7 +1027,6 @@ const Registers = {
                 Registers.state.register_values[i] = hex_val_raw
 
                 register_table_data.push([name, disp_hex_val, disp_dec_val])
-
             }
 
             Registers.el.html(Util.get_table(columns, register_table_data))
@@ -1033,7 +1054,9 @@ const Registers = {
  */
 const Prefs = {
     auto_add_breakpoint_to_main: function(){
-        return $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
+        // todo add checkbox again
+    // return $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
+        return true
     }
 }
 
@@ -1687,71 +1710,53 @@ const Threads = {
     },
     render: function(){
         if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
-            let tbody = []
+            let body = []
             for(let t of Threads.state.threads){
-                let cls = ''
-                , stack = '?'
-                , select_thread_link = ''
-                if(parseInt(t.id) === Threads.state.current_thread_id){
-                    cls = 'bold'
-                } else {
-                    select_thread_link = `<a class='select_thread_id pointer' data-thread_id='${t.id}'>select this thread</a>`
-                }
-                // each thread has a frame, but only the current frame in the current thread
-                // is part of the stack
-                // get the frame, and if t's frame is part of the stack, render the whole stack
-                stack = Threads.get_stack_list([t.frame])
+                let current_thread_being_rendered = (parseInt(t.id) === Threads.state.current_thread_id) ? 'bold' : ''
+                , cls = current_thread_being_rendered ? 'bold' : ''
 
+                let thread_text = `<span class=${cls}>thread id ${t.id}, core ${t.core} (${t.state})</span>`
+                if(current_thread_being_rendered){
+                    body.push(thread_text)
+                }else{
+                    // add class to allow user to click and select this thread
+                    body.push(`<span class='select_thread_id pointer' data-thread_id='${t.id}'>${thread_text}</span>`)
+                }
+
+                // add table of all the frames of the stack
                 for (let s of Threads.state.stack){
                     if(s.addr === t.frame.addr){
-                        stack = Threads.get_stack_list(Threads.state.stack)
+                        body.push(Threads.get_stack_table(Threads.state.stack, t.frame.addr))
                         break
                     }
                 }
-
-                tbody += `<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span> ${stack}`
             }
 
-            Threads.el.html(tbody)
+            Threads.el.html(body.join(''))
         }else{
             Threads.el.html('<span class=placeholder>not paused</span>')
         }
     },
-    get_stack_list: function(stack){
+    get_stack_table: function(stack, cur_addr){
         let _stack = $.extend(true, [], stack)
-            , stack_list = []
+            , table_data = []
 
         for (let s of _stack){
-            let fullname = 'unknown filename'
-                , line = 'unknown line'
-                , addr_link = 'unknown address'
 
-            if ('fullname' in s){
-                fullname = s.fullname
-            }else if ('file' in s){
-                fullname = s.file
-            }
-            if ('addr' in s){
-                addr_link = Memory.make_addr_into_link(s.addr)
-            }
-            if('line' in s){
-                line = s.line
-            }
+            // let arrow = (cur_addr === s.addr) ? `<span class='glyphicon glyphicon-arrow-right' style='margin-right: 4px;'></span>` : ''
+            let cls = (cur_addr === s.addr) ? 'bold' : ''
+            let fullname = 'fullname' in s ? s.fullname : '?'
+                , line = 'line' in s ? s.line : '?'
+                , function_name = `
+                <span title='select frame' class='pointer select_frame ${cls}' data-framenum=${s.level}>
+                    ${s.func}
+                </span>`
+                , file_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, false, `${s.file}:${s.line}`)
 
-            let hightlight = true
-                ,select_frame_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
-
-            if(s.level){
-                select_frame_link = `<a title='select frame and jump to file' class='pointer select_frame' data-framenum=${s.level}>${fullname}:${line}</a>`
-            }
-
-            stack_list.push(`<li>${select_frame_link} @ ${addr_link}</li>`)
+            table_data.push([function_name, file_link])
         }
 
-        return `<ul class='no_bullet'>
-            ${stack_list.join('')}
-        </ul>
-        `
+        return Util.get_table([], table_data)
     },
     set_threads: function(threads){
         Threads.state.threads = $.extend(true, [], threads)
@@ -1778,7 +1783,7 @@ const VisibilityToggler = {
      * the checkboxes
      */
     click_visibility_toggler: function(e){
-        if(e.target.nodeName === 'INPUT'){
+        if(e.target.nodeName === 'BUTTON' || $(e.target).hasClass('glyphicon')){
             return
         }
         // toggle visiblity of target
@@ -2039,6 +2044,22 @@ const process_gdb_response = function(response_array){
     }
 }
 
+
+var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
+$('#layout').w2layout({
+    name: 'layout',
+    panels: [
+        { type: 'top',  size: 45, resizable: false, style: pstyle, content: $('#top'), overflow: 'hidden' },
+        // { type: 'left', size: 0, resizable: false, style: pstyle, content: 'todo - add file browser' },
+        { type: 'main', style: pstyle, content: $('#main') },
+        // { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
+        { type: 'right', size: 350, resizable: true, style: pstyle, content: $('#right') },
+        { type: 'bottom', size: 300, resizable: true, style: pstyle, content: $('#bottom') }
+    ]
+});
+
+
+
 // initialize components
 GlobalEvents.init()
 GdbApi.init()
@@ -2056,6 +2077,7 @@ Threads.init()
 VisibilityToggler.init()
 ShutdownGdbgui.init()
 WebSocket.init()
+
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
