@@ -40,7 +40,7 @@ body(style='margin: 0')
                 datalist#past_binaries
 
                 span(style="display:table-cell; width: 30px;")
-                    span#gdbgui_settings.glyphicon.glyphicon-cog.pointer(style='font-size: 1.6em; padding-left: 15px', title='settings')
+                    span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer(style='font-size: 1.6em; padding-left: 15px', title='settings')
 
                 span(style="display:table-cell; width: 30px;")
                     span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='font-size: 1.6em; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
@@ -69,10 +69,10 @@ body(style='margin: 0')
                 input#checkbox_show_assembly(type='checkbox')
                 ='show assembly'
 
-        div#code_container.gdb_content_div
+        div#code_container.gdb_content_div(style='height: 100%; overflow: auto; padding-bottom: 100px;')
             table#code_table.code
                 tr
-                    td Source code will be displayed here when applicable
+                    td(style='font-family: arial; font-style: italic;') Source code will be displayed here when applicable
 
     //- stack, vars, memory, etc.
     div#right
@@ -99,8 +99,7 @@ body(style='margin: 0')
 
             button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title='Send interrupt signal (SIGINT) to inferior process') INT
 
-        div
-            span Status:&nbsp;
+        div(style='white-space: nowrap; height: 1.8em;')
             span#status GDB is waiting to run a command
 
         div.no_padding
@@ -114,7 +113,7 @@ body(style='margin: 0')
                 span.glyphicon.glyphicon-chevron-down#variables_glyph(style='margin-right: 6px;')
                 span.lighttext variables
             div#variables_collapse_wrapper
-                input#variable_input.form-control(placeholder='when paused, enter expression or variable', style="height:25px;")
+                input#variable_input.form-control(placeholder='expression or variable', style="height:25px;")
                 div#variables.gdb_content_div(style='margin-top: 6px;')
 
         div.no_padding
@@ -157,64 +156,17 @@ body(style='margin: 0')
                 td
                     //- gdb console input
                     span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
-                    input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command')
+                    input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command')
 
         //- gdb mi output
-        div
-            div.titlebar
-                span.lighttext gdb machine interface output
-                button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
-                        span.glyphicon.glyphicon-ban-circle.padding_left
-            div#gdb_mi_output.gdb_content_div
+        if debug == 'true'
+            div
+                div.titlebar
+                    span.lighttext gdb machine interface output
+                    button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
+                            span.glyphicon.glyphicon-ban-circle
+                div#gdb_mi_output.gdb_content_div
 
-
-//- footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #242729; color: #9fa6ad;')
-    div.container
-        div.row
-            div.col-lg-3
-                h4.bold preferences
-                div.checkbox
-                    label
-                        input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
-                        ='Auto add breakpoint to main'
-
-        div.row
-
-            div.col-lg-3
-                h4.bold github
-                p
-                    a(href='https://github.com/cs01/gdbgui', target='_blank') https://github.com/cs01/gdbgui
-                p
-                    a(href='https://github.com/cs01/pygdbmi', target='_blank') https://github.com/cs01/pygdbmi
-
-            div.col-lg-3
-                h4.bold resources
-                ul
-                    li
-                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/') gdb documentation
-                    li
-                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI.html#GDB_002fMI') gdb machine interface (mi) documentation
-                    li
-                        a(href='http://www.thegeekstuff.com/2010/03/debug-c-program-using-gdb') How to Debug C Program using gdb in 6 Simple Steps
-                    li
-                        a(href='https://golang.org/doc/gdb') debugging go code with gdb
-                    li
-                        a(href='https://sourceware.org/gdb/current/onlinedocs/gdb/Rust.html') debugging rust with gdb
-                    li
-                        a(href='https://jvns.ca/blog/2016/08/10/how-does-gdb-work/') how gdb works
-
-            div.col-lg-3
-                h4.bold credits
-                ='Developed by '
-                a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
-                p
-                    a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
-
-            div.col-lg-3
-                h4.bold gdbgui version
-                #{gdbgui_version}
-                p
-                a(href='https://pypi.python.org/pypi/gdbgui/') Check for updates
 
 //- modal window, hidden by default
 #gdb_modal.modal.fade(role='dialog')
@@ -228,6 +180,44 @@ body(style='margin: 0')
             #modal_body(style='margin-top: 20px;')
 
             #modal_footer(style='margin-top: 20px;')
+                button.btn.btn-success(type='button', data-dismiss='modal') Close
+
+
+//- modal window, hidden by default
+#gdb_settings_modal.modal.fade(role='dialog')
+    .modal-dialog
+        .modal-content(style='padding: 20px;')
+            button.close(type='button', data-dismiss='modal') ×
+            h4 Settings
+
+            div(style='margin-top: 20px;')
+                label
+                    input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
+                    ='Auto add breakpoint to main'
+
+                hr
+                span gdbgui version
+                    =' '
+                    #{gdbgui_version}
+                    = ' | '
+                    a(href='https://pypi.python.org/pypi/gdbgui/') check for updates
+                    = ' | '
+                    span.monospace pip install gdbgui --upgrade
+
+
+                p
+                p
+                    ='Developed by '
+                    a(href='http://grassfedcode.com', target='_blank') grassfedcode
+
+                p
+                p
+                    ='Ask a question, add a feature, or create an issue on '
+                    a(href='https://github.com/cs01/gdbgui', target='_blank') github
+
+
+
+            div(style='margin-top: 20px;')
                 button.btn.btn-success(type='button', data-dismiss='modal') Close
 
 script.
