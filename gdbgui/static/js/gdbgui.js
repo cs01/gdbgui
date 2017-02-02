@@ -80,8 +80,11 @@ const Status = {
             }
         }
         if (mi_obj.payload){
-            if (mi_obj.payload.msg) {status.push(mi_obj.payload.msg)}
-            if (mi_obj.payload.reason) {status.push(mi_obj.payload.reason)}
+            const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
+            for(let k of interesting_keys){
+                if (mi_obj.payload[k]) {status.push(mi_obj.payload[k])}
+            }
+
             if (mi_obj.payload.frame){
                 for(let i of ['file', 'func', 'line', 'addr']){
                     if (i in mi_obj.payload.frame){
@@ -101,12 +104,54 @@ const Status = {
 const GdbApi = {
     init: function(){
         $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
+        $('#run_button').click(GdbApi.click_run_button)
+        $('#continue_button').click(GdbApi.click_continue_button)
+        $('#next_button').click(GdbApi.click_next_button)
+        $('#step_button').click(GdbApi.click_step_button)
+        $('#return_button').click(GdbApi.click_return_button)
+        $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
+        $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
+
+        window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
+        window.addEventListener('event_breakpoint_created', GdbApi.event_breakpoint_created)
     },
     state: {
         gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
         inferior_binary_path: null,
         inferior_binary_path_last_modified_unix_sec: null,
         warning_shown_for_old_binary: false
+    },
+    click_run_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-run')
+    },
+    click_continue_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-continue')
+    },
+    click_next_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next')
+    },
+    click_step_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step')
+    },
+    click_return_button: function(e){
+        // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
+        // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
+        // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running
+        GdbApi.run_gdb_command('-exec-return')
+    },
+    click_next_instruction_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next-instruction')
+    },
+    click_step_instruction_button: function(e){
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step-instruction')
     },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
@@ -130,6 +175,20 @@ const GdbApi = {
         }else{
             console.error('expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element')
         }
+    },
+    event_inferior_program_exited: function(){
+        GdbApi.state.inferior_binary_path = null
+        GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
+        GdbApi.state.warning_shown_for_old_binary = false
+    },
+    event_inferior_program_running: function(){
+        // do nothing
+    },
+    event_inferior_program_paused: function(){
+        GdbApi.refresh_state_for_gdb_pause()
+    },
+    event_breakpoint_created: function(){
+        GdbApi.refresh_breakpoints()
     },
     /**
      * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -212,8 +271,8 @@ const Util = {
      * @param columns: array of strings
      * @param data: array of arrays of data
      */
-    get_table: function(columns, data) {
-        var result = ["<table class='table table-striped table-bordered table-condensed'>"];
+    get_table: function(columns, data, style='') {
+        var result = [`<table class='table table-bordered table-condensed' style="${style}">`];
         if(columns){
             result.push("<thead>")
             result.push("<tr>")
@@ -265,7 +324,9 @@ const Util = {
      * @param s: string to mutate
      */
     escape: function(s){
-        return s.replace(/([^\\]\\n)/g, '<br>')
+        return s.replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace(/([^\\]\\n)/g, '<br>')
                 .replace(/\\t/g, '&nbsp')
                 .replace(/\\"+/g, '"')
     },
@@ -290,9 +351,9 @@ const GdbConsoleComponent = {
     clear_console: function(){
         GdbConsoleComponent.el.html('')
     },
-    add: function(s, error=false){
+    add: function(s, stderr=false){
         let strings = _.isString(s) ? [s] : s,
-            cls = error ? 'error' : ''
+            cls = stderr ? 'stderr' : ''
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
     },
     add_sent_commands(cmds){
@@ -354,9 +415,45 @@ const GdbMiOutput = {
 const Breakpoint = {
     el: $('#breakpoints'),
     breakpoints: [],
+    init: function(){
+        $("body").on("click", ".toggle_breakpoint_enable", Breakpoint.toggle_breakpoint_enable)
+        Breakpoint.render_breakpoint_table()
+    },
+    toggle_breakpoint_enable: function(e){
+        if($(e.currentTarget).prop('checked')){
+            GdbApi.run_gdb_command(`-break-enable ${e.currentTarget.dataset.breakpoint_num}`)
+        }else{
+            GdbApi.run_gdb_command(`-break-disable ${e.currentTarget.dataset.breakpoint_num}`)
+        }
+    },
     render_breakpoint_table: function(){
-        let [columns, data] = Util.get_table_data_from_objs(Breakpoint.breakpoints)
-        Breakpoint.el.html(Util.get_table(columns, data))
+        let bkpt_html = ''
+        for (let b of Breakpoint.breakpoints){
+            let checked = b.enabled === 'y' ? 'checked' : ''
+
+            let source_line
+            try{
+                source_line = `<span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}</span><br>`
+            }catch(err){
+                source_line = ''
+            }
+
+
+            bkpt_html += `
+            <span ${SourceCode.get_attrs_to_view_file(b.fullname, b.line, '', 'false')}>
+                <div class=breakpoint>
+                    <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'/>
+                    <span>${b.func}:${b.line}</span> <span style='color: #bbbbbb; font-style: italic;'>thread groups: ${b['thread-groups']}</span><br>
+                    ${source_line}
+                </div>
+            </span>
+            `
+        }
+
+        if(bkpt_html === ''){
+            bkpt_html = '<span class=placeholder>no breakpoints</span>'
+        }
+        Breakpoint.el.html(bkpt_html)
     },
     remove_stored_breakpoints: function(){
         Breakpoint.breakpoints = []
@@ -374,7 +471,7 @@ const Breakpoint = {
         // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
         let links = []
         if ('fullname' in breakpoint){
-             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, '', 'false'))
+             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, ''))
         }
         links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
         bkpt[' '] = links.join(' | ')
@@ -414,7 +511,7 @@ const SourceCode = {
     state: {'rendered_source_file_fullname': null,
             'rendered_source_file_line': null,
             'rendered_source_file_addr': null,
-            'line_highlighted': false,
+            'rendered_assembly': false,
             'cached_source_files': [],  // list with keys fullname, source_code
     },
     init: function(){
@@ -423,6 +520,16 @@ const SourceCode = {
         $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
         $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
+
+        window.addEventListener('event_inferior_program_exited', SourceCode.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', SourceCode.event_inferior_program_running)
+    },
+    event_inferior_program_exited: function(e){
+        SourceCode.remove_current_line_highlights()
+        SourceCode.clear_cached_source_files()
+    },
+    event_inferior_program_running: function(e){
+        SourceCode.remove_current_line_highlights()
     },
     click_gutter: function(e){
         let line = e.currentTarget.dataset.line
@@ -436,12 +543,6 @@ const SourceCode = {
             let cmd = [`-break-insert ${SourceCode.state.rendered_source_file_fullname}:${line}`, '-break-list']
             GdbApi.run_gdb_command(cmd)
         }
-    },
-    render_cached_source_file: function(){
-        SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
-            SourceCode.state.rendered_source_file_line,
-            SourceCode.state.rendered_source_file_addr,
-            {'highlight': false, 'scroll': true})
     },
     is_cached: function(fullname){
         return SourceCode.state.cached_source_files.some(f => f.fullname === fullname)
@@ -476,11 +577,14 @@ const SourceCode = {
 
             let instructions_for_this_line = assembly[line_num]
             for(let i of instructions_for_this_line){
-                let cls = ''
-                if(addr === i.address){
-                    cls = 'bold'
-                }
-                instruction_content.push(`<span style="white-space: nowrap;" class=${cls}>${i.inst} ${i['func-name']}+${i['offset']} ${Memory.make_addr_into_link(i.address)}</span>`)
+                let cls = (addr === i.address) ? 'current_assembly_command assembly' : 'assembly'
+                , addr_link = Memory.make_addr_into_link(i.address)
+
+                instruction_content.push(`
+                    <span style="white-space: nowrap;" class='${cls}' data-addr=${i.address}>
+                        ${i.inst} ${i['func-name']}+${i['offset']} ${addr_link}
+                    </span>`)
+                // i.e. mov $0x400684,%edi main+8 0x0000000000400585
             }
 
             instruction_content = instruction_content.join('<br>')
@@ -511,26 +615,46 @@ const SourceCode = {
     /**
      * Render a cached source file
      */
-    render_source_file: function(fullname, source_code, current_line=1, addr=undefined, options={'highlight': false, 'scroll': false}){
+    render_cached_source_file: function(fullname, source_code, current_line=1, addr=undefined){
+
+        if(!SourceCode.is_cached(fullname)){
+            SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
+                SourceCode.state.rendered_source_file_line,
+                SourceCode.state.rendered_source_file_addr)
+            return
+        }
+
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
 
         current_line = parseInt(current_line)
-        SourceCode.state.line_highlighted = options.highlight
-        SourceCode.state.rendered_source_file_fullname = fullname
-        SourceCode.state.rendered_source_file_line = current_line
-        SourceCode.state.rendered_source_file_addr = addr
 
         let assembly,
             show_assembly = SourceCode.show_assembly_box_is_checked()
+
+        // don't re-render all the lines if they are already rendered.
+        // just update breakpoints and line highlighting
+        if(fullname === SourceCode.state.rendered_source_file_fullname){
+            if((!show_assembly &&  SourceCode.state.rendered_assembly === false) ||
+                (show_assembly && SourceCode.state.rendered_assembly === true)
+                ){
+                SourceCode.render_breakpoints()
+                SourceCode.highlight_line_in_rendered_source_code(current_line, addr)
+                return
+            }else{
+                // user wants to see assembly but it hasn't been rendered yet,
+                // so continue on
+            }
+        }
 
         if(show_assembly){
             assembly = SourceCode.get_cached_assembly_for_file(fullname)
 
             if(!assembly){
-                SourceCode.fetch_disassembly()
+                SourceCode.fetch_disassembly(fullname)
                 return  // when disassembly is returned, the source file will be rendered
             }
         }
+
 
         let line_num = 1,
             tbody = [],
@@ -541,7 +665,7 @@ const SourceCode = {
             let breakpoint_class = has_breakpoint ? 'breakpoint' : ''
             let tags = ''
             if (line_num === current_line){
-              tags = `id=current_line ${options.highlight ? 'class=highlight' : ''}`
+              tags = `id=current_line 'class=flash'`
             }
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
@@ -550,11 +674,11 @@ const SourceCode = {
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
+                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}  style='min-width: 50%;'>
                         <div>${line_num}</div>
                     </td>
 
-                    <td valign="top" class='line_of_code' style='max-width: 80%; min_width: 200px;'>
+                    <td valign="top" class='line_of_code' data-line=${line_num} style='max-width: 50%;'>
                         <pre ${tags} style='white-space: pre-wrap;'>${line}</pre>
                     </td>
 
@@ -567,10 +691,17 @@ const SourceCode = {
         SourceCode.el_jump_to_line_input.val(current_line)
         SourceCode.el.html(tbody.join(''))
 
-
-        if(options.scroll){
-            SourceCode.make_current_line_visible()
+        // update state since rendering is complete
+        SourceCode.state.rendered_source_file_fullname = fullname
+        SourceCode.state.rendered_source_file_line = current_line
+        SourceCode.state.rendered_source_file_addr = addr
+        if(show_assembly){
+            SourceCode.state.rendered_assembly = true
+        }else{
+            SourceCode.state.rendered_assembly = false
         }
+
+        SourceCode.make_current_line_visible()
     },
     make_current_line_visible: function(){
         SourceCode.scroll_to_jq_selector($("#current_line"))
@@ -601,20 +732,19 @@ const SourceCode = {
     re_render: function(){
         let fullname = SourceCode.state.rendered_source_file_fullname,
             current_line = SourceCode.state.rendered_source_file_line || 0,
-            addr = SourceCode.state.rendered_source_file_addr || 0,
-            options = {'highlight': SourceCode.state.line_highlighted, 'scroll': false}
+            addr = SourceCode.state.rendered_source_file_addr || 0
 
         // render file and pass current state
-        SourceCode.fetch_and_render_file(fullname, current_line, addr, options)
+        SourceCode.fetch_and_render_file(fullname, current_line, addr)
     },
     // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=1, addr='', options={'highlight': false, 'scroll': false}){
+    fetch_and_render_file: function(fullname, current_line=1, addr=''){
         if (!_.isString(fullname)){
             return
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
             let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
-            SourceCode.render_source_file(fullname, f.source_code, current_line, addr, options)
+            SourceCode.render_cached_source_file(fullname, f.source_code, current_line, addr)
 
         } else {
             $.ajax({
@@ -624,13 +754,13 @@ const SourceCode = {
                 data: {path: fullname},
                 success: function(response){
                     SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
-                    SourceCode.render_source_file(fullname, response.source_code, current_line, addr, options)
+                    SourceCode.render_cached_source_file(fullname, response.source_code, current_line, addr)
                 },
                 error: function(response){
                     Status.render_ajax_error_msg(response)
                     let source_code = [`failed to fetch file ${fullname}`]
                     SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
-                    SourceCode.render_source_file(fullname, source_code, 0, addr, options)
+                    SourceCode.render_cached_source_file(fullname, source_code, 0, addr)
                 }
             })
         }
@@ -665,10 +795,11 @@ const SourceCode = {
             return 4
         }
     },
-    get_fetch_disassembly_command: function(){
-        if(SourceCode.state.rendered_source_file_fullname){
+    get_fetch_disassembly_command: function(fullname=null){
+        let _fullname = fullname || SourceCode.state.rendered_source_file_fullname
+        if(_fullname){
             let mi_response_format = SourceCode.get_dissasembly_format_num(GdbApi.state.gdb_version)
-            return `-data-disassemble -f ${SourceCode.state.rendered_source_file_fullname} -l 1 -- ${mi_response_format}`
+            return `-data-disassemble -f ${_fullname} -l 1 -- ${mi_response_format}`
         }else{
             // we don't have a file to fetch disassembly for
             return null
@@ -691,8 +822,8 @@ const SourceCode = {
             SourceCode.re_render()
         }
     },
-    fetch_disassembly: function(){
-        let cmd = SourceCode.get_fetch_disassembly_command()
+    fetch_disassembly: function(fullname){
+        let cmd = SourceCode.get_fetch_disassembly_command(fullname)
         if(cmd){
            GdbApi.run_gdb_command(cmd)
         }
@@ -727,7 +858,7 @@ const SourceCode = {
      * Used to jump around to various lines
      */
     scroll_to_jq_selector: function(jq_selector){
-        if (jq_selector.length === 1){  // make sure a line is selected before trying to scroll to it
+        if (jq_selector.length === 1){  // make sure something is selected before trying to scroll to it
             let top_of_container = SourceCode.el_code_container.position().top,
                 height_of_container = SourceCode.el_code_container.height(),
                 bottom_of_container = top_of_container + height_of_container,
@@ -742,9 +873,8 @@ const SourceCode = {
                 const time_to_scroll = 0
                 SourceCode.el_code_container.animate({'scrollTop': top_of_line - (top_of_table + height_of_container/2)}, time_to_scroll)
             }
-
         }else{
-            // there is no line to scroll to
+            // nothing to scroll to
         }
     },
     /**
@@ -752,11 +882,31 @@ const SourceCode = {
      * Remove the id and highlighting in the DOM, and set the
      * variable to null
      */
-    remove_highlight: function(){
-        SourceCode.state.line_highlighted = false
-        let jq_current_line = $("#current_line")
-        if (jq_current_line.length === 1){  // make sure a line is selected before trying to scroll to it
-            jq_current_line.removeClass('highlight')  // remove current line id
+    remove_current_line_highlights: function(){
+        $('#current_line').removeAttr('id')
+        $('.flash').removeClass('flash')
+        $('.current_assembly_command').removeClass('current_assembly_command')
+    },
+    highlight_line_in_rendered_source_code: function(line_num, addr){
+        SourceCode.remove_current_line_highlights()
+
+        if(line_num){
+            let jq_line = $(`.line_of_code[data-line=${line_num}]`)
+            if(jq_line.length === 1){
+                jq_line.addClass('flash')
+                jq_line.attr('id', 'current_line')
+                SourceCode.make_current_line_visible()
+                SourceCode.el_jump_to_line_input.val(line_num)
+            }
+        }
+
+        if(addr){
+            // find element with assembly class and data-addr as the desired address, and
+            // current_assembly_command class
+            let jq_assembly = $(`.assembly[data-addr=${addr}]`)
+            if(jq_assembly.length === 1){
+                jq_assembly.addClass('current_assembly_command')
+            }
         }
     },
     /**
@@ -769,9 +919,8 @@ const SourceCode = {
     click_view_file: function(e){
         let fullname = e.currentTarget.dataset['fullname'],
             line = e.currentTarget.dataset['line'],
-            highlight = e.currentTarget.dataset['highlight'] === 'true',
             addr = e.currentTarget.dataset['addr']
-        SourceCode.fetch_and_render_file(fullname, line, addr, {'highlight': highlight, 'scroll': true})
+        SourceCode.fetch_and_render_file(fullname, line, addr)
     },
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -780,21 +929,35 @@ const SourceCode = {
         }
     },
     jump_to_line: function(line){
-        let jq_selector = $(`.line_num[data-line=${line}]`)
-        SourceCode.scroll_to_jq_selector(jq_selector)
+        let obj = SourceCode.get_source_file_obj_from_cache(SourceCode.state.rendered_source_file_fullname)
+        if(obj){
+            // sanitize user line request to be within valid bounds:
+            // 1 <= line <= num_lines
+            let num_lines = obj.source_code.length
+            , _line = line
+            if(line > num_lines){
+                _line = num_lines
+            }else if (line <= 0){
+                _line = 1
+            }
+
+            // find existing element in the DOM
+            let jq_selector = $(`.line_num[data-line=${_line}]`)
+            if(jq_selector.length === 1){
+                SourceCode.scroll_to_jq_selector(jq_selector)
+            }
+        }
     },
-    program_exited: function(){
-        SourceCode.remove_highlight()
-        SourceCode.clear_cached_source_files()
+    get_attrs_to_view_file: function(fullname, line=0, addr=''){
+        return `class='view_file pointer' data-fullname=${fullname} data-line=${line} data-addr=${addr}`
     },
-    get_link_to_view_file: function(fullname, line=0, addr='', highlight='false', text='View'){
+    get_link_to_view_file: function(fullname, line=0, addr='', text='View'){
         // create local copies so we don't modify the references
         let _fullname = fullname
             , _line = line
             , _addr = addr
-            , _highlight = highlight
             , _text = text
-        return `<a class='view_file pointer' data-fullname=${_fullname} data-line=${_line} data-addr=${_addr} data-highlight=${_highlight}>${_text}</a>`
+        return `<a class='view_file pointer' data-fullname=${_fullname} data-line=${_line} data-addr=${_addr}>${_text}</a>`
     }
 }
 
@@ -834,7 +997,7 @@ const SourceFileAutocomplete = {
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
             let fullname = e.currentTarget.value,
                 line = 1
-            SourceCode.fetch_and_render_file(fullname, 1, undefined, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(fullname, 1, undefined)
         })
     },
     keyup_source_file_input: function(e){
@@ -854,7 +1017,7 @@ const SourceFileAutocomplete = {
                 line = user_input_array[1]
             }
 
-            SourceCode.fetch_and_render_file(file, line, undefined, {'highlight': false, 'scroll': true})
+            SourceCode.fetch_and_render_file(file, line, undefined)
         }
     }
 }
@@ -868,6 +1031,11 @@ const Registers = {
         register_names: [],
         register_values: {},
     },
+    init: function(){
+        Registers.render_not_paused()
+        window.addEventListener('event_inferior_program_exited', Registers.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Registers.event_inferior_program_running)
+    },
     get_update_cmds: function(){
         let cmds = []
         if(Registers.state.register_names.length === 0){
@@ -878,6 +1046,9 @@ const Registers = {
         // update all registers values
         cmds.push('-data-list-register-values x')
         return cmds
+    },
+    render_not_paused: function(){
+        Registers.el.html('<span class=placeholder>not paused</span>')
     },
     render_registers(register_values){
         if(Registers.state.register_names.length === register_values.length){
@@ -920,10 +1091,9 @@ const Registers = {
                 Registers.state.register_values[i] = hex_val_raw
 
                 register_table_data.push([name, disp_hex_val, disp_dec_val])
-
             }
 
-            Registers.el.html(Util.get_table(columns, register_table_data))
+            Registers.el.html(Util.get_table(columns, register_table_data, 'font-size: 0.9em;'))
         } else {
             console.error('Could not render registers. Length of names != length of values!')
         }
@@ -932,9 +1102,12 @@ const Registers = {
         // filter out non-empty names
         Registers.state.register_names = names.filter(name => name)
     },
-    program_exited: function(){
-        Registers.el.html('')
-    }
+    event_inferior_program_exited: function(){
+        Registers.render_not_paused()
+    },
+    event_inferior_program_running: function(){
+        Registers.render_not_paused()
+    },
 }
 
 /**
@@ -943,7 +1116,14 @@ const Registers = {
  * preferences. These preferences will be saved to localStorage
  * between sessions. (This is still in work)
  */
-const Prefs = {
+const Settings = {
+    el: $('#gdbgui_settings_button'),
+    init: function(){
+        Settings.el.click(Settings.click_settings_button)
+    },
+    click_settings_button: function(){
+        $('#gdb_settings_modal').modal('show')
+    },
     auto_add_breakpoint_to_main: function(){
         return $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
     }
@@ -1015,19 +1195,20 @@ const BinaryLoader = {
         }
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = [`-exec-arguments ${args}`,
-                `-file-exec-and-symbols ${binary}`,
-                '-file-list-exec-source-files']
+        cmds = ['-file-symbol-file', // clears gdb's symbol table info
+                '-break-delete',
+                `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read
+                '-file-list-exec-source-files', // List the source files for the current executable
+                ]
 
         // add breakpoint if we don't already have one
-        if(Prefs.auto_add_breakpoint_to_main()){
-            let existing_main_breakpoint = _.filter(Breakpoint.breakpoints, b => b.func === 'main')
-            if (existing_main_breakpoint.length === 0){
-                cmds.push('-break-insert main')
-            }
+        if(Settings.auto_add_breakpoint_to_main()){
+            cmds.push('-break-insert main')
         }
         cmds.push('-break-list')
 
+        window.dispatchEvent(new Event('event_inferior_program_exited'))
         GdbApi.run_gdb_command(cmds)
 
         GdbApi.state.inferior_binary_path = binary
@@ -1042,7 +1223,7 @@ const BinaryLoader = {
  * The GdbCommandInput component
  */
 const GdbCommandInput = {
-    el: $('#gdb_command'),
+    el: $('#gdb_command_input'),
     init: function(){
         GdbCommandInput.el.keydown(GdbCommandInput.keydown_on_gdb_cmd_input)
         $('.run_gdb_command').click(GdbCommandInput.run_current_command)
@@ -1082,6 +1263,11 @@ const Memory = {
         $("body").on("click", ".memory_address", Memory.click_memory_address)
         Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
         Memory.el_end.keydown(Memory.keydown_in_memory_inputs)
+        Memory.render()
+
+        window.addEventListener('event_inferior_program_exited', Memory.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Memory.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', Memory.event_inferior_program_paused)
     },
     state: {
         cache: {},
@@ -1092,6 +1278,8 @@ const Memory = {
         }
     },
     click_memory_address: function(e){
+        e.stopPropagation()
+
         let addr = e.currentTarget.dataset['memory_address']
         // set inputs in DOM
         Memory.el_start.val('0x' + (parseInt(addr, 16)).toString(16))
@@ -1127,8 +1315,8 @@ const Memory = {
         GdbApi.run_gdb_command(cmds)
     },
     render: function(){
-        if(!Memory.state.cache){
-            Memory.el.html('')
+        if(_.keys(Memory.state.cache).length === 0){
+            Memory.el.html('<span class=placeholder>no memory requested</span>')
             return
         }
 
@@ -1146,6 +1334,9 @@ const Memory = {
         let table = Util.get_table(['address', 'value (hex)', 'value (decimal)', 'value (char)'], data)
         Memory.el.html(table)
     },
+    render_not_paused: function(){
+        Memory.el.html('<span class=placeholder>not paused</span>')
+    },
     make_addr_into_link: function(addr, name=addr){
         let _addr = addr
             , _name = name
@@ -1156,10 +1347,16 @@ const Memory = {
         Memory.render()
     },
     clear_cache: function(){
-        Memory.state.cache = []
+        Memory.state.cache = {}
     },
-    program_exited: function(){
+    event_inferior_program_exited: function(){
         Memory.clear_cache()
+        Memory.render_not_paused()
+    },
+    event_inferior_program_running: function(){
+        Memory.render_not_paused()
+    },
+    event_inferior_program_paused: function(){
         Memory.render()
     }
 }
@@ -1186,7 +1383,6 @@ const Variables = {
     },
     state: {
         waiting_for_create_var_response: false,
-        waiting_for_children_list_response: false,
         children_being_retrieve_for_var: null,
         expression_being_created: null,
         variables: []
@@ -1358,7 +1554,6 @@ const Variables = {
 
         let parent_name = Variables.state.gdb_parent_var_currently_fetching_children
         Variables.state.gdb_parent_var_currently_fetching_children = null
-        Variables.state.waiting_for_children_list_response = false
 
         // get the parent object of these children
         let parent_obj = Variables.get_obj_from_gdb_var_name(parent_name)
@@ -1393,7 +1588,9 @@ const Variables = {
                 Variables.delete_gdb_variable(obj.name)
             }
         }
-
+        if(html === ''){
+            html = '<span class=placeholder>no expressions in this context</span>'
+        }
         Variables.el.html(html)
     },
     /**
@@ -1431,14 +1628,15 @@ const Variables = {
      */
     _get_ul_for_var: function(expression, mi_obj, is_root, plus_or_minus='', child_tree='', show_children_in_ui=false, numchild=0){
         let
-            delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : '',
-            expanded = show_children_in_ui ? 'expanded' : '',
-            toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
+            delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
+            ,expanded = show_children_in_ui ? 'expanded' : ''
+            ,toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
+            ,val = (_.isString(mi_obj.value) && mi_obj.value.indexOf('0x') === 0) ? Memory.make_addr_into_link(mi_obj.value) : mi_obj.value
 
         return `<ul class='variable'>
             <li class='${toggle_classes} ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
                 ${delete_button}
-                ${plus_or_minus} ${expression}: ${mi_obj.value} <span class='var_type'>${_.trim(mi_obj.type)}</span>
+                ${plus_or_minus} ${expression}: ${val} <span class='var_type'>${_.trim(mi_obj.type)}</span>
             </li>
             ${child_tree}
         </ul>
@@ -1481,12 +1679,7 @@ const Variables = {
      * for a gdb variable. Note that the gdb variable itself may be a child.
      */
     _get_children_for_var: function(gdb_variable_name){
-        if(Variables.state.waiting_for_children_list_response === true){
-            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.gdb_parent_var_currently_fetching_children}`)
-            return
-        }
         Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
-        Variables.state.waiting_for_children_list_response = true
         GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`)
     },
     update_variable_values: function(){
@@ -1535,12 +1728,25 @@ const Threads = {
     init: function(){
         $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
         $("body").on("click", ".select_frame", Threads.click_select_frame)
+        Threads.render()
+
+        window.addEventListener('event_inferior_program_exited', Threads.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Threads.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', Threads.event_inferior_program_paused)
     },
     set_stack: function(stack){
         Threads.state.stack =  $.extend(true, [], stack)
     },
-    program_exited: function(){
+    event_inferior_program_exited: function(){
         Threads.clear()
+        Threads.render()
+    },
+    event_inferior_program_running: function(){
+        Threads.clear()
+        Threads.render()
+    },
+    event_inferior_program_paused: function(){
+        Threads.render()
     },
     clear: function(){
         Threads.state.threads = []
@@ -1567,70 +1773,65 @@ const Threads = {
     },
     render: function(){
         if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
-            let tbody = []
+            let body = []
             for(let t of Threads.state.threads){
-                let cls = ''
-                , stack = '?'
-                , select_thread_link = ''
-                if(parseInt(t.id) === Threads.state.current_thread_id){
-                    cls = 'bold'
-                } else {
-                    select_thread_link = `<a class='select_thread_id pointer' data-thread_id='${t.id}'>select this thread</a>`
-                }
-                // each thread has a frame, but only the current frame in the current thread
-                // is part of the stack
-                // get the frame, and if t's frame is part of the stack, render the whole stack
-                stack = Threads.get_stack_list([t.frame])
+                let current_thread_being_rendered = (parseInt(t.id) === Threads.state.current_thread_id)
+                , cls = current_thread_being_rendered ? 'bold' : ''
 
-                for (let s of Threads.state.stack){
-                    if(s.addr === t.frame.addr){
-                        stack = Threads.get_stack_list(Threads.state.stack)
-                        break
+                let thread_text = `<span class=${cls}>thread id ${t.id}, core ${t.core} (${t.state})</span>`
+
+                // add thread name
+                if(current_thread_being_rendered){
+                    body.push(thread_text)
+                }else{
+                    // add class to allow user to click and select this thread
+                    body.push(`
+                        <span class='select_thread_id pointer' data-thread_id='${t.id}'>
+                            ${thread_text}
+                        </span>
+                        <br>
+                        `)
+                }
+
+                if(current_thread_being_rendered){
+                    // add stack if current thread
+                    for (let s of Threads.state.stack){
+                        if(s.addr === t.frame.addr){
+                            body.push(Threads.get_stack_table(Threads.state.stack, t.frame.addr, current_thread_being_rendered))
+                            break
+                        }
                     }
+                }else{
+                    // add frame if not current thread
+                    body.push(Threads.get_stack_table([t.frame], '', current_thread_being_rendered))
                 }
-
-                tbody.push([`<span class=${cls}>id ${t.id}, core ${t.core} (${t.state}) ${select_thread_link}</span>`, stack])
             }
-            Threads.el.html(Util.get_table(['thread', 'stack'], tbody))
+
+            Threads.el.html(body.join(''))
         }else{
-            Threads.el.html('')
+            Threads.el.html('<span class=placeholder>not paused</span>')
         }
     },
-    get_stack_list: function(stack){
+    get_stack_table: function(stack, cur_addr, current_thread_being_rendered){
         let _stack = $.extend(true, [], stack)
-            , stack_list = []
+            , table_data = []
 
         for (let s of _stack){
-            let fullname = 'unknown filename'
-                , line = 'unknown line'
-                , addr_link = 'unknown address'
 
-            if ('fullname' in s){
-                fullname = s.fullname
-            }else if ('file' in s){
-                fullname = s.file
-            }
-            if ('addr' in s){
-                addr_link = Memory.make_addr_into_link(s.addr)
-            }
-            if('line' in s){
-                line = s.line
-            }
+            // let arrow = (cur_addr === s.addr) ? `<span class='glyphicon glyphicon-arrow-right' style='margin-right: 4px;'></span>` : ''
+            let bold = (cur_addr === s.addr) ? 'bold' : ''
+            let fullname = 'fullname' in s ? s.fullname : '?'
+                , line = 'line' in s ? s.line : '?'
+                , select_frame = current_thread_being_rendered ? 'select_frame pointer' : ''
+                , function_name =`
+                <span class='${select_frame} ${bold}' data-framenum=${s.level}>
+                    ${s.func}
+                </span>`
 
-            let hightlight = true
-                ,select_frame_link = SourceCode.get_link_to_view_file(fullname, line, s.addr, hightlight, `${fullname}:${line}`)
-
-            if(s.level){
-                select_frame_link = `<a title='select frame and jump to file' class='pointer select_frame' data-framenum=${s.level}>${fullname}:${line}</a>`
-            }
-
-            stack_list.push(`<li>${select_frame_link} @ ${addr_link}</li>`)
+            table_data.push([function_name, `${s.file}:${s.line}`])
         }
 
-        return `<ul class='no_bullet'>
-            ${stack_list.join('')}
-        </ul>
-        `
+        return Util.get_table([], table_data, 'font-size: 0.9em;')
     },
     set_threads: function(threads){
         Threads.state.threads = $.extend(true, [], threads)
@@ -1645,50 +1846,29 @@ const Threads = {
 /**
  * Component with checkboxes that allow the user to show/hide various components
  */
-const ShowHideComponents = {
-    el: $('#show_hide_components'),
+const VisibilityToggler = {
     /**
      * Set up events and render checkboxes
      */
     init: function(){
-        $("body").on("change", "input.componet_visibility_checkbox", ShowHideComponents.update_component_visibility_based_on_checkboxes)
-        ShowHideComponents.render()
-    },
-    /**
-     * Render the checkboxes and update visibility of components as defined by
-     * the checkboxes
-     */
-    render: function(){
-        let html = ''
-        for (let i of $('.allow_visibility_toggle')){
-            let name = $(i).data('name_for_visibility_toggling'),
-                visibile_on_load = ($(i).data('visibile_on_load') === 'true' || $(i).data('visibile_on_load') === undefined),
-                checked = visibile_on_load ? 'checked' : ''
-            html += ` <div class="checkbox">
-                  <label>
-                    <input type="checkbox" ${checked} class='componet_visibility_checkbox' data-name_for_visibility_toggling="${name}"> ${name}
-                  </label>
-            </div>  `
-        }
-        ShowHideComponents.el.html(html)
-        ShowHideComponents.update_component_visibility_based_on_checkboxes()
+        $("body").on("click", ".visibility_toggler", VisibilityToggler.click_visibility_toggler)
     },
     /**
      * Update visibility of components as defined by
      * the checkboxes
      */
-    update_component_visibility_based_on_checkboxes: function(){
-        for (let el of $('.componet_visibility_checkbox')){
-            let jq_el = $(el)
-            let name = jq_el.data('name_for_visibility_toggling'),
-                el_to_toggle = $(`.allow_visibility_toggle[data-name_for_visibility_toggling='${name}']`)
-            if(jq_el.prop('checked')){
-                // make visible
-                el_to_toggle.removeClass('hidden')
-            } else {
-                // hide
-                el_to_toggle.addClass('hidden')
-            }
+    click_visibility_toggler: function(e){
+        if(e.target.nodeName === 'BUTTON' || $(e.target).hasClass('glyphicon')){
+            return
+        }
+        // toggle visiblity of target
+        $(e.currentTarget.dataset.visibility_target_selector_string).toggleClass('hidden')
+
+        // make triangle point down or to the right
+        if($(e.currentTarget.dataset.visibility_target_selector_string).hasClass('hidden')){
+            $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-right').removeClass('glyphicon-chevron-down')
+        }else{
+            $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-right')
         }
     }
 }
@@ -1795,7 +1975,7 @@ const Modal = {
     render: function(title, body){
         $('#modal_title').html(title)
         $('#modal_body').html(body)
-        $('#gdb_modal').modal('show');
+        $('#gdb_modal').modal('show')
     }
 
 }
@@ -1809,9 +1989,7 @@ const Modal = {
 const process_gdb_response = function(response_array){
 
     // update status with error or with last response
-    let update_status = true,
-        refresh_breakpoints = false,
-        refresh_state_for_gdb_pause = false
+    let update_status = true
 
     for (let r of response_array){
         if (r.type === 'result' && r.message === 'done' && r.payload){
@@ -1820,9 +1998,8 @@ const process_gdb_response = function(response_array){
             if ('bkpt' in r.payload){
                 // breakpoint was created
                 Breakpoint.store_breakpoint(r.payload.bkpt)
-                Breakpoint.render_breakpoint_table()
-                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined, {'highlight': false, 'scroll': true})
-                refresh_breakpoints = true
+                SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined)
+                window.dispatchEvent(new Event('event_breakpoint_created'))
             }
             if ('BreakpointTable' in r.payload){
                 Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
@@ -1883,13 +2060,7 @@ const process_gdb_response = function(response_array){
 
             // we tried to load a binary, but gdb couldn't find it
             if(r.payload.msg === `${GdbApi.state.inferior_binary_path}: No such file or directory.`){
-                SourceCode.program_exited()
-                Memory.program_exited()
-                Registers.program_exited()
-                Threads.program_exited()
-                GdbApi.state.inferior_binary_path = null
-                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
-                GdbApi.state.warning_shown_for_old_binary = false
+                window.dispatchEvent(new Event('event_inferior_program_exited'))
             }
 
         } else if (r.type === 'console'){
@@ -1914,30 +2085,32 @@ const process_gdb_response = function(response_array){
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
             if(r.payload.reason.includes('exited')){
-                // TODO emit event
-                SourceCode.program_exited()
-                Memory.program_exited()
-                Registers.program_exited()
-                Threads.program_exited()
-                GdbApi.state.inferior_binary_path = null
-                GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
-                GdbApi.state.warning_shown_for_old_binary = false
+                window.dispatchEvent(new Event('event_inferior_program_exited'))
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
-                refresh_state_for_gdb_pause = true
-                refresh_breakpoints = true
-
-                if (r.payload && typeof r.payload.frame !== 'undefined') {
-                    // Stopped on a frame. We can render the file and highlight the line!
-                    SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr, {'highlight': true, 'scroll': true})
-
-                }
                 if (r.payload['new-thread-id']){
                     Threads.set_thread_id(r.payload['new-thread-id'])
                 }
+                window.dispatchEvent(new Event('event_inferior_program_paused'))
+
+            }else if (r.payload.reason === 'signal-received'){
+                // TODO not sure what to do here, but the status bar already renders the
+                // signal nicely
+
             }else{
                 console.log('TODO handle new reason for stopping')
                 console.log(r)
+            }
+        }
+
+        if (r.payload && typeof r.payload.frame !== 'undefined') {
+            // Stopped on a frame. We can render the file and highlight the line!
+            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr)
+
+            // if all we got back was the frame, we need to dispatch an event so the components
+            // refresh their respective states
+            if(response_array.length === 1){
+              window.dispatchEvent(new Event('event_inferior_program_paused'))
             }
         }
     }
@@ -1954,14 +2127,23 @@ const process_gdb_response = function(response_array){
         GdbMiOutput.scroll_to_bottom()
         GdbConsoleComponent.scroll_to_bottom()
     }
-
-    if(refresh_breakpoints === true){
-        GdbApi.refresh_breakpoints()
-    }
-    if(refresh_state_for_gdb_pause === true){
-        GdbApi.refresh_state_for_gdb_pause()
-    }
 }
+
+
+var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
+$('#layout').w2layout({
+    name: 'layout',
+    panels: [
+        { type: 'top',  size: 45, resizable: false, style: pstyle, content: $('#top'), overflow: 'hidden' },
+        // { type: 'left', size: 0, resizable: false, style: pstyle, content: 'todo - add file browser' },
+        { type: 'main', style: pstyle, content: $('#main'), overflow: 'hidden' },
+        // { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
+        { type: 'right', size: 350, resizable: true, style: pstyle, content: $('#right') },
+        { type: 'bottom', size: 300, resizable: true, style: pstyle, content: $('#bottom') }
+    ]
+});
+
+
 
 // initialize components
 GlobalEvents.init()
@@ -1970,14 +2152,18 @@ GdbCommandInput.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
 SourceCode.init()
+Breakpoint.init()
 BinaryLoader.init()
+Registers.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Variables.init()
 Threads.init()
-ShowHideComponents.init()
+VisibilityToggler.init()
 ShutdownGdbgui.init()
 WebSocket.init()
+Settings.init()
+
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 

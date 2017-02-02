@@ -4,13 +4,12 @@ body{
   color: grey;
   border-color: grey;
 }
-table{
-  font-size: 0.9em;
-}
 pre{
   overflow: visible !important;
 }
-
+td{
+  vertical-align: top;
+}
 /* styling for generic classes */
 .bold{
   font-weight: bold;
@@ -18,7 +17,7 @@ pre{
 .pre{
   white-space: pre;
 }
-.error{
+.stderr{
   color: red;
 }
 .monospace{
@@ -27,7 +26,6 @@ pre{
 .memory_address{
   color: #337ab7;
   text-decoration: none;
-  font-weight:
 }
 .lighttext{
   color: #4a4a4a;
@@ -35,6 +33,13 @@ pre{
 .glyphicon{
   /* glyphicons are too bold, make them lighter*/
     color: #848484;
+}
+.visibility_toggler{
+  cursor: pointer;
+}
+.placeholder{
+  color: #ccc;
+  font-style: italic;
 }
 .flex{
   display: flex;
@@ -51,20 +56,17 @@ pre{
 .titlebar{
   width: 100%;
   color: black;
-  background-color: white;
-  height: 25px;
+  background-color: #ddf1ff;
+  border-color: #c3c3c3;
+  border-width: 1px;
+  border-style: solid;
 }
 .pointer{
   cursor: pointer;
 }
 .gdb_content_div{
-  overflow: auto;
-  height: 150px;
-  background-color: #f7f7f7;
-  border-color: grey;
-  border-style: solid;
-  border-width: 1px;
-  border-radius: 2px;
+  flex-direction: column;
+  background-color: white;
 }
 .sent_command:hover{
   /* lighten background */
@@ -92,6 +94,9 @@ pre{
 .highlight{
   background: rgba(255, 255, 0, 0.5) !important;
 }
+.breakpoint:hover{
+  background-color: #e2e2e2;
+}
 .line_num{
   width: 50px;
   border-width: 0;
@@ -113,13 +118,9 @@ pre{
   border-width: 1px;
 }
 td.assembly{
-  /*background-color: white;*/
   padding-bottom: 6px;
-/*  min-width: 100px;
-  max-width: 200px;*/
-  /*overflow: auto;*/
   white-space: nowrap;
-  /*word-wrap: break-word;*/
+  font-size: 0.9em;
 }
 #code_table{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -136,6 +137,9 @@ td.assembly{
 .source_code_row:hover td, .source_code_row:hover td pre{
   background-color: #e2e2e2;
 }
+.current_assembly_command{
+  font-weight: bold;
+}
 .padding_left{
   padding-left: 5px;
 }
@@ -151,10 +155,10 @@ td.assembly{
 /* show a flash of color */
 .flash {
     -webkit-animation-name: flash-animation;
-    -webkit-animation-duration: 1.0s;
+    -webkit-animation-duration: 3.0s;
 
     animation-name: flash-animation;
-    animation-duration: 1.0s;
+    animation-duration: 3.0s;
 }
 
 @-webkit-keyframes flash-animation {
@@ -172,28 +176,32 @@ td.assembly{
   position: fixed;
   top: 0;
   margin-top: 0;
-  height: 102px;
   width: 100%;
   border-bottom: black;
   border-style: solid;
   border-width: 0px;
-  border-bottom-width: 1px;
   z-index: 1000;
   background: #f1f1f1;
-  border-bottom-color: #ccc;
 }
 #console{
-  font-size: 0.9em !important;
-  background-color: #292929 !important;
-  color: #f9f9f9 !important;
+  font-size: 0.8em !important;
+  background-color: #292929;
+  color: #d6d6d6 !important;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
+  width: 100%;
+  margin-bottom: 12px;
+  height: 200px;
+  overflow: auto;
 }
-#gdb_command{
+.sent_command{
+  color: #00c540;
+}
+#gdb_command_input{
   padding-left: 45px;
   border-top: 0;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
-  font-size: 0.9em !important;
+  font-size: 0.8em !important;
   background-color: #3c3c3c !important;
   color: #f9f9f9 !important;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
@@ -202,6 +210,8 @@ td.assembly{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
   font-size: 0.9em;
+  height: 500px;
+  width: 100%;
 }
 
 /* styling for "Variables" component */
@@ -213,8 +223,9 @@ td.assembly{
   list-style: none;
   padding: 0;
 }
-
-
+#memory table{
+  font-size: 0.9em;
+}
 #variables ul.variable{
     padding-left: 5px;
     border: 0px;

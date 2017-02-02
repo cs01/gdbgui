@@ -53,7 +53,7 @@ setup(
     cmdclass={'test': TestCommand},
     install_requires=[
         'Flask>=0.11.1',
-        'pygdbmi>=0.7.1',
+        'pygdbmi>=0.7.2.0',
         'pyjade>=4.0.0',
         'Flask-SocketIO>=2.8.2',  # for websockets
         'eventlet>=0.20.1',  # for websockets
