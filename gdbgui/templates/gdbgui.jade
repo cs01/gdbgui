@@ -14,223 +14,159 @@ head
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/messenger.css', rel='stylesheet')
     link(href='static/vendor/css/awesomeplete.css', rel='stylesheet')
+    link(href='static/vendor/css/w2ui-1.4.3.css', rel='stylesheet')
 
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
+    script(type="text/javascript" src='static/vendor/js/w2ui-1.4.3.min.js')
     script(type="text/javascript" src='static/vendor/js/messenger.min.js')
     script(type="text/javascript" src='static/vendor/js/lodash.min.js')
     script(type="text/javascript" src='static/vendor/js/moment.min.js')
     script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
-    script(type="text/javascript" src='//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.5/socket.io.min.js')
+    script(type="text/javascript" src='static/vendor/js/socket.io-1.3.5.min.js')
 
-body
-
-    //- this container stays on top, no matter what
-    div.container-fluid#always_on_top
-
-        div.row(style='max-height: 80px')
-            div.col-lg-12
-                div
-                    //- binary selection
-                    form(role=form)
-                        div.input-group.input-group-sm
-                            span.input-group-btn
-                                button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
-                            input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
-                            datalist#past_binaries
-                            span(style="display:table-cell; width: 30px;")
-                                span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='font-size: 1.6em; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
+body(style='margin: 0')
+    //- the content of this will be replaced
+    div#layout(style="width: 100%; height: 100%;")
 
 
-                //- premade buttons
-                div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-run', title='Starts execution of the inferior from the beginning. The inferior executes until either a breakpoint is encountered or the program exits. In the latter case the output will include an exit code, if the program has exited exceptionally. (-exec-run)') Run
-                        span.glyphicon.glyphicon-repeat.padding_left
+    div#top
+        //- binary selection
+        form(role=form)
+            div.input-group.input-group-sm
+                span.input-group-btn
+                    button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
+                input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
+                datalist#past_binaries
 
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-continue', title='Resumes the execution of the inferior program, which will continue to execute until it reaches a debugger stop event. (-exec-continue)') Continue
-                        span.glyphicon.glyphicon-play.padding_left
+                span(style="display:table-cell; width: 30px;")
+                    span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer(style='font-size: 1.6em; padding-left: 15px', title='settings')
 
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached. (-exec-next)") Next
-                        span.glyphicon.glyphicon-step-forward.padding_left
-
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step', title="Resumes execution of the inferior program, stopping when the beginning of the next source line is reached, if the next source line is not a function call. If it is, stop at the first instruction of the called function. (-exec-step)") Step
-                        span.glyphicon.glyphicon-arrow-down.padding_left
-
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-return', title="Makes current function return immediately. Doesn't execute the inferior. Displays the new current frame. (-exec-return)") Return
-                        span.glyphicon.glyphicon-arrow-up.padding_left
-
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-next-instruction', title="Executes one machine instruction. (-exec-next-instruction)") Next Instruction
-
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-step-instruction', title="Resumes the inferior which executes one machine instruction. (-exec-step-instruction)") Step Instruction
-
-                    button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title="Interrupt. (-exec-interrupt)") Interrupt
+                span(style="display:table-cell; width: 30px;")
+                    span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='font-size: 1.6em; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
 
 
-        div.row
-            div(style="height: 20px; margin-top: 5px; margin-left: 15px")
-                span Status:&nbsp
-                span#status GDB is waiting to run a command
+    //- source code and stack, etc.
+    div#main(style='height: 100%;')
+        div.flexrow
+            //- displays source file path input, and dropdown
+            input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-    //- the div after the "always on top" div must givei a margin on top at least as tall as the "always on top" div
-    div.container-fluid(style="margin-top: 110px")
+            button.dropdown-btn(type="button")
+                span.caret
 
-        div.main_widgets
-            //- source
-            div.no_padding.col-lg-7#source_div.allow_visibility_toggle(data-name_for_visibility_toggling="source code")
-
-                div.flexrow
-                    //- displays source file path input, and dropdown
-                    input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
-
-                    button.dropdown-btn(type="button")
-                        span.caret
-
-                div.flexrow
-                    //- displays loaded file path and input to jump to line
-                    span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
-                    button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px; height=25px;') reload
-                        span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
+        div.flexrow
+            //- displays loaded file path and input to jump to line
+            span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
+            button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px; height=25px;') reload
+                span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
 
 
-                    //- input to jump to a line in the source code
-                    input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
+            //- input to jump to a line in the source code
+            input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
 
-                    label(style='margin-left: 10px; font-weight: normal;')
-                        input#checkbox_show_assembly(type='checkbox')
-                        ='show assembly'
+            label(style='margin-left: 10px; font-weight: normal;')
+                input#checkbox_show_assembly(type='checkbox')
+                ='show assembly'
 
-                    span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#code_container" data-resize_type="enlarge")
-                    span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#code_container" data-resize_type="shrink")
+        div#code_container.gdb_content_div(style='height: 100%; overflow: auto; padding-bottom: 100px;')
+            table#code_table.code
+                tr
+                    td(style='font-family: arial; font-style: italic;') Source code will be displayed here when applicable
 
+    //- stack, vars, memory, etc.
+    div#right
+        div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
+            button.btn.btn-default#run_button(type='button', title='Start inferior program from the beginning')
+                span.glyphicon.glyphicon-repeat
 
-                div
-                    div#code_container.gdb_content_div(style='height: 50%;')
-                        table#code_table.code
-                            tr
-                                td Source code will be displayed here when applicable
+            button.btn.btn-default#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits')
+                span.glyphicon.glyphicon-play
 
-            div.col-lg-5
-                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="threads")
-                    div.titlebar.flex
-                        span.lighttext threads
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#threads" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#threads" data-resize_type="shrink")
-                    div#threads.gdb_content_div
+            button.btn.btn-default#next_button(type='button', title="Step over next function call")
+                span.glyphicon.glyphicon-step-forward
 
-                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="variables")
-                    div.titlebar.flex
-                        span.lighttext variables
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#variables" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#variables" data-resize_type="shrink")
-                        input#variable_input.form-control(placeholder='reach breakpoint, then enter expression or variable and press enter', style="height:25px")
-                    div#variables.gdb_content_div
+            button.btn.btn-default#step_button(type='button', title="Step into next function call")
+                span.glyphicon.glyphicon-arrow-down
 
-                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="registers")
-                    div.titlebar
-                        span.lighttext registers
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#registers" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#registers" data-resize_type="shrink")
-                    div#registers.gdb_content_div
+            button.btn.btn-default#return_button(type='button', title='Step out of current function')
+                span.glyphicon.glyphicon-arrow-up
 
-                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="memory")
-                    div.titlebar.flex
-                        span.lighttext memory
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#memory" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#memory" data-resize_type="shrink")
-                        input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
-                        input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
-                    div#memory.gdb_content_div
+        div.btn-group.btn-group-xs(role="group")
+            button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls") NI
 
-                div.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="breakpoints")
-                    div.titlebar
-                        span.lighttext breakpoints
-                        span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="enlarge")
-                        span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#breakpoints" data-resize_type="shrink")
-                    div#breakpoints.gdb_content_div
+            button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls") SI
 
-        div.col-lg-12.no_padding.allow_visibility_toggle(data-name_for_visibility_toggling="gdb_console")
-            //- text/buttons above the gdb console output
-            div.titlebar
-                span.lighttext gdb console
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#console" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#console" data-resize_type="shrink")
-                div.btn-group
-                    button.btn.btn-default.btn-xs.clear_console(type='button', title='Clear Console (clears ui element, does not send a gdb command)') Clear Console
-                        span.glyphicon.glyphicon-ban-circle.padding_left
+            button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title='Send interrupt signal (SIGINT) to inferior process') INT
 
-            //- gdb console output
-            div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0')
+        div(style='white-space: nowrap; height: 1.8em;')
+            span#status GDB is waiting to run a command
 
-            //- gdb console input
-            span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
-            input.form-control.dropdown-input#gdb_command(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter any gdb command, or gdb machine interface command')
+        div.no_padding
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
+                span.glyphicon.glyphicon-chevron-down#threads_glyph(style='margin-right: 6px;')
+                span.lighttext call stack
+            div#threads.gdb_content_div
 
+        div.no_padding
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#variables_collapse_wrapper", data-glyph_selector='#variables_glyph')
+                span.glyphicon.glyphicon-chevron-down#variables_glyph(style='margin-right: 6px;')
+                span.lighttext variables
+            div#variables_collapse_wrapper
+                input#variable_input.form-control(placeholder='expression or variable', style="height:25px;")
+                div#variables.gdb_content_div(style='margin-top: 6px;')
 
+        div.no_padding
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')
+                span.glyphicon.glyphicon-chevron-down#memory_glyph(style='margin-right: 6px;')
+                span.lighttext memory
+            div#memory_collapse_wrapper
+                input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
+                input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
+                div#memory.gdb_content_div(style='margin-top: 6px;')
 
-        div.col-lg-12.no_padding.allow_visibility_toggle(data-visibile_on_load='false', data-name_for_visibility_toggling="gdb machine interface output")
-            div.titlebar
-                span.lighttext gdb machine interface output
-                span.glyphicon.glyphicon-plus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="enlarge")
-                span.glyphicon.glyphicon-minus.resizer.pointer(data-target_selector="#gdb_mi_output" data-resize_type="shrink")
-                button.btn.btn-default.btn-xs.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)') Clear
-                        span.glyphicon.glyphicon-ban-circle.padding_left
-            div#gdb_mi_output.gdb_content_div
+        div.no_padding
+            div.titlebar.visibility_toggler(data-visibility_target_selector_string="#breakpoints", data-glyph_selector='#breakpoints_glyph')
+                span.glyphicon.glyphicon-chevron-down#breakpoints_glyph(style='margin-right: 6px;')
+                span.lighttext breakpoints
+            div#breakpoints.gdb_content_div
 
+        div.no_padding
+            div.titlebar.visibility_toggler(data-visibility_target_selector_string="#registers", data-glyph_selector='#registers_glyph')
+                span.glyphicon.glyphicon-chevron-down#registers_glyph(style='margin-right: 6px;')
+                span.lighttext registers
+            div#registers.gdb_content_div
 
-footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-color: #242729; color: #9fa6ad;')
-    div.container
-        div.row
-            div.col-lg-3
-                h4.bold show/hide
-                div#show_hide_components
+    //- gdb console
+    div#bottom
+        //- text/buttons above the gdb console output
+        div.titlebar.visibility_toggler(data-visibility_target_selector_string="#console", data-glyph_selector='#gdb_console_glyph')
+            span.glyphicon.glyphicon-chevron-down#gdb_console_glyph(style='margin-right: 6px;')
+            span.lighttext gdb console
+            div.btn-group
+                button.btn.btn-default.clear_console(type='button', title='Clear Console')
+                    span.glyphicon.glyphicon-ban-circle
 
-            div.col-lg-3
-                h4.bold preferences
-                div.checkbox
-                    label
-                        input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
-                        ='Auto add breakpoint to main'
+        //- gdb console output
+        table(style='width:100%; margin: 0;')
+            tr
+                td
+                    div#console.gdb_content_div(style='margin: 0; border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;')
+            tr
+                td
+                    //- gdb console input
+                    span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
+                    input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command')
 
+        //- gdb mi output
+        if debug == 'true'
+            div
+                div.titlebar
+                    span.lighttext gdb machine interface output
+                    button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
+                            span.glyphicon.glyphicon-ban-circle
+                div#gdb_mi_output.gdb_content_div
 
-
-
-        div.row
-
-            div.col-lg-3
-                h4.bold github
-                p
-                    a(href='https://github.com/cs01/gdbgui', target='_blank') https://github.com/cs01/gdbgui
-                p
-                    a(href='https://github.com/cs01/pygdbmi', target='_blank') https://github.com/cs01/pygdbmi
-
-            div.col-lg-3
-                h4.bold resources
-                ul
-                    li
-                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/') gdb documentation
-                    li
-                        a(href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI.html#GDB_002fMI') gdb machine interface (mi) documentation
-                    li
-                        a(href='http://www.thegeekstuff.com/2010/03/debug-c-program-using-gdb') How to Debug C Program using gdb in 6 Simple Steps
-                    li
-                        a(href='https://golang.org/doc/gdb') debugging go code with gdb
-                    li
-                        a(href='https://sourceware.org/gdb/current/onlinedocs/gdb/Rust.html') debugging rust with gdb
-                    li
-                        a(href='https://jvns.ca/blog/2016/08/10/how-does-gdb-work/') how gdb works
-
-            div.col-lg-3
-                h4.bold credits
-                ='Developed by '
-                a(href='https://linkedin.com/in/chadsmith27', target='_blank') Chad Smith
-                p
-                    a(href='http://grassfedcode.com', target='_blank') grassfedcode.com
-
-            div.col-lg-3
-                h4.bold gdbgui version
-                #{gdbgui_version}
-                p
-                a(href='https://pypi.python.org/pypi/gdbgui/') Check for updates
 
 //- modal window, hidden by default
 #gdb_modal.modal.fade(role='dialog')
@@ -244,7 +180,45 @@ footer(style='width:100%; margin:0; margin-top: 50px; padding:20px; background-c
             #modal_body(style='margin-top: 20px;')
 
             #modal_footer(style='margin-top: 20px;')
-                button.btn.btn-default(type='button', data-dismiss='modal') Close
+                button.btn.btn-success(type='button', data-dismiss='modal') Close
+
+
+//- modal window, hidden by default
+#gdb_settings_modal.modal.fade(role='dialog')
+    .modal-dialog
+        .modal-content(style='padding: 20px;')
+            button.close(type='button', data-dismiss='modal') ×
+            h4 Settings
+
+            div(style='margin-top: 20px;')
+                label
+                    input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
+                    ='Auto add breakpoint to main'
+
+                hr
+                span gdbgui version
+                    =' '
+                    #{gdbgui_version}
+                    = ' | '
+                    a(href='https://pypi.python.org/pypi/gdbgui/') check for updates
+                    = ' | '
+                    span.monospace pip install gdbgui --upgrade
+
+
+                p
+                p
+                    ='Developed by '
+                    a(href='http://grassfedcode.com', target='_blank') grassfedcode
+
+                p
+                p
+                    ='Ask a question, add a feature, or create an issue on '
+                    a(href='https://github.com/cs01/gdbgui', target='_blank') github
+
+
+
+            div(style='margin-top: 20px;')
+                button.btn.btn-success(type='button', data-dismiss='modal') Close
 
 script.
     debug = #{debug}
