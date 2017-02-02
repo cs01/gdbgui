@@ -674,11 +674,11 @@ const SourceCode = {
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}>
+                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}  style='min-width: 50%;'>
                         <div>${line_num}</div>
                     </td>
 
-                    <td valign="top" class='line_of_code' data-line=${line_num} style='max-width: 80%; min_width: 200px;'>
+                    <td valign="top" class='line_of_code' data-line=${line_num} style='max-width: 50%;'>
                         <pre ${tags} style='white-space: pre-wrap;'>${line}</pre>
                     </td>
 
@@ -1383,7 +1383,6 @@ const Variables = {
     },
     state: {
         waiting_for_create_var_response: false,
-        waiting_for_children_list_response: false,
         children_being_retrieve_for_var: null,
         expression_being_created: null,
         variables: []
@@ -1555,7 +1554,6 @@ const Variables = {
 
         let parent_name = Variables.state.gdb_parent_var_currently_fetching_children
         Variables.state.gdb_parent_var_currently_fetching_children = null
-        Variables.state.waiting_for_children_list_response = false
 
         // get the parent object of these children
         let parent_obj = Variables.get_obj_from_gdb_var_name(parent_name)
@@ -1681,12 +1679,7 @@ const Variables = {
      * for a gdb variable. Note that the gdb variable itself may be a child.
      */
     _get_children_for_var: function(gdb_variable_name){
-        if(Variables.state.waiting_for_children_list_response === true){
-            Status.render(`cannot search for children of ${gdb_variable_name} while waiting for response from ${Variables.state.gdb_parent_var_currently_fetching_children}`)
-            return
-        }
         Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
-        Variables.state.waiting_for_children_list_response = true
         GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`)
     },
     update_variable_values: function(){
