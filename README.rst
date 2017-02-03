@@ -1,3 +1,9 @@
+A browser-based frontend/gui for GDB
+====================================
+
+.. figure:: https://github.com/cs01/gdbgui/raw/master/screencast.gif
+   :alt: gdbgui
+
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
@@ -13,11 +19,6 @@
 
 
 
-A browser-based frontend/gui for GDB
-====================================
-
-.. figure:: https://github.com/cs01/gdbgui/raw/master/screencast.gif
-   :alt: gdbgui
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
 view stack traces, and more in C, C++, Go, and Rust! Simply run
