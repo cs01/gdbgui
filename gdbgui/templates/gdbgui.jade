@@ -76,32 +76,34 @@ body(style='margin: 0')
 
     //- stack, vars, memory, etc.
     div#right
-        div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
-            button.btn.btn-default#run_button(type='button', title='Start inferior program from the beginning')
-                span.glyphicon.glyphicon-repeat
+        div(style='position: fixed; background: #f5f6f7; z-index: 10; width: 1000%; margin-top: -5px; padding-top: 5px;')
+            div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
+                button.btn.btn-default#run_button(type='button', title='Start inferior program from the beginning')
+                    span.glyphicon.glyphicon-repeat
 
-            button.btn.btn-default#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits')
-                span.glyphicon.glyphicon-play
+                button.btn.btn-default#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits')
+                    span.glyphicon.glyphicon-play
 
-            button.btn.btn-default#next_button(type='button', title="Step over next function call")
-                span.glyphicon.glyphicon-step-forward
+                button.btn.btn-default#next_button(type='button', title="Step over next function call")
+                    span.glyphicon.glyphicon-step-forward
 
-            button.btn.btn-default#step_button(type='button', title="Step into next function call")
-                span.glyphicon.glyphicon-arrow-down
+                button.btn.btn-default#step_button(type='button', title="Step into next function call")
+                    span.glyphicon.glyphicon-arrow-down
 
-            button.btn.btn-default#return_button(type='button', title='Step out of current function')
-                span.glyphicon.glyphicon-arrow-up
+                button.btn.btn-default#return_button(type='button', title='Step out of current function')
+                    span.glyphicon.glyphicon-arrow-up
 
-        div.btn-group.btn-group-xs(role="group")
-            button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls") NI
+            div.btn-group.btn-group-xs(role="group")
+                button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls") NI
 
-            button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls") SI
+                button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls") SI
 
-            button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title='Send interrupt signal (SIGINT) to inferior process') INT
+                button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title='Send interrupt signal (SIGINT) to inferior process') INT
 
-        div(style='white-space: nowrap; height: 1.8em;')
-            span#status GDB is waiting to run a command
+            div(style='white-space: nowrap; height: 1.8em;')
+                span#status GDB is waiting to run a command
 
+        div(style='height: 60px;')
         div.no_padding
             div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
                 span.glyphicon.glyphicon-chevron-down#threads_glyph(style='margin-right: 6px;')
@@ -121,8 +123,9 @@ body(style='margin: 0')
                 span.glyphicon.glyphicon-chevron-down#memory_glyph(style='margin-right: 6px;')
                 span.lighttext memory
             div#memory_collapse_wrapper
-                input#memory_start_address.form-control(placeholder='start address (hex)', style="height:25px")
-                input#memory_end_address.form-control(placeholder='end address (hex)', style="height:25px")
+                input#memory_start_address(placeholder='start address (hex)', style="height:25px")
+                input#memory_end_address(placeholder='end address (hex)', style="height:25px")
+                input#memory_bytes_per_line(placeholder='bytes per line (dec)', style="height:25px;")
                 div#memory.gdb_content_div(style='margin-top: 6px;')
 
         div.no_padding

@@ -1259,10 +1259,14 @@ const Memory = {
     el: $('#memory'),
     el_start: $('#memory_start_address'),
     el_end: $('#memory_end_address'),
+    el_bytes_per_line: $('#memory_bytes_per_line'),
+    MAX_ADDRESS_DELTA: 1000,
+    DEFAULT_ADDRESS_DELTA: 31,
     init: function(){
         $("body").on("click", ".memory_address", Memory.click_memory_address)
         Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
         Memory.el_end.keydown(Memory.keydown_in_memory_inputs)
+        Memory.el_bytes_per_line.keydown(Memory.keydown_in_memory_inputs)
         Memory.render()
 
         window.addEventListener('event_inferior_program_exited', Memory.event_inferior_program_exited)
@@ -1283,21 +1287,26 @@ const Memory = {
         let addr = e.currentTarget.dataset['memory_address']
         // set inputs in DOM
         Memory.el_start.val('0x' + (parseInt(addr, 16)).toString(16))
-        Memory.el_end.val('0x' + (parseInt(addr,16) + 12).toString(16))
+        Memory.el_end.val('0x' + (parseInt(addr,16) + Memory.DEFAULT_ADDRESS_DELTA).toString(16))
 
         // fetch memory from whatever's in DOM
         Memory.fetch_memory_from_inputs()
     },
     get_gdb_commands_from_inputs: function(){
-        const MAX_ADDRESS_DELTA = 100
-
         let start_addr = parseInt(_.trim(Memory.el_start.val()), 16),
             end_addr = parseInt(_.trim(Memory.el_end.val()), 16)
 
+        if(!window.isNaN(start_addr) && window.isNaN(end_addr)){
+            end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA
+        }
+
         let cmds = []
         if(start_addr && end_addr){
-            if(start_addr > end_addr || ((end_addr - start_addr) > MAX_ADDRESS_DELTA)){
-                end_addr = start_addr + MAX_ADDRESS_DELTA
+            if(start_addr > end_addr){
+                end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA
+                Memory.el_end.val('0x' + end_addr.toString(16))
+            }else if((end_addr - start_addr) > Memory.MAX_ADDRESS_DELTA){
+                end_addr = start_addr + Memory.MAX_ADDRESS_DELTA
                 Memory.el_end.val('0x' + end_addr.toString(16))
             }
 
@@ -1307,6 +1316,14 @@ const Memory = {
                 cur_addr = cur_addr + 1
             }
         }
+
+        if(!window.isNaN(start_addr)){
+            Memory.el_start.val('0x' + start_addr.toString(16))
+        }
+        if(!window.isNaN(end_addr)){
+            Memory.el_end.val('0x' + end_addr.toString(16))
+        }
+
         return cmds
     },
     fetch_memory_from_inputs: function(){
@@ -1321,17 +1338,59 @@ const Memory = {
         }
 
         let data = []
-        for (let hex_addr in Memory.state.cache){
-            let hex_value = Memory.state.cache[hex_addr]
-            data.push([Memory.make_addr_into_link(hex_addr),
-                    Memory.make_addr_into_link('0x'+hex_value),
-                    parseInt(hex_value, 16).toString(10),
-                    String.fromCharCode(parseInt(hex_value, 16) || ' ')
-                ]
+        , hex_vals_for_this_addr = []
+        , char_vals_for_this_addr = []
+        , i = 0
+        , hex_addr_to_display = null
+
+        let bytes_per_line = (parseInt(Memory.el_bytes_per_line.val())) || 8
+        bytes_per_line = Math.max(bytes_per_line, 1)
+        $('#memory_bytes_per_line').val(bytes_per_line)
+
+        if(Object.keys(Memory.state.cache).length > 0){
+            let first_addr_minus_n = '0x' + (parseInt(Object.keys(Memory.state.cache)[0], 16) - bytes_per_line).toString(16)
+            data.push([Memory.make_addr_into_link(first_addr_minus_n, '<span style="font-style:italic; font-size: 0.8em;">read preceding</span>'),
+                        '',
+                        '']
             )
+        }
+
+        for (let hex_addr in Memory.state.cache){
+            if(!hex_addr_to_display){
+                hex_addr_to_display = hex_addr
+            }
+
+            if(i % (bytes_per_line) === 0 && hex_vals_for_this_addr.length > 0){
+                // begin new row
+                data.push([Memory.make_addr_into_link(hex_addr_to_display),
+                    hex_vals_for_this_addr.join(' '),
+                    char_vals_for_this_addr.join(' ')])
+
+                // update which address we're collecting values for
+                i = 0
+                hex_addr_to_display = hex_addr
+                hex_vals_for_this_addr = []
+                char_vals_for_this_addr = []
+
+            }
+            let hex_value = Memory.state.cache[hex_addr]
+            hex_vals_for_this_addr.push(hex_value)
+            let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, '.')
+            char_vals_for_this_addr.push(`<span class='memory_char'>${char}</span>`)
+            i++
 
         }
-        let table = Util.get_table(['address', 'value (hex)', 'value (decimal)', 'value (char)'], data)
+
+        if(hex_vals_for_this_addr.length > 0){
+            // memory range requested wasn't divisible by bytes per line
+            // add the remaining memory
+            data.push([Memory.make_addr_into_link(hex_addr_to_display),
+                    hex_vals_for_this_addr.join(' '),
+                    char_vals_for_this_addr.join(' ')])
+
+        }
+
+        let table = Util.get_table(['address', 'hex' , 'char'], data)
         Memory.el.html(table)
     },
     render_not_paused: function(){
@@ -1343,7 +1402,11 @@ const Memory = {
         return `<a class='pointer memory_address' data-memory_address='${_addr}'>${_name}</a>`
     },
     add_value_to_cache: function(hex_str, hex_val){
-        Memory.state.cache[hex_str] = hex_val
+        // strip leading zeros off address provided by gdb
+        // i.e. 0x000123 turns to
+        // 0x123
+        let hex_str_truncated = '0x' + (parseInt(hex_str, 16)).toString(16)
+        Memory.state.cache[hex_str_truncated] = hex_val
         Memory.render()
     },
     clear_cache: function(){

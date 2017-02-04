@@ -152,6 +152,12 @@ td.assembly{
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
 }
+#memory table{
+  font-family: monospace;
+}
+.memory_char:empty{
+  content: ?;
+}
 /* show a flash of color */
 .flash {
     -webkit-animation-name: flash-animation;
