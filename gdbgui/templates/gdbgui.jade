@@ -39,11 +39,10 @@ body(style='margin: 0')
                 input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
                 datalist#past_binaries
 
-                span(style="display:table-cell; width: 30px;")
-                    span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer(style='font-size: 1.6em; padding-left: 15px', title='settings')
+                div(style="display:table-cell; vertical-align: middle; width: 80px;")
+                    span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer(style='padding-left: 15px', title='settings')
 
-                span(style="display:table-cell; width: 30px;")
-                    span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='font-size: 1.6em; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
+                    span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-right: 10px; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
 
 
     //- source code and stack, etc.
@@ -111,12 +110,19 @@ body(style='margin: 0')
             div#threads.gdb_content_div
 
         div.no_padding
-            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#variables_collapse_wrapper", data-glyph_selector='#variables_glyph')
-                span.glyphicon.glyphicon-chevron-down#variables_glyph(style='margin-right: 6px;')
-                span.lighttext variables
-            div#variables_collapse_wrapper
-                input#variable_input.form-control(placeholder='expression or variable', style="height:25px;")
-                div#variables.gdb_content_div(style='margin-top: 6px;')
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#locals_collapse_wrapper", data-glyph_selector='#locals_glyph')
+                span.glyphicon.glyphicon-chevron-down#locals_glyph(style='margin-right: 6px;')
+                span.lighttext locals
+            div#locals_collapse_wrapper
+                div#locals.gdb_content_div(style='margin-top: 6px;')
+
+        div.no_padding
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#expressions_collapse_wrapper", data-glyph_selector='#expressions_glyph')
+                span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
+                span.lighttext expressions
+            div#expressions_collapse_wrapper
+                input#expressions_input.form-control(placeholder='expression or variable', style="height:25px;")
+                div#expressions.gdb_content_div(style='margin-top: 6px;')
 
         div.no_padding
             div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')
