@@ -202,7 +202,7 @@ const GdbApi = {
      *                          figure out how to handle.
      * @return nothing
      */
-    run_gdb_command: function(cmd, success_callback=process_gdb_response){
+    run_gdb_command: function(cmd){
         if(_.trim(cmd) === ''){
             return
         }
@@ -210,6 +210,12 @@ const GdbApi = {
         let cmds = cmd
         if(_.isString(cmds)){
             cmds = [cmds]
+        }
+
+        // add the send command to the console to show commands that are
+        // automatically run by gdb
+        if(globals.state.debug){
+            GdbConsoleComponent.add_sent_commands(cmds)
         }
 
         Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
@@ -231,6 +237,9 @@ const GdbApi = {
             '-thread-info',
             // update all user-defined variables in gdb
             '-var-update --all-values *',
+            // print the name, type and value for simple data types,
+            // and the name and type for arrays, structures and unions.
+            '-stack-list-variables --simple-values'
         ]
 
         // update registers
@@ -433,7 +442,11 @@ const Breakpoint = {
 
             let source_line
             try{
-                source_line = `<span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}</span><br>`
+                source_line = `
+                <span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>
+                    ${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}
+                </span>
+                <br>`
             }catch(err){
                 source_line = ''
             }
@@ -443,7 +456,15 @@ const Breakpoint = {
             <span ${SourceCode.get_attrs_to_view_file(b.fullname, b.line, '', 'false')}>
                 <div class=breakpoint>
                     <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'/>
-                    <span>${b.func}:${b.line}</span> <span style='color: #bbbbbb; font-style: italic;'>thread groups: ${b['thread-groups']}</span><br>
+                    <span>
+                        ${b.func}:${b.line}
+                    </span>
+                    <span style='color: #bbbbbb; font-style: italic;'>
+                        thread groups: ${b['thread-groups']}
+                    </span>
+
+                    ${Breakpoint.get_delete_breakpoint_link(b.number, "<span class='glyphicon glyphicon-trash breakpoint_trashcan'> </span>")}
+                    <br>
                     ${source_line}
                 </div>
             </span>
@@ -473,7 +494,7 @@ const Breakpoint = {
         if ('fullname' in breakpoint){
              links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, ''))
         }
-        links.push(`<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint.number}" data-cmd1="-break-list">remove</a>`)
+        links.push(Breakpoint.get_delete_breakpoint_link(breakpoint.number))
         bkpt[' '] = links.join(' | ')
 
         // turn address into link
@@ -485,6 +506,9 @@ const Breakpoint = {
         if(Breakpoint.breakpoints.indexOf(bkpt) === -1){
             Breakpoint.breakpoints.push(bkpt)
         }
+    },
+    get_delete_breakpoint_link: function(breakpoint_number, text='remove'){
+        return `<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint_number}" data-cmd1="-break-list">${text}</a>`
     },
     get_breakpoint_lines_for_file: function(fullname){
         return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line))
@@ -579,10 +603,10 @@ const SourceCode = {
             for(let i of instructions_for_this_line){
                 let cls = (addr === i.address) ? 'current_assembly_command assembly' : 'assembly'
                 , addr_link = Memory.make_addr_into_link(i.address)
-
+                , instruction = Memory.make_addrs_into_links(i.inst)
                 instruction_content.push(`
                     <span style="white-space: nowrap;" class='${cls}' data-addr=${i.address}>
-                        ${i.inst} ${i['func-name']}+${i['offset']} ${addr_link}
+                        ${instruction} ${i['func-name']}+${i['offset']} ${addr_link}
                     </span>`)
                 // i.e. mov $0x400684,%edi main+8 0x0000000000400585
             }
@@ -1260,8 +1284,8 @@ const Memory = {
     el_start: $('#memory_start_address'),
     el_end: $('#memory_end_address'),
     el_bytes_per_line: $('#memory_bytes_per_line'),
-    MAX_ADDRESS_DELTA: 1000,
-    DEFAULT_ADDRESS_DELTA: 31,
+    MAX_ADDRESS_DELTA_BYTES: 1000,
+    DEFAULT_ADDRESS_DELTA_BYTES: 31,
     init: function(){
         $("body").on("click", ".memory_address", Memory.click_memory_address)
         Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
@@ -1287,7 +1311,7 @@ const Memory = {
         let addr = e.currentTarget.dataset['memory_address']
         // set inputs in DOM
         Memory.el_start.val('0x' + (parseInt(addr, 16)).toString(16))
-        Memory.el_end.val('0x' + (parseInt(addr,16) + Memory.DEFAULT_ADDRESS_DELTA).toString(16))
+        Memory.el_end.val('0x' + (parseInt(addr,16) + Memory.DEFAULT_ADDRESS_DELTA_BYTES).toString(16))
 
         // fetch memory from whatever's in DOM
         Memory.fetch_memory_from_inputs()
@@ -1297,16 +1321,16 @@ const Memory = {
             end_addr = parseInt(_.trim(Memory.el_end.val()), 16)
 
         if(!window.isNaN(start_addr) && window.isNaN(end_addr)){
-            end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA
+            end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES
         }
 
         let cmds = []
         if(start_addr && end_addr){
             if(start_addr > end_addr){
-                end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA
+                end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES
                 Memory.el_end.val('0x' + end_addr.toString(16))
-            }else if((end_addr - start_addr) > Memory.MAX_ADDRESS_DELTA){
-                end_addr = start_addr + Memory.MAX_ADDRESS_DELTA
+            }else if((end_addr - start_addr) > Memory.MAX_ADDRESS_DELTA_BYTES){
+                end_addr = start_addr + Memory.MAX_ADDRESS_DELTA_BYTES
                 Memory.el_end.val('0x' + end_addr.toString(16))
             }
 
@@ -1401,6 +1425,9 @@ const Memory = {
             , _name = name
         return `<a class='pointer memory_address' data-memory_address='${_addr}'>${_name}</a>`
     },
+    make_addrs_into_links: function(text){
+        return text.replace(/(0x[\d\w]+)/g, Memory.make_addr_into_link('$1'))
+    },
     add_value_to_cache: function(hex_str, hex_val){
         // strip leading zeros off address provided by gdb
         // i.e. 0x000123 turns to
@@ -1425,24 +1452,24 @@ const Memory = {
 }
 
 /**
- * The Variables component allows the user to inspect expressions
+ * The Expressions component allows the user to inspect expressions
  * stored as variables in gdb
  * see https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
  *
  * gdb assigns a unique variable name for each expression the user wants evaluated
  * gdb returns
  */
-const Variables = {
-    el: $('#variables'),
-    el_input: $('#variable_input'),
+const Expressions = {
+    el: $('#expressions'),
+    el_input: $('#expressions_input'),
     init: function(){
         // create new var when enter is pressed
-        Variables.el_input.keydown(Variables.keydown_on_input)
+        Expressions.el_input.keydown(Expressions.keydown_on_input)
 
         // remove var when icon is clicked
-        $("body").on("click", ".delete_gdb_variable", Variables.click_delete_gdb_variable)
-        $("body").on("click", ".toggle_children_visibility", Variables.click_toggle_children_visibility)
-        Variables.render()
+        $("body").on("click", ".delete_gdb_variable", Expressions.click_delete_gdb_variable)
+        $("body").on("click", ".toggle_children_visibility", Expressions.click_toggle_children_visibility)
+        Expressions.render()
     },
     state: {
         waiting_for_create_var_response: false,
@@ -1454,9 +1481,9 @@ const Variables = {
      * Locally save the variable to our cached variables
      */
     save_new_variable: function(expression, obj){
-        let new_obj = Variables.prepare_gdb_obj_for_storage(obj)
+        let new_obj = Expressions.prepare_gdb_obj_for_storage(obj)
         new_obj.expression = expression
-        Variables.state.variables.push(new_obj)
+        Expressions.state.variables.push(new_obj)
     },
     /**
      * Get child variable with a particular name
@@ -1482,7 +1509,7 @@ const Variables = {
             top_level_var_name = gdb_var_names[0],
             children_names = gdb_var_names.slice(1, gdb_var_names.length)
 
-        let objs = Variables.state.variables.filter(v => v.name === top_level_var_name)
+        let objs = Expressions.state.variables.filter(v => v.name === top_level_var_name)
 
         if(objs.length === 1){
             // we found our top level object
@@ -1492,7 +1519,7 @@ const Variables = {
                 // append the '.' and field name to find as a child of the object we're looking at
                 name_to_find += `.${children_names[i]}`
 
-                let child_obj = Variables.get_child_with_name(obj.children, name_to_find)
+                let child_obj = Expressions.get_child_with_name(obj.children, name_to_find)
 
                 if(child_obj){
                     // our new object to search is this child
@@ -1513,9 +1540,9 @@ const Variables = {
     },
     keydown_on_input: function(e){
         if((e.keyCode === ENTER_BUTTON_NUM)) {
-            let expr = Variables.el_input.val()
+            let expr = Expressions.el_input.val()
             if(_.trim(expr) !== ''){
-                Variables.create_variable(Variables.el_input.val())
+                Expressions.create_variable(Expressions.el_input.val())
             }
         }
     },
@@ -1525,16 +1552,16 @@ const Variables = {
      * gdb response
      */
     create_variable: function(expression){
-        if(Variables.waiting_for_create_var_response === true){
-            Status.render(`cannot create a new variable before finishing creation of expression "${Variables.state.expression_being_created}"`)
+        if(Expressions.waiting_for_create_var_response === true){
+            Status.render(`cannot create a new variable before finishing creation of expression "${Expressions.state.expression_being_created}"`)
             return
         }
-        Variables.state.waiting_for_create_var_response = true
-        Variables.expression_being_created = expression
+        Expressions.state.waiting_for_create_var_response = true
+        Expressions.expression_being_created = expression
         // - means auto assign variable name in gdb
         // * means evaluate it at the current frame
         // need to use custom callback due to stateless nature of gdb's response
-        // Variables.callback_after_create_variable
+        // Expressions.callback_after_create_variable
         GdbApi.run_gdb_command(`-var-create - * ${expression}`)
     },
     /**
@@ -1563,9 +1590,9 @@ const Variables = {
      * The variable UI element is the re-rendered
      */
     gdb_created_root_variable: function(r){
-        Variables.state.waiting_for_create_var_response = false
+        Expressions.state.waiting_for_create_var_response = false
 
-        if(Variables.expression_being_created){
+        if(Expressions.expression_being_created){
             // example payload:
             // "payload": {
             //      "has_more": "0",
@@ -1575,15 +1602,15 @@ const Variables = {
             //      "type": "int",
             //      "value": "0"
             //  },
-            Variables.save_new_variable(Variables.expression_being_created, r.payload)
-            Variables.state.expression_being_created = null
+            Expressions.save_new_variable(Expressions.expression_being_created, r.payload)
+            Expressions.state.expression_being_created = null
             // automatically fetch first level of children for root variables
-            Variables.fetch_and_show_children_for_var(r.payload.name)
+            Expressions.fetch_and_show_children_for_var(r.payload.name)
         }else{
             console.error('could no create new var')
         }
 
-        Variables.render()
+        Expressions.render()
     },
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
@@ -1615,14 +1642,14 @@ const Variables = {
         //         ]
         //     }
 
-        let parent_name = Variables.state.gdb_parent_var_currently_fetching_children
-        Variables.state.gdb_parent_var_currently_fetching_children = null
+        let parent_name = Expressions.state.gdb_parent_var_currently_fetching_children
+        Expressions.state.gdb_parent_var_currently_fetching_children = null
 
         // get the parent object of these children
-        let parent_obj = Variables.get_obj_from_gdb_var_name(parent_name)
+        let parent_obj = Expressions.get_obj_from_gdb_var_name(parent_name)
         if(parent_obj){
             // prepare all the child objects we received for local storage
-            let children = r.payload.children.map(child_obj => Variables.prepare_gdb_obj_for_storage(child_obj))
+            let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj))
             // save these children as a field to their parent
             parent_obj.children = children
         }
@@ -1631,30 +1658,30 @@ const Variables = {
         // see this expanded by default
         for(let child of parent_obj.children){
             if (child.exp === '<anonymous struct>'){
-                Variables.fetch_and_show_children_for_var(child.name)
+                Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
         // re-render
-        Variables.render()
+        Expressions.render()
     },
     render: function(){
         let html = ''
         const is_root = true
-        for(let obj of Variables.state.variables){
+        for(let obj of Expressions.state.variables){
             if(obj.in_scope === 'true'){
                 if(obj.numchild > 0) {
-                    html += Variables.get_ul_for_var_with_children(obj.expression, obj, is_root)
+                    html += Expressions.get_ul_for_var_with_children(obj.expression, obj, is_root)
                 }else{
-                    html += Variables.get_ul_for_var_without_children(obj.expression, obj, is_root)
+                    html += Expressions.get_ul_for_var_without_children(obj.expression, obj, is_root)
                 }
             }else if (obj.in_scope === 'invalid'){
-                Variables.delete_gdb_variable(obj.name)
+                Expressions.delete_gdb_variable(obj.name)
             }
         }
         if(html === ''){
             html = '<span class=placeholder>no expressions in this context</span>'
         }
-        Variables.el.html(html)
+        Expressions.el.html(html)
     },
     /**
      * get unordered list for a variable that has children
@@ -1667,9 +1694,9 @@ const Variables = {
             if(mi_obj.children.length > 0){
                 for(let child of mi_obj.children){
                     if(child.numchild > 0){
-                        child_tree += `<li>${Variables.get_ul_for_var_with_children(child.exp, child)}</li>`
+                        child_tree += `<li>${Expressions.get_ul_for_var_with_children(child.exp, child)}</li>`
                     }else{
-                        child_tree += `<li>${Variables.get_ul_for_var_without_children(child.exp, child)}</li>`
+                        child_tree += `<li>${Expressions.get_ul_for_var_without_children(child.exp, child)}</li>`
                     }
                 }
             }else{
@@ -1680,10 +1707,10 @@ const Variables = {
         }
 
         let plus_or_minus = mi_obj.show_children_in_ui ? '-' : '+'
-        return Variables._get_ul_for_var(expression, mi_obj, is_root, plus_or_minus, child_tree, mi_obj.show_children_in_ui, mi_obj.numchild)
+        return Expressions._get_ul_for_var(expression, mi_obj, is_root, plus_or_minus, child_tree, mi_obj.show_children_in_ui, mi_obj.numchild)
     },
     get_ul_for_var_without_children: function(expression, mi_obj, is_root=false){
-        return Variables._get_ul_for_var(expression, mi_obj, is_root)
+        return Expressions._get_ul_for_var(expression, mi_obj, is_root)
     },
     /**
      * Get ul for a variable with or without children
@@ -1698,41 +1725,40 @@ const Variables = {
 
         return `<ul class='variable'>
             <li class='${toggle_classes} ${expanded}' data-gdb_variable_name='${mi_obj.name}'>
-                ${delete_button}
-                ${plus_or_minus} ${expression}: ${val} <span class='var_type'>${_.trim(mi_obj.type)}</span>
+                ${plus_or_minus} ${expression}: ${val} <span class='var_type'>${_.trim(mi_obj.type)}</span> ${delete_button}
             </li>
             ${child_tree}
         </ul>
         `
     },
     fetch_and_show_children_for_var: function(gdb_var_name){
-        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        let obj = Expressions.get_obj_from_gdb_var_name(gdb_var_name)
         // show
         obj.show_children_in_ui = true
         if(obj.numchild > 0 && obj.children.length === 0){
             // need to fetch child data
-            Variables._get_children_for_var(gdb_var_name)
+            Expressions._get_children_for_var(gdb_var_name)
         }else{
             // already have child data, just render now that we
             // set show_children_in_ui to true
-            Variables.render()
+            Expressions.render()
         }
     },
     hide_children_in_ui: function(gdb_var_name){
-        let obj = Variables.get_obj_from_gdb_var_name(gdb_var_name)
+        let obj = Expressions.get_obj_from_gdb_var_name(gdb_var_name)
         if(obj){
             obj.show_children_in_ui = false
-            Variables.render()
+            Expressions.render()
         }
     },
     click_toggle_children_visibility: function(e){
         let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
         if($(e.currentTarget).hasClass('expanded')){
             // collapse
-            Variables.hide_children_in_ui(gdb_var_name)
+            Expressions.hide_children_in_ui(gdb_var_name)
         }else{
             // expand
-            Variables.fetch_and_show_children_for_var(gdb_var_name)
+            Expressions.fetch_and_show_children_for_var(gdb_var_name)
         }
         $(e.currentTarget).toggleClass('expanded')
 
@@ -1742,7 +1768,7 @@ const Variables = {
      * for a gdb variable. Note that the gdb variable itself may be a child.
      */
     _get_children_for_var: function(gdb_variable_name){
-        Variables.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
+        Expressions.state.gdb_parent_var_currently_fetching_children = gdb_variable_name
         GdbApi.run_gdb_command(`-var-list-children --all-values ${gdb_variable_name}`)
     },
     update_variable_values: function(){
@@ -1750,31 +1776,78 @@ const Variables = {
     },
     handle_changelist: function(changelist_array){
         for(let c of changelist_array){
-            let obj = Variables.get_obj_from_gdb_var_name(c.name)
+            let obj = Expressions.get_obj_from_gdb_var_name(c.name)
             if(obj){
                 _.assign(obj, c)
             }
         }
-        Variables.render()
+        Expressions.render()
     },
     click_delete_gdb_variable: function(e){
         e.stopPropagation() // not sure if this is still needed
-        Variables.delete_gdb_variable(e.currentTarget.dataset.gdb_variable)
+        Expressions.delete_gdb_variable(e.currentTarget.dataset.gdb_variable)
     },
     delete_gdb_variable: function(gdbvar){
         // delete locally
-        Variables._delete_local_gdb_var_data(gdbvar)
+        Expressions._delete_local_gdb_var_data(gdbvar)
         // delete in gdb too
         GdbApi.run_gdb_command(`-var-delete ${gdbvar}`)
         // re-render variables in browser
-        Variables.render()
+        Expressions.render()
     },
     /**
      * Delete local copy of gdb variable (all its children are deleted too
      * since they are stored as fields in the object)
      */
     _delete_local_gdb_var_data: function(gdb_var_name){
-        _.remove(Variables.state.variables, v => v.name === gdb_var_name)
+        _.remove(Expressions.state.variables, v => v.name === gdb_var_name)
+    },
+}
+
+const Locals = {
+    el: $('#locals'),
+    init: function(){
+        window.addEventListener('event_inferior_program_exited', Locals.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', Locals.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', Locals.event_inferior_program_paused)
+        Locals.clear()
+    },
+    render: function(locals){
+        if(locals.length === 0){
+            Locals.el.html('<span class=placeholder>not variables in this frame</span>')
+            return
+        }
+        let html = locals.map(local => {
+            let value = ''
+            if('value' in local){
+                // turn hex addresses into links to view memory
+                value = Memory.make_addrs_into_links(local.value)
+            }
+
+            // return local variable name, value (if available), and type
+            return  `
+            <span>
+                ${local.name}: ${value}
+            </span>
+            <span class='var_type'>
+                ${_.trim(local.type)}
+            </span>
+            <p>
+            `
+        })
+        Locals.el.html(html.join(''))
+    },
+    clear: function(){
+        Locals.el.html('<span class=placeholder>not paused</span>')
+    },
+    event_inferior_program_exited: function(){
+        Locals.clear()
+    },
+    event_inferior_program_running: function(){
+        Locals.clear()
+    },
+    event_inferior_program_paused: function(){
+
     },
 }
 
@@ -2055,6 +2128,9 @@ const process_gdb_response = function(response_array){
     let update_status = true
 
     for (let r of response_array){
+        // gdb mi output
+        GdbMiOutput.add_mi_output(r)
+
         if (r.type === 'result' && r.message === 'done' && r.payload){
             // This is special GDB Machine Interface structured data that we
             // can render in the frontend
@@ -2100,14 +2176,17 @@ const process_gdb_response = function(response_array){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
             if ('changelist' in r.payload){
-                Variables.handle_changelist(r.payload.changelist)
+                Expressions.handle_changelist(r.payload.changelist)
+            }
+            if ('variables' in r.payload){
+                Locals.render(r.payload.variables)
             }
             if ('name' in r.payload && 'thread-id' in r.payload && 'has_more' in r.payload &&
                 'value' in r.payload && !('children' in r.payload)){
-                Variables.gdb_created_root_variable(r)
+                Expressions.gdb_created_root_variable(r)
             }
             if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
-                Variables.gdb_created_children_variables(r)
+                Expressions.gdb_created_children_variables(r)
             }
             // if (your check here) {
             //      render your custom compenent here!
@@ -2141,9 +2220,6 @@ const process_gdb_response = function(response_array){
         }else if (r.type === 'output'){
             // output of program
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
-        }else{
-            // gdb mi output
-            GdbMiOutput.add_mi_output(r)
         }
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
@@ -2220,7 +2296,8 @@ BinaryLoader.init()
 Registers.init()
 SourceFileAutocomplete.init()
 Memory.init()
-Variables.init()
+Expressions.init()
+Locals.init()
 Threads.init()
 VisibilityToggler.init()
 ShutdownGdbgui.init()

@@ -97,6 +97,14 @@ td{
 .breakpoint:hover{
   background-color: #e2e2e2;
 }
+.breakpoint_trashcan, .delete_gdb_variable{
+  float: right;
+  margin-right: 5px;
+  display: none !important;
+}
+div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .delete_gdb_variable{
+  display: inline !important;
+}
 .line_num{
   width: 50px;
   border-width: 0;
@@ -220,8 +228,8 @@ td.assembly{
   width: 100%;
 }
 
-/* styling for "Variables" component */
-#variables li{
+/* styling for "Expressions" component */
+#expressions li{
   list-style: none;
 }
 
@@ -232,7 +240,7 @@ td.assembly{
 #memory table{
   font-size: 0.9em;
 }
-#variables ul.variable{
+#expressions ul.variable{
     padding-left: 5px;
     border: 0px;
 }
