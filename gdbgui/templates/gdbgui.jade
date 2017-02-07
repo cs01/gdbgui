@@ -230,6 +230,7 @@ body(style='margin: 0')
                 button.btn.btn-success(type='button', data-dismiss='modal') Close
 
 script.
+    initial_binary_and_args = JSON.parse('!{initial_binary_and_args}')
     debug = #{debug}
     gdbgui_version = '#{gdbgui_version}'
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')

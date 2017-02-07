@@ -9,7 +9,7 @@
  * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete, io, moment, debug, gdbgui_version) {
+(function ($, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args) {
 "use strict";
 
 /**
@@ -2322,7 +2322,12 @@ ShutdownGdbgui.init()
 WebSocket.init()
 Settings.init()
 
+if(_.isString(initial_binary_and_args) && _.trim(initial_binary_and_args).length > 0){
+    BinaryLoader.el.val(_.trim(initial_binary_and_args))
+    BinaryLoader.set_target_app()
+
+}
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-})(jQuery, _, Awesomplete, io, moment, debug, gdbgui_version)
+})(jQuery, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args)
