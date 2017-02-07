@@ -24,7 +24,7 @@ DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 DEFAULT_GDB_EXECUTABLE = 'gdb'
 IS_A_TTY = sys.stdout.isatty()
-
+INITIAL_BINARY_AND_ARGS = None  # global
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 socketio = SocketIO(async_mode='eventlet')
@@ -134,7 +134,11 @@ def gdbgui():
         time_sec = 0
     else:
         time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
-    return render_template('gdbgui.jade', timetag_to_prevent_caching=time_sec, debug=json.dumps(app.debug), gdbgui_version=__version__)
+    return render_template('gdbgui.jade',
+        timetag_to_prevent_caching=time_sec,
+        debug=json.dumps(app.debug),
+        gdbgui_version=__version__,
+        initial_binary_and_args=json.dumps(INITIAL_BINARY_AND_ARGS))
 
 
 @app.route('/shutdown')
@@ -217,14 +221,19 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
 
 def main():
     """Entry point from command line"""
+    global INITIAL_BINARY_AND_ARGS
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
     parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
     parser.add_argument("--gdb", help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument("--cmd", help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
+        ' binary  you wish to debug.', default=INITIAL_BINARY_AND_ARGS)
     parser.add_argument("--debug", help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     args = parser.parse_args()
+
+    INITIAL_BINARY_AND_ARGS = args.cmd or None
     setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), gdb_path=args.gdb)
 
 
