@@ -97,7 +97,7 @@ body(style='margin: 0')
 
                 button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls") SI
 
-                button.btn.btn-default.gdb_cmd(type='button', data-cmd='-exec-interrupt', title='Send interrupt signal (SIGINT) to inferior process') INT
+                button.btn.btn-default#send_interrupt_button(type='button', title='Send interrupt signal (SIGINT) to inferior process') INT
 
             div(style='white-space: nowrap; height: 1.8em;')
                 span#status GDB is waiting to run a command

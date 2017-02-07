@@ -1,5 +1,3 @@
-
-
 /**
  * This is the main frontend file to make
  * an interactive ui for gdb. Everything exists in this single js
@@ -24,18 +22,38 @@ const ENTER_BUTTON_NUM = 13
  * Globals
  */
 let globals = {
+    init: function(){
+        window.addEventListener('event_inferior_program_exited', globals.event_inferior_program_exited)
+        window.addEventListener('event_inferior_program_running', globals.event_inferior_program_running)
+        window.addEventListener('event_inferior_program_paused', globals.event_inferior_program_paused)
+    },
     state: {
         debug: debug,  // if gdbgui is run in debug mode
-        gdbgui_version: gdbgui_version
-    }
+        gdbgui_version: gdbgui_version,
+        // choices are:
+        // 'running'
+        // 'paused'
+        // 'exited'
+        // undefined
+        inferior_program: undefined,
+    },
+    event_inferior_program_exited: function(){
+        globals.state.inferior_program = 'exited'
+    },
+    event_inferior_program_running: function(){
+        globals.state.inferior_program = 'running'
+    },
+    event_inferior_program_paused: function(){
+        globals.state.inferior_program = 'paused'
+    },
 }
 
 
 /**
- * The Status component display the most recent gdb status
+ * The StatusBar component display the most recent gdb status
  * at the top of the page
  */
-const Status = {
+const StatusBar = {
     el: $('#status'),
     /**
      * Render a new status
@@ -45,9 +63,9 @@ const Status = {
      */
     render: function(status_str, error=false){
         if(error){
-            Status.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
+            StatusBar.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
         }else{
-            Status.el.html(status_str)
+            StatusBar.el.html(status_str)
         }
     },
     /**
@@ -56,9 +74,9 @@ const Status = {
      */
     render_ajax_error_msg: function(response){
         if (response.responseJSON && response.responseJSON.message){
-            Status.render(_.escape(response.responseJSON.message), true)
+            StatusBar.render(_.escape(response.responseJSON.message), true)
         }else{
-            Status.render(`${response.statusText} (${response.status} error)`, true)
+            StatusBar.render(`${response.statusText} (${response.status} error)`, true)
         }
     },
     /**
@@ -93,7 +111,7 @@ const Status = {
                 }
             }
         }
-        Status.render(status.join(', '), error)
+        StatusBar.render(status.join(', '), error)
     }
 }
 
@@ -111,6 +129,7 @@ const GdbApi = {
         $('#return_button').click(GdbApi.click_return_button)
         $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
         $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
+        $('#send_interrupt_button').click(GdbApi.click_send_interrupt_button)
 
         window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
@@ -124,20 +143,39 @@ const GdbApi = {
         warning_shown_for_old_binary: false
     },
     click_run_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-run')
+        if(GdbApi.state.inferior_binary_path !== null){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-run')
+        }else{
+            StatusBar.render('no inferior program is loaded', true)
+        }
+    },
+    inferior_is_paused: function(){
+        return ([undefined, 'paused'].indexOf(globals.state.inferior_program) >= 0)
     },
     click_continue_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-continue')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-continue')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_next_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-next')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-next')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_step_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-step')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-step')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_return_button: function(e){
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
@@ -146,12 +184,28 @@ const GdbApi = {
         GdbApi.run_gdb_command('-exec-return')
     },
     click_next_instruction_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-next-instruction')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-next-instruction')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_step_instruction_button: function(e){
-        window.dispatchEvent(new Event('event_inferior_program_running'))
-        GdbApi.run_gdb_command('-exec-step-instruction')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-step-instruction')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
+    },
+    click_send_interrupt_button: function(e){
+        if(GdbApi.state.inferior_binary_path !== null){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-interrupt')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
@@ -218,7 +272,7 @@ const GdbApi = {
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
-        Status.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
+        StatusBar.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
         WebSocket.run_gdb_command(cmds)
     },
     refresh_breakpoints: function(){
@@ -781,7 +835,7 @@ const SourceCode = {
                     SourceCode.render_cached_source_file(fullname, response.source_code, current_line, addr)
                 },
                 error: function(response){
-                    Status.render_ajax_error_msg(response)
+                    StatusBar.render_ajax_error_msg(response)
                     let source_code = [`failed to fetch file ${fullname}`]
                     SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
                     SourceCode.render_cached_source_file(fullname, source_code, 0, addr)
@@ -1198,7 +1252,7 @@ const BinaryLoader = {
         var binary_and_args = _.trim(BinaryLoader.el.val())
 
         if (_.trim(binary_and_args) === ''){
-            Status.render('enter a binary path and arguments before attempting to load')
+            StatusBar.render('enter a binary path and arguments before attempting to load')
             return
         }
 
@@ -1553,7 +1607,7 @@ const Expressions = {
      */
     create_variable: function(expression){
         if(Expressions.waiting_for_create_var_response === true){
-            Status.render(`cannot create a new variable before finishing creation of expression "${Expressions.state.expression_being_created}"`)
+            StatusBar.render(`cannot create a new variable before finishing creation of expression "${Expressions.state.expression_being_created}"`)
             return
         }
         Expressions.state.waiting_for_create_var_response = true
@@ -2031,42 +2085,6 @@ const ShutdownGdbgui = {
 
 }
 
-
-/**
- * An object with methods for global events/callbacks
- * that apply to the whole page
- */
-const GlobalEvents = {
-    // Initialize
-    init: function(){
-        GlobalEvents.register_events()
-    },
-    // Event handling
-    register_events: function(){
-        $(window).keydown(function(e){
-            if((e.keyCode === ENTER_BUTTON_NUM)) {
-                // when pressing enter in an input, don't redirect entire page
-                e.preventDefault()
-            }
-        })
-
-        $("body").on("click", ".resizer", GlobalEvents.click_resizer_button)
-    },
-    click_resizer_button: function(e){
-        let jq_selection = $(e.currentTarget.dataset['target_selector'])
-        let cur_height = jq_selection.height()
-        if (e.currentTarget.dataset['resize_type'] === 'enlarge'){
-            jq_selection.height(cur_height + 50)
-        } else if (e.currentTarget.dataset['resize_type'] === 'shrink'){
-            if (cur_height > 50){
-                jq_selection.height(cur_height - 50)
-            }
-        } else {
-            console.error('unknown resize type ' + e.currentTarget.dataset['resize_type'])
-        }
-    },
-}
-
 const WebSocket = {
     init: function(){
         WebSocket.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
@@ -2083,7 +2101,7 @@ const WebSocket = {
         });
 
         WebSocket.socket.on('error_running_gdb_command', function(data) {
-            Status.render(`Error occured on server when running gdb command: ${data.message}`, true)
+            StatusBar.render(`Error occured on server when running gdb command: ${data.message}`, true)
         });
 
         WebSocket.socket.on('disconnect', function(){
@@ -2196,7 +2214,7 @@ const process_gdb_response = function(response_array){
 
             // render it in the status bar, and don't render the last response in the array as it does by default
             if(update_status){
-                Status.render_from_gdb_mi_response(r)
+                StatusBar.render_from_gdb_mi_response(r)
                 update_status = false
             }
 
@@ -2257,7 +2275,7 @@ const process_gdb_response = function(response_array){
     // perform any final actions
     if(update_status){
         // render response of last element of array
-        Status.render_from_gdb_mi_response(_.last(response_array))
+        StatusBar.render_from_gdb_mi_response(_.last(response_array))
         update_status = false
     }
 
@@ -2277,7 +2295,7 @@ $('#layout').w2layout({
         // { type: 'left', size: 0, resizable: false, style: pstyle, content: 'todo - add file browser' },
         { type: 'main', style: pstyle, content: $('#main'), overflow: 'hidden' },
         // { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
-        { type: 'right', size: 350, resizable: true, style: pstyle, content: $('#right') },
+        { type: 'right', size: '35%', 'min-width': '300px', resizable: true, style: pstyle, content: $('#right') },
         { type: 'bottom', size: 300, resizable: true, style: pstyle, content: $('#bottom') }
     ]
 });
@@ -2285,7 +2303,7 @@ $('#layout').w2layout({
 
 
 // initialize components
-GlobalEvents.init()
+globals.init()
 GdbApi.init()
 GdbCommandInput.init()
 GdbConsoleComponent.init()
