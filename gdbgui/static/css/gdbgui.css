@@ -91,6 +91,12 @@ td{
     width: 100%;
     background-color: transparent;
 }
+.paused_on_line{
+  background: #84fff9;
+  border: #9898ff;
+  border-style: solid;
+  border-width: 1px;
+}
 .highlight{
   background: rgba(255, 255, 0, 0.5) !important;
 }
@@ -176,12 +182,14 @@ td.assembly{
 }
 
 @-webkit-keyframes flash-animation {
-    from { background: yellow; }
+    from { background: white; }
+    from { background: #fdfd54; }
     to   { background: default; }
 }
 
 @keyframes flash-animation {
-    from { background: yellow; }
+    from { background: white; }
+    from { background: #fdfd54; }
     to   { background: default; }
 }
 
