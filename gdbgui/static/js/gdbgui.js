@@ -26,6 +26,13 @@ let globals = {
         window.addEventListener('event_inferior_program_exited', globals.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', globals.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', globals.event_inferior_program_paused)
+
+        $(window).keydown(function(e){
+           if((e.keyCode === ENTER_BUTTON_NUM)) {
+               // when pressing enter in an input, don't redirect entire page
+               e.preventDefault()
+           }
+       })
     },
     state: {
         debug: debug,  // if gdbgui is run in debug mode
@@ -36,15 +43,23 @@ let globals = {
         // 'exited'
         // undefined
         inferior_program: undefined,
+        paused_on_frame: undefined,
     },
     event_inferior_program_exited: function(){
         globals.state.inferior_program = 'exited'
+        globals.state.paused_on_frame = undefined
     },
     event_inferior_program_running: function(){
         globals.state.inferior_program = 'running'
+        globals.state.paused_on_frame = undefined
     },
-    event_inferior_program_paused: function(){
+    event_inferior_program_paused: function(e){
+        // the 'detail' field of the event can be customized on a CustomEvent. It's a weird convention,
+        // but it's documented here as part of the JavaScript standard
+        // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
+        let frame = e.detail
         globals.state.inferior_program = 'paused'
+        globals.state.paused_on_frame = frame
     },
 }
 
@@ -181,7 +196,12 @@ const GdbApi = {
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
         // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
         // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running
-        GdbApi.run_gdb_command('-exec-return')
+        if(GdbApi.inferior_is_paused()){
+            window.dispatchEvent(new Event('event_inferior_program_running'))
+            GdbApi.run_gdb_command('-exec-return')
+        }else{
+            StatusBar.render('inferior program is not paused', true)
+        }
     },
     click_next_instruction_button: function(e){
         if(GdbApi.inferior_is_paused()){
@@ -280,9 +300,6 @@ const GdbApi = {
     },
     refresh_state_for_gdb_pause: function(){
         let cmds = [
-            // flush inferior process' output (if any)
-            // by default, it only flushes when the program terminates
-            '-data-evaluate-expression fflush(0)',
             // List the frames currently on the stack.
             '-stack-list-frames',
             // Get info on selected frame
@@ -293,7 +310,11 @@ const GdbApi = {
             '-var-update --all-values *',
             // print the name, type and value for simple data types,
             // and the name and type for arrays, structures and unions.
-            '-stack-list-variables --simple-values'
+            '-stack-list-variables --simple-values',
+            // flush inferior process' output (if any)
+            // by default, it only flushes when the program terminates
+            // so this additional call is needed
+            '-data-evaluate-expression fflush(0)',
         ]
 
         // update registers
@@ -603,11 +624,11 @@ const SourceCode = {
         window.addEventListener('event_inferior_program_running', SourceCode.event_inferior_program_running)
     },
     event_inferior_program_exited: function(e){
-        SourceCode.remove_current_line_highlights()
+        SourceCode.remove_line_highlights()
         SourceCode.clear_cached_source_files()
     },
     event_inferior_program_running: function(e){
-        SourceCode.remove_current_line_highlights()
+        SourceCode.remove_line_highlights()
     },
     click_gutter: function(e){
         let line = e.currentTarget.dataset.line
@@ -693,8 +714,7 @@ const SourceCode = {
     /**
      * Render a cached source file
      */
-    render_cached_source_file: function(fullname, source_code, current_line=1, addr=undefined){
-
+    render_cached_source_file: function(fullname, source_code, scroll_to_line=1, addr=undefined){
         if(!SourceCode.is_cached(fullname)){
             SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
                 SourceCode.state.rendered_source_file_line,
@@ -704,7 +724,7 @@ const SourceCode = {
 
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
 
-        current_line = parseInt(current_line)
+        scroll_to_line = parseInt(scroll_to_line)
 
         let assembly,
             show_assembly = SourceCode.show_assembly_box_is_checked()
@@ -715,8 +735,9 @@ const SourceCode = {
             if((!show_assembly &&  SourceCode.state.rendered_assembly === false) ||
                 (show_assembly && SourceCode.state.rendered_assembly === true)
                 ){
+                SourceCode.highlight_paused_line_and_scrollto_line(fullname, scroll_to_line, addr)
                 SourceCode.render_breakpoints()
-                SourceCode.highlight_line_in_rendered_source_code(current_line, addr)
+                SourceCode.make_current_line_visible()
                 return
             }else{
                 // user wants to see assembly but it hasn't been rendered yet,
@@ -740,10 +761,9 @@ const SourceCode = {
 
         for (let line of source_code){
             let has_breakpoint = bkpt_lines.indexOf(line_num) !== -1
-            let breakpoint_class = has_breakpoint ? 'breakpoint' : ''
             let tags = ''
-            if (line_num === current_line){
-              tags = `id=current_line 'class=flash'`
+            if (line_num === scroll_to_line){
+              tags = `id=scroll_to_line`
             }
             line = line.replace("<", "&lt;")
             line = line.replace(">", "&gt;")
@@ -752,7 +772,7 @@ const SourceCode = {
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border ${breakpoint_class}' data-line=${line_num} data-has_breakpoint=${has_breakpoint}  style='min-width: 50%;'>
+                    <td valign="top" class='line_num right_border' data-line=${line_num} data-has_breakpoint=${has_breakpoint}  style='min-width: 50%;'>
                         <div>${line_num}</div>
                     </td>
 
@@ -766,12 +786,11 @@ const SourceCode = {
             line_num++;
         }
         SourceCode.el_title.text(fullname)
-        SourceCode.el_jump_to_line_input.val(current_line)
         SourceCode.el.html(tbody.join(''))
 
         // update state since rendering is complete
         SourceCode.state.rendered_source_file_fullname = fullname
-        SourceCode.state.rendered_source_file_line = current_line
+        SourceCode.state.rendered_source_file_line = scroll_to_line
         SourceCode.state.rendered_source_file_addr = addr
         if(show_assembly){
             SourceCode.state.rendered_assembly = true
@@ -779,10 +798,12 @@ const SourceCode = {
             SourceCode.state.rendered_assembly = false
         }
 
+        SourceCode.highlight_paused_line_and_scrollto_line(fullname, scroll_to_line, addr)
+        SourceCode.render_breakpoints()
         SourceCode.make_current_line_visible()
     },
     make_current_line_visible: function(){
-        SourceCode.scroll_to_jq_selector($("#current_line"))
+        SourceCode.scroll_to_jq_selector($("#scroll_to_line"))
     },
     // re-render breakpoints on whichever file is loaded
     render_breakpoints: function(){
@@ -809,20 +830,20 @@ const SourceCode = {
     },
     re_render: function(){
         let fullname = SourceCode.state.rendered_source_file_fullname,
-            current_line = SourceCode.state.rendered_source_file_line || 0,
+            scroll_to_line = SourceCode.state.rendered_source_file_line || 0,
             addr = SourceCode.state.rendered_source_file_addr || 0
 
         // render file and pass current state
-        SourceCode.fetch_and_render_file(fullname, current_line, addr)
+        SourceCode.fetch_and_render_file(fullname, scroll_to_line, addr)
     },
     // fetch file and render it, or used cached file if we have it
-    fetch_and_render_file: function(fullname, current_line=1, addr=''){
+    fetch_and_render_file: function(fullname, scroll_to_line=1, addr=''){
         if (!_.isString(fullname)){
             return
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
             let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
-            SourceCode.render_cached_source_file(fullname, f.source_code, current_line, addr)
+            SourceCode.render_cached_source_file(fullname, f.source_code, scroll_to_line, addr)
 
         } else {
             $.ajax({
@@ -832,7 +853,7 @@ const SourceCode = {
                 data: {path: fullname},
                 success: function(response){
                     SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
-                    SourceCode.render_cached_source_file(fullname, response.source_code, current_line, addr)
+                    SourceCode.render_cached_source_file(fullname, response.source_code, scroll_to_line, addr)
                 },
                 error: function(response){
                     StatusBar.render_ajax_error_msg(response)
@@ -960,19 +981,40 @@ const SourceCode = {
      * Remove the id and highlighting in the DOM, and set the
      * variable to null
      */
-    remove_current_line_highlights: function(){
-        $('#current_line').removeAttr('id')
-        $('.flash').removeClass('flash')
-        $('.current_assembly_command').removeClass('current_assembly_command')
+    remove_line_highlights: function(){
+        $('#scroll_to_line').removeAttr('id')
+        document.querySelectorAll('.flash').forEach(el => el.classList.remove('flash'))
+        document.querySelectorAll('.current_assembly_command').forEach(el => el.classList.remove('current_assembly_command'))
+        document.querySelectorAll('.paused_on_line').forEach(el => el.classList.remove('paused_on_line'))
     },
-    highlight_line_in_rendered_source_code: function(line_num, addr){
-        SourceCode.remove_current_line_highlights()
+    highlight_paused_line_and_scrollto_line: function(fullname, line_num, addr){
+        SourceCode.remove_line_highlights()
 
-        if(line_num){
+        let inferior_program_is_paused_in_this_file = _.isObject(globals.state.paused_on_frame) && globals.state.paused_on_frame.fullname === fullname
+        , paused_on_current_line = (inferior_program_is_paused_in_this_file && parseInt(globals.state.paused_on_frame.line) === parseInt(line_num))
+
+        // make background blue if gdb is paused on a line in this file
+        if(inferior_program_is_paused_in_this_file){
+            let jq_line = $(`.line_of_code[data-line=${globals.state.paused_on_frame.line}]`)
+            if(jq_line.length === 1){
+                jq_line.offset()  // needed so DOM registers change and re-draws animation
+                jq_line.addClass('paused_on_line')
+
+                //
+                if(paused_on_current_line){
+                    jq_line.attr('id', 'scroll_to_line')
+                }
+            }
+        }
+
+        // make this line flash ONLY if it's NOT the line we're paused on
+        if(line_num && !paused_on_current_line){
             let jq_line = $(`.line_of_code[data-line=${line_num}]`)
             if(jq_line.length === 1){
+                // https://css-tricks.com/restart-css-animation/
+                jq_line.offset()  // needed so DOM registers change and re-draws animation
                 jq_line.addClass('flash')
-                jq_line.attr('id', 'current_line')
+                jq_line.attr('id', 'scroll_to_line')
                 SourceCode.make_current_line_visible()
                 SourceCode.el_jump_to_line_input.val(line_num)
             }
@@ -1019,11 +1061,7 @@ const SourceCode = {
                 _line = 1
             }
 
-            // find existing element in the DOM
-            let jq_selector = $(`.line_num[data-line=${_line}]`)
-            if(jq_selector.length === 1){
-                SourceCode.scroll_to_jq_selector(jq_selector)
-            }
+            SourceCode.highlight_paused_line_and_scrollto_line(SourceCode.state.rendered_source_file_fullname, _line, SourceCode.state.rendered_source_file_addr)
         }
     },
     get_attrs_to_view_file: function(fullname, line=0, addr=''){
@@ -1342,6 +1380,8 @@ const Memory = {
     DEFAULT_ADDRESS_DELTA_BYTES: 31,
     init: function(){
         $("body").on("click", ".memory_address", Memory.click_memory_address)
+        $("body").on("click", "#read_preceding_memory", Memory.click_read_preceding_memory)
+        $("body").on("click", "#read_more_memory", Memory.click_read_more_memory)
         Memory.el_start.keydown(Memory.keydown_in_memory_inputs)
         Memory.el_end.keydown(Memory.keydown_in_memory_inputs)
         Memory.el_bytes_per_line.keydown(Memory.keydown_in_memory_inputs)
@@ -1409,7 +1449,27 @@ const Memory = {
         Memory.clear_cache()
         GdbApi.run_gdb_command(cmds)
     },
-    render: function(){
+    click_read_preceding_memory: function(){
+        // update starting value, then re-fetch
+        let NUM_ROWS = 3
+        let start_addr = parseInt(_.trim(Memory.el_start.val()), 16)
+        , byte_offset = Memory.el_bytes_per_line.val() * NUM_ROWS
+        Memory.el_start.val('0x' + (start_addr - byte_offset).toString(16))
+        Memory.fetch_memory_from_inputs()
+    },
+    click_read_more_memory: function(){
+        // update ending value, then re-fetch
+        let NUM_ROWS = 3
+        let end_addr = parseInt(_.trim(Memory.el_end.val()), 16)
+        , byte_offset = Memory.el_bytes_per_line.val() * NUM_ROWS
+        Memory.el_end.val('0x' + (end_addr + byte_offset).toString(16))
+        Memory.fetch_memory_from_inputs()
+    },
+    /**
+     * Internal render function. Not called directly to avoid wasting DOM cycles
+     * when memory is being received from gdb at a high rate.
+     */
+    _render: function(){
         if(_.keys(Memory.state.cache).length === 0){
             Memory.el.html('<span class=placeholder>no memory requested</span>')
             return
@@ -1426,8 +1486,7 @@ const Memory = {
         $('#memory_bytes_per_line').val(bytes_per_line)
 
         if(Object.keys(Memory.state.cache).length > 0){
-            let first_addr_minus_n = '0x' + (parseInt(Object.keys(Memory.state.cache)[0], 16) - bytes_per_line).toString(16)
-            data.push([Memory.make_addr_into_link(first_addr_minus_n, '<span style="font-style:italic; font-size: 0.8em;">read preceding</span>'),
+            data.push(['<span id=read_preceding_memory class=pointer style="font-style:italic; font-size: 0.8em;">more</span>',
                         '',
                         '']
             )
@@ -1468,6 +1527,13 @@ const Memory = {
 
         }
 
+        if(Object.keys(Memory.state.cache).length > 0){
+            data.push(['<span id=read_more_memory class=pointer style="font-style:italic; font-size: 0.8em;">more</span>',
+                        '',
+                        '']
+            )
+        }
+
         let table = Util.get_table(['address', 'hex' , 'char'], data)
         Memory.el.html(table)
     },
@@ -1504,6 +1570,11 @@ const Memory = {
         Memory.render()
     }
 }
+/**
+ * Memory data comes in fast byte by byte, so prevent rendering while more
+ * memory is still being received
+ */
+Memory.render = _.debounce(Memory._render)
 
 /**
  * The Expressions component allows the user to inspect expressions
@@ -2048,9 +2119,6 @@ const VisibilityToggler = {
      * the checkboxes
      */
     click_visibility_toggler: function(e){
-        if(e.target.nodeName === 'BUTTON' || $(e.target).hasClass('glyphicon')){
-            return
-        }
         // toggle visiblity of target
         $(e.currentTarget.dataset.visibility_target_selector_string).toggleClass('hidden')
 
@@ -2248,7 +2316,7 @@ const process_gdb_response = function(response_array){
                 if (r.payload['new-thread-id']){
                     Threads.set_thread_id(r.payload['new-thread-id'])
                 }
-                window.dispatchEvent(new Event('event_inferior_program_paused'))
+                window.dispatchEvent(new CustomEvent('event_inferior_program_paused', {'detail': r.payload.frame}))
 
             }else if (r.payload.reason === 'signal-received'){
                 // TODO not sure what to do here, but the status bar already renders the
