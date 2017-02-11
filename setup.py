@@ -1,15 +1,10 @@
 import sys
-import os
 from setuptools import find_packages, setup, Command
 
 
 EXCLUDE_FROM_PACKAGES = []
 
 readme = open('README.rst', 'r').read()
-
-VERSION_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'gdbgui', 'VERSION.txt')
-version = open(VERSION_PATH).read().strip()
-
 
 class TestCommand (Command):
     description = 'test task'
@@ -30,7 +25,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version=version,
+    version='0.7.3.8',
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
