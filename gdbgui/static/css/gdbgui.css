@@ -124,12 +124,17 @@ div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .delete_gdb_var
   cursor: pointer;
 }
 /* the line number has its style changed if it has a breakpoint */
-.line_num.breakpoint{
-  background: #33cdff !important;
+.line_num.breakpoint, .line_num.disabled_breakpoint{
   color: black;
   border-style: solid;
   border-color: #000000;
   border-width: 1px;
+}
+.line_num.breakpoint{
+  background: #33cdff !important;
+}
+.line_num.disabled_breakpoint{
+  background: #ffd6d7 !important;
 }
 td.assembly{
   padding-bottom: 6px;
