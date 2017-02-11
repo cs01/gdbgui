@@ -9,7 +9,7 @@
  * the extent that it's possible).
  */
 
-(function ($, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args) {
+window.globals = (function ($, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args) {
 "use strict";
 
 /**
@@ -26,6 +26,7 @@ let globals = {
         window.addEventListener('event_inferior_program_exited', globals.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', globals.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', globals.event_inferior_program_paused)
+        window.addEventListener('event_select_frame', globals.event_select_frame)
 
         $(window).keydown(function(e){
            if((e.keyCode === ENTER_BUTTON_NUM)) {
@@ -44,24 +45,113 @@ let globals = {
         // undefined
         inferior_program: undefined,
         paused_on_frame: undefined,
+        selected_frame_num: 0,
+        current_thread_id: undefined,
+        stack: [],
+        locals: [],
+        threads: [],
+
+        rendered_source_file_fullname: null,
+        rendered_source_file_line: null,
+        rendered_source_file_addr: null,
+        rendered_assembly: false,
+        cached_source_files: [],  // list with keys fullname, source_code
+
+        gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+        inferior_binary_path: null,
+        inferior_binary_path_last_modified_unix_sec: null,
+        warning_shown_for_old_binary: false,
+
+        register_names: [],
+        previous_register_values: {},
+        current_register_values: {},
+
+        memory_cache: {},
+
+        breakpoints: [],
+    },
+    clear_program_state: function(){
+        globals.state.paused_on_frame = undefined
+        globals.state.selected_frame_num = 0
+        globals.state.current_thread_id = undefined
+        globals.state.stack = []
+        globals.state.locals = []
+        globals.dispatch_state_change()
     },
     event_inferior_program_exited: function(){
-        globals.state.inferior_program = 'exited'
-        globals.state.paused_on_frame = undefined
+        globals.update_state('inferior_program', 'exited')
+        globals.clear_program_state()
     },
     event_inferior_program_running: function(){
-        globals.state.inferior_program = 'running'
-        globals.state.paused_on_frame = undefined
+        globals.update_state('inferior_program', 'running')
+        globals.clear_program_state()
     },
     event_inferior_program_paused: function(e){
-        // the 'detail' field of the event can be customized on a CustomEvent. It's a weird convention,
-        // but it's documented here as part of the JavaScript standard
-        // https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Creating_and_triggering_events
         let frame = e.detail
-        globals.state.inferior_program = 'paused'
-        globals.state.paused_on_frame = frame
+        globals.update_state('inferior_program', 'paused')
+        globals.update_state('paused_on_frame', frame)
     },
+    event_select_frame: function(e){
+        let selected_frame_num = e.detail
+        globals.update_state('selected_frame_num', selected_frame_num)
+    },
+    update_stack: function(stack){
+        globals.update_state('stack', stack)
+        globals.update_state('paused_on_frame', stack[globals.state.selected_frame_num || 0])
+    },
+    set_locals: function(locals){
+        globals.update_state('locals', locals)
+    },
+    update_state: function(key, value){
+        if(key in globals.state){
+            // update the state
+            globals.state[key] = value
+            // tell listeners that the state changed
+            globals.dispatch_state_change()
+        }else{
+            console.error(`tried to update state with key that does not exist: ${key}`)
+        }
+    },
+    add_source_file_to_cache: function(obj){
+        globals.state.cached_source_files.push(obj)
+        globals.dispatch_state_change()
+    },
+    save_breakpoints: function(payload){
+        globals.state.breakpoints = []
+        if(payload && payload.BreakpointTable && payload.BreakpointTable.body){
+            for (let breakpoint of payload.BreakpointTable.body){
+                globals.save_breakpoint(breakpoint)
+            }
+        }
+    },
+    save_breakpoint: function(breakpoint){
+        let bkpt = $.extend(true, {}, breakpoint)
+        // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
+        let links = []
+        if ('fullname' in breakpoint){
+             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, ''))
+        }
+        links.push(Breakpoint.get_delete_breakpoint_link(breakpoint.number))
+        bkpt[' '] = links.join(' | ')
+
+        // turn address into link
+        if (bkpt['addr']){
+            bkpt['addr'] =  Memory.make_addr_into_link(bkpt['addr'])
+        }
+
+        // add the breakpoint if it's not stored already
+        if(globals.state.breakpoints.indexOf(bkpt) === -1){
+            globals.state.breakpoints.push(bkpt)
+            globals.dispatch_state_change()
+        }
+    }
+
+
 }
+/**
+ * Debounce the event emission for smoother rendering
+ */
+globals.dispatch_state_change = _.debounce(() => window.dispatchEvent(new Event('event_global_state_changed')), 100)
 
 
 /**
@@ -150,15 +240,10 @@ const GdbApi = {
         window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
         window.addEventListener('event_breakpoint_created', GdbApi.event_breakpoint_created)
-    },
-    state: {
-        gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
-        inferior_binary_path: null,
-        inferior_binary_path_last_modified_unix_sec: null,
-        warning_shown_for_old_binary: false
+        window.addEventListener('event_select_frame', GdbApi.event_select_frame)
     },
     click_run_button: function(e){
-        if(GdbApi.state.inferior_binary_path !== null){
+        if(globals.state.inferior_binary_path !== null){
             window.dispatchEvent(new Event('event_inferior_program_running'))
             GdbApi.run_gdb_command('-exec-run')
         }else{
@@ -220,7 +305,7 @@ const GdbApi = {
         }
     },
     click_send_interrupt_button: function(e){
-        if(GdbApi.state.inferior_binary_path !== null){
+        if(globals.state.inferior_binary_path !== null){
             window.dispatchEvent(new Event('event_inferior_program_running'))
             GdbApi.run_gdb_command('-exec-interrupt')
         }else{
@@ -251,9 +336,9 @@ const GdbApi = {
         }
     },
     event_inferior_program_exited: function(){
-        GdbApi.state.inferior_binary_path = null
-        GdbApi.state.inferior_binary_path_last_modified_unix_sec = 0
-        GdbApi.state.warning_shown_for_old_binary = false
+        globals.state.inferior_binary_path = null
+        globals.state.inferior_binary_path_last_modified_unix_sec = 0
+        globals.state.warning_shown_for_old_binary = false
     },
     event_inferior_program_running: function(){
         // do nothing
@@ -263,6 +348,11 @@ const GdbApi = {
     },
     event_breakpoint_created: function(){
         GdbApi.refresh_breakpoints()
+    },
+    event_select_frame: function(e){
+        let framenum = e.detail
+        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
+        GdbApi.refresh_state_for_gdb_pause()
     },
     /**
      * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -300,10 +390,6 @@ const GdbApi = {
     },
     refresh_state_for_gdb_pause: function(){
         let cmds = [
-            // List the frames currently on the stack.
-            '-stack-list-frames',
-            // Get info on selected frame
-            '-stack-info-frame',
             // get info on current thread
             '-thread-info',
             // update all user-defined variables in gdb
@@ -323,6 +409,12 @@ const GdbApi = {
         // re-fetch memory over desired range as specified by DOM inputs
         cmds = cmds.concat(Memory.get_gdb_commands_from_inputs())
 
+        // List the frames currently on the stack.
+        // IMPORTANT: the event "event_global_state_changed" is sent
+        // when the stack is received, so this must be the last command
+        // sent, so that all other commands were already received.
+        cmds.push('-stack-list-frames')
+
         // and finally run the commands
         GdbApi.run_gdb_command(cmds)
     },
@@ -337,12 +429,12 @@ const GdbApi = {
         })
     },
     _recieve_last_modified_unix_sec(data){
-        if(data.path === GdbApi.state.inferior_binary_path){
-            GdbApi.state.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
+        if(data.path === globals.state.inferior_binary_path){
+            globals.state.inferior_binary_path_last_modified_unix_sec = data.last_modified_unix_sec
         }
     },
     _error_getting_last_modified_unix_sec(data){
-        GdbApi.state.inferior_binary_path = null
+        globals.state.inferior_binary_path = null
     }
 }
 
@@ -498,33 +590,37 @@ const GdbMiOutput = {
  */
 const Breakpoint = {
     el: $('#breakpoints'),
-    breakpoints: [],
     init: function(){
         $("body").on("click", ".toggle_breakpoint_enable", Breakpoint.toggle_breakpoint_enable)
-        Breakpoint.render_breakpoint_table()
+        Breakpoint.render()
+        window.addEventListener('event_global_state_changed', Breakpoint.event_global_state_changed)
     },
     toggle_breakpoint_enable: function(e){
         if($(e.currentTarget).prop('checked')){
-            GdbApi.run_gdb_command(`-break-enable ${e.currentTarget.dataset.breakpoint_num}`)
+            GdbApi.run_gdb_command([`-break-enable ${e.currentTarget.dataset.breakpoint_num}`, '-break-list'])
         }else{
-            GdbApi.run_gdb_command(`-break-disable ${e.currentTarget.dataset.breakpoint_num}`)
+            GdbApi.run_gdb_command([`-break-disable ${e.currentTarget.dataset.breakpoint_num}`, '-break-list'])
         }
     },
-    render_breakpoint_table: function(){
+    event_global_state_changed: function(){
+        Breakpoint.render()
+    },
+    render: function(){
         let bkpt_html = ''
-        for (let b of Breakpoint.breakpoints){
+        for (let b of globals.state.breakpoints){
             let checked = b.enabled === 'y' ? 'checked' : ''
+            , source_line = '(file not found)'
 
-            let source_line
-            try{
-                source_line = `
-                <span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>
-                    ${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}
-                </span>
-                <br>`
-            }catch(err){
-                source_line = ''
+            if(!SourceCode.is_cached(b.fullname)){
+                SourceCode.fetch_file(b.fullname)
+                return
             }
+
+            source_line = `
+            <span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>
+                ${SourceCode.get_source_file_obj_from_cache(b.fullname).source_code[b.line - 1]}
+            </span>
+            <br>`
 
 
             bkpt_html += `
@@ -551,52 +647,31 @@ const Breakpoint = {
         }
         Breakpoint.el.html(bkpt_html)
     },
-    remove_stored_breakpoints: function(){
-        Breakpoint.breakpoints = []
-    },
     remove_breakpoint_if_present: function(fullname, line){
-        for (let b of Breakpoint.breakpoints){
+        for (let b of globals.state.breakpoints){
             if (b.fullname === fullname && b.line === line){
                 let cmd = [`-break-delete ${b.number}`, '-break-list']
                 GdbApi.run_gdb_command(cmd)
             }
         }
     },
-    store_breakpoint: function(breakpoint){
-        let bkpt = $.extend(true, {}, breakpoint)
-        // turn fullname into a link with classes that allows us to click and view the file/context of the breakpoint
-        let links = []
-        if ('fullname' in breakpoint){
-             links.push(SourceCode.get_link_to_view_file(breakpoint.fullname, breakpoint.line, ''))
+    has_breakpoint_at_main: function(){
+        for(let b of globals.state.breakpoints){
+            if(b.func === 'main'){
+                return true
+            }
         }
-        links.push(Breakpoint.get_delete_breakpoint_link(breakpoint.number))
-        bkpt[' '] = links.join(' | ')
-
-        // turn address into link
-        if (bkpt['addr']){
-            bkpt['addr'] =  Memory.make_addr_into_link(bkpt['addr'])
-        }
-
-        // add the breakpoint if it's not stored already
-        if(Breakpoint.breakpoints.indexOf(bkpt) === -1){
-            Breakpoint.breakpoints.push(bkpt)
-        }
+        return false
     },
     get_delete_breakpoint_link: function(breakpoint_number, text='remove'){
         return `<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint_number}" data-cmd1="-break-list">${text}</a>`
     },
     get_breakpoint_lines_for_file: function(fullname){
-        return Breakpoint.breakpoints.filter(b => b.fullname === fullname).map(b => parseInt(b.line))
+        return globals.state.breakpoints.filter(b => b.fullname === fullname && b.enabled === 'y').map(b => parseInt(b.line))
     },
-    assign_breakpoints_from_mi_breakpoint_table: function(payload){
-        Breakpoint.remove_stored_breakpoints()
-        if(payload && payload.BreakpointTable && payload.BreakpointTable.body){
-            for (let bkpt of payload.BreakpointTable.body){
-                Breakpoint.store_breakpoint(bkpt)
-            }
-            Breakpoint.render_breakpoint_table()
-        }
-    }
+    get_disabled_breakpoint_lines_for_file: function(fullname){
+        return globals.state.breakpoints.filter(b => b.fullname === fullname && b.enabled !== 'y').map(b => parseInt(b.line))
+    },
 }
 
 /**
@@ -607,12 +682,6 @@ const SourceCode = {
     el_code_container: $('#code_container'),
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
-    state: {'rendered_source_file_fullname': null,
-            'rendered_source_file_line': null,
-            'rendered_source_file_addr': null,
-            'rendered_assembly': false,
-            'cached_source_files': [],  // list with keys fullname, source_code
-    },
     init: function(){
         $("body").on("click", ".source_code_row td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
@@ -622,6 +691,7 @@ const SourceCode = {
 
         window.addEventListener('event_inferior_program_exited', SourceCode.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', SourceCode.event_inferior_program_running)
+        window.addEventListener('event_global_state_changed', SourceCode.event_global_state_changed)
     },
     event_inferior_program_exited: function(e){
         SourceCode.remove_line_highlights()
@@ -630,24 +700,26 @@ const SourceCode = {
     event_inferior_program_running: function(e){
         SourceCode.remove_line_highlights()
     },
+    event_global_state_changed: function(){
+        SourceCode.render()
+    },
     click_gutter: function(e){
         let line = e.currentTarget.dataset.line
-        let has_breakpoint = (e.currentTarget.dataset.has_breakpoint === 'true')
-        if(has_breakpoint){
+        if(e.currentTarget.classList.contains('breakpoint') || e.currentTarget.classList.contains('breakpoint_disabled')){
             // clicked gutter with a breakpoint, remove it
-            Breakpoint.remove_breakpoint_if_present(SourceCode.state.rendered_source_file_fullname, line)
+            Breakpoint.remove_breakpoint_if_present(globals.state.rendered_source_file_fullname, line)
 
         }else{
             // clicked with no breakpoint, add it, and list all breakpoints to make sure breakpoint table is up to date
-            let cmd = [`-break-insert ${SourceCode.state.rendered_source_file_fullname}:${line}`, '-break-list']
+            let cmd = [`-break-insert ${globals.state.rendered_source_file_fullname}:${line}`, '-break-list']
             GdbApi.run_gdb_command(cmd)
         }
     },
     is_cached: function(fullname){
-        return SourceCode.state.cached_source_files.some(f => f.fullname === fullname)
+        return globals.state.cached_source_files.some(f => f.fullname === fullname)
     },
     get_cached_assembly_for_file: function(fullname){
-        for(let file of SourceCode.state.cached_source_files){
+        for(let file of globals.state.cached_source_files){
             if(file.fullname === fullname){
                 return file.assembly
             }
@@ -656,10 +728,10 @@ const SourceCode = {
     },
     refresh_cached_source_files: function(e){
         SourceCode.clear_cached_source_files()
-        SourceCode.re_render()
+        SourceCode.render()
     },
     clear_cached_source_files: function(){
-        SourceCode.state.cached_source_files = []
+        globals.state.cached_source_files = []
     },
     /**
      * Return html that can be displayed alongside source code
@@ -699,15 +771,15 @@ const SourceCode = {
      */
     show_modal_if_file_modified_after_binary(fullname){
         let obj = SourceCode.get_source_file_obj_from_cache(fullname)
-        if(obj && GdbApi.state.inferior_binary_path){
-            if((obj.last_modified_unix_sec > GdbApi.state.inferior_binary_path_last_modified_unix_sec)
-                    && GdbApi.state.warning_shown_for_old_binary !== true){
+        if(obj && globals.state.inferior_binary_path){
+            if((obj.last_modified_unix_sec > globals.state.inferior_binary_path_last_modified_unix_sec)
+                    && globals.state.warning_shown_for_old_binary !== true){
                 Modal.render('Warning', `A source file was modified <bold>after</bold> the binary was compiled. Recompile the binary, then try again. Otherwise the source code may not
                     match the binary.
                     <p>
                     <p>Source file: ${fullname}, modified ${moment(obj.last_modified_unix_sec * 1000).format(DATE_FORMAT)}
-                    <p>Binary: ${GdbApi.state.inferior_binary_path}, modified ${moment(GdbApi.state.inferior_binary_path_last_modified_unix_sec * 1000).format(DATE_FORMAT)}`)
-                GdbApi.state.warning_shown_for_old_binary = true
+                    <p>Binary: ${globals.state.inferior_binary_path}, modified ${moment(globals.state.inferior_binary_path_last_modified_unix_sec * 1000).format(DATE_FORMAT)}`)
+                globals.state.warning_shown_for_old_binary = true
             }
         }
     },
@@ -716,9 +788,9 @@ const SourceCode = {
      */
     render_cached_source_file: function(fullname, source_code, scroll_to_line=1, addr=undefined){
         if(!SourceCode.is_cached(fullname)){
-            SourceCode.fetch_and_render_file(SourceCode.state.rendered_source_file_fullname,
-                SourceCode.state.rendered_source_file_line,
-                SourceCode.state.rendered_source_file_addr)
+            SourceCode.fetch_and_render_file(globals.state.rendered_source_file_fullname,
+                globals.state.rendered_source_file_line,
+                globals.state.rendered_source_file_addr)
             return
         }
 
@@ -731,9 +803,9 @@ const SourceCode = {
 
         // don't re-render all the lines if they are already rendered.
         // just update breakpoints and line highlighting
-        if(fullname === SourceCode.state.rendered_source_file_fullname){
-            if((!show_assembly &&  SourceCode.state.rendered_assembly === false) ||
-                (show_assembly && SourceCode.state.rendered_assembly === true)
+        if(fullname === globals.state.rendered_source_file_fullname){
+            if((!show_assembly &&  globals.state.rendered_assembly === false) ||
+                (show_assembly && globals.state.rendered_assembly === true)
                 ){
                 SourceCode.highlight_paused_line_and_scrollto_line(fullname, scroll_to_line, addr)
                 SourceCode.render_breakpoints()
@@ -756,11 +828,9 @@ const SourceCode = {
 
 
         let line_num = 1,
-            tbody = [],
-            bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(fullname)
+            tbody = []
 
         for (let line of source_code){
-            let has_breakpoint = bkpt_lines.indexOf(line_num) !== -1
             let tags = ''
             if (line_num === scroll_to_line){
               tags = `id=scroll_to_line`
@@ -772,11 +842,11 @@ const SourceCode = {
 
             tbody.push(`
                 <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border' data-line=${line_num} data-has_breakpoint=${has_breakpoint}  style='min-width: 50%;'>
+                    <td valign="top" class='line_num right_border' data-line=${line_num} style='width: 30px;'>
                         <div>${line_num}</div>
                     </td>
 
-                    <td valign="top" class='line_of_code' data-line=${line_num} style='max-width: 50%;'>
+                    <td valign="top" class='line_of_code' data-line=${line_num}>
                         <pre ${tags} style='white-space: pre-wrap;'>${line}</pre>
                     </td>
 
@@ -789,13 +859,13 @@ const SourceCode = {
         SourceCode.el.html(tbody.join(''))
 
         // update state since rendering is complete
-        SourceCode.state.rendered_source_file_fullname = fullname
-        SourceCode.state.rendered_source_file_line = scroll_to_line
-        SourceCode.state.rendered_source_file_addr = addr
+        globals.state.rendered_source_file_fullname = fullname
+        globals.state.rendered_source_file_line = scroll_to_line
+        globals.state.rendered_source_file_addr = addr
         if(show_assembly){
-            SourceCode.state.rendered_assembly = true
+            globals.state.rendered_assembly = true
         }else{
-            SourceCode.state.rendered_assembly = false
+            globals.state.rendered_assembly = false
         }
 
         SourceCode.highlight_paused_line_and_scrollto_line(fullname, scroll_to_line, addr)
@@ -807,42 +877,43 @@ const SourceCode = {
     },
     // re-render breakpoints on whichever file is loaded
     render_breakpoints: function(){
-        if(_.isString(SourceCode.state.rendered_source_file_fullname)){
-            let jq_old_bkpts = $('.line_num.breakpoint')
-            for(let old_bkpt of jq_old_bkpts){
-                // remove breakpoint class and set data.has_breakpoint to false
-                let jq_old_bkpt = $(old_bkpt)
-                jq_old_bkpt.removeClass('breakpoint')
-                old_bkpt.dataset.has_breakpoint = 'false'
-            }
+        document.querySelectorAll('.line_num.breakpoint').forEach(el => el.classList.remove('breakpoint'))
+        document.querySelectorAll('.line_num.disabled_breakpoint').forEach(el => el.classList.remove('disabled_breakpoint'))
+        if(_.isString(globals.state.rendered_source_file_fullname)){
 
-            let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(SourceCode.state.rendered_source_file_fullname)
-            , jq_lines = $('td.line_num')
+            let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(globals.state.rendered_source_file_fullname)
+            , disabled_breakpoint_lines = Breakpoint.get_disabled_breakpoint_lines_for_file(globals.state.rendered_source_file_fullname)
 
             for(let bkpt_line of bkpt_lines){
                 let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
                 if(js_line){
                     $(js_line).addClass('breakpoint')
-                    js_line.dataset.has_breakpoint = 'true'
+                }
+            }
+
+            for(let bkpt_line of disabled_breakpoint_lines){
+                let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
+                if(js_line){
+                    $(js_line).addClass('disabled_breakpoint')
                 }
             }
         }
     },
-    re_render: function(){
-        let fullname = SourceCode.state.rendered_source_file_fullname,
-            scroll_to_line = SourceCode.state.rendered_source_file_line || 0,
-            addr = SourceCode.state.rendered_source_file_addr || 0
-
-        // render file and pass current state
-        SourceCode.fetch_and_render_file(fullname, scroll_to_line, addr)
+    render: function(){
+        if(_.isObject(globals.state.paused_on_frame)){
+            SourceCode.fetch_and_render_file(globals.state.paused_on_frame.fullname,
+                globals.state.paused_on_frame.line,
+                globals.state.paused_on_frame.addr)
+        }
     },
     // fetch file and render it, or used cached file if we have it
     fetch_and_render_file: function(fullname, scroll_to_line=1, addr=''){
         if (!_.isString(fullname)){
             return
+
         } else if (SourceCode.is_cached(fullname)){
             // We have this cached locally, just use it!
-            let f = _.find(SourceCode.state.cached_source_files, i => i.fullname === fullname)
+            let f = _.find(globals.state.cached_source_files, i => i.fullname === fullname)
             SourceCode.render_cached_source_file(fullname, f.source_code, scroll_to_line, addr)
 
         } else {
@@ -864,12 +935,28 @@ const SourceCode = {
             })
         }
     },
+    fetch_file: function(fullname){
+            $.ajax({
+                url: "/read_file",
+                cache: false,
+                type: 'GET',
+                data: {path: fullname},
+                success: function(response){
+                    SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
+                },
+                error: function(response){
+                    StatusBar.render_ajax_error_msg(response)
+                    let source_code = [`failed to fetch file ${fullname}`]
+                    SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
+                }
+            })
+    },
     add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec){
-        SourceCode.state.cached_source_files.push({'fullname': fullname, 'source_code': source_code, 'assembly': assembly,
+        globals.add_source_file_to_cache({'fullname': fullname, 'source_code': source_code, 'assembly': assembly,
             'last_modified_unix_sec': last_modified_unix_sec})
     },
     get_source_file_obj_from_cache(fullname){
-        for(let sf of SourceCode.state.cached_source_files){
+        for(let sf of globals.state.cached_source_files){
             if (sf.fullname === fullname){
                 return sf
             }
@@ -895,9 +982,9 @@ const SourceCode = {
         }
     },
     get_fetch_disassembly_command: function(fullname=null){
-        let _fullname = fullname || SourceCode.state.rendered_source_file_fullname
+        let _fullname = fullname || globals.state.rendered_source_file_fullname
         if(_fullname){
-            let mi_response_format = SourceCode.get_dissasembly_format_num(GdbApi.state.gdb_version)
+            let mi_response_format = SourceCode.get_dissasembly_format_num(globals.state.gdb_version)
             return `-data-disassemble -f ${_fullname} -l 1 -- ${mi_response_format}`
         }else{
             // we don't have a file to fetch disassembly for
@@ -918,7 +1005,7 @@ const SourceCode = {
                 GdbApi.run_gdb_command(cmd)
             }
         }else{
-            SourceCode.re_render()
+            SourceCode.render()
         }
     },
     fetch_disassembly: function(fullname){
@@ -941,12 +1028,12 @@ const SourceCode = {
         }
 
         let fullname = mi_assembly[0].fullname
-        for (let cached_file of SourceCode.state.cached_source_files){
+        for (let cached_file of globals.state.cached_source_files){
             if(cached_file.fullname === fullname){
                 cached_file.assembly = assembly_to_save
-                if (SourceCode.state.rendered_source_file_fullname === fullname){
+                if (globals.state.rendered_source_file_fullname === fullname){
                     // re render with our new disassembly
-                    SourceCode.re_render()
+                    SourceCode.render()
                 }
                 break
             }
@@ -1049,7 +1136,7 @@ const SourceCode = {
         }
     },
     jump_to_line: function(line){
-        let obj = SourceCode.get_source_file_obj_from_cache(SourceCode.state.rendered_source_file_fullname)
+        let obj = SourceCode.get_source_file_obj_from_cache(globals.state.rendered_source_file_fullname)
         if(obj){
             // sanitize user line request to be within valid bounds:
             // 1 <= line <= num_lines
@@ -1061,7 +1148,7 @@ const SourceCode = {
                 _line = 1
             }
 
-            SourceCode.highlight_paused_line_and_scrollto_line(SourceCode.state.rendered_source_file_fullname, _line, SourceCode.state.rendered_source_file_addr)
+            SourceCode.highlight_paused_line_and_scrollto_line(globals.state.rendered_source_file_fullname, _line, globals.state.rendered_source_file_addr)
         }
     },
     get_attrs_to_view_file: function(fullname, line=0, addr=''){
@@ -1143,18 +1230,15 @@ const SourceFileAutocomplete = {
  */
 const Registers = {
     el: $('#registers'),
-    state: {
-        register_names: [],
-        register_values: {},
-    },
     init: function(){
         Registers.render_not_paused()
         window.addEventListener('event_inferior_program_exited', Registers.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', Registers.event_inferior_program_running)
+        window.addEventListener('event_global_state_changed', Registers.event_global_state_changed)
     },
     get_update_cmds: function(){
         let cmds = []
-        if(Registers.state.register_names.length === 0){
+        if(globals.state.register_names.length === 0){
             // only fetch register names when we don't have them
             // assumption is that the names don't change over time
             cmds.push('-data-list-register-names')
@@ -1166,26 +1250,47 @@ const Registers = {
     render_not_paused: function(){
         Registers.el.html('<span class=placeholder>not paused</span>')
     },
-    render_registers(register_values){
-        if(Registers.state.register_names.length === register_values.length){
+    cache_register_names: function(names){
+        // filter out non-empty names
+        globals.state.register_names = names.filter(name => name)
+    },
+    clear_cached_values: function(){
+        globals.state.previous_register_values = {}
+        globals.state.current_register_values = {}
+    },
+    event_inferior_program_exited: function(){
+        Registers.render_not_paused()
+        Registers.clear_cached_values()
+    },
+    event_inferior_program_running: function(){
+        Registers.render_not_paused()
+    },
+    event_global_state_changed: function(){
+        Registers.render()
+    },
+    render: function(){
+        if(globals.state.register_names.length === Object.keys(globals.state.current_register_values).length){
             let columns = ['name', 'value (hex)', 'value (decimal)']
             , register_table_data = []
             , hex_val_raw = ''
 
-            for (let i in Registers.state.register_names){
-                let name = Registers.state.register_names[i]
-                    , obj = _.find(register_values, v => v['number'] === i)
+            for (let i in globals.state.register_names){
+                let name = globals.state.register_names[i]
+                    , obj = _.find(globals.state.current_register_values, v => v['number'] === i)
                     , hex_val_raw = ''
                     , disp_hex_val = ''
                     , disp_dec_val = ''
 
                 if (obj){
-                    let old_hex_val = Registers.state.register_values[i]
-                        , changed = false
                     hex_val_raw = obj['value']
 
+                    let old_obj = _.find(globals.state.previous_register_values, v => v['number'] === i)
+                    , old_hex_val_raw
+                    , changed = false
+                    if(old_obj) {old_hex_val_raw = old_obj['value']}
+
                     // if the value changed, highlight it
-                    if(old_hex_val !== undefined && hex_val_raw !== old_hex_val){
+                    if(old_hex_val_raw !== undefined && hex_val_raw !== old_hex_val_raw){
                         changed = true
                     }
 
@@ -1203,27 +1308,13 @@ const Registers = {
                     }
 
                 }
-                // update cached value for this register
-                Registers.state.register_values[i] = hex_val_raw
 
                 register_table_data.push([name, disp_hex_val, disp_dec_val])
             }
 
             Registers.el.html(Util.get_table(columns, register_table_data, 'font-size: 0.9em;'))
-        } else {
-            console.error('Could not render registers. Length of names != length of values!')
         }
-    },
-    set_register_names: function(names){
-        // filter out non-empty names
-        Registers.state.register_names = names.filter(name => name)
-    },
-    event_inferior_program_exited: function(){
-        Registers.render_not_paused()
-    },
-    event_inferior_program_running: function(){
-        Registers.render_not_paused()
-    },
+    }
 }
 
 /**
@@ -1311,15 +1402,15 @@ const BinaryLoader = {
         }
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = ['-file-symbol-file', // clears gdb's symbol table info
-                '-break-delete',
+        cmds = [
+                '-file-symbol-file', // clears gdb's symbol table info
                 `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
                 `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read
                 '-file-list-exec-source-files', // List the source files for the current executable
                 ]
 
         // add breakpoint if we don't already have one
-        if(Settings.auto_add_breakpoint_to_main()){
+        if(Settings.auto_add_breakpoint_to_main() && !Breakpoint.has_breakpoint_at_main()){
             cmds.push('-break-insert main')
         }
         cmds.push('-break-list')
@@ -1327,7 +1418,7 @@ const BinaryLoader = {
         window.dispatchEvent(new Event('event_inferior_program_exited'))
         GdbApi.run_gdb_command(cmds)
 
-        GdbApi.state.inferior_binary_path = binary
+        globals.state.inferior_binary_path = binary
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
     },
     render: function(binary){
@@ -1390,9 +1481,7 @@ const Memory = {
         window.addEventListener('event_inferior_program_exited', Memory.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', Memory.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', Memory.event_inferior_program_paused)
-    },
-    state: {
-        cache: {},
+        window.addEventListener('event_global_state_changed', Memory.event_global_state_changed)
     },
     keydown_in_memory_inputs: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -1470,7 +1559,7 @@ const Memory = {
      * when memory is being received from gdb at a high rate.
      */
     _render: function(){
-        if(_.keys(Memory.state.cache).length === 0){
+        if(_.keys(globals.state.memory_cache).length === 0){
             Memory.el.html('<span class=placeholder>no memory requested</span>')
             return
         }
@@ -1485,14 +1574,14 @@ const Memory = {
         bytes_per_line = Math.max(bytes_per_line, 1)
         $('#memory_bytes_per_line').val(bytes_per_line)
 
-        if(Object.keys(Memory.state.cache).length > 0){
+        if(Object.keys(globals.state.memory_cache).length > 0){
             data.push(['<span id=read_preceding_memory class=pointer style="font-style:italic; font-size: 0.8em;">more</span>',
                         '',
                         '']
             )
         }
 
-        for (let hex_addr in Memory.state.cache){
+        for (let hex_addr in globals.state.memory_cache){
             if(!hex_addr_to_display){
                 hex_addr_to_display = hex_addr
             }
@@ -1510,7 +1599,7 @@ const Memory = {
                 char_vals_for_this_addr = []
 
             }
-            let hex_value = Memory.state.cache[hex_addr]
+            let hex_value = globals.state.memory_cache[hex_addr]
             hex_vals_for_this_addr.push(hex_value)
             let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, '.')
             char_vals_for_this_addr.push(`<span class='memory_char'>${char}</span>`)
@@ -1527,7 +1616,7 @@ const Memory = {
 
         }
 
-        if(Object.keys(Memory.state.cache).length > 0){
+        if(Object.keys(globals.state.memory_cache).length > 0){
             data.push(['<span id=read_more_memory class=pointer style="font-style:italic; font-size: 0.8em;">more</span>',
                         '',
                         '']
@@ -1553,11 +1642,11 @@ const Memory = {
         // i.e. 0x000123 turns to
         // 0x123
         let hex_str_truncated = '0x' + (parseInt(hex_str, 16)).toString(16)
-        Memory.state.cache[hex_str_truncated] = hex_val
+        globals.state.memory_cache[hex_str_truncated] = hex_val
         Memory.render()
     },
     clear_cache: function(){
-        Memory.state.cache = {}
+        globals.state.memory_cache = {}
     },
     event_inferior_program_exited: function(){
         Memory.clear_cache()
@@ -1567,6 +1656,9 @@ const Memory = {
         Memory.render_not_paused()
     },
     event_inferior_program_paused: function(){
+        Memory.render()
+    },
+    event_global_state_changed: function(){
         Memory.render()
     }
 }
@@ -1935,14 +2027,18 @@ const Locals = {
         window.addEventListener('event_inferior_program_exited', Locals.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', Locals.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', Locals.event_inferior_program_paused)
+        window.addEventListener('event_global_state_changed', Locals.event_global_state_changed)
         Locals.clear()
     },
-    render: function(locals){
-        if(locals.length === 0){
-            Locals.el.html('<span class=placeholder>not variables in this frame</span>')
+    event_global_state_changed: function(){
+        Locals.render()
+    },
+    render: function(){
+        if(globals.state.locals.length === 0){
+            Locals.el.html('<span class=placeholder>no variables in this frame</span>')
             return
         }
-        let html = locals.map(local => {
+        let html = globals.state.locals.map(local => {
             let value = ''
             if('value' in local){
                 // turn hex addresses into links to view memory
@@ -1981,38 +2077,14 @@ const Locals = {
  */
 const Threads = {
     el: $('#threads'),
-    state: {
-        'threads': [],
-        'current_thread_id': undefined,
-        'stack': []
-    },
     init: function(){
         $("body").on("click", ".select_thread_id", Threads.click_select_thread_id)
         $("body").on("click", ".select_frame", Threads.click_select_frame)
         Threads.render()
 
-        window.addEventListener('event_inferior_program_exited', Threads.event_inferior_program_exited)
-        window.addEventListener('event_inferior_program_running', Threads.event_inferior_program_running)
-        window.addEventListener('event_inferior_program_paused', Threads.event_inferior_program_paused)
+        window.addEventListener('event_global_state_changed', Threads.event_global_state_changed)
     },
-    set_stack: function(stack){
-        Threads.state.stack =  $.extend(true, [], stack)
-    },
-    event_inferior_program_exited: function(){
-        Threads.clear()
-        Threads.render()
-    },
-    event_inferior_program_running: function(){
-        Threads.clear()
-        Threads.render()
-    },
-    event_inferior_program_paused: function(){
-        Threads.render()
-    },
-    clear: function(){
-        Threads.state.threads = []
-        Threads.state.current_thread_id = undefined
-        Threads.state.stack = []
+    event_global_state_changed: function(){
         Threads.render()
     },
     click_select_thread_id: function(e){
@@ -2029,20 +2101,19 @@ const Threads = {
         Threads.select_frame(e.currentTarget.dataset.framenum)
     },
     select_frame: function(framenum){
-        GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
-        GdbApi.refresh_state_for_gdb_pause()
+        window.dispatchEvent(new CustomEvent('event_select_frame', {'detail': parseInt(framenum)}))
     },
     render: function(){
-        if(Threads.state.current_thread_id && Threads.state.threads.length > 0){
+        if(globals.state.current_thread_id && globals.state.threads.length > 0){
             let body = []
-            for(let t of Threads.state.threads){
-                let current_thread_being_rendered = (parseInt(t.id) === Threads.state.current_thread_id)
-                , cls = current_thread_being_rendered ? 'bold' : ''
+            for(let t of globals.state.threads){
+                let is_current_thread_being_rendered = (parseInt(t.id) === globals.state.current_thread_id)
+                , cls = is_current_thread_being_rendered ? 'bold' : ''
 
                 let thread_text = `<span class=${cls}>thread id ${t.id}, core ${t.core} (${t.state})</span>`
 
                 // add thread name
-                if(current_thread_being_rendered){
+                if(is_current_thread_being_rendered){
                     body.push(thread_text)
                 }else{
                     // add class to allow user to click and select this thread
@@ -2054,17 +2125,17 @@ const Threads = {
                         `)
                 }
 
-                if(current_thread_being_rendered){
+                if(is_current_thread_being_rendered){
                     // add stack if current thread
-                    for (let s of Threads.state.stack){
+                    for (let s of globals.state.stack){
                         if(s.addr === t.frame.addr){
-                            body.push(Threads.get_stack_table(Threads.state.stack, t.frame.addr, current_thread_being_rendered))
+                            body.push(Threads.get_stack_table(globals.state.stack, t.frame.addr, is_current_thread_being_rendered, t.id))
                             break
                         }
                     }
                 }else{
                     // add frame if not current thread
-                    body.push(Threads.get_stack_table([t.frame], '', current_thread_being_rendered))
+                    body.push(Threads.get_stack_table([t.frame], '', is_current_thread_being_rendered, t.id))
                 }
             }
 
@@ -2073,34 +2144,37 @@ const Threads = {
             Threads.el.html('<span class=placeholder>not paused</span>')
         }
     },
-    get_stack_table: function(stack, cur_addr, current_thread_being_rendered){
+    get_stack_table: function(stack, cur_addr, is_current_thread_being_rendered, thread_id){
         let _stack = $.extend(true, [], stack)
             , table_data = []
 
+        var frame_num = 0
         for (let s of _stack){
 
             // let arrow = (cur_addr === s.addr) ? `<span class='glyphicon glyphicon-arrow-right' style='margin-right: 4px;'></span>` : ''
-            let bold = (cur_addr === s.addr) ? 'bold' : ''
+            let bold = (globals.state.selected_frame_num === frame_num && is_current_thread_being_rendered) ? 'bold' : ''
             let fullname = 'fullname' in s ? s.fullname : '?'
                 , line = 'line' in s ? s.line : '?'
-                , select_frame = current_thread_being_rendered ? 'select_frame pointer' : ''
+                , attrs = is_current_thread_being_rendered ? `class="select_frame pointer ${bold}"` : `class="select_thread_id pointer ${bold}" data-thread_id=${thread_id}`
                 , function_name =`
-                <span class='${select_frame} ${bold}' data-framenum=${s.level}>
+                <span ${attrs} data-framenum=${s.level}>
                     ${s.func}
                 </span>`
 
             table_data.push([function_name, `${s.file}:${s.line}`])
+            frame_num++
         }
-
+        if(_stack.length === 0){
+            table_data.push(['unknown', 'unknown'])
+        }
         return Util.get_table([], table_data, 'font-size: 0.9em;')
     },
     set_threads: function(threads){
-        Threads.state.threads = $.extend(true, [], threads)
+        globals.state.threads = $.extend(true, [], threads)
         Threads.render()
     },
     set_thread_id: function(id){
-        Threads.state.current_thread_id = parseInt(id)
-        Threads.render()
+        globals.state.current_thread_id = parseInt(id)
     },
 }
 
@@ -2221,27 +2295,29 @@ const process_gdb_response = function(response_array){
             // This is special GDB Machine Interface structured data that we
             // can render in the frontend
             if ('bkpt' in r.payload){
-                // breakpoint was created
-                Breakpoint.store_breakpoint(r.payload.bkpt)
+                globals.save_breakpoint(r.payload.bkpt)
                 SourceCode.fetch_and_render_file(r.payload.bkpt.fullname, r.payload.bkpt.line, undefined)
-                window.dispatchEvent(new Event('event_breakpoint_created'))
+                // re-fetch all breakpoints
+                GdbApi.refresh_breakpoints()
             }
             if ('BreakpointTable' in r.payload){
-                Breakpoint.assign_breakpoints_from_mi_breakpoint_table(r.payload)
-                SourceCode.render_breakpoints()
+                globals.save_breakpoints(r.payload)
             }
             if ('stack' in r.payload) {
-                Threads.set_stack(r.payload.stack)
+                globals.update_stack(r.payload.stack)
             }
             if('threads' in r.payload){
-                Threads.set_threads(r.payload.threads)
-                Threads.set_thread_id((r.payload['current-thread-id']))
+                globals.update_state('threads', r.payload.threads)
+                globals.update_state('current_thread_id', parseInt(r.payload['current-thread-id']))
             }
             if ('register-names' in r.payload) {
-                Registers.set_register_names(r.payload['register-names'])
+                let names = r.payload['register-names']
+                // filter out empty names
+                globals.update_state('register_names', names.filter(name => name !== ''))
             }
             if ('register-values' in r.payload) {
-                Registers.render_registers(r.payload['register-values'])
+                globals.update_state('previous_register_values', globals.state.current_register_values)
+                globals.update_state('current_register_values', r.payload['register-values'])
             }
             if ('asm_insns' in r.payload) {
                 SourceCode.save_new_assembly(r.payload.asm_insns)
@@ -2249,7 +2325,7 @@ const process_gdb_response = function(response_array){
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
                     SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
-                }else if (GdbApi.state.inferior_binary_path){
+                }else if (globals.state.inferior_binary_path){
                     Modal.render('Warning',
                      `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
                      <p>
@@ -2261,11 +2337,11 @@ const process_gdb_response = function(response_array){
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
+            if ('variables' in r.payload){
+                globals.set_locals(r.payload.variables)
+            }
             if ('changelist' in r.payload){
                 Expressions.handle_changelist(r.payload.changelist)
-            }
-            if ('variables' in r.payload){
-                Locals.render(r.payload.variables)
             }
             if ('name' in r.payload && 'thread-id' in r.payload && 'has_more' in r.payload &&
                 'value' in r.payload && !('children' in r.payload)){
@@ -2287,20 +2363,20 @@ const process_gdb_response = function(response_array){
             }
 
             // we tried to load a binary, but gdb couldn't find it
-            if(r.payload.msg === `${GdbApi.state.inferior_binary_path}: No such file or directory.`){
+            if(r.payload.msg === `${globals.state.inferior_binary_path}: No such file or directory.`){
                 window.dispatchEvent(new Event('event_inferior_program_exited'))
             }
 
         } else if (r.type === 'console'){
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
-            if(GdbApi.state.gdb_version === undefined){
+            if(globals.state.gdb_version === undefined){
                 // parse gdb version from string such as
                 // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
                 let m = /GNU gdb \(.*\)\s*(.*)\./g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
-                    GdbApi.state.gdb_version = parseFloat(a[1])
-                    localStorage.setItem('gdb_version', GdbApi.state.gdb_version)
+                    globals.state.gdb_version = parseFloat(a[1])
+                    localStorage.setItem('gdb_version', globals.state.gdb_version)
                 }
             }
         }else if (r.type === 'output'){
@@ -2325,17 +2401,6 @@ const process_gdb_response = function(response_array){
             }else{
                 console.log('TODO handle new reason for stopping')
                 console.log(r)
-            }
-        }
-
-        if (r.payload && typeof r.payload.frame !== 'undefined') {
-            // Stopped on a frame. We can render the file and highlight the line!
-            SourceCode.fetch_and_render_file(r.payload.frame.fullname, r.payload.frame.line, r.payload.frame.addr)
-
-            // if all we got back was the frame, we need to dispatch an event so the components
-            // refresh their respective states
-            if(response_array.length === 1){
-              window.dispatchEvent(new Event('event_inferior_program_paused'))
             }
         }
     }
@@ -2390,12 +2455,13 @@ ShutdownGdbgui.init()
 WebSocket.init()
 Settings.init()
 
+window.addEventListener("beforeunload", BinaryLoader.onclose)
+
+// and finally
 if(_.isString(initial_binary_and_args) && _.trim(initial_binary_and_args).length > 0){
     BinaryLoader.el.val(_.trim(initial_binary_and_args))
     BinaryLoader.set_target_app()
-
 }
 
-window.addEventListener("beforeunload", BinaryLoader.onclose)
-
+return globals
 })(jQuery, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args)

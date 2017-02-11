@@ -1,5 +1,5 @@
 import sys
-import re
+import os
 from setuptools import find_packages, setup, Command
 
 
@@ -7,9 +7,8 @@ EXCLUDE_FROM_PACKAGES = []
 
 readme = open('README.rst', 'r').read()
 
-with open('gdbgui/__init__.py', 'r') as fd:
-    version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]',
-                        fd.read(), re.MULTILINE).group(1)
+VERSION_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'gdbgui', 'VERSION.txt')
+version = open(VERSION_PATH).read().strip()
 
 
 class TestCommand (Command):
