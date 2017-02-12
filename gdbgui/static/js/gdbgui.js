@@ -4,9 +4,14 @@
  * file (besides libraries).
  *
  * There are several components, each of which have their
- * own top-level object. Each component is reponsible
- * for its own data, state, event handling, and rendering (to
- * the extent that it's possible).
+ * own top-level object, and can render new html in the browser.
+ *
+ * State is managed in a single location (globals.state), and each time the state
+ * changes, an event is emitted, which should trigger each component to re-render itself.
+ *
+ * Since this file is still being actively developed and hasn't compoletely stabilized, the
+ * documentation may not be totally complete/correct.
+ *
  */
 
 window.globals = (function ($, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args) {
@@ -145,8 +150,6 @@ let globals = {
             globals.dispatch_state_change()
         }
     }
-
-
 }
 /**
  * Debounce the event emission for smoother rendering
@@ -578,7 +581,6 @@ const GdbMiOutput = {
         }else{
             // dont append to this in release mode
         }
-
     },
     scroll_to_bottom: function(){
         GdbMiOutput.el.animate({'scrollTop': GdbMiOutput.el.prop('scrollHeight')})
@@ -936,20 +938,20 @@ const SourceCode = {
         }
     },
     fetch_file: function(fullname){
-            $.ajax({
-                url: "/read_file",
-                cache: false,
-                type: 'GET',
-                data: {path: fullname},
-                success: function(response){
-                    SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
-                },
-                error: function(response){
-                    StatusBar.render_ajax_error_msg(response)
-                    let source_code = [`failed to fetch file ${fullname}`]
-                    SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
-                }
-            })
+        $.ajax({
+            url: "/read_file",
+            cache: false,
+            type: 'GET',
+            data: {path: fullname},
+            success: function(response){
+                SourceCode.add_source_file_to_cache(fullname, response.source_code, '', response.last_modified_unix_sec)
+            },
+            error: function(response){
+                StatusBar.render_ajax_error_msg(response)
+                let source_code = [`failed to fetch file ${fullname}`]
+                SourceCode.add_source_file_to_cache(fullname, source_code, '', 0)
+            }
+        })
     },
     add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec){
         globals.add_source_file_to_cache({'fullname': fullname, 'source_code': source_code, 'assembly': assembly,
@@ -1978,7 +1980,6 @@ const Expressions = {
             Expressions.fetch_and_show_children_for_var(gdb_var_name)
         }
         $(e.currentTarget).toggleClass('expanded')
-
     },
     /**
      * Send command to gdb to give us all the children and values
@@ -2068,7 +2069,6 @@ const Locals = {
         Locals.clear()
     },
     event_inferior_program_paused: function(){
-
     },
 }
 
@@ -2224,7 +2224,6 @@ const ShutdownGdbgui = {
             // don't do anything
         }
     },
-
 }
 
 const WebSocket = {
@@ -2258,7 +2257,6 @@ const WebSocket = {
 
 }
 
-
 /**
  * Modal component that is hidden by default, but shown
  * when render is called. The user must close the modal to
@@ -2273,7 +2271,6 @@ const Modal = {
         $('#modal_body').html(body)
         $('#gdb_modal').modal('show')
     }
-
 }
 
 /**
@@ -2283,7 +2280,6 @@ const Modal = {
  * and updates the status bar.
  */
 const process_gdb_response = function(response_array){
-
     // update status with error or with last response
     let update_status = true
 
@@ -2419,21 +2415,18 @@ const process_gdb_response = function(response_array){
     }
 }
 
-
-var pstyle = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
+const layout_style = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
 $('#layout').w2layout({
     name: 'layout',
     panels: [
-        { type: 'top',  size: 45, resizable: false, style: pstyle, content: $('#top'), overflow: 'hidden' },
-        // { type: 'left', size: 0, resizable: false, style: pstyle, content: 'todo - add file browser' },
-        { type: 'main', style: pstyle, content: $('#main'), overflow: 'hidden' },
-        // { type: 'preview', size: '50%', resizable: true, style: pstyle, content: 'preview' },
-        { type: 'right', size: '35%', 'min-width': '300px', resizable: true, style: pstyle, content: $('#right') },
-        { type: 'bottom', size: 300, resizable: true, style: pstyle, content: $('#bottom') }
+        { type: 'top',  size: 45, resizable: false, style: layout_style, content: $('#top'), overflow: 'hidden' },
+        // { type: 'left', size: 0, resizable: false, style: layout_style, content: 'todo - add file browser' },
+        { type: 'main', style: layout_style, content: $('#main'), overflow: 'hidden' },
+        // { type: 'preview', size: '50%', resizable: true, style: layout_style, content: 'preview' },
+        { type: 'right', size: '35%', 'min-width': '300px', resizable: true, style: layout_style, content: $('#right') },
+        { type: 'bottom', size: 300, resizable: true, style: layout_style, content: $('#bottom') }
     ]
 });
-
-
 
 // initialize components
 globals.init()
@@ -2457,7 +2450,8 @@ Settings.init()
 
 window.addEventListener("beforeunload", BinaryLoader.onclose)
 
-// and finally
+// and finally, if user supplied an initial command, set it in the UI, and load the
+// inferior binary
 if(_.isString(initial_binary_and_args) && _.trim(initial_binary_and_args).length > 0){
     BinaryLoader.el.val(_.trim(initial_binary_and_args))
     BinaryLoader.set_target_app()

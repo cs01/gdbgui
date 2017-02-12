@@ -227,7 +227,7 @@ def main():
     parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
     parser.add_argument("--gdb", help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
     parser.add_argument("--cmd", help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
-        ' binary  you wish to debug.', default=INITIAL_BINARY_AND_ARGS)
+        " binary  you wish to debug. For example gdbgui --cmd='./mybinary -myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
     parser.add_argument("--debug", help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
