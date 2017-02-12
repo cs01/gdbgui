@@ -7,7 +7,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-v0.7.3.8-blue.svg
+.. image:: https://img.shields.io/badge/pypi-v0.7.3.9-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
@@ -73,7 +73,7 @@ Features
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
 
 Why gdbgui?
---------
+-----------
 - Actively developed and compatible with the latest version of gdb (7.12)
 - Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be. Just a lightweight frontend.
 - Design influenced by the amazing Chrome debugger: source code on the left, side panel on the right with collapsable widgets, console on the bottom
