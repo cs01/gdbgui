@@ -22,14 +22,22 @@ TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
-DEFAULT_GDB_EXECUTABLE = 'gdb'
 IS_A_TTY = sys.stdout.isatty()
+DEFAULT_GDB_EXECUTABLE = 'gdb'
+
 INITIAL_BINARY_AND_ARGS = None  # global
+GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 socketio = SocketIO(async_mode='eventlet')
-_gdb = None
-_gdb_reader_thread = None
+_gdb = {}  # each key is websocket client id (each tab in browser gets its own id), and value is pygdbmi.GdbController instance
+_gdb_reader_thread = None  # T
+
+
+def debug_print(*args):
+    """print only if app.debug is truthy"""
+    if app and app.debug:
+        print(args)
 
 
 def colorize(text):
@@ -41,14 +49,20 @@ def colorize(text):
 
 @socketio.on('connect', namespace='/gdb_listener')
 def client_connected():
-    if app.debug:
-        print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
-
     global _gdb_reader_thread
+    global _gdb
+
+    debug_print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
+
+    # give each client their own gdb instance
+    if request.sid not in _gdb.keys():
+        debug_print('new sid', request.sid)
+        _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=['-nx', '--interpreter=mi2'])
+
+    # Make sure there is a reader thread reading. One thread reads all instances.
     if _gdb_reader_thread is None:
         _gdb_reader_thread = socketio.start_background_task(target=read_and_forward_gdb_output)
-        if app.debug:
-            print('Created background thread to read gdb responses')
+        debug_print('Created background thread to read gdb responses')
 
 
 @socketio.on('run_gdb_command', namespace='/gdb_listener')
@@ -59,11 +73,11 @@ def run_gdb_command(message):
     Responds only if an error occurs when trying to write the command to
     gdb
     """
-    if _gdb is not None:
+    if _gdb.get(request.sid) is not None:
         try:
             # the command (string) or commands (list) to run
             cmd = message['cmd']
-            _gdb.write(cmd, read_response=False)
+            _gdb.get(request.sid).write(cmd, read_response=False)
 
         except Exception as e:
             emit('error_running_gdb_command', {'message': str(e)})
@@ -81,24 +95,24 @@ def read_and_forward_gdb_output():
     of gdb responses"""
 
     while True:
-        try:
-            socketio.sleep(0.05)
-            if _gdb is not None:
-                response = _gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
-                if response:
-                    socketio.emit('gdb_response', response, namespace='/gdb_listener')
+        socketio.sleep(0.05)
+        for client_id, gdb in _gdb.items():
+            try:
+                if gdb is not None:
+                    response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
+                    if response:
+                        debug_print('emmiting message to websocket client id ' + client_id)
+                        socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
+                    else:
+                        # there was no queued response from gdb, not a problem
+                        pass
                 else:
-                    # there was no queued response from gdb, not a problem
-                    pass
-            else:
-                # gdb process was likely killed by user. Stop trying to read from it
-                if app and app.debug:
-                    print('thread to read gdb vars is exiting since gdb controller object was not found')
-                break
+                    # gdb process was likely killed by user. Stop trying to read from it
+                    debug_print('thread to read gdb vars is exiting since gdb controller object was not found')
+                    break
 
-        except Exception as e:
-            if app and app.debug:
-                print(e)
+            except Exception as e:
+                debug_print(e)
 
 
 def server_error(obj):
@@ -156,8 +170,7 @@ def _shutdown():
     else:
         socketio.stop()
 
-    if app.debug:
-        print('received user request to shut down gdbgui')
+    debug_print('received user request to shut down gdbgui')
 
 
 @app.route('/get_last_modified_unix_sec')
@@ -194,11 +207,8 @@ def read_file():
         return client_error({'message': 'File not found: %s' % path})
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False, gdb_path=DEFAULT_GDB_EXECUTABLE):
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False):
     """Run the server of the gdb gui"""
-    global _gdb
-    _gdb = GdbController(gdb_path=gdb_path, gdb_args=['-nx', '--interpreter=mi2'])
-
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
@@ -209,7 +219,6 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     socketio.init_app(app)
 
     if open_browser is True and debug is False and testing is False:
-
         text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
         print(colorize(text))
         webbrowser.open(url_with_prefix)
@@ -222,6 +231,7 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
 def main():
     """Entry point from command line"""
     global INITIAL_BINARY_AND_ARGS
+    global GDB_PATH
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
     parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
@@ -234,7 +244,8 @@ def main():
     args = parser.parse_args()
 
     INITIAL_BINARY_AND_ARGS = args.cmd or None
-    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), gdb_path=args.gdb)
+    GDB_PATH = args.gdb
+    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
 
 
 if __name__ == '__main__':
