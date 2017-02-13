@@ -7,7 +7,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-v0.7.3.9-blue.svg
+.. image:: https://img.shields.io/badge/pypi-v0.7.3.10-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
@@ -47,19 +47,25 @@ A new tab in your browser will open with gdbgui in it.
 
 Options
 ~~~~~~~
--h, --help    show this help message and exit
---port PORT   The port on which gdbgui will be hosted
---host HOST   The host ip address on which gdbgui serve.
---gdb GDB     Path to gdb executable.
---cmd CMD     The binary and arguments to run in gdb. This is a way to
-              script the intial loading of the inferior binary you wish to
-              debug. For example gdbgui --cmd='./mybinary -myarg -flag1
-              -flag2'
---debug       The debug flag of this Flask application. Pass this flag when
-              debugging gdbgui itself to automatically reload the server
-              when changes are detected
---no_browser  By default, the browser will open with gdb gui. Pass this flag
-              so the browser does not open.
+positional arguments:
+  cmd                   The binary and arguments to run in gdb. This is a way
+                        to script the intial loading of the inferior binary
+                        you wish to debug. For example gdbgui './mybinary
+                        -myarg -flag1 -flag2'
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  The port on which gdbgui will be hosted
+  --host HOST           The host ip address on which gdbgui serve.
+  -g GDB, --gdb GDB     Path to gdb executable.
+  -v, --version         Print version
+  --debug               The debug flag of this Flask application. Pass this
+                        flag when debugging gdbgui itself to automatically
+                        reload the server when changes are detected
+  --no_browser          By default, the browser will open with gdb gui. Pass
+                        this flag so the browser does not open.
+
+
 
 Features
 --------
@@ -87,11 +93,13 @@ Compatibility
 ``gdbgui`` has been tested to work in these environments. It may work in
 other environments as well.
 
-Python versions: 2.7, 3.3, 3.4, 3.5, pypy
+Python versions: 2.7, 3.4, 3.5, pypy
 
-Operating systems: Ubuntu 16.04
+Operating systems: Ubuntu 14.04, Ubuntu 16.04
 
 Browsers: Chrome, Firefox, Ubuntu Web Browser
+
+Gdb: 7.7.1 (tested), 7.12 (tested), likely works with intermediate versions
 
 Development
 -----------

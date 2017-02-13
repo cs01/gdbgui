@@ -25,7 +25,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version='0.7.3.9',
+    version='0.7.3.10',
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
@@ -49,8 +49,8 @@ setup(
         'Flask>=0.12',
         'pygdbmi>=0.7.2.1',
         'pyjade>=4.0.0',
-        'Flask-SocketIO>=2.8.2',  # for websockets
-        'eventlet>=0.20.1',  # for websockets
+        'Flask-SocketIO>=2.8.3',  # for websockets
+        'gevent>=1.2.1',  # for websockets
     ],
     classifiers=[
         'Intended Audience :: Developers',
@@ -59,7 +59,6 @@ setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
