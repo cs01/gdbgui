@@ -1,5 +1,5 @@
 Flask==0.12
 pygdbmi==0.7.2.1
 pyjade==4.0.0
-Flask-SocketIO==2.8.2
-eventlet==0.20.1
+Flask-SocketIO==2.8.3
+gevent==1.2.1

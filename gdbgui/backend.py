@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 
 """
 A Flask server that manages a gdb subprocess, and
@@ -25,11 +26,11 @@ DEFAULT_PORT = 5000
 IS_A_TTY = sys.stdout.isatty()
 DEFAULT_GDB_EXECUTABLE = 'gdb'
 
-INITIAL_BINARY_AND_ARGS = None  # global
+INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-socketio = SocketIO(async_mode='eventlet')
+socketio = SocketIO(async_mode='gevent')
 _gdb = {}  # each key is websocket client id (each tab in browser gets its own id), and value is pygdbmi.GdbController instance
 _gdb_reader_thread = None  # T
 
@@ -233,17 +234,23 @@ def main():
     global INITIAL_BINARY_AND_ARGS
     global GDB_PATH
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
-    parser.add_argument("--host", help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
-    parser.add_argument("--gdb", help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
-    parser.add_argument("--cmd", help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
-        " binary  you wish to debug. For example gdbgui --cmd='./mybinary -myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
-    parser.add_argument("--debug", help='The debug flag of this Flask application. '
+    parser.add_argument("cmd", nargs='*', help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
+        " binary  you wish to debug. For example gdbgui './mybinary -myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
+
+    parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
+    parser.add_argument('--host', help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
+    parser.add_argument('-g', '--gdb', help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument('-v', '--version', help='Print version', action='store_true')
+    parser.add_argument('--debug', help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     args = parser.parse_args()
 
-    INITIAL_BINARY_AND_ARGS = args.cmd or None
+    if args.version:
+        print(__version__)
+        return
+
+    INITIAL_BINARY_AND_ARGS = ' '.join(args.cmd)
     GDB_PATH = args.gdb
     setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
 
