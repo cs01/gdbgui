@@ -1,9 +1,6 @@
 A browser-based frontend/gui for GDB
 ====================================
 
-.. image:: https://badges.gitter.im/gdbgui/Lobby.svg
-   :alt: Join the chat at https://gitter.im/gdbgui/Lobby
-   :target: https://gitter.im/gdbgui/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 .. figure:: https://github.com/cs01/gdbgui/raw/master/screencast.gif
    :alt: gdbgui
@@ -11,7 +8,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-v0.7.3.10-blue.svg
+.. image:: https://img.shields.io/badge/pypi-v0.7.3.11-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
@@ -19,6 +16,10 @@ A browser-based frontend/gui for GDB
 
 .. image:: https://img.shields.io/badge/development-active-green.svg
   :target: https://github.com/cs01/gdbgui
+
+.. image:: https://badges.gitter.im/gdbgui/Lobby.svg
+   :alt: Join the chat at https://gitter.im/gdbgui/Lobby
+   :target: https://gitter.im/gdbgui/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 .. image:: https://img.shields.io/badge/SayThanks.io-☼-blue.svg
   :target: https://saythanks.io/to/grassfedcode
@@ -45,17 +46,14 @@ Run
 
 ::
 
-    gdbgui
+    gdbgui [binary to debug]
 
 A new tab in your browser will open with gdbgui in it.
 
 Options
 ~~~~~~~
 positional arguments:
-  cmd                   The binary and arguments to run in gdb. This is a way
-                        to script the intial loading of the inferior binary
-                        you wish to debug. For example gdbgui './mybinary
-                        -myarg -flag1 -flag2'
+  cmd: The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example gdbgui ``./mybinary -myarg -flag1 -flag2``
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -73,6 +71,7 @@ optional arguments:
 
 Features
 --------
+- Debug a different program in each tab (new gdb instance is spawned for each tab)
 - Set/remove breakpoints
 - View stack, threads
 - Switch frame on stack, switch between threads
@@ -158,3 +157,75 @@ Future Improvements
 -  Embed plotting tools to plot a variable's value over time
 -  Assign values to variables / memory addresses
 -  Embed a binary/decimal/hex calculator
+
+
+Screenshots
+-----------
+Enter the binary and args just as you'd call them on the command line. Binary is restored when gdbgui is opened at a later time.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
+
+Intuitive control of your program. From left to right: Run, Continue, Next, Step, Return, Next Instruction, Step Instruction, send interrupt signal (SIGINT) to inferior process.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
+
+Stack/Threads
+-------------------------
+View all threads, the full stack on the active thread, the current frame on inactive threads. Switch between frames on the stack, or threads by pointing and clicking.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
+
+Source Code
+-----------
+View source, assembly, add breakpoints. All symbols used to compile the target are listed in a dropdown above the source code viewer, and have autocompletion capabilities.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
+
+
+Variables and Expressions
+------------------------------------------------
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
+
+All variables and their values are displayed each time gdb pauses. Arbitrary expressions can be evaluated as well.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
+
+
+Memory Viewer
+-------------
+All hex addresses are automatically converted to clickable links to explore memory. Length of memory is configurable. In this case 16 bytes are displayed per row.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
+
+
+Registers
+---------
+View all registers. If a register was updated it is highlighted in yellow.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
+
+
+gdb console
+-----------
+Read gdb output, and write to the gdb subprocess as desired. Don't let any gdb commandline skills you've developed go to waste.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
+
+
+gdbgui at launch:
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
