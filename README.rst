@@ -11,7 +11,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://img.shields.io/badge/pypi-v0.7.3.11-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
-.. image:: https://img.shields.io/badge/python-2.7, 3.3, 3.4, 3.5, pypy-blue.svg
+.. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/development-active-green.svg
@@ -30,7 +30,7 @@ A browser-based frontend/gui for GDB
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
 view stack traces, and more in C, C++, Go, and Rust! Simply run
-``gdbgui`` from the terminal and a new tab will open in your browser.
+``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
 Install
 -------
@@ -67,8 +67,6 @@ optional arguments:
   --no_browser          By default, the browser will open with gdb gui. Pass
                         this flag so the browser does not open.
 
-
-
 Features
 --------
 - Debug a different program in each tab (new gdb instance is spawned for each tab)
@@ -89,6 +87,10 @@ Why gdbgui?
 - Full gdb command line utility built in
 - Written in widely used languages (Python and JavaScript)
 - Open source and free
+
+Examples
+--------
+See `https://github.com/cs01/gdbgui/tree/master/examples <https://github.com/cs01/gdbgui/tree/master/examples>`_
 
 Compatibility
 -------------
@@ -184,6 +186,8 @@ View source, assembly, add breakpoints. All symbols used to compile the target a
 
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
+
+With assembly. Note the bold line is the current instruction that gdb is stopped on.
 
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
