@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#!/usr/bin/env python
 
 """
 A Flask server that manages a gdb subprocess, and
@@ -13,9 +12,11 @@ import webbrowser
 import datetime
 import json
 import sys
+from distutils.spawn import find_executable
 from gdbgui import __version__
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
+import pygdbmi
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -229,6 +230,12 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
         socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
 
 
+def verify_gdb_exists():
+    if find_executable(GDB_PATH) is None:
+        pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Is gdb installed? try "sudo apt-get install gdb"' % GDB_PATH)
+        sys.exit(1)
+
+
 def main():
     """Entry point from command line"""
     global INITIAL_BINARY_AND_ARGS
@@ -252,6 +259,7 @@ def main():
 
     INITIAL_BINARY_AND_ARGS = ' '.join(args.cmd)
     GDB_PATH = args.gdb
+    verify_gdb_exists()
     setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
 
 

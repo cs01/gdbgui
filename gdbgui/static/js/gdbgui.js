@@ -830,6 +830,15 @@ const SourceCode = {
 
         let f = _.find(globals.state.cached_source_files, i => i.fullname === fullname)
         let source_code = f.source_code
+        
+        // make sure desired line is within number of lines of source code
+        if(current_line_of_source_code > source_code.length){
+            SourceCode.el_jump_to_line_input.val(source_code.length)
+            globals.update_state('current_line_of_source_code', source_code.length)
+        }else if (current_line_of_source_code <= 0){
+            SourceCode.el_jump_to_line_input.val(1)
+            globals.update_state('current_line_of_source_code', 1)
+        }
 
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
 
@@ -1117,23 +1126,7 @@ const SourceCode = {
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
             let line = e.currentTarget.value
-            SourceCode.jump_to_line(line)
-        }
-    },
-    jump_to_line: function(line){
-        let obj = SourceCode.get_source_file_obj_from_cache(globals.state.rendered_source_file_fullname)
-        if(obj){
-            // sanitize user line request to be within valid bounds:
-            // 1 <= line <= num_lines
-            let num_lines = obj.source_code.length
-            , _line = line
-            if(line > num_lines){
-                _line = num_lines
-            }else if (line <= 0){
-                _line = 1
-            }
-
-            SourceCode.highlight_paused_line_and_scrollto_line(globals.state.rendered_source_file_fullname, _line, globals.state.rendered_source_file_addr)
+            globals.update_state('current_line_of_source_code', line)
         }
     },
     get_attrs_to_view_file: function(fullname, line=0, addr=''){
