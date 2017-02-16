@@ -53,7 +53,7 @@ A new tab in your browser will open with gdbgui in it.
 Options
 ~~~~~~~
 positional arguments:
-  cmd: The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example gdbgui ``./mybinary -myarg -flag1 -flag2``
+  ``command``: The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example ``gdbgui ./mybinary -myarg -flag1 -flag2``
 
 optional arguments:
   -h, --help            show this help message and exit
