@@ -3,6 +3,13 @@
 """
 A Flask server that manages a gdb subprocess, and
 returns structured gdb output to the client
+
+Examples:
+
+gdbgui
+gdbgui /path/to/program
+gdbgui /path/to/program -arg myarg -myflag
+
 """
 
 import os
@@ -29,11 +36,41 @@ DEFAULT_GDB_EXECUTABLE = 'gdb'
 
 INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
+SHOW_GDBGUI_UPGRADES = True
+
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-socketio = SocketIO(async_mode='gevent')
+# switch to gevent once https://github.com/cs01/gdbgui/issues/15 is resolved
+socketio = SocketIO(async_mode='eventlet')
 _gdb = {}  # each key is websocket client id (each tab in browser gets its own id), and value is pygdbmi.GdbController instance
 _gdb_reader_thread = None  # T
+
+
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False):
+    """Run the server of the gdb gui"""
+    url = '%s:%s' % (host, port)
+    url_with_prefix = 'http://' + url
+
+    app.secret_key = 'iusahjpoijeoprkge[0irokmeoprgk890'
+    # templates are writte in jade/pug, so add that capability to flask
+    app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
+    app.config['TEMPLATES_AUTO_RELOAD'] = True
+    socketio.init_app(app)
+
+    if open_browser is True and debug is False and testing is False:
+        text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
+        print(colorize(text))
+        webbrowser.open(url_with_prefix)
+
+    if testing is False:
+        print('Serving at %s' % url_with_prefix)
+        socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
+
+
+def verify_gdb_exists():
+    if find_executable(GDB_PATH) is None:
+        pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Is gdb installed? try "sudo apt-get install gdb"' % GDB_PATH)
+        sys.exit(1)
 
 
 def debug_print(*args):
@@ -150,11 +187,16 @@ def gdbgui():
         time_sec = 0
     else:
         time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+    initial_data = {
+            'gdbgui_version': __version__,
+            'initial_binary_and_args': INITIAL_BINARY_AND_ARGS,
+            'show_gdbgui_upgrades': SHOW_GDBGUI_UPGRADES
+        }
+
     return render_template('gdbgui.jade',
         timetag_to_prevent_caching=time_sec,
-        debug=json.dumps(app.debug),
-        gdbgui_version=__version__,
-        initial_binary_and_args=json.dumps(INITIAL_BINARY_AND_ARGS))
+        debug=app.debug,
+        initial_data=json.dumps(initial_data))
 
 
 @app.route('/shutdown')
@@ -177,7 +219,7 @@ def _shutdown():
 
 @app.route('/get_last_modified_unix_sec')
 def get_last_modified_unix_sec():
-    """Read a file and return its contents as an array"""
+    """Get last modified unix time for a given file"""
     path = request.args.get('path')
     if path and os.path.isfile(path):
         try:
@@ -209,45 +251,20 @@ def read_file():
         return client_error({'message': 'File not found: %s' % path})
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False):
-    """Run the server of the gdb gui"""
-    url = '%s:%s' % (host, port)
-    url_with_prefix = 'http://' + url
-
-    app.secret_key = 'iusahjpoijeoprkge[0irokmeoprgk890'
-    # templates are writte in jade/pug, so add that capability to flask
-    app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
-    app.config['TEMPLATES_AUTO_RELOAD'] = True
-    socketio.init_app(app)
-
-    if open_browser is True and debug is False and testing is False:
-        text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
-        print(colorize(text))
-        webbrowser.open(url_with_prefix)
-
-    if testing is False:
-        print('Serving at %s' % url_with_prefix)
-        socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
-
-
-def verify_gdb_exists():
-    if find_executable(GDB_PATH) is None:
-        pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Is gdb installed? try "sudo apt-get install gdb"' % GDB_PATH)
-        sys.exit(1)
-
-
 def main():
     """Entry point from command line"""
     global INITIAL_BINARY_AND_ARGS
     global GDB_PATH
+    global SHOW_GDBGUI_UPGRADES
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("cmd", nargs='*', help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
         " binary  you wish to debug. For example gdbgui './mybinary -myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
 
-    parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted', default=DEFAULT_PORT)
-    parser.add_argument('--host', help='The host ip address on which gdbgui serve. ', default=DEFAULT_HOST)
-    parser.add_argument('-g', '--gdb', help='Path to gdb executable.', default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted. Defaults to %s' % DEFAULT_PORT, default=DEFAULT_PORT)
+    parser.add_argument('--host', help='The host ip address on which gdbgui serve. Defaults to %s' % DEFAULT_HOST, default=DEFAULT_HOST)
+    parser.add_argument('-g', '--gdb', help='Path to gdb executable. Defaults to %s.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
     parser.add_argument('-v', '--version', help='Print version', action='store_true')
+    parser.add_argument('--hide_gdbgui_upgrades', help='Hide messages regarding newer version of gdbgui. Defaults to False.', action='store_true')
     parser.add_argument('--debug', help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
@@ -259,6 +276,7 @@ def main():
 
     INITIAL_BINARY_AND_ARGS = ' '.join(args.cmd)
     GDB_PATH = args.gdb
+    SHOW_GDBGUI_UPGRADES = not args.hide_gdbgui_upgrades
     verify_gdb_exists()
     setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
 
