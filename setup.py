@@ -50,7 +50,7 @@ setup(
         'pygdbmi>=0.7.2.1',
         'pyjade>=4.0.0',
         'Flask-SocketIO>=2.8.3',  # for websockets
-        'gevent>=1.2.1',  # for websockets
+        'eventlet>=0.20.1',  # for websockets
     ],
     classifiers=[
         'Intended Audience :: Developers',

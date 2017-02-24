@@ -14,7 +14,7 @@
  *
  */
 
-window.globals = (function ($, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args) {
+window.globals = (function ($, _, Awesomplete, io, moment, debug, initial_data) {
 "use strict";
 
 /**
@@ -51,8 +51,9 @@ let globals = {
     },
     state: {
         debug: debug,  // if gdbgui is run in debug mode
-        gdbgui_version: gdbgui_version,
+        gdbgui_version: initial_data.gdbgui_version,
         latest_gdbgui_version: undefined,
+        show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
         // choices are:
         // 'running'
         // 'paused'
@@ -126,7 +127,6 @@ let globals = {
 
         globals.update_state('current_line_of_source_code', globals.state.paused_on_frame.line)
         globals.update_state('current_assembly_address', globals.state.paused_on_frame.addr)
-
     },
     set_locals: function(locals){
         globals.update_state('locals', locals)
@@ -811,7 +811,6 @@ const SourceCode = {
      * Render a cached source file
      */
     render_cached_source_file: function(fullname, source_code, scroll_to_line=1, addr=undefined){
-
     },
     make_current_line_visible: function(){
         SourceCode.scroll_to_jq_selector($("#scroll_to_line"))
@@ -830,7 +829,7 @@ const SourceCode = {
 
         let f = _.find(globals.state.cached_source_files, i => i.fullname === fullname)
         let source_code = f.source_code
-        
+
         // make sure desired line is within number of lines of source code
         if(current_line_of_source_code > source_code.length){
             SourceCode.el_jump_to_line_input.val(source_code.length)
@@ -1121,7 +1120,6 @@ const SourceCode = {
         globals.update_state('fullname_to_render', e.currentTarget.dataset['fullname'])
         globals.update_state('current_line_of_source_code', e.currentTarget.dataset['line'])
         globals.update_state('current_assembly_address', e.currentTarget.dataset['addr'])
-
     },
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -1315,16 +1313,24 @@ const Settings = {
             error: (data) => {globals.update_state('latest_gdbgui_version', '(could not contact server)')},
             complete: function(){
                 if(globals.state.latest_gdbgui_version !== globals.state.gdbgui_version){
-                    $('#new_version').html(`A new version is available, ${globals.state.latest_gdbgui_version}. Install with <span class='monospace bold'>pip install gdbgui --upgrade</span>`)
+                    let upgrade_text = `Version ${globals.state.latest_gdbgui_version} is available (you are using ${globals.state.gdbgui_version}). <p>
 
+                    Run <br>
+                    <span class='monospace bold'>[sudo] pip install gdbgui --upgrade</span><br>
+                    to update.`
+
+                    $('#new_version').html(upgrade_text)
+
+                    // if flag to show update modal is true, show it
+                    if(globals.state.show_gdbgui_upgrades){
+                        Modal.render(`Update Available`, upgrade_text)
+                    }
                 }else{
                     $('#new_version').html(`There are no updates available at this time.`)
 
                 }
             }
         })
-
-
     },
     click_settings_button: function(){
         $('#gdb_settings_modal').modal('show')
@@ -2462,10 +2468,10 @@ window.addEventListener("beforeunload", BinaryLoader.onclose)
 
 // and finally, if user supplied an initial command, set it in the UI, and load the
 // inferior binary
-if(_.isString(initial_binary_and_args) && _.trim(initial_binary_and_args).length > 0){
-    BinaryLoader.el.val(_.trim(initial_binary_and_args))
+if(_.isString(initial_data.initial_binary_and_args) && _.trim(initial_data.initial_binary_and_args).length > 0){
+    BinaryLoader.el.val(_.trim(initial_data.initial_binary_and_args))
     BinaryLoader.set_target_app()
 }
 
 return globals
-})(jQuery, _, Awesomplete, io, moment, debug, gdbgui_version, initial_binary_and_args)
+})(jQuery, _, Awesomplete, io, moment, debug, initial_data)
