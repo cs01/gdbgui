@@ -76,7 +76,7 @@ def verify_gdb_exists():
 def debug_print(*args):
     """print only if app.debug is truthy"""
     if app and app.debug:
-        print(args)
+        print('DEBUG: ', args)
 
 
 def colorize(text):
@@ -97,6 +97,9 @@ def client_connected():
     if request.sid not in _gdb.keys():
         debug_print('new sid', request.sid)
         _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=['-nx', '--interpreter=mi2'])
+
+    # tell the client browser tab which gdb pid is a dedicated to it
+    emit('gdb_pid', _gdb[request.sid].gdb_process.pid)
 
     # Make sure there is a reader thread reading. One thread reads all instances.
     if _gdb_reader_thread is None:
@@ -124,6 +127,17 @@ def run_gdb_command(message):
         emit('error_running_gdb_command', {'message': 'gdb is not running'})
 
 
+@socketio.on('disconnect', namespace='/gdb_listener')
+def client_disconnected():
+    """if client disconnects, kill the gdb process connected to the browser tab"""
+    debug_print('Client websocket disconnected, id %s' % (request.sid))
+    if request.sid in _gdb.keys():
+        debug_print('Exiting gdb subprocess')
+        _gdb[request.sid].exit()
+        _gdb.pop(request.sid)
+        debug_print('Exited gdb subprocess')
+
+
 @socketio.on('Client disconnected')
 def test_disconnect():
     print('Client websocket disconnected', request.sid)
@@ -140,7 +154,7 @@ def read_and_forward_gdb_output():
                 if gdb is not None:
                     response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
                     if response:
-                        debug_print('emmiting message to websocket client id ' + client_id)
+                        debug_print('emiting message to websocket client id ' + client_id)
                         socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
                     else:
                         # there was no queued response from gdb, not a problem
@@ -194,8 +208,8 @@ def gdbgui():
         }
 
     return render_template('gdbgui.jade',
-        timetag_to_prevent_caching=time_sec,
-        debug=app.debug,
+        timetag_to_prevent_caching=0,
+        debug=json.dumps(app.debug),
         initial_data=json.dumps(initial_data))
 
 

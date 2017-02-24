@@ -198,42 +198,14 @@ body(style='margin: 0')
         .modal-content(style='padding: 20px;')
             button.close(type='button', data-dismiss='modal') ×
             h4 Settings
-                hr
-            div(style='margin-top: 20px;')
-                label
-                    input#checkbox_auto_add_breakpoint_to_main(type='checkbox', checked)
-                    ='Auto add breakpoint to main'
 
-            hr
-            span You are using gdbgui version
-                =' '
-                #{gdbgui_version}
-            p
-            p
-                #new_version
-
-            p
-            p
-                ='Developed by '
-                a(href='http://grassfedcode.com', target='_blank') grassfedcode
-            p
-            p
-                a(href='https://pypi.python.org/pypi/gdbgui', target='_blank') gdbgui on pypi
-
-            p
-            p
-                ='Ask a question, add a feature, or create an issue on '
-                a(href='https://github.com/cs01/gdbgui', target='_blank') github
-                ='.'
-
-
-            hr
+            #settings_body
 
             div(style='margin-top: 20px;')
                 button.btn.btn-success(type='button', data-dismiss='modal') Close
 
 script.
     initial_data = JSON.parse('!{initial_data}')
-    debug = '!{debug}'
+    debug = JSON.parse('!{debug}')
 
 script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')
