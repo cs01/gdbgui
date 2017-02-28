@@ -52,8 +52,8 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     url_with_prefix = 'http://' + url
 
     app.secret_key = 'iusahjpoijeoprkge[0irokmeoprgk890'
-    # templates are writte in jade/pug, so add that capability to flask
-    app.jinja_env.add_extension('pyjade.ext.jinja.PyJadeExtension')
+    # templates are writte in pug, so add that capability to flask
+    app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
     app.config['TEMPLATES_AUTO_RELOAD'] = True
     socketio.init_app(app)
 
@@ -73,10 +73,12 @@ def verify_gdb_exists():
         sys.exit(1)
 
 
-def debug_print(*args):
+def dbprint(*args):
     """print only if app.debug is truthy"""
     if app and app.debug:
-        print('DEBUG: ', args)
+        CYELLOW2 = '\33[93m'
+        NORMAL = '\033[0m'
+        print(CYELLOW2 + 'DEBUG: ' + ' '.join(args) + NORMAL)
 
 
 def colorize(text):
@@ -91,11 +93,11 @@ def client_connected():
     global _gdb_reader_thread
     global _gdb
 
-    debug_print('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
+    dbprint('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
 
     # give each client their own gdb instance
     if request.sid not in _gdb.keys():
-        debug_print('new sid', request.sid)
+        dbprint('new sid', request.sid)
         _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=['-nx', '--interpreter=mi2'])
 
     # tell the client browser tab which gdb pid is a dedicated to it
@@ -104,7 +106,7 @@ def client_connected():
     # Make sure there is a reader thread reading. One thread reads all instances.
     if _gdb_reader_thread is None:
         _gdb_reader_thread = socketio.start_background_task(target=read_and_forward_gdb_output)
-        debug_print('Created background thread to read gdb responses')
+        dbprint('Created background thread to read gdb responses')
 
 
 @socketio.on('run_gdb_command', namespace='/gdb_listener')
@@ -130,12 +132,11 @@ def run_gdb_command(message):
 @socketio.on('disconnect', namespace='/gdb_listener')
 def client_disconnected():
     """if client disconnects, kill the gdb process connected to the browser tab"""
-    debug_print('Client websocket disconnected, id %s' % (request.sid))
+    dbprint('Client websocket disconnected, id %s' % (request.sid))
     if request.sid in _gdb.keys():
-        debug_print('Exiting gdb subprocess')
+        dbprint('Exiting gdb subprocess pid %s' % _gdb[request.sid].gdb_process.pid)
         _gdb[request.sid].exit()
         _gdb.pop(request.sid)
-        debug_print('Exited gdb subprocess')
 
 
 @socketio.on('Client disconnected')
@@ -154,18 +155,18 @@ def read_and_forward_gdb_output():
                 if gdb is not None:
                     response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
                     if response:
-                        debug_print('emiting message to websocket client id ' + client_id)
+                        dbprint('emiting message to websocket client id ' + client_id)
                         socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
                     else:
                         # there was no queued response from gdb, not a problem
                         pass
                 else:
                     # gdb process was likely killed by user. Stop trying to read from it
-                    debug_print('thread to read gdb vars is exiting since gdb controller object was not found')
+                    dbprint('thread to read gdb vars is exiting since gdb controller object was not found')
                     break
 
             except Exception as e:
-                debug_print(e)
+                dbprint(e)
 
 
 def server_error(obj):
@@ -207,8 +208,8 @@ def gdbgui():
             'show_gdbgui_upgrades': SHOW_GDBGUI_UPGRADES
         }
 
-    return render_template('gdbgui.jade',
-        timetag_to_prevent_caching=0,
+    return render_template('gdbgui.pug',
+        timetag_to_prevent_caching=time_sec,
         debug=json.dumps(app.debug),
         initial_data=json.dumps(initial_data))
 
@@ -216,7 +217,7 @@ def gdbgui():
 @app.route('/shutdown')
 def shutdown_webview():
     """Render the main gdbgui interface"""
-    return render_template('shutdown.jade', timetag_to_prevent_caching=0)
+    return render_template('shutdown.pug', timetag_to_prevent_caching=0)
 
 
 @app.route('/_shutdown')
@@ -228,7 +229,7 @@ def _shutdown():
     else:
         socketio.stop()
 
-    debug_print('received user request to shut down gdbgui')
+    dbprint('received user request to shut down gdbgui')
 
 
 @app.route('/get_last_modified_unix_sec')
