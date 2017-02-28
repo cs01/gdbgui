@@ -100,8 +100,14 @@ td{
 .highlight{
   background: rgba(255, 255, 0, 0.5) !important;
 }
+div.breakpoint{
+  border: solid;
+  border-width: 0px;
+  border-bottom-width: 1px;
+  border-color: #f5f5f5;
+}
 .breakpoint:hover{
-  background-color: #e2e2e2;
+  background-color: #f5f5f5;
 }
 .breakpoint_trashcan, .delete_gdb_variable{
   float: right;
@@ -147,10 +153,11 @@ td.assembly{
 /* set background color over souce code only */
 .source_code_row.line_of_code td{
   background-color: #f7f7f7;
-  max-width: 80%;
 }
 .line_of_code pre{
   margin-left: 10px;
+  max-width: 80%;
+  min-width: 400px;
 }
 /* when hovering, set background color of entire row */
 .source_code_row:hover td, .source_code_row:hover td pre{
@@ -217,22 +224,24 @@ td.assembly{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
   width: 100%;
   margin-bottom: 12px;
-  height: 200px;
   overflow: auto;
 }
 .sent_command{
   color: #00c540;
 }
-#gdb_command_input{
-  padding-left: 45px;
-  border-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  font-size: 0.8em !important;
+#gdb_command_input, .gdb_command_input{
+  border-width: 0;
+  padding: 10px;
   background-color: #3c3c3c !important;
   color: #f9f9f9 !important;
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
+
+#gdb_command_input:focus {
+    outline-color: none;
+    box-shadow: none;
+}
+
 #gdb_mi_output{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
@@ -242,18 +251,10 @@ td.assembly{
 }
 
 /* styling for "Expressions" component */
-#expressions li{
+#expressions li, #locals li{
   list-style: none;
 }
-
-#threads ul{
-  list-style: none;
-  padding: 0;
-}
-#memory table{
-  font-size: 0.9em;
-}
-#expressions ul.variable{
+ul.variable{
     padding-left: 5px;
     border: 0px;
 }
@@ -262,6 +263,14 @@ td.assembly{
   color: #a0a0a0;
   margin-left: 5px;
   font-style: italic;
+}
+
+#threads ul{
+  list-style: none;
+  padding: 0;
+}
+#memory table{
+  font-size: 0.9em;
 }
 
 /* Make refresh icon spin - http://www.bootply.com/128062*/

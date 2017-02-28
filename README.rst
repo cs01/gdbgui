@@ -8,7 +8,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-v0.7.3.11-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-v0.7.4.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
@@ -138,7 +138,7 @@ The main components of gdbgui are
    `Flask <http://flask.pocoo.org/>`__ to set up url routing, websockets,
    and http responses.
 
-2. ``gdbgui.jade``: HTML file that defines the frontend
+2. ``gdbgui.pug``: HTML file that defines the frontend
 
 3. ``gdbgui.js``: The majority of the application is contained in this file. If dynamically updates the page, and maintains gdb state. It sends AJAX requests and uses websockets to interact with gdb through the server, then gets the response and updates the DOM as necessary.
 

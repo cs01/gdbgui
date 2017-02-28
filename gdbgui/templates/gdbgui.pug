@@ -1,12 +1,9 @@
-//- The jade project (and file extension) is now Pug, but
-//- as far as I know, the python package has not been renamed, so it remains
-//- a jade file for now
-//- explore instant conversion of html2jade: http://www.html2jade.org/
+//- This is .pug file, which generates html. It used to be name jade.
+//- Try instant online conversion at http://www.html2jade.org/
 
 html
 head
     title gdbgui - gdb in a browser
-
 
     base(target='_blank')
 
@@ -45,7 +42,7 @@ body(style='margin: 0')
                     span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-right: 10px; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
 
 
-    //- source code and stack, etc.
+    //- source code
     div#main(style='height: 100%;')
         div.flexrow
             //- displays source file path input, and dropdown
@@ -57,7 +54,7 @@ body(style='margin: 0')
         div.flexrow
             //- displays loaded file path and input to jump to line
             span#source_code_heading.lighttext(style="margin-right: 5px;") (no source code file loaded)
-            button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px; height=25px;') reload
+            button.btn.btn-xs.btn-default#refresh_cached_source_files(style='margin-left: 10px; height=25px; max-height: 25px;') reload
                 span.glyphicon.glyphicon-refresh(style='margin-left: 6px;')
 
 
@@ -66,14 +63,14 @@ body(style='margin: 0')
 
             label(style='margin-left: 10px; font-weight: normal;')
                 input#checkbox_show_assembly(type='checkbox')
-                ='show assembly'
+                ='disassemble'
 
         div#code_container.gdb_content_div(style='height: 100%; overflow: auto; padding-bottom: 100px;')
             table#code_table.code
                 tr
                     td(style='font-family: arial; font-style: italic;') Source code will be displayed here when applicable
 
-    //- stack, vars, memory, etc.
+    //- stack, vars, memory, breakpoints, registers
     div#right
         div(style='position: fixed; background: #f5f6f7; z-index: 10; width: 1000%; margin-top: -5px; padding-top: 5px;')
             div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
@@ -142,33 +139,33 @@ body(style='margin: 0')
 
         div.no_padding
             div.titlebar.visibility_toggler(data-visibility_target_selector_string="#registers", data-glyph_selector='#registers_glyph')
-                span.glyphicon.glyphicon-chevron-down#registers_glyph(style='margin-right: 6px;')
+                span.glyphicon.glyphicon-chevron-right#registers_glyph(style='margin-right: 6px;')
                 span.lighttext registers
-            div#registers.gdb_content_div
+            div#registers.gdb_content_div.hidden
 
     //- gdb console
-    div#bottom
-        //- text/buttons above the gdb console output
-        div.titlebar.visibility_toggler(data-visibility_target_selector_string="#console", data-glyph_selector='#gdb_console_glyph')
-            span.glyphicon.glyphicon-chevron-down#gdb_console_glyph(style='margin-right: 6px;')
-            span.lighttext gdb console
-            div.btn-group
-                button.btn.btn-default.clear_console(type='button', title='Clear Console')
-                    span.glyphicon.glyphicon-ban-circle
+    div#bottom(style='margin-bottom: -5px;')
 
         //- gdb console output
-        table(style='width:100%; margin: 0;')
-            tr
+        table(style='width:100%; height:100%; margin: 0; padding-bottom: 30px;')
+            tr(style='height: 100%;')
                 td
-                    div#console.gdb_content_div(style='margin: 0; border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0;')
+                    div#console.gdb_content_div(style='border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; height: 100%;')
+
+        //- gdb console input
+        table.gdb_command_input(style='width: 100%;')
             tr
-                td
-                    //- gdb console input
-                    span(style="position: absolute; left: 5px; margin-top: 9px; color: #777; font-family: monospace; font-size: 0.9em") (gdb)
-                    input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command')
+                td(style='width: 30px; vertical-align: middle;')
+                    span(style='margin-top: 10px') (gdb)
+                td(style='width: 100%; float: left; vertical-align: middle;')
+                     input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command', style='float: left')
+                td(style='width: 15px; vertical-align: middle; padding-right: 10px')
+                    span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console')
+
 
         //- gdb mi output
         if debug == 'true'
+            p
             div
                 div.titlebar
                     span.lighttext gdb machine interface output
