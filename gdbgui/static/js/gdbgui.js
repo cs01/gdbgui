@@ -2495,11 +2495,11 @@ const Threads = {
         return Util.get_table([], table_data, 'font-size: 0.9em;')
     },
     set_threads: function(threads){
-        State.get('threads') = $.extend(true, [], threads)
+        State.Set('threads', $.extend(true, [], threads))
         Threads.render()
     },
     set_thread_id: function(id){
-        State.get('current_thread_id') = parseInt(id)
+        State.get('current_thread_id',  parseInt(id))
     },
 }
 
@@ -2682,7 +2682,7 @@ const process_gdb_response = function(response_array){
                 let m = /GNU gdb \(.*\)\s*(.*)\./g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
-                    State.get('gdb_version') = parseFloat(a[1])
+                    State.get('gdb_version', parseFloat(a[1]))
                     localStorage.setItem('gdb_version', State.get('gdb_version'))
                 }
             }
