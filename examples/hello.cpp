@@ -1,7 +1,24 @@
 #include <iostream>
+#include <vector>
 
-int main()
+// using namespace std;
+
+int main(void)
 {
-  std::cout << "Hello World!" << std::endl;
-  return 0;
+    std::string str = "Hello World";
+	std::cout << str << std::endl;
+
+    std::vector<double> d {1.1, 2.2, 3.3, 4.4};
+
+    for(auto itr = begin(d); itr != end(d); ++itr)
+    {
+        std::cout << *itr << "\t";
+    }
+    std::cout << std::endl;
+
+    str = "Goodbye World";
+
+    std::cout << str << std::endl;
+
+    return 0;
 }

@@ -74,6 +74,7 @@ let State = {
         // 'exited'
         // undefined
         inferior_program: undefined,
+
         paused_on_frame: undefined,
         selected_frame_num: 0,
         current_thread_id: undefined,
@@ -81,7 +82,8 @@ let State = {
         locals: [],
         threads: [],
 
-        // rendering source files
+        // source files
+        source_file_paths: [], // all the paths gdb says were used to compile the target binary
         files_being_fetched: [],
         fullname_to_render: null,
         current_line_of_source_code: null,
@@ -174,7 +176,7 @@ let State = {
                 debug_print(`${key} was changed from ${oldval} to ${value}`)
             }
             // tell listeners that the state changed
-            State.dispatch_state_change()
+            State.dispatch_state_change(key)
         }
     },
     /**
@@ -207,7 +209,6 @@ let State = {
                 State.save_breakpoint(breakpoint)
             }
         }
-        State.dispatch_state_change()
     },
     save_breakpoint: function(breakpoint){
         let bkpt = $.extend(true, {}, breakpoint)
@@ -246,9 +247,9 @@ let State = {
 /**
  * Debounce the event emission for smoother rendering
  */
-State.dispatch_state_change = _.debounce(() => {
+State.dispatch_state_change = _.debounce((key) => {
         debug_print('dispatching event_global_state_changed')
-        window.dispatchEvent(new Event('event_global_state_changed'))
+        window.dispatchEvent(new CustomEvent('event_global_state_changed', {'detail': {'key_changed': key}}))
     }, 50)
 
 
@@ -1309,6 +1310,8 @@ const SourceCode = {
 const SourceFileAutocomplete = {
     el: $('#source_file_input'),
     init: function(){
+        window.addEventListener('event_global_state_changed', SourceFileAutocomplete.render)
+
         SourceFileAutocomplete.el.keyup(SourceFileAutocomplete.keyup_source_file_input)
 
         // initialize list of source files
@@ -1340,6 +1343,9 @@ const SourceFileAutocomplete = {
             State.set('current_line_of_source_code', 1)
             State.set('current_assembly_address', '')
         })
+    },
+    render: function(e){
+        SourceFileAutocomplete.input.list = State.get('source_file_paths')
     },
     keyup_source_file_input: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -2626,7 +2632,7 @@ const process_gdb_response = function(response_array){
             }
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
-                    SourceFileAutocomplete.input.list = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                    State.set('source_file_paths', _.uniq(r.payload.files.map(f => f.fullname)).sort())
                 }else if (State.get('inferior_binary_path')){
                     Modal.render('Warning',
                      `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.

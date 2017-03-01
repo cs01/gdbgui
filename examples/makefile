@@ -1,5 +1,15 @@
-hello_c_binary: hello.c
-	gcc $^ -g -o hello_c_binary
+c: hello.c
+	gcc $^ -g -o c.a -std=c99
+	../gdbgui/backend.py c.a
 
-hello_cpp_binary: hello.cpp
-	g++ $^ -g -o hello_cpp_binary
+cpp: hello.cpp
+	g++ $^ -g -o cpp.a -std=c++11
+	../gdbgui/backend.py cpp.a
+
+go: hello.go
+	go build -o go.a -gccgoflags "-w" hello.go
+	../gdbgui/backend.py go.a
+
+rust: hello.rs
+	rustc -g hello.rs -o rust.a
+	../gdbgui/backend.py rust.a
