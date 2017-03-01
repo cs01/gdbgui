@@ -12,9 +12,8 @@ int main(void)
 
     for(auto itr = begin(d); itr != end(d); ++itr)
     {
-        std::cout << *itr << "\t";
+        std::cout << *itr << std::endl;
     }
-    std::cout << std::endl;
 
     str = "Goodbye World";
 

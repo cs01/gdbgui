@@ -2,7 +2,7 @@ A browser-based frontend/gui for GDB
 ====================================
 
 
-.. figure:: https://github.com/cs01/gdbgui/raw/master/screencast.gif
+.. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png
    :alt: gdbgui
 
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
@@ -32,8 +32,8 @@ A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
 view stack traces, and more in C, C++, Go, and Rust! Simply run
 ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
-Install
--------
+Install (tested on Linux only)
+------------------------------
 
 ::
 
@@ -49,23 +49,6 @@ Run
     gdbgui [binary to debug]
 
 A new tab in your browser will open with gdbgui in it.
-
-Options
-~~~~~~~
-positional arguments:
-  ``command``: The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example ``gdbgui ./mybinary -myarg -flag1 -flag2``
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PORT, --port PORT  The port on which gdbgui will be hosted
-  --host HOST           The host ip address on which gdbgui serve.
-  -g GDB, --gdb GDB     Path to gdb executable.
-  -v, --version         Print version
-  --debug               The debug flag of this Flask application. Pass this
-                        flag when debugging gdbgui itself to automatically
-                        reload the server when changes are detected
-  --no_browser          By default, the browser will open with gdb gui. Pass
-                        this flag so the browser does not open.
 
 Features
 --------
@@ -91,6 +74,23 @@ Why gdbgui?
 Examples
 --------
 See `https://github.com/cs01/gdbgui/tree/master/examples <https://github.com/cs01/gdbgui/tree/master/examples>`_
+
+Options
+~~~~~~~
+optional positional arguments:
+  ``command``: (Optional) The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example ``gdbgui ./mybinary -myarg -flag1 -flag2``
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  The port on which gdbgui will be hosted
+  --host HOST           The host ip address on which gdbgui serve.
+  -g GDB, --gdb GDB     Path to gdb executable.
+  -v, --version         Print version
+  --debug               The debug flag of this Flask application. Pass this
+                        flag when debugging gdbgui itself to automatically
+                        reload the server when changes are detected
+  --no_browser          By default, the browser will open with gdb gui. Pass
+                        this flag so the browser does not open.
 
 Compatibility
 -------------

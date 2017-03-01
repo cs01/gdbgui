@@ -272,8 +272,8 @@ def main():
     global GDB_PATH
     global SHOW_GDBGUI_UPGRADES
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("cmd", nargs='*', help='The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
-        " binary  you wish to debug. For example gdbgui './mybinary -myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
+    parser.add_argument("cmd", nargs='*', help='(Optional) The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
+        " binary  you wish to debug. For example gdbgui './mybinary myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
 
     parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted. Defaults to %s' % DEFAULT_PORT, default=DEFAULT_PORT)
     parser.add_argument('--host', help='The host ip address on which gdbgui serve. Defaults to %s' % DEFAULT_HOST, default=DEFAULT_HOST)
@@ -282,7 +282,7 @@ def main():
     parser.add_argument('--hide_gdbgui_upgrades', help='Hide messages regarding newer version of gdbgui. Defaults to False.', action='store_true')
     parser.add_argument('--debug', help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
-    parser.add_argument("--no_browser", help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
+    parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     args = parser.parse_args()
 
     if args.version:
