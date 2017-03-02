@@ -1671,6 +1671,7 @@ const GdbCommandInput = {
     },
     run_current_command: function(){
         let cmd = GdbCommandInput.el.val()
+        GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
         GdbApi.run_gdb_command(cmd)
     },
