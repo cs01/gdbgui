@@ -19,12 +19,12 @@ rust: hello.rs
 python: cpython/python
 	../gdbgui/backend.py cpython/python
 
-cpython:
+cpython/configure:
 	git clone https://github.com/python/cpython.git
 
-cpython/Makefile: cpython
-	cd cpython && ./configure
+cpython/Makefile: cpython/configure
+	cd cpython && configure
 
-cpython/python: cpython cpython/Makefile
+cpython/python: cpython/Makefile
 	make -C cpython -j4
 
