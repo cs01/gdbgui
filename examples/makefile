@@ -17,7 +17,7 @@ rust: hello.rs
 # ever wonder how cpython works?
 .PHONY: python
 python: cpython/python
-	gdbgui cpython/python
+	../gdbgui/backend.py cpython/python
 
 cpython:
 	git clone https://github.com/python/cpython.git
