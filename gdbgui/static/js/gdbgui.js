@@ -626,7 +626,8 @@ const Util = {
     escape: function(s){
         return s.replace("<", "&lt;")
                 .replace(">", "&gt;")
-                .replace(/([^\\]\\n)/g, '<br>')
+                .replace(/(\\n)/g, '<br>')
+                .replace(/\\"/g, '"')
                 .replace(/\\t/g, '&nbsp')
                 // .replace(/\\"+/g, '"')
     },
