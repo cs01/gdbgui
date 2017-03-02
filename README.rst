@@ -8,7 +8,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-v0.7.4.2-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-v0.7.4.3-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
@@ -32,7 +32,7 @@ A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
 view stack traces, and more in C, C++, Go, and Rust! Simply run
 ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
-Install (tested on Linux only)
+Install
 ------------------------------
 
 ::
@@ -100,7 +100,7 @@ other environments as well.
 
 Python versions: 2.7, 3.4, 3.5, pypy
 
-Operating systems: Ubuntu 14.04, Ubuntu 16.04
+Operating systems: Ubuntu 14.04, Ubuntu 16.04, OSX
 
 Browsers: Chrome, Firefox, Ubuntu Web Browser
 
