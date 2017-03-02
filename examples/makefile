@@ -13,3 +13,18 @@ go: hello.go
 rust: hello.rs
 	rustc -g hello.rs -o rust.a
 	../gdbgui/backend.py rust.a
+
+# ever wonder how cpython works?
+.PHONY: python
+python: cpython/python
+	gdbgui cpython/python
+
+cpython:
+	git clone https://github.com/python/cpython.git
+
+cpython/Makefile: cpython
+	cd cpython && ./configure
+
+cpython/python: cpython cpython/Makefile
+	make -C cpython -j4
+
