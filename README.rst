@@ -118,7 +118,7 @@ run
 
     git clone https://github.com/cs01/gdbgui
     cd gdbgui
-    pip install -r gdbgui/requirements.txt
+    pip install -r requirements.txt
     python -m gdbgui/backend.py --debug
 
 License
