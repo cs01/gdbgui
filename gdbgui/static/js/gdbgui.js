@@ -633,28 +633,6 @@ const Util = {
         return result.join('\n')
     },
     /**
-     * gdb will often return an array of objects
-     * Iterate through all of them and find all keys
-     * and corresponding data
-     * @param objs: array of response objects from gdb, such as breakpoints
-     * @return tuple of [column, data], compatible with Util.get_table
-     */
-    get_table_data_from_objs: function(objs){
-        // put keys of all objects into array
-        let all_keys = _.flatten(objs.map(i => _.keys(i)))
-        let columns = _.uniq(_.flatten(all_keys)).sort()
-
-        let data = []
-        for (let s of objs){
-            let row = []
-            for (let k of columns){
-                row.push(k in s ? s[k] : '')
-            }
-            data.push(row)
-        }
-        return [columns, data]
-    },
-    /**
      * Escape gdb's output to be browser compatible
      * @param s: string to mutate
      */
@@ -664,11 +642,6 @@ const Util = {
                 .replace(/\\n/g, '<br>')
                 .replace(/\\"/g, '"')
                 .replace(/\\t/g, '&nbsp')
-    },
-    push_if_new: function(array, val){
-        if(array.indexOf(val) === -1){
-            array.push(val)
-        }
     },
     /**
      * @param fullname_and_line: i.e. /path/to/file.c:78
