@@ -65,6 +65,7 @@ let State = {
      */
     _state: {
         debug: debug,  // if gdbgui is run in debug mode
+        interpreter: initial_data.interpreter,  // either 'gdb' or 'llvm'
         gdbgui_version: initial_data.gdbgui_version,
         latest_gdbgui_version: '(not fetched)',
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
@@ -185,7 +186,9 @@ let State = {
      * Return a new object, not a refrence to a value.
      */
     get: function(key){
-        if(!(key in State._state)){
+        if(!_.isUndefined(arguments[1])){
+            console.error('only one argument is allowed to this function')
+        }else if(!(key in State._state)){
             console.error(`tried to update state with key that does not exist: ${key}`)
         }
 
@@ -358,7 +361,7 @@ const GdbApi = {
 
         GdbApi.socket.on('gdb_pid', function(gdb_pid) {
             State.set('gdb_pid', gdb_pid)
-            StatusBar.render(`gdb process ${gdb_pid} is running for this tab`)
+            StatusBar.render(`${State.get('interpreter')} process ${gdb_pid} is running for this tab`)
         });
 
         GdbApi.socket.on('disconnect', function(){
@@ -508,22 +511,28 @@ const GdbApi = {
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
     refresh_breakpoints: function(){
-        GdbApi.run_gdb_command(['-break-list'])
+        GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()])
     },
     refresh_state_for_gdb_pause: function(){
         let cmds = [
             // get info on current thread
             '-thread-info',
-            // update all user-defined variables in gdb
-            '-var-update --all-values *',
             // print the name, type and value for simple data types,
             // and the name and type for arrays, structures and unions.
             '-stack-list-variables --simple-values',
             // flush inferior process' output (if any)
             // by default, it only flushes when the program terminates
             // so this additional call is needed
-            '-data-evaluate-expression fflush(0)',
+            GdbApi.get_flush_output_cmd()
         ]
+        if(State.get('interpreter') === 'gdb'){
+            // update all user-defined variables in gdb
+            cmds.push('-var-update --all-values *')
+        }else if(State.get('interpreter') === 'lldb'){
+            // the * arg doesn't work, so loop over all
+            // names and push commands for each
+            cmds = cmds.concat(Expressions.get_update_cmds())
+        }
 
         // update registers
         cmds = cmds.concat(Registers.get_update_cmds())
@@ -532,9 +541,6 @@ const GdbApi = {
         cmds = cmds.concat(Memory.get_gdb_commands_from_inputs())
 
         // List the frames currently on the stack.
-        // IMPORTANT: the event "event_global_state_changed" is sent
-        // when the stack is received, so this must be the last command
-        // sent, so that all other commands were already received.
         cmds.push('-stack-list-frames')
 
         // and finally run the commands
@@ -549,6 +555,37 @@ const GdbApi = {
             success: GdbApi._recieve_last_modified_unix_sec,
             error: GdbApi._error_getting_last_modified_unix_sec,
         })
+    },
+    get_insert_break_cmd: function(fullname, line){
+        if(State.get('interpreter') === 'gdb'){
+            return [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`, GdbApi.get_break_list_cmd()]
+        }else{
+            console.log('TODOLLDB - find mi-friendly command')
+            return [`breakpoint set --file ${State.get('rendered_source_file_fullname')} --line ${line}`, GdbApi.get_break_list_cmd()]
+        }
+    },
+    get_delete_break_cmd: function(bkpt_num){
+        if(State.get('interpreter') === 'gdb'){
+            return `-break-delete ${bkpt_num}`
+        }else{
+            console.log('TODOLLDB - find mi-friendly command')
+            return `breakpoint delete ${bkpt_num}`
+        }
+    },
+    get_break_list_cmd: function(){
+        if(State.get('interpreter') === 'gdb'){
+            return '-break-list'
+        }else if(State.get('interpreter') === 'lldb'){
+            console.log('TODOLLDB - find mi-friendly command')
+            return 'breakpoint list'
+        }
+    },
+    get_flush_output_cmd: function(){
+        if(State.get('interpreter') === 'gdb'){
+            return '-data-evaluate-expression fflush(0)'
+        }else if(State.get('interpreter') === 'lldb'){
+            return ''
+        }
     },
     _recieve_last_modified_unix_sec(data){
         if(data.path === State.get('inferior_binary_path')){
@@ -736,9 +773,9 @@ const Breakpoint = {
     },
     toggle_breakpoint_enable: function(e){
         if($(e.currentTarget).prop('checked')){
-            GdbApi.run_gdb_command([`-break-enable ${e.currentTarget.dataset.breakpoint_num}`, '-break-list'])
+            GdbApi.run_gdb_command([`-break-enable ${e.currentTarget.dataset.breakpoint_num}`, GdbApi.get_break_list_cmd()])
         }else{
-            GdbApi.run_gdb_command([`-break-disable ${e.currentTarget.dataset.breakpoint_num}`, '-break-list'])
+            GdbApi.run_gdb_command([`-break-disable ${e.currentTarget.dataset.breakpoint_num}`, GdbApi.get_break_list_cmd()])
         }
     },
     event_global_state_changed: function(){
@@ -842,13 +879,13 @@ const Breakpoint = {
     remove_breakpoint_if_present: function(fullname, line){
         for (let b of State.get('breakpoints')){
             if (b.fullname === fullname && b.line === line){
-                let cmd = [`-break-delete ${b.number}`, '-break-list']
+                let cmd = [GdbApi.get_delete_break_cmd(b.number), GdbApi.get_break_list_cmd()]
                 GdbApi.run_gdb_command(cmd)
             }
         }
     },
     get_delete_breakpoint_link: function(breakpoint_number, text='remove'){
-        return `<a class="gdb_cmd pointer" data-cmd0="-break-delete ${breakpoint_number}" data-cmd1="-break-list">${text}</a>`
+        return `<a class="gdb_cmd pointer" data-cmd0="${GdbApi.get_delete_break_cmd(breakpoint_number)}" data-cmd1="${GdbApi.get_break_list_cmd()}">${text}</a>`
     },
     get_breakpoint_lines_for_file: function(fullname){
         return State.get('breakpoints').filter(b => (b.fullname_to_display === fullname) && b.enabled === 'y').map(b => parseInt(b.line))
@@ -895,8 +932,8 @@ const SourceCode = {
 
         }else{
             // clicked with no breakpoint, add it, and list all breakpoints to make sure breakpoint table is up to date
-            let cmd = [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`, '-break-list']
-            GdbApi.run_gdb_command(cmd)
+            let fullname = State.get('rendered_source_file_fullname')
+            GdbApi.run_gdb_command(GdbApi.get_insert_break_cmd(fullname, line))
         }
     },
     is_cached: function(fullname){
@@ -1223,8 +1260,13 @@ const SourceCode = {
     get_fetch_disassembly_command: function(fullname=null){
         let _fullname = fullname || State.get('rendered_source_file_fullname')
         if(_fullname){
-            let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version'))
-            return `-data-disassemble -f ${_fullname} -l ${State.get('current_line_of_source_code')} -n 100000 -- ${mi_response_format}`
+            if(State.get('interpreter') === 'gdb'){
+                let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version'))
+                return `-data-disassemble -f ${_fullname} -l ${State.get('current_line_of_source_code')} -n 30 -- ${mi_response_format}`
+            }else{
+                console.log('TODOLLDB - get mi command to disassemble')
+                return `disassemble --frame`
+            }
         }else{
             // we don't have a file to fetch disassembly for
             return null
@@ -1343,7 +1385,11 @@ const SourceFileAutocomplete = {
         })
     },
     render: function(e){
-        SourceFileAutocomplete.input.list = State.get('source_file_paths')
+
+        if(!_.isEqual(SourceFileAutocomplete.input._list, State.get('source_file_paths'))){
+            SourceFileAutocomplete.input.list = State.get('source_file_paths')
+            SourceFileAutocomplete.input.evaluate()
+        }
     },
     keyup_source_file_input: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
@@ -1609,8 +1655,10 @@ const BinaryLoader = {
         _.remove(BinaryLoader.past_binaries, i => i === binary_and_args)
         BinaryLoader.past_binaries.unshift(binary_and_args)
         localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
-
         BinaryLoader.render_past_binary_options_datalist()
+
+        // remove list of source files associated with the loaded binary since we're loading a new one
+        State.set('source_file_paths', [])
 
         // find the binary and arguments so gdb can be told which is which
         let binary, args, cmds
@@ -1625,17 +1673,15 @@ const BinaryLoader = {
 
         // tell gdb which arguments to use when calling the binary, before loading the binary
         cmds = [
-                // '-file-symbol-file', // clears gdb's symbol table info
                 `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
-                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read
-                '-file-list-exec-source-files', // List the source files for the current executable
+                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
                 ]
 
         // add breakpoint if we don't already have one
         if(Settings.auto_add_breakpoint_to_main()){
             cmds.push('-break-insert main')
         }
-        cmds.push('-break-list')
+        cmds.push(GdbApi.get_break_list_cmd())
 
         window.dispatchEvent(new Event('event_inferior_program_exited'))
         GdbApi.run_gdb_command(cmds)
@@ -2038,7 +2084,7 @@ const Expressions = {
 
         // can only be plotted if: value is an expression (not a local), and value is numeric
         new_obj.can_plot = !new_obj.autocreated_for_locals && !window.isNaN(parseFloat(new_obj.value))
-        new_obj.dom_id_for_plot = new_obj.name.replace(/\./g, '-')  // replace '.' with '-' since '.' does not work in the DOM
+        new_obj.dom_id_for_plot = new_obj.name.replace(/\./g, '-').replace(/\$/g, '_')  // replace '.' with '-' since '.' does not work in the DOM
         new_obj.show_plot = false  // used when rendering to decide whether to show plot or not
         // push to this array each time a new value is assigned if value is numeric.
         // Plots use this data
@@ -2130,7 +2176,7 @@ const Expressions = {
         // if this field is an anonymous struct, the user will want to
         // see this expanded by default
         for(let child of parent_obj.children){
-            if (child.exp === '<anonymous struct>'){
+            if (child.type.includes('anonymous')){
                 Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
@@ -2351,8 +2397,20 @@ const Expressions = {
         State.set('expr_autocreated_for_locals', expr_autocreated_for_locals)
         GdbApi.run_gdb_command(`-var-list-children --all-values "${gdb_variable_name}"`)
     },
-    update_variable_values: function(){
-        GdbApi.run_gdb_command(`-var-update *`)
+    get_update_cmds: function(){
+        function _get_cmds_for_obj(obj){
+            let cmds = [`-var-update --all-values ${obj.name}`]
+            for(let child of obj.children){
+                cmds = cmds.concat(_get_cmds_for_obj(child))
+            }
+            return cmds
+        }
+
+        let cmds = []
+        for(let obj of State.get('expressions')){
+            cmds = cmds.concat(_get_cmds_for_obj(obj))
+        }
+        return cmds
     },
     handle_changelist: function(changelist_array){
         for(let changelist of changelist_array){
@@ -2534,9 +2592,10 @@ const Threads = {
         window.dispatchEvent(new CustomEvent('event_select_frame', {'detail': parseInt(framenum)}))
     },
     render: function(){
-        if(State.get('current_thread_id') && State.get('threads').length > 0){
+        if(State.get('threads').length > 0){
             let body = []
             for(let t of State.get('threads')){
+                console.log('TODOLLDB - find current thread id')
                 let is_current_thread_being_rendered = (parseInt(t.id) === State.get('current_thread_id'))
                 , cls = is_current_thread_being_rendered ? 'bold' : ''
 
@@ -2555,7 +2614,7 @@ const Threads = {
                         `)
                 }
 
-                if(is_current_thread_being_rendered){
+                if(is_current_thread_being_rendered || State.get('interpreter') === 'lldb'){
                     // add stack if current thread
                     for (let s of State.get('stack')){
                         if(s.addr === t.frame.addr){
@@ -2604,7 +2663,7 @@ const Threads = {
         Threads.render()
     },
     set_thread_id: function(id){
-        State.get('current_thread_id',  parseInt(id))
+        State.set('current_thread_id',  parseInt(id))
     },
 }
 
@@ -2698,7 +2757,7 @@ const process_gdb_response = function(response_array){
                 let new_bkpt = r.payload.bkpt
                 let cmds = State.get('breakpoints')
                     .filter(b => (new_bkpt.fullname === b.fullname && new_bkpt.func === b.func && new_bkpt.line === b.line))
-                    .map(b => `-break-delete ${b.number}`)
+                    .map(b => GdbApi.get_delete_break_cmd(b.number))
                 GdbApi.run_gdb_command(cmds)
 
                 // save this breakpoint
@@ -2720,7 +2779,11 @@ const process_gdb_response = function(response_array){
             }
             if('threads' in r.payload){
                 State.set('threads', r.payload.threads)
-                State.set('current_thread_id', parseInt(r.payload['current-thread-id']))
+                if(State.get('interpreter') === 'gdb'){
+                    State.set('current_thread_id', parseInt(r.payload['current-thread-id']))
+                }else if(State.get('interpreter') === 'lldb'){
+                    // lldb does not provide this
+                }
             }
             if ('register-names' in r.payload) {
                 let names = r.payload['register-names']
