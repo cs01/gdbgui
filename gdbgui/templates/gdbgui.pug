@@ -14,6 +14,7 @@ head
     link(href='static/vendor/css/w2ui-1.4.3.css', rel='stylesheet')
 
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
+    script(type="text/javascript" src='static/vendor/js/jquery.flot-0.8.3.min.js')
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
     script(type="text/javascript" src='static/vendor/js/w2ui-1.4.3.min.js')
     script(type="text/javascript" src='static/vendor/js/messenger.min.js')
@@ -23,9 +24,9 @@ head
     script(type="text/javascript" src='static/vendor/js/socket.io-1.3.5.min.js')
 
 body(style='margin: 0')
-    //- the content of this will be replaced
+    //- the content of this div will be updated in gdbgui.js and broken
+    //- into sections (i.e. top, bottom, right)
     div#layout(style="width: 100%; height: 100%;")
-
 
     div#top
         //- binary selection
@@ -72,7 +73,7 @@ body(style='margin: 0')
 
     //- stack, vars, memory, breakpoints, registers
     div#right
-        div(style='position: fixed; background: #f5f6f7; z-index: 10; width: 1000%; margin-top: -5px; padding-top: 5px;')
+        div(style='position: fixed; background: #f5f6f7; z-index: 10; width: 1000%; margin-top: -5px; padding-top: 5px; height: 60px;')
             div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
                 button.btn.btn-default#run_button(type='button', title='Start inferior program from the beginning')
                     span.glyphicon.glyphicon-repeat
@@ -99,7 +100,8 @@ body(style='margin: 0')
             div(style='white-space: nowrap; height: 1.8em;')
                 span#status GDB is waiting to run a command
 
-        div(style='height: 60px;')
+        div(style="height: 60px;")
+
         div.no_padding
             div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
                 span.glyphicon.glyphicon-chevron-down#threads_glyph(style='margin-right: 6px;')
@@ -143,6 +145,15 @@ body(style='margin: 0')
                 span.lighttext registers
             div#registers.gdb_content_div.hidden
 
+        //- gdb mi output is shown only when debug=true
+        if debug == 'true'
+            div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#gdb_mi_output", data-glyph_selector='#gdb_mi_output_glyph')
+                span.glyphicon.glyphicon-chevron-right#gdb_mi_output_glyph(style='margin-right: 6px;')
+                span.lighttext gdb machine interface output
+                button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
+                        span.glyphicon.glyphicon-ban-circle
+            div#gdb_mi_output.gdb_content_div.hidden
+
     //- gdb console
     div#bottom(style='margin-bottom: -5px;')
 
@@ -161,17 +172,6 @@ body(style='margin: 0')
                      input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command', style='float: left')
                 td(style='width: 15px; vertical-align: middle; padding-right: 10px')
                     span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console')
-
-
-        //- gdb mi output
-        if debug == 'true'
-            p
-            div
-                div.titlebar
-                    span.lighttext gdb machine interface output
-                    button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
-                            span.glyphicon.glyphicon-ban-circle
-                div#gdb_mi_output.gdb_content_div
 
 
 //- modal window, hidden by default

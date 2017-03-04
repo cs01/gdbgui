@@ -109,12 +109,12 @@ div.breakpoint{
 .breakpoint:hover{
   background-color: #f5f5f5;
 }
-.breakpoint_trashcan, .delete_gdb_variable{
+.breakpoint_trashcan, .right_help_icon_show_on_hover{
   float: right;
   margin-right: 5px;
   display: none !important;
 }
-div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .delete_gdb_variable{
+div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .right_help_icon_show_on_hover{
   display: inline !important;
 }
 .line_num{
@@ -246,7 +246,7 @@ td.assembly{
   font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
   overflow: auto;
   font-size: 0.9em;
-  height: 500px;
+  height: 300px;
   width: 100%;
 }
 
@@ -264,7 +264,18 @@ ul.variable{
   margin-left: 5px;
   font-style: italic;
 }
-
+.plot{
+  width: 300px;
+  height: 200px;
+  display: visible;
+}
+#tooltip{
+  position: fixed;
+  display: none;
+  border: 1px solid #828282;
+  padding: 2px;
+  background-color: #f5f5f5;
+}
 #threads ul{
   list-style: none;
   padding: 0;
