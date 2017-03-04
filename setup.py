@@ -5,7 +5,8 @@ from setuptools import find_packages, setup, Command
 
 EXCLUDE_FROM_PACKAGES = []
 
-readme = io.open('README.rst', 'r', encoding = "utf-8").read()
+readme = io.open('README.rst', 'r', encoding="utf-8").read()
+
 
 class TestCommand (Command):
     description = 'test task'

@@ -51,6 +51,8 @@ body(style='margin: 0')
 
             button.dropdown-btn(type="button")
                 span.caret
+            //- List the source files for the current executable. Note for big binaries, this can be very large and cause pygdbmi's parser to lock up which is why this must be done with a button and not automatically
+            button.gdb_cmd(data-cmd='-file-list-exec-source-files') fetch
 
         div.flexrow
             //- displays loaded file path and input to jump to line
@@ -167,9 +169,9 @@ body(style='margin: 0')
         table.gdb_command_input(style='width: 100%;')
             tr
                 td(style='width: 30px; vertical-align: middle;')
-                    span(style='margin-top: 10px') (gdb)
+                    span(style='margin-top: 10px') (#{interpreter})
                 td(style='width: 100%; float: left; vertical-align: middle;')
-                     input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter gdb command', style='float: left')
+                     input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command', style='float: left')
                 td(style='width: 15px; vertical-align: middle; padding-right: 10px')
                     span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console')
 
