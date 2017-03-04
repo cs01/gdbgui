@@ -1,0 +1,1 @@
+collective.checkdocs==0.2

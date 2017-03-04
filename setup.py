@@ -26,7 +26,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version='0.7.4.3',
+    version='0.7.4.4',
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),

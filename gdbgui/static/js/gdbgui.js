@@ -1,20 +1,22 @@
 /**
  * This is the main frontend file to make
  * an interactive ui for gdb. Everything exists in this single js
- * file (besides libraries).
+ * file (besides vendor libraries).
  *
  * There are several components, each of which have their
- * own top-level object, and can render new html in the browser.
+ * own top-level object, most of which can render new html in the browser.
  *
  * State is managed in a single location (State._state), and each time the state
- * changes, an event is emitted, which should trigger each component to re-render itself.
- * The state can be changed via State.set() and retrieved via State.get(). (State._state should not
- * be accessed directly.)
+ * changes, an event is emitted, which Component listen for. Each Component and
+ * re-render itself.
  *
- * This pattern provides for a reactive environment, similar to ReactJS
- * but with no build system/JSX, but at the cost of less efficiency. I prefer a Vanilla Javascript
- * to the complexity ReactJS introduces. ReactJS may be considered if performance becomes an issue
- * since it can render more efficently.
+ * The state can be changed via State.set() and retrieved via State.get(). State._state should not
+ * be accessed directly.
+ *
+ * This pattern provides for a reactive environment, and was inspired by ReactJS, but
+ * is written in plan javascript. This avoids the build system at the cost of rendering
+ * less efficiently. debounce functions are used to mitigate inefficiencies from rendering
+ * rapidly (see _.debounce()).
  *
  * Since this file is still being actively developed and hasn't compoletely stabilized, the
  * documentation may not be totally complete/correct.
@@ -113,7 +115,6 @@ let State = {
         expr_being_created: null,  // the expression being created (i.e. myvar)
         expr_autocreated_for_locals: null,  // true when an expression is being autocreated for a local, false otherwise
         expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
-
     },
     clear_program_state: function(){
         State.set('current_line_of_source_code', undefined)
@@ -223,7 +224,7 @@ let State = {
         }
 
         if ('fullname' in breakpoint && breakpoint.fullname){
-            // this is a normal breakpoint
+            // this is a normal/child breakpoint; gdb gives it the fullname
             bkpt.fullname_to_display = breakpoint.fullname
         }else if ('original-location' in breakpoint && breakpoint['original-location']){
             // this breakpoint is the parent breakpoint of multiple other breakpoints. gdb does not give it
@@ -245,7 +246,7 @@ let State = {
     },
 }
 /**
- * Debounce the event emission for smoother rendering
+ * Debounce the event emission for more efficient/smoother rendering
  */
 State.dispatch_state_change = _.debounce((key) => {
         debug_print('dispatching event_global_state_changed')
@@ -345,7 +346,6 @@ const GdbApi = {
 
         GdbApi.socket.on('connect', function(){
             debug_print('connected')
-            // socket.emit('my_event', {data: 'I\'m connected!'});
         });
 
         GdbApi.socket.on('gdb_response', function(response_array) {
@@ -362,7 +362,11 @@ const GdbApi = {
         });
 
         GdbApi.socket.on('disconnect', function(){
+            // we no longer need to warn the user before they exit the page since the gdb process
+            // on the server is already gone
             window.onbeforeunload = () => null
+
+            // show modal
             Modal.render('gdb closed on server', `gdb (pid ${State.get('gdb_pid')}) was closed for this tab because the websocket connection for this tab was disconnected.
                 <p>
                 Each tab has its own instance of gdb running on the backend. Open new tab to start new instance of gdb.`)
@@ -482,12 +486,6 @@ const GdbApi = {
      * runs a gdb cmd (or commands) directly in gdb on the backend
      * validates command before sending, and updates the gdb console and status bar
      * @param cmd: a string or array of strings, that are directly evaluated by gdb
-     * @param success_callback: function to be called upon successful completion.  The data returned
-     *                          is an object. See pygdbmi for a description of the format.
-     *                          The default callback works in most cases, but in some cases a the response is stateful and
-     *                          requires a specific callback. For example, when creating a variable in gdb
-     *                          to watch, gdb returns generic looking data that a generic callback could not
-     *                          figure out how to handle.
      * @return nothing
      */
     run_gdb_command: function(cmd){
@@ -626,10 +624,9 @@ const Util = {
     escape: function(s){
         return s.replace("<", "&lt;")
                 .replace(">", "&gt;")
-                .replace(/(\\n)/g, '<br>')
+                .replace(/\\n/g, '<br>')
                 .replace(/\\"/g, '"')
                 .replace(/\\t/g, '&nbsp')
-                // .replace(/\\"+/g, '"')
     },
     push_if_new: function(array, val){
         if(array.indexOf(val) === -1){
@@ -1464,10 +1461,7 @@ const Registers = {
 }
 
 /**
- * Preferences object
- * The intent of this is to have UI inputs that set and store
- * preferences. These preferences will be saved to localStorage
- * between sessions. (This is still in work)
+ * Settings modal when clicking the gear icon
  */
 const Settings = {
     el: $('#gdbgui_settings_button'),
@@ -1488,7 +1482,7 @@ const Settings = {
                 success: (data) => {
                     State.set('latest_gdbgui_version', _.trim(data))
 
-                    if(Settings.needs_update() && State.get('show_gdbgui_upgrades')){
+                    if(Settings.needs_to_update_gdbgui_version() && State.get('show_gdbgui_upgrades')){
                         Modal.render(`Update Available`, Settings.get_upgrade_text())
                     }
                 },
@@ -1496,11 +1490,11 @@ const Settings = {
             })
         }
     },
-    needs_update: function(){
+    needs_to_update_gdbgui_version: function(){
         return State.get('latest_gdbgui_version') !== State.get('gdbgui_version')
     },
     get_upgrade_text: function(){
-        if(Settings.needs_update()){
+        if(Settings.needs_to_update_gdbgui_version()){
             return `gdbgui version ${State.get('latest_gdbgui_version')} is available. You are using ${State.get('gdbgui_version')}. <p>
 
             Run <br>
@@ -1508,7 +1502,7 @@ const Settings = {
             to update.
             `
         }else{
-            return 'There are no updates available at this time.'
+            return `There are no updates available at this time. Using ${State.get('gdbgui_version')}`
         }
     },
     render: function(){
@@ -1588,10 +1582,6 @@ const BinaryLoader = {
         BinaryLoader.render_past_binary_options_datalist()
     },
     past_binaries: [],
-    onclose: function(){
-        localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
-        return null
-    },
     keydown_on_binary_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
             BinaryLoader.set_target_app()
@@ -1618,6 +1608,8 @@ const BinaryLoader = {
         // save to list of binaries used that autopopulates the input dropdown
         _.remove(BinaryLoader.past_binaries, i => i === binary_and_args)
         BinaryLoader.past_binaries.unshift(binary_and_args)
+        localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
+
         BinaryLoader.render_past_binary_options_datalist()
 
         // find the binary and arguments so gdb can be told which is which
@@ -1923,6 +1915,8 @@ const Expressions = {
         // remove var when icon is clicked
         $("body").on("click", ".delete_gdb_variable", Expressions.click_delete_gdb_variable)
         $("body").on("click", ".toggle_children_visibility", Expressions.click_toggle_children_visibility)
+        $("body").on("click", ".toggle_plot", Expressions.click_toggle_plot)
+
         Expressions.render()
     },
     /**
@@ -1998,8 +1992,7 @@ const Expressions = {
     },
     /**
      * Create a new variable in gdb. gdb automatically assigns
-     * a unique variable name. Use custom callback callback_after_create_variable to handle
-     * gdb response
+     * a unique variable name.
      */
     create_variable: function(expression, expr_autocreated_for_locals){
         State.set('expr_being_created', expression)
@@ -2007,8 +2000,6 @@ const Expressions = {
 
         // - means auto assign variable name in gdb
         // * means evaluate it at the current frame
-        // need to use custom callback due to stateless nature of gdb's response
-        // Expressions.callback_after_create_variable
         if(expression.length > 0 && expression.indexOf('"') !== 0){
             expression = '"' + expression + '"'
         }
@@ -2023,27 +2014,41 @@ const Expressions = {
     },
     /**
      * gdb returns objects for its variables,, but before we save that
-     * data locally, we want to add a little more metadata to make it more useful
-     *
-     * this method does the following:
-     * - add the children array
-     * - convert numchild string to integer
-     * - store whether the object is expanded or collapsed in the ui
+     * data locally, we will add more fields to make it more useful for gdbgui
+     * @param obj (object): mi object returned from gdb
+     * @param expr_autocreated_for_locals (bool): true if expression was autocreated for the locals component
      */
     prepare_gdb_obj_for_storage: function(obj, expr_autocreated_for_locals){
-        let new_obj = $.extend(true, {'children': [],
-                                    'show_children_in_ui': false,
-                                    // this field will be returned by gdb mi as a string, assume it starts out in scope
-                                    'in_scope': 'true',
-                                    // auto-created expressions aren't rendered in the same spot
-                                    'autocreated_for_locals': State.get('expr_autocreated_for_locals'),
-                                    'past_values': [],  // push to this array each time a new value is assigned
-                                }, obj)
+        let new_obj = $.extend(true, {}, obj)
+        // obj was copied, now add some additional fields used by gdbgui
+
         // A varobj's contents may be provided by a Python-based pretty-printer.
         // In this case the varobj is known as a dynamic varobj.
         // Dynamic varobjs have slightly different semantics in some cases.
         // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
         new_obj.numchild = obj.dynamic ? parseInt(obj.has_more) : parseInt(obj.numchild)
+        new_obj.children = []  // actual child objects are fetched dynamically when the user requests them
+        new_obj.show_children_in_ui = false
+
+        // this field is not returned when the variable is created, but
+        // it is returned when the variables are updated
+        // it is returned by gdb mi as a string, and we assume it starts out in scope
+        new_obj.in_scope = 'true'
+        new_obj.autocreated_for_locals = State.get('expr_autocreated_for_locals')
+
+        // can only be plotted if: value is an expression (not a local), and value is numeric
+        new_obj.can_plot = !new_obj.autocreated_for_locals && !window.isNaN(parseFloat(new_obj.value))
+        new_obj.dom_id_for_plot = new_obj.name.replace(/\./g, '-')  // replace '.' with '-' since '.' does not work in the DOM
+        new_obj.show_plot = false  // used when rendering to decide whether to show plot or not
+        // push to this array each time a new value is assigned if value is numeric.
+        // Plots use this data
+        if(new_obj.value.indexOf('0x') === 0){
+            new_obj.values = [parseInt(new_obj.value, 16)]
+        }else if (!window.isNaN(parseFloat(new_obj.value))){
+            new_obj.values = [new_obj.value]
+        }else{
+            new_obj.values = []
+        }
         return new_obj
     },
     /**
@@ -2051,9 +2056,11 @@ const Expressions = {
      * variable name (which is automatically created by gdb),
      * and the expression the user wanted to evailuate. The
      * new variable is saved locally. The variable UI element is then re-rendered
+     * @param r (object): gdb mi object
      */
     gdb_created_root_variable: function(r){
-        if(State.get('expr_being_created')){
+        let expr = State.get('expr_being_created')
+        if(expr){
             // example payload:
             // "payload": {
             //      "has_more": "0",
@@ -2063,20 +2070,19 @@ const Expressions = {
             //      "type": "int",
             //      "value": "0"
             //  },
-            Expressions.save_new_expression(State.get('expr_being_created'), State.get('expr_autocreated_for_locals'), r.payload)
+            Expressions.save_new_expression(expr, State.get('expr_autocreated_for_locals'), r.payload)
             State.set('expr_being_created', null)
             // automatically fetch first level of children for root variables
             Expressions.fetch_and_show_children_for_var(r.payload.name)
         }else{
-            console.error('could not create new var')
+            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
         }
-
-        Expressions.render()
     },
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
      * This method stores this child array data to the appropriate locally stored
-     * object, then re-renders the Variable UI element.
+     * object
+     * @param r (object): gdb mi object
      */
     gdb_created_children_variables: function(r){
         // example reponse payload:
@@ -2104,19 +2110,21 @@ const Expressions = {
         //     }
 
         let parent_name = State.get('expr_gdb_parent_var_currently_fetching_children')
+        , autocreated_for_locals = State.get('expr_autocreated_for_locals')
 
         State.set('expr_gdb_parent_var_currently_fetching_children', null)
-        State.set('expr_autocreated_for_locals', null)
 
         // get the parent object of these children
         let expressions = State.get('expressions')
         let parent_obj = Expressions.get_obj_from_gdb_var_name(expressions, parent_name)
         if(parent_obj){
             // prepare all the child objects we received for local storage
-            let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj))
+            let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, autocreated_for_locals))
             // save these children as a field to their parent
             parent_obj.children = children
             State.set('expressions', expressions)
+        }else{
+            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
         }
 
         // if this field is an anonymous struct, the user will want to
@@ -2126,30 +2134,94 @@ const Expressions = {
                 Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
-        // re-render
-        Expressions.render()
     },
     _render: function(){
         let html = ''
         const is_root = true
 
         let sorted_expression_objs = _.sortBy(State.get('expressions'), unsorted_obj => unsorted_obj.expression)
+        // only render variables in scope that were not created for the Locals component
+        , objs_to_render = sorted_expression_objs.filter(obj => obj.in_scope === 'true' && obj.autocreated_for_locals === false)
+        , objs_to_delete = sorted_expression_objs.filter(obj => obj.in_scope === 'invalid')
 
-        for(let obj of sorted_expression_objs){
-            if(obj.in_scope === 'true' && obj.autocreated_for_locals === false){
-                if(obj.numchild > 0) {
-                    html += Expressions.get_ul_for_var_with_children(obj.expression, obj, is_root)
-                }else{
-                    html += Expressions.get_ul_for_var_without_children(obj.expression, obj, is_root)
-                }
-            }else if (obj.in_scope === 'invalid'){
-                Expressions.delete_gdb_variable(obj.name)
+        // delete invalid objects
+        objs_to_delete.map(obj => Expressions.delete_gdb_variable(obj.name))
+
+        for(let obj of objs_to_render){
+            if(obj.numchild > 0) {
+                html += Expressions.get_ul_for_var_with_children(obj.expression, obj, is_root, true)
+            }else{
+                html += Expressions.get_ul_for_var_without_children(obj.expression, obj, is_root, true)
             }
         }
         if(html === ''){
             html = '<span class=placeholder>no expressions in this context</span>'
         }
+        html += '<div id=tooltip style="display: hidden"/>'
         Expressions.el.html(html)
+
+        for(let obj of objs_to_render){
+            Expressions.plot_var_and_children(obj)
+        }
+    },
+    /**
+     * function render a plot on an existing element
+     * @param obj: object to make a plot for
+     */
+    _make_plot: function(obj){
+        let id = '#' + obj.dom_id_for_plot  // this div should have been created already
+        , jq = $(id)
+        , data = []
+        , i = 0
+
+        // collect data
+        for(let val of obj.values){
+            data.push([i, val])
+            i++
+        }
+
+        // make the plot
+        $.plot(jq,
+            [
+                {data: data,
+                shadowSize: 0,
+                color: '#33cdff'}
+            ],
+            {
+                series: {
+                    lines: { show: true },
+                    points: { show: true }
+                },
+                grid: { hoverable: true, clickable: false }
+            }
+        )
+
+        // add hover event to show tooltip
+        jq.bind('plothover', function (event, pos, item) {
+            if (item) {
+                let x = item.datapoint[0]
+                , y = item.datapoint[1]
+
+                $('#tooltip').html(`(${x}, ${y})`)
+                    .css({top: item.pageY+5, left: item.pageX+5})
+                    .show()
+            } else {
+                $("#tooltip").hide();
+            }
+        })
+    },
+    /**
+     * look through all expression objects and see if they are supposed to show their plot.
+     * If so, update the dom accordingly
+     * @param obj: expression object to plot (may have children to plot too)
+     */
+    plot_var_and_children: function(obj){
+        if(obj.show_plot){
+            Expressions._make_plot(obj)
+        }
+        for(let child of obj.children){
+            Expressions.plot_var_and_children(child)
+        }
     },
     /**
      * get unordered list for a variable that has children
@@ -2182,13 +2254,24 @@ const Expressions = {
     },
     /**
      * Get ul for a variable with or without children
-     * @param is_root: true if it has children and
      */
     _get_ul_for_var: function(expression, mi_obj, is_root, plus_or_minus='', child_tree='', show_children_in_ui=false, numchild=0){
         let
             delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
             ,toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
             , val = _.isString(mi_obj.value) ? Memory.make_addrs_into_links(mi_obj.value) : mi_obj.value
+            , plot_content = ''
+            , plot_button = ''
+
+        if(mi_obj.can_plot && mi_obj.show_plot){
+            // dots are not allowed in the dom as id's. replace with '-'.
+            let id = mi_obj.dom_id_for_plot
+            plot_button = `<span class='toggle_plot pointer glyphicon glyphicon-ban-circle' data-gdb_variable_name='${mi_obj.name}' title='remove plot'></span>`
+            plot_content = `<div id='${id}' class=plot />`
+
+        }else if(mi_obj.can_plot && !mi_obj.show_plot){
+            plot_button = `<img src='/static/images/ploticon.png' class='toggle_plot pointer' data-gdb_variable_name='${mi_obj.name}' />`
+        }
 
         return `<ul class='variable'>
             <li>
@@ -2202,7 +2285,13 @@ const Expressions = {
                     ${Util.escape(mi_obj.type || '')}
                 </span>
 
-                ${delete_button}
+
+                <div class='right_help_icon_show_on_hover'>
+                    ${plot_button}
+                    ${delete_button}
+                </div>
+
+                ${plot_content}
 
             </li>
             ${child_tree}
@@ -2212,12 +2301,13 @@ const Expressions = {
     fetch_and_show_children_for_var: function(gdb_var_name){
         let expressions = State.get('expressions')
         let obj = Expressions.get_obj_from_gdb_var_name(expressions, gdb_var_name)
-        // show
+        // mutate object by reference
         obj.show_children_in_ui = true
+        // update state
         State.set('expressions', expressions)
         if(obj.numchild > 0 && obj.children.length === 0){
             // need to fetch child data
-            Expressions._get_children_for_var(gdb_var_name)
+            Expressions._get_children_for_var(gdb_var_name, obj.autocreated_for_locals)
         }else{
             // already have child data, re-render will occur from event dispatch
         }
@@ -2244,12 +2334,21 @@ const Expressions = {
             Expressions.fetch_and_show_children_for_var(gdb_var_name)
         }
     },
+    click_toggle_plot: function(e){
+        let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
+        , expressions = State.get('expressions')
+        // get data object, which has field that says whether its expanded or not
+        , obj = Expressions.get_obj_from_gdb_var_name(expressions, gdb_var_name)
+        obj.show_plot = !obj.show_plot
+        State.set('expressions', expressions)
+    },
     /**
      * Send command to gdb to give us all the children and values
      * for a gdb variable. Note that the gdb variable itself may be a child.
      */
-    _get_children_for_var: function(gdb_variable_name){
+    _get_children_for_var: function(gdb_variable_name, expr_autocreated_for_locals){
         State.set('expr_gdb_parent_var_currently_fetching_children', gdb_variable_name)
+        State.set('expr_autocreated_for_locals', expr_autocreated_for_locals)
         GdbApi.run_gdb_command(`-var-list-children --all-values "${gdb_variable_name}"`)
     },
     update_variable_values: function(){
@@ -2261,12 +2360,16 @@ const Expressions = {
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
 
             if(obj){
-                if('value' in changelist){
-                    // 'value' is about to be wiped. Save the current value
-                    // to the past values
-                    obj.past_values.push(obj.value)
-                    console.log(obj.name)
-                    console.log(obj.past_values)
+                if('value' in changelist && !obj.autocreated_for_locals){
+                    // this object is an expression and it had a value updated.
+                    // save the value to an array for plotting
+                    if(changelist.value.indexOf('0x') === 0){
+                        obj.can_plot = true
+                        obj.values.push(parseInt(changelist.value, 16))
+                    }else if (!window.isNaN(parseFloat(changelist.value))){
+                        obj.can_plot = true
+                        obj.values.push(changelist.value)
+                    }
                 }
                 // overwrite fields of obj with fields from changelist
                 _.assign(obj, changelist)
@@ -2520,7 +2623,7 @@ const VisibilityToggler = {
      * the checkboxes
      */
     click_visibility_toggler: function(e){
-        if(e.target.classList.contains('glyphicon-ban-circle') || e.target.classList.contains('clear_console')){
+        if(e.target.classList.contains('glyphicon-ban-circle') || e.target.classList.contains('btn')){
             // don't toggle visibility if the clear button was pressed
             return
         }
@@ -2576,9 +2679,8 @@ const Modal = {
 
 /**
  * This is the main callback when receiving a response from gdb.
- * This callback requires no state to handle the response.
- * This callback calls the appropriate methods of other Components,
- * and updates the status bar.
+ * This callback generally updates the state, which emits an event and
+ * makes components re-render themselves.
  */
 const process_gdb_response = function(response_array){
     // update status with error or with last response
@@ -2659,9 +2761,6 @@ const process_gdb_response = function(response_array){
             if ('name' in r.payload){
                 Expressions.gdb_created_root_variable(r)
             }
-            // if (your check here) {
-            //      render your custom compenent here!
-            // }
         } else if (r.type === 'result' && r.message === 'error'){
             // this is also special gdb mi output, but some sort of error occured
 
@@ -2728,6 +2827,10 @@ const process_gdb_response = function(response_array){
     }
 }
 
+/**
+ * the w2ui library lets you compartmentalize your dom elements: http://w2ui.com/web/demo
+ * I would prefer plan javascript, but this got gdbgui working quickly
+ */
 const layout_style = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
 $('#layout').w2layout({
     name: 'layout',
