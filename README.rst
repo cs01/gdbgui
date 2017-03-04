@@ -84,7 +84,8 @@ Flags (all are optional):
   -h, --help            show this help message and exit
   -p PORT, --port PORT  The port on which gdbgui will be hosted
   --host HOST           The host ip address on which gdbgui serve.
-  -g GDB, --gdb GDB     Path to gdb executable.
+  -g GDB, --gdb GDB     Path to gdb executable or lldb-mi executable. Defaults is 'gdb'. lldb
+                        support is experimental and not fully functional at this time.
   -v, --version         Print version
   --debug               The debug flag of this Flask application. Pass this
                         flag when debugging gdbgui itself to automatically

@@ -33,6 +33,9 @@ DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 IS_A_TTY = sys.stdout.isatty()
 DEFAULT_GDB_EXECUTABLE = 'gdb'
+DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
+DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
+LLDB_SERVER_PATH = 'lldb-server'  # this is required by lldb-mi
 
 INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
@@ -40,21 +43,25 @@ SHOW_GDBGUI_UPGRADES = True
 
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-# switch to gevent once https://github.com/cs01/gdbgui/issues/15 is resolved
+# switch to gevent once https://github.com/miguelgrinberg/Flask-SocketIO/issues/413 is resolved
 socketio = SocketIO(async_mode='eventlet')
 _gdb = {}  # each key is websocket client id (each tab in browser gets its own id), and value is pygdbmi.GdbController instance
 _gdb_reader_thread = None  # T
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False):
+def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False, LLDB=False):
     """Run the server of the gdb gui"""
+    if LLDB is True and find_executable(LLDB_SERVER_PATH) is None:
+        pygdbmi.printcolor.print_red('lldb-mi is being used, but the executable "%s" was not found. It is required by lldb-mi.' % LLDB_SERVER_PATH)
+        sys.exit(1)
+
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
-    app.secret_key = 'iusahjpoijeoprkge[0irokmeoprgk890'
-    # templates are writte in pug, so add that capability to flask
+    # templates are written in pug, so add that capability to flask
     app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
     app.config['TEMPLATES_AUTO_RELOAD'] = True
+    app.config['LLDB'] = LLDB
     socketio.init_app(app)
 
     if open_browser is True and debug is False and testing is False:
@@ -70,6 +77,9 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
 def verify_gdb_exists():
     if find_executable(GDB_PATH) is None:
         pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Is gdb installed? try "sudo apt-get install gdb"' % GDB_PATH)
+        sys.exit(1)
+    elif 'lldb' in GDB_PATH.lower() and 'lldb-mi' not in GDB_PATH.lower():
+        pygdbmi.printcolor.print_red('gdbgui cannot use the standard lldb executable. You must use an executable with "lldb-mi" in its name.')
         sys.exit(1)
 
 
@@ -98,7 +108,12 @@ def client_connected():
     # give each client their own gdb instance
     if request.sid not in _gdb.keys():
         dbprint('new sid', request.sid)
-        _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=['-nx', '--interpreter=mi2'])
+        if app.config['LLDB'] is True:
+            gdb_args = DEFAULT_LLDB_ARGS
+        else:
+            gdb_args = DEFAULT_GDB_ARGS
+
+        _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=gdb_args)
 
     # tell the client browser tab which gdb pid is a dedicated to it
     emit('gdb_pid', _gdb[request.sid].gdb_process.pid)
@@ -202,15 +217,18 @@ def gdbgui():
         time_sec = 0
     else:
         time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
+    interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
     initial_data = {
             'gdbgui_version': __version__,
+            'interpreter': interpreter,
             'initial_binary_and_args': INITIAL_BINARY_AND_ARGS,
-            'show_gdbgui_upgrades': SHOW_GDBGUI_UPGRADES
+            'show_gdbgui_upgrades': SHOW_GDBGUI_UPGRADES,
         }
 
     return render_template('gdbgui.pug',
         timetag_to_prevent_caching=time_sec,
         debug=json.dumps(app.debug),
+        interpreter=interpreter,
         initial_data=json.dumps(initial_data))
 
 
@@ -277,7 +295,8 @@ def main():
 
     parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted. Defaults to %s' % DEFAULT_PORT, default=DEFAULT_PORT)
     parser.add_argument('--host', help='The host ip address on which gdbgui serve. Defaults to %s' % DEFAULT_HOST, default=DEFAULT_HOST)
-    parser.add_argument('-g', '--gdb', help='Path to gdb executable. Defaults to %s.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument('-g', '--gdb', help='Path to gdb or lldb executable. Defaults to %s. lldb support is experimental.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument('--lldb', help='Use lldb commands (experimental)', action='store_true')
     parser.add_argument('-v', '--version', help='Print version', action='store_true')
     parser.add_argument('--hide_gdbgui_upgrades', help='Hide messages regarding newer version of gdbgui. Defaults to False.', action='store_true')
     parser.add_argument('--debug', help='The debug flag of this Flask application. '
@@ -293,7 +312,7 @@ def main():
     GDB_PATH = args.gdb
     SHOW_GDBGUI_UPGRADES = not args.hide_gdbgui_upgrades
     verify_gdb_exists()
-    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser))
+    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), LLDB=(args.lldb or 'lldb-mi' in args.gdb.lower()))
 
 
 if __name__ == '__main__':
