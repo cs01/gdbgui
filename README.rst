@@ -76,7 +76,7 @@ Examples
 See `https://github.com/cs01/gdbgui/tree/master/examples <https://github.com/cs01/gdbgui/tree/master/examples>`_
 
 Arguments
-~~~~~~~
+~~~~~~~~~
 Positional arguments:
   ``command``: (Optional) The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example ``gdbgui ./mybinary -myarg -flag1 -flag2``. Binaries and arguments can also be input through the browser interface after launching.
 
