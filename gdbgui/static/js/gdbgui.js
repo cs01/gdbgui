@@ -29,8 +29,10 @@ window.State = (function ($, _, Awesomplete, io, moment, debug, initial_data) {
 /**
  * Constants
  */
-const ENTER_BUTTON_NUM = 13, UP_BUTTON_NUM = 38, DOWN_BUTTON_NUM = 40
-, DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
+const ENTER_BUTTON_NUM = 13, 
+      UP_BUTTON_NUM = 38, 
+      DOWN_BUTTON_NUM = 40, 
+      DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
 
 // print to console if debug is true
 let debug_print
@@ -696,7 +698,7 @@ const GdbConsoleComponent = {
         // put focus back in input so user can just hit enter
         GdbCommandInput.el.focus()
         //reset up-down arrow cmd history index
-        localStorage.setItem("cache-cmd-index", 0);
+        localStorage.setItem("cache-cmd-index", 0)
     },
 }
 GdbConsoleComponent.scroll_to_bottom = _.debounce(GdbConsoleComponent._scroll_to_bottom, 300, {leading: true})
@@ -1682,34 +1684,34 @@ const GdbCommandInput = {
         if(e.keyCode === ENTER_BUTTON_NUM) {
             GdbCommandInput.run_current_command()
             //reset cache-cmd index
-            localStorage.setItem("cache-cmd-index", 0);
+            localStorage.setItem("cache-cmd-index", 0)
         }
 
         if (e.keyCode === UP_BUTTON_NUM || e.keyCode == DOWN_BUTTON_NUM) {
           //get the array of sent_cmds
-          var sent_cmds = document.getElementsByClassName("margin_sm output sent_command pointer");
+          var sent_cmds = document.getElementsByClassName("margin_sm output sent_command pointer")
           //get number of sent cmds
-          var sent_cmds_count = document.getElementsByClassName("margin_sm output sent_command pointer").length;
-          var cmd_index = parseInt(localStorage.getItem("cache-cmd-index")) || 0;
+          var sent_cmds_count = document.getElementsByClassName("margin_sm output sent_command pointer").length
+          var cmd_index = parseInt(localStorage.getItem("cache-cmd-index")) || 0
           if (sent_cmds_count != 0) {
             //increment/decrement based on button pressed
             if (e.keyCode == UP_BUTTON_NUM) {
-              if (++cmd_index >sent_cmds_count) cmd_index = 0;
+              if (++cmd_index >sent_cmds_count) cmd_index = 0
             }
             else {
-              if (--cmd_index < 0) cmd_index = sent_cmds_count;
+              if (--cmd_index < 0) cmd_index = sent_cmds_count
             }
             //update index on overflow, and based on index set the input text
             if (cmd_index == 0) {
-              GdbCommandInput.set_input_text("");
+              GdbCommandInput.set_input_text("")
             }
             else {
-              GdbCommandInput.set_input_text(sent_cmds[sent_cmds_count - cmd_index].innerHTML);
+              GdbCommandInput.set_input_text(sent_cmds[sent_cmds_count - cmd_index].innerHTML)
             }
             //store the new cmd_index
-            localStorage.setItem("cache-cmd-index", cmd_index);
+            localStorage.setItem("cache-cmd-index", cmd_index)
           }
-          GdbCommandInput.el.focus();
+          GdbCommandInput.el.focus()
         }
 
     },
