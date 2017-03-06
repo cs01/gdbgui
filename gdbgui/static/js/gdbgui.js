@@ -3,11 +3,10 @@
  * an interactive ui for gdb. Everything exists in this single js
  * file (besides vendor libraries).
  *
- * There are several components, each of which have their
- * own top-level object, most of which can render new html in the browser.
+ * There are several top-level components, most of which can render new html in the browser.
  *
  * State is managed in a single location (State._state), and each time the state
- * changes, an event is emitted, which Component listen for. Each Component and
+ * changes, an event is emitted, which Components listen for. Each Component can
  * re-render itself.
  *
  * The state can be changed via State.set() and retrieved via State.get(). State._state should not
@@ -15,8 +14,8 @@
  *
  * This pattern provides for a reactive environment, and was inspired by ReactJS, but
  * is written in plan javascript. This avoids the build system at the cost of rendering
- * less efficiently. debounce functions are used to mitigate inefficiencies from rendering
- * rapidly (see _.debounce()).
+ * less efficiently. How inneficient depends on what's being rendered . Debounce functions are used to 
+ * mitigate inefficiencies from rendering rapidly (see _.debounce()).
  *
  * Since this file is still being actively developed and hasn't compoletely stabilized, the
  * documentation may not be totally complete/correct.
