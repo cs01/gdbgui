@@ -35,25 +35,28 @@ view stack traces, and more in C, C++, Go, and Rust! Simply run
 Install
 ------------------------------
 
-Linux
+**Linux**
 
 ::
 
     sudo pip install gdbgui --upgrade
 
-macOS
+**macOS**
 
 ::
 
     sudo pip install gdbgui --upgrade --user
 
-Windows support is in development. See issue #18.
+**Windows**
 
-virtualenv users do not need the ``sudo`` prefix.
+    support is in development. See issue #18.
 
 Since gdbgui is under active development, consider running this command fairly often.
 
-Alternatively, you can run from source
+virtualenv users do not need the ``sudo`` prefix.
+
+
+**Alternatively, you can clone and run directly**
 
 ::
 
