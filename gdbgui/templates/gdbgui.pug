@@ -169,7 +169,7 @@ body(style='margin: 0')
                 td(style='width: 30px; vertical-align: middle;')
                     span(style='margin-top: 10px') (#{interpreter})
                 td(style='width: 100%; float: left; vertical-align: middle;')
-                     input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command', style='float: left')
+                     input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter}/inferior process command. You can also change the tty of the inferior process with "set inferior-tty [ tty ]"', style='float: left')
                 td(style='width: 15px; vertical-align: middle; padding-right: 10px')
                     span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console')
 
