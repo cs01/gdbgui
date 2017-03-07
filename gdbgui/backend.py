@@ -41,11 +41,11 @@ LLDB_SERVER_PATH = 'lldb-server'  # this is required by lldb-mi
 
 match = re.match('darwin-(\d+)\..*', platform.platform().lower())
 if match is None:
-    STARTUP_WITH_SHELL_OFF = True
+    STARTUP_WITH_SHELL_OFF = False
 elif int(match.groups()[0]) >= 16:
     # if mac OS version is 16 (sierra) or higher, need to set shell off due to
     # os's security requirements
-    STARTUP_WITH_SHELL_OFF = False
+    STARTUP_WITH_SHELL_OFF = True
 
 
 INITIAL_BINARY_AND_ARGS = []  # global
