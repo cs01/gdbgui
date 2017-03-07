@@ -2,7 +2,7 @@
 
 	git clone https://github.com/cs01/gdbgui.git
 	cd gdbgui/examples
-	make [c | cpp | go | rust | python]
+	make [c | cpp | go | rust | cpython]
 
 Running `make` in the above commands will
 

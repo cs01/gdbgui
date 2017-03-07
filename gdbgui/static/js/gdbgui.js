@@ -3,11 +3,10 @@
  * an interactive ui for gdb. Everything exists in this single js
  * file (besides vendor libraries).
  *
- * There are several components, each of which have their
- * own top-level object, most of which can render new html in the browser.
+ * There are several top-level components, most of which can render new html in the browser.
  *
  * State is managed in a single location (State._state), and each time the state
- * changes, an event is emitted, which Component listen for. Each Component and
+ * changes, an event is emitted, which Components listen for. Each Component can
  * re-render itself.
  *
  * The state can be changed via State.set() and retrieved via State.get(). State._state should not
@@ -15,8 +14,8 @@
  *
  * This pattern provides for a reactive environment, and was inspired by ReactJS, but
  * is written in plan javascript. This avoids the build system at the cost of rendering
- * less efficiently. debounce functions are used to mitigate inefficiencies from rendering
- * rapidly (see _.debounce()).
+ * less efficiently. How inneficient depends on what's being rendered . Debounce functions are used to
+ * mitigate inefficiencies from rendering rapidly (see _.debounce()).
  *
  * Since this file is still being actively developed and hasn't compoletely stabilized, the
  * documentation may not be totally complete/correct.
@@ -29,10 +28,11 @@ window.State = (function ($, _, Awesomplete, io, moment, debug, initial_data) {
 /**
  * Constants
  */
-const ENTER_BUTTON_NUM = 13, 
-      UP_BUTTON_NUM = 38, 
-      DOWN_BUTTON_NUM = 40, 
-      DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
+const ENTER_BUTTON_NUM = 13
+    , UP_BUTTON_NUM = 38
+    , DOWN_BUTTON_NUM = 40
+    , DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
+    , ANIMATED_REFRESH_ICON = "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>"
 
 // print to console if debug is true
 let debug_print
@@ -171,13 +171,24 @@ let State = {
         }
 
         let oldval = State._state[key]
+
+        // make new copy so reference cannot be modified
+        let _value
+        if(_.isArray(value)){
+            _value = $.extend(true, [], value)
+        }else if (_.isObject(value)){
+            _value = $.extend(true, {}, value)
+        }else{
+            _value = value
+        }
+
         // update the state
-        State._state[key] = value
-        if(oldval !== value){
-            if(_.isArray(oldval) && _.isArray(value)){
-                debug_print(`${key} was changed from array of length ${oldval.length} to ${value.length}`)
+        State._state[key] = _value
+        if(oldval !== _value){
+            if(_.isArray(oldval) && _.isArray(_value)){
+                debug_print(`${key} was changed from array of length ${oldval.length} to ${_value.length}`)
             }else{
-                debug_print(`${key} was changed from ${oldval} to ${value}`)
+                debug_print(`${key} was changed from ${oldval} to ${_value}`)
             }
             // tell listeners that the state changed
             State.dispatch_state_change(key)
@@ -344,7 +355,6 @@ const GdbApi = {
         window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
-        window.addEventListener('event_breakpoint_created', GdbApi.event_breakpoint_created)
         window.addEventListener('event_select_frame', GdbApi.event_select_frame)
 
         GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
@@ -380,75 +390,43 @@ const GdbApi = {
 
     },
     click_run_button: function(e){
-        if(State.get('inferior_binary_path') !== null){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-run')
-        }else{
-            StatusBar.render('no inferior program is loaded', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-run')
     },
     inferior_is_paused: function(){
         return ([undefined, 'paused'].indexOf(State.get('inferior_program')) >= 0)
     },
     click_continue_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-continue')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-continue')
     },
     click_next_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-next')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next')
     },
     click_step_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-step')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step')
     },
     click_return_button: function(e){
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
         // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
         // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running.
         // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
-        if(GdbApi.inferior_is_paused()){
-            GdbApi.run_gdb_command('-exec-return')
-            window.dispatchEvent(new Event('event_inferior_program_paused'))
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        GdbApi.run_gdb_command('-exec-return')
+        window.dispatchEvent(new Event('event_inferior_program_paused'))
     },
     click_next_instruction_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-next-instruction')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next-instruction')
     },
     click_step_instruction_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-step-instruction')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step-instruction')
     },
     click_send_interrupt_button: function(e){
-        if(State.get('inferior_binary_path') !== null){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-interrupt')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-interrupt')
     },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
@@ -479,9 +457,6 @@ const GdbApi = {
     event_inferior_program_paused: function(){
         GdbApi.refresh_state_for_gdb_pause()
     },
-    event_breakpoint_created: function(){
-        GdbApi.refresh_breakpoints()
-    },
     event_select_frame: function(e){
         let framenum = e.detail
         GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
@@ -509,13 +484,32 @@ const GdbApi = {
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
-        StatusBar.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
+        StatusBar.render(ANIMATED_REFRESH_ICON)
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
-    refresh_breakpoints: function(){
-        GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()])
+    /**
+     * Run a user-defined command, then refresh the state
+     * @param user_cmd (str or array): command or commands to run before refreshing state
+     */
+    run_command_and_refresh_state: function(user_cmd){
+        if(!user_cmd){
+            console.error('missing required argument')
+            return
+        }
+        let cmds = []
+        if(_.isArray(user_cmd)){
+            cmds = cmds.concat(user_cmd)
+        }else if (_.isString(user_cmd) && user_cmd.length > 0){
+            cmds.push(user_cmd)
+        }
+        cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds())
+        GdbApi.run_gdb_command(cmds)
     },
-    refresh_state_for_gdb_pause: function(){
+    /**
+     * Get array of commands to send to gdb that refreshes everything in the
+     * frontend
+     */
+    _get_refresh_state_for_pause_cmds: function(){
         let cmds = [
             // get info on current thread
             '-thread-info',
@@ -542,11 +536,21 @@ const GdbApi = {
         // re-fetch memory over desired range as specified by DOM inputs
         cmds = cmds.concat(Memory.get_gdb_commands_from_inputs())
 
+        // refresh breakpoints
+        cmds.push(GdbApi.get_break_list_cmd())
+
         // List the frames currently on the stack.
         cmds.push('-stack-list-frames')
-
-        // and finally run the commands
-        GdbApi.run_gdb_command(cmds)
+        return cmds
+    },
+    /**
+     * Request relevant state information from gdb to refresh UI
+     */
+    refresh_state_for_gdb_pause: function(){
+        GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds())
+    },
+    refresh_breakpoints: function(){
+        GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()])
     },
     get_inferior_binary_last_modified_unix_sec(path){
         $.ajax({
@@ -560,10 +564,10 @@ const GdbApi = {
     },
     get_insert_break_cmd: function(fullname, line){
         if(State.get('interpreter') === 'gdb'){
-            return [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`, GdbApi.get_break_list_cmd()]
+            return [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`]
         }else{
             console.log('TODOLLDB - find mi-friendly command')
-            return [`breakpoint set --file ${State.get('rendered_source_file_fullname')} --line ${line}`, GdbApi.get_break_list_cmd()]
+            return [`breakpoint set --file ${State.get('rendered_source_file_fullname')} --line ${line}`]
         }
     },
     get_delete_break_cmd: function(bkpt_num){
@@ -1341,7 +1345,16 @@ const SourceFileAutocomplete = {
         })
 
         // when dropdown button is clicked, toggle showing/hiding it
-        Awesomplete.$('.dropdown-btn').addEventListener("click", function() {
+        Awesomplete.$('#source_file_dropdown_button').addEventListener("click", function() {
+
+            if(State.get('source_file_paths').length === 0){
+                // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
+                // request that gdb populate this list.
+                State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large binaries, this may cause the program to crash.`])
+                GdbApi.run_gdb_command('-file-list-exec-source-files')
+                return
+            }
+
             if (SourceFileAutocomplete.input.ul.childNodes.length === 0) {
                 SourceFileAutocomplete.input.evaluate()
             }
@@ -1518,11 +1531,13 @@ const Settings = {
     },
     get_upgrade_text: function(){
         if(Settings.needs_to_update_gdbgui_version()){
-            return `gdbgui version ${State.get('latest_gdbgui_version')} is available. You are using ${State.get('gdbgui_version')}. <p>
-
-            Run <br>
-            <span class='monospace bold'>[sudo] pip install gdbgui --upgrade</span><br>
-            to update.
+            return `gdbgui version ${State.get('latest_gdbgui_version')} is available. You are using ${State.get('gdbgui_version')}. <p><p>
+            To upgrade:<p>
+            Linux: <br>
+            <span class='monospace bold'>sudo pip install gdbgui --upgrade</span><p>
+            macOS:<br>
+            <span class='monospace bold'>sudo pip install gdbgui --upgrade --user</span><p>
+            virtualenv users do not need the "sudo" prefix.
             `
         }else{
             return `There are no updates available at this time. Using ${State.get('gdbgui_version')}`
@@ -1624,7 +1639,7 @@ const BinaryLoader = {
         var binary_and_args = _.trim(BinaryLoader.el.val())
 
         if (_.trim(binary_and_args) === ''){
-            StatusBar.render('enter a binary path and arguments before attempting to load')
+            StatusBar.render('enter a binary path and arguments', true)
             return
         }
 
@@ -1719,7 +1734,7 @@ const GdbCommandInput = {
         let cmd = GdbCommandInput.el.val()
         GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
-        GdbApi.run_gdb_command(cmd)
+        GdbApi.run_command_and_refresh_state(cmd)
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
@@ -2183,7 +2198,7 @@ const Expressions = {
         // if this field is an anonymous struct, the user will want to
         // see this expanded by default
         for(let child of parent_obj.children){
-            if (child.type.includes('anonymous')){
+            if (child.exp.includes('anonymous')){
                 Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
@@ -2293,7 +2308,7 @@ const Expressions = {
                     }
                 }
             }else{
-                child_tree += `<li><span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span></li>`
+                child_tree += `<li>${ANIMATED_REFRESH_ICON}</li>`
             }
 
             child_tree += '</ul>'
@@ -2602,7 +2617,11 @@ const Threads = {
         if(State.get('threads').length > 0){
             let body = []
             for(let t of State.get('threads')){
-                console.log('TODOLLDB - find current thread id')
+
+                if(State.get('interpreter') === 'lldb'){
+                    console.log('TODOLLDB - find current thread id')
+                }
+
                 let is_current_thread_being_rendered = (parseInt(t.id) === State.get('current_thread_id'))
                 , cls = is_current_thread_being_rendered ? 'bold' : ''
 
