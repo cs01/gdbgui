@@ -49,10 +49,8 @@ body(style='margin: 0')
             //- displays source file path input, and dropdown
             input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='flex:1')
 
-            button.dropdown-btn(type="button")
+            button#source_file_dropdown_button.dropdown-btn(type="button")
                 span.caret
-            //- List the source files for the current executable. Note for big binaries, this can be very large and cause pygdbmi's parser to lock up which is why this must be done with a button and not automatically
-            button.gdb_cmd(data-cmd='-file-list-exec-source-files') fetch
 
         div.flexrow
             //- displays loaded file path and input to jump to line
