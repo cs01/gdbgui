@@ -1527,11 +1527,13 @@ const Settings = {
     },
     get_upgrade_text: function(){
         if(Settings.needs_to_update_gdbgui_version()){
-            return `gdbgui version ${State.get('latest_gdbgui_version')} is available. You are using ${State.get('gdbgui_version')}. <p>
-
-            Run <br>
-            <span class='monospace bold'>[sudo] pip install gdbgui --upgrade</span><br>
-            to update.
+            return `gdbgui version ${State.get('latest_gdbgui_version')} is available. You are using ${State.get('gdbgui_version')}. <p><p>
+            To upgrade:<p>
+            Linux: <br>
+            <span class='monospace bold'>sudo pip install gdbgui --upgrade</span><p>
+            macOS:<br>
+            <span class='monospace bold'>sudo pip install gdbgui --upgrade --user</span><p>
+            virtualenv users do not need the "sudo" prefix.
             `
         }else{
             return `There are no updates available at this time. Using ${State.get('gdbgui_version')}`
@@ -2162,7 +2164,7 @@ const Expressions = {
         // if this field is an anonymous struct, the user will want to
         // see this expanded by default
         for(let child of parent_obj.children){
-            if (child.type.includes('anonymous')){
+            if (child.exp.includes('anonymous')){
                 Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
