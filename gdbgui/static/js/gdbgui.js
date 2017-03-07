@@ -14,7 +14,7 @@
  *
  * This pattern provides for a reactive environment, and was inspired by ReactJS, but
  * is written in plan javascript. This avoids the build system at the cost of rendering
- * less efficiently. How inneficient depends on what's being rendered . Debounce functions are used to 
+ * less efficiently. How inneficient depends on what's being rendered . Debounce functions are used to
  * mitigate inefficiencies from rendering rapidly (see _.debounce()).
  *
  * Since this file is still being actively developed and hasn't compoletely stabilized, the
@@ -30,6 +30,7 @@ window.State = (function ($, _, Awesomplete, io, moment, debug, initial_data) {
  */
 const ENTER_BUTTON_NUM = 13
 , DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
+, ANIMATED_REFRESH_ICON = "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>"
 
 // print to console if debug is true
 let debug_print
@@ -506,7 +507,7 @@ const GdbApi = {
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
-        StatusBar.render(`<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>`)
+        StatusBar.render(ANIMATED_REFRESH_ICON)
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
     refresh_breakpoints: function(){
@@ -1336,7 +1337,16 @@ const SourceFileAutocomplete = {
         })
 
         // when dropdown button is clicked, toggle showing/hiding it
-        Awesomplete.$('.dropdown-btn').addEventListener("click", function() {
+        Awesomplete.$('#source_file_dropdown_button').addEventListener("click", function() {
+
+            if(State.get('source_file_paths').length === 0){
+                // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
+                // request that gdb populate this list.
+                State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large binaries, this may cause the program to crash.`])
+                GdbApi.run_gdb_command('-file-list-exec-source-files')
+                return
+            }
+
             if (SourceFileAutocomplete.input.ul.childNodes.length === 0) {
                 SourceFileAutocomplete.input.evaluate()
             }
@@ -2258,7 +2268,7 @@ const Expressions = {
                     }
                 }
             }else{
-                child_tree += `<li><span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span></li>`
+                child_tree += `<li>${ANIMATED_REFRESH_ICON}</li>`
             }
 
             child_tree += '</ul>'
