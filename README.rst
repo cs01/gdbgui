@@ -8,7 +8,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-v0.7.4.4-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-v0.7.4.5-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
@@ -35,11 +35,35 @@ view stack traces, and more in C, C++, Go, and Rust! Simply run
 Install
 ------------------------------
 
+**Linux**
+
 ::
 
-    [sudo] pip install gdbgui --upgrade
+    sudo pip install gdbgui --upgrade
+
+**macOS**
+
+::
+
+    sudo pip install gdbgui --upgrade --user
+
+**Windows**
+
+    support is in development. See issue #18.
 
 Since gdbgui is under active development, consider running this command fairly often.
+
+virtualenv users do not need the ``sudo`` prefix.
+
+
+**Alternatively, you can clone and run directly**
+
+::
+
+    git clone https://github.com/cs01/gdbgui
+    cd gdbgui
+    pip install -r requirements.txt
+    gdbgui/backend.py
 
 Run
 ---
@@ -56,6 +80,8 @@ Features
 - Set/remove breakpoints
 - View stack, threads
 - Switch frame on stack, switch between threads
+- Intuitively explore local variables when paused
+- Evaluate arbitrary expressions and plot their values over time
 - Inspect memory in hex/character form
 - View all registers
 - Dropdown of all files used to compile binary, with autocomplete functionality
@@ -66,10 +92,10 @@ Why gdbgui?
 -----------
 - Actively developed and compatible with the latest version of gdb (7.12)
 - Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be. Just a lightweight frontend.
-- Design influenced by the amazing Chrome debugger: source code on the left, side panel on the right with collapsable widgets, console on the bottom
-- Full gdb command line utility built in
+- Design influenced by the amazing Chrome debugger
+- Full gdb command line utility built-in
 - Written in widely used languages (Python and JavaScript)
-- Open source and free
+- Open source and free for personal use, `affordable <http://grassfedcode.com/gdbguicommercial>`_ for commercial use.
 
 Examples
 --------
