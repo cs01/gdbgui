@@ -15,8 +15,8 @@ rust: hello.rs
 	../gdbgui/backend.py rust.a
 
 # ever wonder how cpython works?
-.PHONY: python
-python: cpython/python
+.PHONY: cpython
+cpython: cpython/python
 	../gdbgui/backend.py cpython/python
 
 cpython/configure:

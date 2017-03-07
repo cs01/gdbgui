@@ -19,11 +19,13 @@ import webbrowser
 import datetime
 import json
 import sys
+import platform
+import pygdbmi
+import re
 from distutils.spawn import find_executable
 from gdbgui import __version__
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
-import pygdbmi
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -37,10 +39,18 @@ DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
 DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
 LLDB_SERVER_PATH = 'lldb-server'  # this is required by lldb-mi
 
+match = re.match('darwin-(\d+)\..*', platform.platform().lower())
+if match is None:
+    STARTUP_WITH_SHELL_OFF = False
+elif int(match.groups()[0]) >= 16:
+    # if mac OS version is 16 (sierra) or higher, need to set shell off due to
+    # os's security requirements
+    STARTUP_WITH_SHELL_OFF = True
+
+
 INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
 SHOW_GDBGUI_UPGRADES = True
-
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 # switch to gevent once https://github.com/miguelgrinberg/Flask-SocketIO/issues/413 is resolved
@@ -112,6 +122,12 @@ def client_connected():
             gdb_args = DEFAULT_LLDB_ARGS
         else:
             gdb_args = DEFAULT_GDB_ARGS
+
+        if STARTUP_WITH_SHELL_OFF:
+            # macOS Sierra (and later) may have issues with gdb. This should fix it, but there might be other issues
+            # as well. Please create an issue if you encounter one since I do not own a mac.
+            # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
+            gdb_args.append('--init-eval-command=set startup-with-shell off')
 
         _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=gdb_args)
 
