@@ -2164,7 +2164,7 @@ const Expressions = {
         // if this field is an anonymous struct, the user will want to
         // see this expanded by default
         for(let child of parent_obj.children){
-            if (child.type.includes('anonymous')){
+            if (child.exp.includes('anonymous')){
                 Expressions.fetch_and_show_children_for_var(child.name)
             }
         }
