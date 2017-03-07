@@ -38,7 +38,15 @@ DEFAULT_GDB_EXECUTABLE = 'gdb'
 DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
 DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
 LLDB_SERVER_PATH = 'lldb-server'  # this is required by lldb-mi
-RUNNING_OSX_SIERRA = re.match('darwin-16\..*', platform.platform().lower()) is not None
+
+match = re.match('darwin-(\d+)\..*', platform.platform().lower())
+if match is None:
+    STARTUP_WITH_SHELL_OFF = True
+elif int(match.groups()[0]) >= 16:
+    # if mac OS version is 16 (sierra) or higher, need to set shell off due to
+    # os's security requirements
+    STARTUP_WITH_SHELL_OFF = False
+
 
 INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
@@ -115,9 +123,9 @@ def client_connected():
         else:
             gdb_args = DEFAULT_GDB_ARGS
 
-        if RUNNING_OSX_SIERRA:
-            # macOS Sierra may have issues with gdb. This may fix it, but there might be other issues
-            # as well:
+        if STARTUP_WITH_SHELL_OFF:
+            # macOS Sierra (and later) may have issues with gdb. This should fix it, but there might be other issues
+            # as well. Please create an issue if you encounter one since I do not own a mac.
             # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
             gdb_args.append('--init-eval-command=set startup-with-shell off')
 
