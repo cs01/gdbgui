@@ -388,75 +388,43 @@ const GdbApi = {
 
     },
     click_run_button: function(e){
-        if(State.get('inferior_binary_path') !== null){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-run')
-        }else{
-            StatusBar.render('no inferior program is loaded', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-run')
     },
     inferior_is_paused: function(){
         return ([undefined, 'paused'].indexOf(State.get('inferior_program')) >= 0)
     },
     click_continue_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-continue')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-continue')
     },
     click_next_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-next')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next')
     },
     click_step_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-step')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step')
     },
     click_return_button: function(e){
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
         // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
         // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running.
         // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
-        if(GdbApi.inferior_is_paused()){
-            GdbApi.run_gdb_command('-exec-return')
-            window.dispatchEvent(new Event('event_inferior_program_paused'))
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        GdbApi.run_gdb_command('-exec-return')
+        window.dispatchEvent(new Event('event_inferior_program_paused'))
     },
     click_next_instruction_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-next-instruction')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-next-instruction')
     },
     click_step_instruction_button: function(e){
-        if(GdbApi.inferior_is_paused()){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-step-instruction')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-step-instruction')
     },
     click_send_interrupt_button: function(e){
-        if(State.get('inferior_binary_path') !== null){
-            window.dispatchEvent(new Event('event_inferior_program_running'))
-            GdbApi.run_gdb_command('-exec-interrupt')
-        }else{
-            StatusBar.render('inferior program is not paused', true)
-        }
+        window.dispatchEvent(new Event('event_inferior_program_running'))
+        GdbApi.run_gdb_command('-exec-interrupt')
     },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
@@ -1665,7 +1633,7 @@ const BinaryLoader = {
         var binary_and_args = _.trim(BinaryLoader.el.val())
 
         if (_.trim(binary_and_args) === ''){
-            StatusBar.render('enter a binary path and arguments before attempting to load')
+            StatusBar.render('enter a binary path and arguments', true)
             return
         }
 
