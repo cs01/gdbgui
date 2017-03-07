@@ -19,11 +19,13 @@ import webbrowser
 import datetime
 import json
 import sys
+import platform
+import pygdbmi
+import re
 from distutils.spawn import find_executable
 from gdbgui import __version__
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
-import pygdbmi
 from pygdbmi.gdbcontroller import GdbController
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -36,11 +38,11 @@ DEFAULT_GDB_EXECUTABLE = 'gdb'
 DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
 DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
 LLDB_SERVER_PATH = 'lldb-server'  # this is required by lldb-mi
+RUNNING_OSX_SIERRA = re.match('darwin-16\..*', platform.platform().lower()) is not None
 
 INITIAL_BINARY_AND_ARGS = []  # global
 GDB_PATH = DEFAULT_GDB_EXECUTABLE  # global
 SHOW_GDBGUI_UPGRADES = True
-
 
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 # switch to gevent once https://github.com/miguelgrinberg/Flask-SocketIO/issues/413 is resolved
@@ -112,6 +114,12 @@ def client_connected():
             gdb_args = DEFAULT_LLDB_ARGS
         else:
             gdb_args = DEFAULT_GDB_ARGS
+
+        if RUNNING_OSX_SIERRA:
+            # macOS Sierra may have issues with gdb. This may fix it, but there might be other issues
+            # as well:
+            # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
+            gdb_args.append('--init-eval-command=set startup-with-shell off')
 
         _gdb[request.sid] = GdbController(gdb_path=GDB_PATH, gdb_args=gdb_args)
 
