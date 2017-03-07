@@ -169,13 +169,24 @@ let State = {
         }
 
         let oldval = State._state[key]
+
+        // make new copy so reference cannot be modified
+        let _value
+        if(_.isArray(value)){
+            _value = $.extend(true, [], value)
+        }else if (_.isObject(value)){
+            _value = $.extend(true, {}, value)
+        }else{
+            _value = value
+        }
+
         // update the state
-        State._state[key] = value
-        if(oldval !== value){
-            if(_.isArray(oldval) && _.isArray(value)){
-                debug_print(`${key} was changed from array of length ${oldval.length} to ${value.length}`)
+        State._state[key] = _value
+        if(oldval !== _value){
+            if(_.isArray(oldval) && _.isArray(_value)){
+                debug_print(`${key} was changed from array of length ${oldval.length} to ${_value.length}`)
             }else{
-                debug_print(`${key} was changed from ${oldval} to ${value}`)
+                debug_print(`${key} was changed from ${oldval} to ${_value}`)
             }
             // tell listeners that the state changed
             State.dispatch_state_change(key)
@@ -342,7 +353,6 @@ const GdbApi = {
         window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
-        window.addEventListener('event_breakpoint_created', GdbApi.event_breakpoint_created)
         window.addEventListener('event_select_frame', GdbApi.event_select_frame)
 
         GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
@@ -477,9 +487,6 @@ const GdbApi = {
     event_inferior_program_paused: function(){
         GdbApi.refresh_state_for_gdb_pause()
     },
-    event_breakpoint_created: function(){
-        GdbApi.refresh_breakpoints()
-    },
     event_select_frame: function(e){
         let framenum = e.detail
         GdbApi.run_gdb_command(`-stack-select-frame ${framenum}`)
@@ -510,10 +517,29 @@ const GdbApi = {
         StatusBar.render(ANIMATED_REFRESH_ICON)
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
-    refresh_breakpoints: function(){
-        GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()])
+    /**
+     * Run a user-defined command, then refresh the state
+     * @param user_cmd (str or array): command or commands to run before refreshing state
+     */
+    run_command_and_refresh_state: function(user_cmd){
+        if(!user_cmd){
+            console.error('missing required argument')
+            return
+        }
+        let cmds = []
+        if(_.isArray(user_cmd)){
+            cmds = cmds.concat(user_cmd)
+        }else if (_.isString(user_cmd) && user_cmd.length > 0){
+            cmds.push(user_cmd)
+        }
+        cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds())
+        GdbApi.run_gdb_command(cmds)
     },
-    refresh_state_for_gdb_pause: function(){
+    /**
+     * Get array of commands to send to gdb that refreshes everything in the
+     * frontend
+     */
+    _get_refresh_state_for_pause_cmds: function(){
         let cmds = [
             // get info on current thread
             '-thread-info',
@@ -540,11 +566,21 @@ const GdbApi = {
         // re-fetch memory over desired range as specified by DOM inputs
         cmds = cmds.concat(Memory.get_gdb_commands_from_inputs())
 
+        // refresh breakpoints
+        cmds.push(GdbApi.get_break_list_cmd())
+
         // List the frames currently on the stack.
         cmds.push('-stack-list-frames')
-
-        // and finally run the commands
-        GdbApi.run_gdb_command(cmds)
+        return cmds
+    },
+    /**
+     * Request relevant state information from gdb to refresh UI
+     */
+    refresh_state_for_gdb_pause: function(){
+        GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds())
+    },
+    refresh_breakpoints: function(){
+        GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()])
     },
     get_inferior_binary_last_modified_unix_sec(path){
         $.ajax({
@@ -558,10 +594,10 @@ const GdbApi = {
     },
     get_insert_break_cmd: function(fullname, line){
         if(State.get('interpreter') === 'gdb'){
-            return [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`, GdbApi.get_break_list_cmd()]
+            return [`-break-insert ${State.get('rendered_source_file_fullname')}:${line}`]
         }else{
             console.log('TODOLLDB - find mi-friendly command')
-            return [`breakpoint set --file ${State.get('rendered_source_file_fullname')} --line ${line}`, GdbApi.get_break_list_cmd()]
+            return [`breakpoint set --file ${State.get('rendered_source_file_fullname')} --line ${line}`]
         }
     },
     get_delete_break_cmd: function(bkpt_num){
@@ -1694,7 +1730,7 @@ const GdbCommandInput = {
         let cmd = GdbCommandInput.el.val()
         GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
-        GdbApi.run_gdb_command(cmd)
+        GdbApi.run_command_and_refresh_state(cmd)
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
@@ -2577,7 +2613,11 @@ const Threads = {
         if(State.get('threads').length > 0){
             let body = []
             for(let t of State.get('threads')){
-                console.log('TODOLLDB - find current thread id')
+
+                if(State.get('interpreter') === 'lldb'){
+                    console.log('TODOLLDB - find current thread id')
+                }
+
                 let is_current_thread_being_rendered = (parseInt(t.id) === State.get('current_thread_id'))
                 , cls = is_current_thread_being_rendered ? 'bold' : ''
 
