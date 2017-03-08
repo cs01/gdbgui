@@ -702,7 +702,7 @@ const GdbConsoleComponent = {
         // put focus back in input so user can just hit enter
         GdbCommandInput.el.focus()
         // reset up-down arrow cmd history index
-        localStorage.setItem('cache-cmd-index', 0)
+        GdbCommandInput.cmd_index = 0
     },
 }
 GdbConsoleComponent.scroll_to_bottom = _.debounce(GdbConsoleComponent._scroll_to_bottom, 300, {leading: true})
