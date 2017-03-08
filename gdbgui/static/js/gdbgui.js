@@ -678,7 +678,7 @@ const GdbConsoleComponent = {
     },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
-        GdbCommandInput.clear()
+        GdbCommandInput.clear_cmd_cache()
     },
     add: function(s, stderr=false){
         let strings = _.isString(s) ? [s] : s,
@@ -1742,10 +1742,12 @@ const GdbCommandInput = {
         GdbCommandInput.el.removeClass('flash')
         GdbCommandInput.el.addClass('flash')
     },
-    clear: function(){
-        GdbCommandInput.el.val('')
+    clear_cmd_cache: function(){
         GdbCommandInput.sent_cmds = []
         GdbCommandInput.cmd_index = 0
+    },
+    clear: function(){
+        GdbCommandInput.el.val('')
     }
 }
 
