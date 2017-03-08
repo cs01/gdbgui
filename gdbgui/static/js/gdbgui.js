@@ -701,7 +701,7 @@ const GdbConsoleComponent = {
         GdbCommandInput.set_input_text(previous_cmd_from_history)
         // put focus back in input so user can just hit enter
         GdbCommandInput.el.focus()
-        //reset up-down arrow cmd history index
+        // reset up-down arrow cmd history index
         localStorage.setItem('cache-cmd-index', 0)
     },
 }
@@ -1691,47 +1691,44 @@ const BinaryLoader = {
  */
 const GdbCommandInput = {
     el: $('#gdb_command_input'),
+    sent_cmds: JSON.parse(localStorage.getItem('sent_cmds')) || [],
+    cmd_index: 0,
     init: function(){
         GdbCommandInput.el.keydown(GdbCommandInput.keydown_on_gdb_cmd_input)
         $('.run_gdb_command').click(GdbCommandInput.run_current_command)
     },
-    keydown_on_gdb_cmd_input: function(e){
+    shutdown: function(){
+        localStorage.setItem('sent_cmds', JSON.stringify(GdbCommandInput.sent_cmds))
+    }, keydown_on_gdb_cmd_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
+            GdbCommandInput.cmd_index = 0
             GdbCommandInput.run_current_command()
             //reset cache-cmd index
-            localStorage.setItem('cache-cmd-index', 0)
-        }
+        } else if (e.keyCode === UP_BUTTON_NUM || e.keyCode === DOWN_BUTTON_NUM) {
+            let desired_index = e.keyCode === UP_BUTTON_NUM ? GdbCommandInput.cmd_index +1 : GdbCommandInput.cmd_index -1
+            , sent_cmds = GdbCommandInput.sent_cmds
+            //get number of sent cmds
+            , sent_cmds_count = sent_cmds.length
 
-        if (e.keyCode === UP_BUTTON_NUM || e.keyCode == DOWN_BUTTON_NUM) {
-          //get the array of sent_cmds
-          var sent_cmds = document.getElementsByClassName('margin_sm output sent_command pointer')
-          //get number of sent cmds
-          var sent_cmds_count = document.getElementsByClassName('margin_sm output sent_command pointer').length
-          var cmd_index = parseInt(localStorage.getItem('cache-cmd-index')) || 0
-          if (sent_cmds_count != 0) {
-            //increment/decrement based on button pressed
-            if (e.keyCode == UP_BUTTON_NUM) {
-              if (++cmd_index >sent_cmds_count) cmd_index = 0
+            if(desired_index > sent_cmds_count){
+                GdbCommandInput.set_input_text('') // pressed up button too many times
+                GdbCommandInput.cmd_index = 0
+            }else if (desired_index < 0){
+                desired_index = sent_cmds_count  // pressed down button with nothing in input
+                GdbCommandInput.set_input_text(sent_cmds[sent_cmds_count - desired_index])
+                GdbCommandInput.cmd_index = desired_index  // update current index
+            }else{
+                GdbCommandInput.set_input_text(sent_cmds[sent_cmds_count - desired_index])
+                GdbCommandInput.cmd_index = desired_index  // update current index
             }
-            else {
-              if (--cmd_index < 0) cmd_index = sent_cmds_count
-            }
-            //update index on overflow, and based on index set the input text
-            if (cmd_index == 0) {
-              GdbCommandInput.set_input_text('')
-            }
-            else {
-              GdbCommandInput.set_input_text(sent_cmds[sent_cmds_count - cmd_index].innerHTML)
-            }
-            //store the new cmd_index
-            localStorage.setItem('cache-cmd-index', cmd_index)
-          }
-          GdbCommandInput.el.focus()
         }
-
     },
     run_current_command: function(){
         let cmd = GdbCommandInput.el.val()
+        if(GdbCommandInput.sent_cmds.length > 1000){
+            GdbCommandInput.sent_cmds.shift()  // remove first element so it never gets too long
+        }
+        GdbCommandInput.sent_cmds.push(cmd)
         GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
         GdbApi.run_command_and_refresh_state(cmd)
@@ -2953,7 +2950,7 @@ ShutdownGdbgui.init()
 Settings.init()
 
 
-window.addEventListener("beforeunload", BinaryLoader.onclose)
+window.addEventListener("beforeunload", GdbCommandInput.shutdown)
 window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')
 
 
