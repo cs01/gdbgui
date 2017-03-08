@@ -678,6 +678,7 @@ const GdbConsoleComponent = {
     },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
+        GdbCommandInput.clear()
     },
     add: function(s, stderr=false){
         let strings = _.isString(s) ? [s] : s,
@@ -1699,7 +1700,8 @@ const GdbCommandInput = {
     },
     shutdown: function(){
         localStorage.setItem('sent_cmds', JSON.stringify(GdbCommandInput.sent_cmds))
-    }, keydown_on_gdb_cmd_input: function(e){
+    },
+    keydown_on_gdb_cmd_input: function(e){
         if(e.keyCode === ENTER_BUTTON_NUM) {
             GdbCommandInput.cmd_index = 0
             GdbCommandInput.run_current_command()
@@ -1742,6 +1744,8 @@ const GdbCommandInput = {
     },
     clear: function(){
         GdbCommandInput.el.val('')
+        GdbCommandInput.sent_cmds = []
+        GdbCommandInput.cmd_index = 0
     }
 }
 
