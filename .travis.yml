@@ -2,10 +2,7 @@
 os:
   - linux
   # no osx for now (travis build server doesn't work build it)
-  # - osx
-matrix:
-  allow_failures:
-    - os: osx
+  - osx
 language: python
 sudo: required
 python:
