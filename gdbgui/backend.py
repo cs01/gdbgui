@@ -21,6 +21,7 @@ import json
 import sys
 import platform
 import pygdbmi
+import socket
 import re
 from distutils.spawn import find_executable
 from gdbgui import __version__
@@ -56,7 +57,7 @@ app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 # switch to gevent once https://github.com/miguelgrinberg/Flask-SocketIO/issues/413 is resolved
 socketio = SocketIO(async_mode='eventlet')
 _gdb = {}  # each key is websocket client id (each tab in browser gets its own id), and value is pygdbmi.GdbController instance
-_gdb_reader_thread = None  # T
+_gdb_reader_thread = None  # a socketio thread to continuously check for output from all gdb processes
 
 
 def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False, LLDB=False):
@@ -80,7 +81,11 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
         webbrowser.open(url_with_prefix)
 
     if testing is False:
-        print('Serving at %s' % url_with_prefix)
+        if host == DEFAULT_HOST:
+            print('\n\n** view app at http://%s:%d **\n\n' % (DEFAULT_HOST, port))
+        else:
+            print('\n\n** view app at http://%s:%d **\n\n' % (socket.gethostbyname(socket.gethostname()), port))
+        sys.stdout.flush()
         socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
 
 
@@ -309,8 +314,11 @@ def main():
     parser.add_argument("cmd", nargs='*', help='(Optional) The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior'
         " binary  you wish to debug. For example gdbgui './mybinary myarg -flag1 -flag2'", default=INITIAL_BINARY_AND_ARGS)
 
-    parser.add_argument('-p', "--port", help='The port on which gdbgui will be hosted. Defaults to %s' % DEFAULT_PORT, default=DEFAULT_PORT)
+    parser.add_argument('-p', '--port', help='The port on which gdbgui will be hosted. Defaults to %s' % DEFAULT_PORT, default=DEFAULT_PORT)
     parser.add_argument('--host', help='The host ip address on which gdbgui serve. Defaults to %s' % DEFAULT_HOST, default=DEFAULT_HOST)
+    parser.add_argument('-r,', '--remote', help='Sets host to 0.0.0.0 (allows remote access to gdbgui) and sets no_browser to True. '
+        'Useful when running on remote machine and you want to view from your own browser, or let someone else debug your application remotely. '
+        'All other options left unchanged.', action='store_true', )
     parser.add_argument('-g', '--gdb', help='Path to gdb or lldb executable. Defaults to %s. lldb support is experimental.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
     parser.add_argument('--lldb', help='Use lldb commands (experimental)', action='store_true')
     parser.add_argument('-v', '--version', help='Print version', action='store_true')
@@ -328,6 +336,9 @@ def main():
     GDB_PATH = args.gdb
     SHOW_GDBGUI_UPGRADES = not args.hide_gdbgui_upgrades
     verify_gdb_exists()
+    if args.remote:
+        args.host = '0.0.0.0'
+        args.no_browser = True
     setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), LLDB=(args.lldb or 'lldb-mi' in args.gdb.lower()))
 
 
