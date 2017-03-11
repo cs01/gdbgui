@@ -32,3 +32,7 @@ script:
   # ensure README.rst has no syntax errors so it displays nicely
   # on the pypi website
   - python setup.py checkdocs
+cache:
+    directories:
+        # avoid using pyPI's bandwidth when pip packages are already cached
+        - $HOME/.cache/pip
