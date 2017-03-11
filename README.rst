@@ -49,7 +49,10 @@ Install
 
 **Windows**
 
-    support is in development. See issue #18.
+    pip install gdbgui --upgrade
+
+    Tested with `cygwin <https://cygwin.com/install.html>`_.
+
 
 Since gdbgui is under active development, consider running this command fairly often.
 
