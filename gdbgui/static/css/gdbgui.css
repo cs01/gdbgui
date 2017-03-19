@@ -1,240 +1,240 @@
 /* styling for all html tags */
 body{
-  background: #ccc;
-  color: grey;
-  border-color: grey;
+    background: #f5f6f7;
+    color: grey;
+    border-color: grey;
+    overflow: hidden;
 }
 pre{
-  overflow: visible !important;
+    overflow: visible !important;
 }
 td{
-  vertical-align: top;
+    vertical-align: top;
 }
+
+
 /* styling for generic classes */
 .bold{
-  font-weight: bold;
+    font-weight: bold;
 }
 .pre{
-  white-space: pre;
+    white-space: pre;
 }
 .stderr{
-  color: red;
+    color: red;
 }
 .monospace{
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
 .memory_address{
-  color: #337ab7;
-  text-decoration: none;
+    color: #337ab7;
+    text-decoration: none;
 }
 .lighttext{
-  color: #4a4a4a;
+    color: #4a4a4a;
 }
 .glyphicon{
-  /* glyphicons are too bold, make them lighter*/
-    color: #848484;
+    /* glyphicons are too bold, make them lighter*/
+        color: #848484;
 }
 .visibility_toggler{
-  cursor: pointer;
+    cursor: pointer;
 }
 .placeholder{
-  color: #ccc;
-  font-style: italic;
+    color: #ccc;
+    font-style: italic;
 }
 .flex{
-  display: flex;
+    display: flex;
 }
 .flexrow{
-  display: flex;
-  flex-direction: row;
+    display: flex;
+    flex-direction: row;
 }
 .flexcol{
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 /* components get their own titlebars */
 .titlebar{
-  width: 100%;
-  color: black;
-  background-color: #ddf1ff;
-  border-color: #c3c3c3;
-  border-width: 1px;
-  border-style: solid;
+    width: 100%;
+    color: black;
+    background-color: #ddf1ff;
+    border-color: #c3c3c3;
+    border-width: 1px;
+    border-style: solid;
 }
 .pointer{
-  cursor: pointer;
+    cursor: pointer;
 }
 .gdb_content_div{
-  flex-direction: column;
-  background-color: white;
+    /*flex-direction: column;*/
+    background-color: white;
 }
 .sent_command:hover{
-  /* lighten background */
-  background-color:rgba(255,255,255,0.1)
+    /* lighten background */
+    background-color:rgba(255,255,255,0.1)
 }
 .disabled {
-    z-index: 1000;
-    background-color: lightgrey;
-    opacity: 0.6;
-    pointer-events: none;
+        z-index: 1000;
+        background-color: lightgrey;
+        opacity: 0.6;
+        pointer-events: none;
 }
 .margin_sm{
-  margin: 2px;
+    margin: 2px;
 }
 .no_padding{
-  padding: 2px !important;
-}
-.code pre, table.code {
-    margin: 0px;
-    padding: 0px;
-    border-width: 0px;
-    width: 100%;
-    background-color: transparent;
-}
-.paused_on_line{
-  background: #84fff9;
-  border: #9898ff;
-  border-style: solid;
-  border-width: 1px;
+    padding: 2px !important;
 }
 .highlight{
-  background: rgba(255, 255, 0, 0.5) !important;
+    background: rgba(255, 255, 0, 0.5) !important;
 }
 div.breakpoint{
-  border: solid;
-  border-width: 0px;
-  border-bottom-width: 1px;
-  border-color: #f5f5f5;
+    border: solid;
+    /* need top and bottom border so when hovering and showing border on row, there is no "jumping" */
+    border-width: 0px;
+    border-top-width: 5px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-color: #f5f5f5; /* make border color the same as the background color */
 }
 .breakpoint:hover{
-  background-color: #f5f5f5;
+    background-color: #f5f5f5;
 }
 .breakpoint_trashcan, .right_help_icon_show_on_hover{
-  float: right;
-  margin-right: 5px;
-  display: none !important;
+    float: right;
+    margin-right: 5px;
+    display: none !important;
 }
 div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .right_help_icon_show_on_hover{
-  display: inline !important;
+    display: inline !important;
 }
 .line_num{
-  width: 50px;
-  border-width: 0;
-  border-right: 1px;
-  border-style: solid;
-  border-color: #c7c7c7;
-  padding-left: 10px;
-  padding-right: 10px;
-  font-size: 0.9em;
-  color: #ababab;
-  cursor: pointer;
+    width: 50px;
+    border-width: 0px;
+    border-top-width: 1px;
+    border-top-color: transparent;
+    border-right-width: 1px;
+    border-bottom-width: 0px;
+    border-style: solid;
+    border-right-color: #c7c7c7;
+    padding-left: 10px;
+    padding-right: 10px;
+    font-size: 0.9em;
+    color: #ababab;
+    cursor: pointer;
 }
 /* the line number has its style changed if it has a breakpoint */
 .line_num.breakpoint, .line_num.disabled_breakpoint{
-  color: black;
-  border-style: solid;
-  border-color: #000000;
-  border-width: 1px;
+    color: black;
 }
 .line_num.breakpoint{
-  background: #33cdff !important;
+    background: #33cdff !important;
+    border-style: solid;
+    /*border-top-width: 1px;*/
+    border-right-width: 0px;
+    /*border-bottom-width: 1px;*/
+    border-left-width: 0px;
+    border-color: transparent;
 }
 .line_num.disabled_breakpoint{
-  background: #ffd6d7 !important;
+    background: #ffd6d7 !important;
 }
 td.assembly{
-  padding-bottom: 6px;
-  white-space: nowrap;
-  font-size: 0.9em;
+    padding-bottom: 6px;
+    white-space: nowrap;
+    font-size: 0.8em;
 }
 #code_table{
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    font-family: monospace;
+    border-collapse: separate;
 }
-/* set background color over souce code only */
-.source_code_row.line_of_code td{
-  background-color: #f7f7f7;
+.srccode td{
+    padding-left: 3px;
+    border-style: solid;
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-color: transparent;
 }
-.line_of_code pre{
-  margin-left: 10px;
-  max-width: 80%;
-  min-width: 400px;
+td.line_num{
+    border-style: solid;
+    border-right-width: 1px;
+    border-top-width: 0px;
+    border-bottom-width: 0px;
+    border-left-width: 0px;
+    border-right-color: #d4d4d4;
+    border-top-color: transparent;
+    border-bottom-color: transparent;
 }
-/* when hovering, set background color of entire row */
-.source_code_row:hover td, .source_code_row:hover td pre{
-  background-color: #e2e2e2;
+/* wsp == whitespace. Needed to preserve leading whitespace.
+    this span wraps syntax-highlighted source code */
+span.wsp{
+    font-size: 0.8em;
+    white-space: pre;
 }
+
 .current_assembly_command{
-  font-weight: bold;
+    font-weight: bold;
 }
 .padding_left{
-  padding-left: 5px;
+    padding-left: 5px;
 }
-.line_of_code{
-  height: 18px
+.loc{
+    height: 18px
+}
+.paused_on_line {
+    border-style: solid;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 0px;
+    border-right-width: 1px;
 }
 .dropdown-btn {
-    vertical-align: top;
-    height: 30px;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+        vertical-align: top;
+        height: 30px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
 }
 #memory table{
-  font-family: monospace;
+    font-family: monospace;
 }
 .memory_char:empty{
-  content: ?;
-}
-/* show a flash of color */
-.flash {
-    -webkit-animation-name: flash-animation;
-    -webkit-animation-duration: 3.0s;
-
-    animation-name: flash-animation;
-    animation-duration: 3.0s;
-}
-
-@-webkit-keyframes flash-animation {
-    from { background: white; }
-    from { background: #fdfd54; }
-    to   { background: default; }
-}
-
-@keyframes flash-animation {
-    from { background: white; }
-    from { background: #fdfd54; }
-    to   { background: default; }
+    content: ?;
 }
 
 /* specific styling for ids or components */
 #always_on_top{
-  position: fixed;
-  top: 0;
-  margin-top: 0;
-  width: 100%;
-  border-bottom: black;
-  border-style: solid;
-  border-width: 0px;
-  z-index: 1000;
-  background: #f1f1f1;
+    position: fixed;
+    top: 0;
+    margin-top: 0;
+    width: 100%;
+    border-bottom: black;
+    border-style: solid;
+    border-width: 0px;
+    z-index: 1000;
+    background: #f1f1f1;
 }
 #console{
-  font-size: 0.8em !important;
-  background-color: #292929;
-  color: #d6d6d6 !important;
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
-  width: 100%;
-  margin-bottom: 12px;
-  overflow: auto;
+    font-size: 0.8em !important;
+    background-color: #292929;
+    color: #d6d6d6 !important;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
+    width: 100%;
+    margin-bottom: 12px;
+    overflow: auto;
 }
 .sent_command{
-  color: #00c540;
+    color: #00c540;
 }
 #gdb_command_input, .gdb_command_input{
-  border-width: 0;
-  padding: 10px;
-  background-color: #3c3c3c !important;
-  color: #f9f9f9 !important;
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
+    border-width: 0;
+    padding: 10px;
+    background-color: #3c3c3c !important;
+    color: #f9f9f9 !important;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
 
 #gdb_command_input:focus {
@@ -242,82 +242,99 @@ td.assembly{
     box-shadow: none;
 }
 
+
+#settings_container{
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 120;
+    background: rgba(0,0,0, 0.8);
+    overflow: auto;
+}
+#gdb_settings_modal{
+    width: 800px;
+    margin: 50px;
+    padding: 40px;
+    z-index: 120;
+    background: white;
+    max-height: 85%;
+    overflow: auto;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
 #gdb_mi_output{
-  font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
-  overflow: auto;
-  font-size: 0.9em;
-  height: 300px;
-  width: 100%;
+    font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
+    overflow: auto;
+    font-size: 0.9em;
+    height: 300px;
+    width: 100%;
 }
 
 /* styling for "Expressions" component */
 #expressions li, #locals li{
-  list-style: none;
+    list-style: none;
 }
 ul.variable{
-    padding-left: 5px;
-    border: 0px;
+        padding-left: 0;
+        border: 0;
+        margin: 0;
 }
 /* Show type of variable in lighter text */
 .var_type{
-  color: #a0a0a0;
-  margin-left: 5px;
-  font-style: italic;
+    color: #a0a0a0;
+    margin-left: 5px;
+    font-style: italic;
 }
 .plot{
-  width: 300px;
-  height: 200px;
-  display: visible;
+    width: 300px;
+    height: 200px;
+    display: visible;
 }
 #tooltip{
-  position: fixed;
-  display: none;
-  border: 1px solid #828282;
-  padding: 2px;
-  background-color: #f5f5f5;
+    position: fixed;
+    display: none;
+    border: 1px solid #828282;
+    padding: 2px;
+    background-color: #f5f5f5;
 }
 #threads ul{
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
 }
 #memory table{
-  font-size: 0.9em;
+    font-size: 0.9em;
 }
 
 /* Make refresh icon spin - http://www.bootply.com/128062*/
 .glyphicon-refresh-animate {
-    -animation: spin .7s infinite linear;
-    -webkit-animation: spin2 .7s infinite linear;
+        -animation: spin .7s infinite linear;
+        -webkit-animation: webkit-spin .7s infinite linear;
 }
 
-@-webkit-keyframes spin2 {
-    from { -webkit-transform: rotate(0deg);}
-    to { -webkit-transform: rotate(360deg);}
+@-webkit-keyframes webkit-spin {
+        from { -webkit-transform: rotate(0deg);}
+        to { -webkit-transform: rotate(360deg);}
 }
 
 @keyframes spin {
-    from { transform: scale(1) rotate(0deg);}
-    to { transform: scale(1) rotate(360deg);}
+        from { transform: scale(1) rotate(0deg);}
+        to { transform: scale(1) rotate(360deg);}
 }
 
-
-footer a{
-  color: #ccc;
+/* splitjs classes for splitting the body of the webpage (https://github.com/nathancahill/Split.js) */
+.gutter-horizontal {
+    cursor: col-resize;
 }
-footer ul{
-  list-style: none;
-  padding: 0;
+.gutter-vertical {
+    cursor: row-resize;
 }
-
-/* Vendor Overrides */
-
-/* awesomeplete wraps inputs in a div, and the div is really small. Make it big. */
-div.awesomplete{
-  width: 100%;
-}
-/* auto-complete library (awesomplete) has unlimited dropdown size.
-Limit to 200px high, and add scrollbar, so it doesn't take over the page */
-.awesomplete  ul {
-  overflow: auto;
-  max-height: 200px;
+/* splitjs is so unopinionated, it doesn't work without specific css classes (float: left) when splitting into two side-by-side
+ panes ("horizonal" */
+.split.split-horizontal, .gutter.gutter-horizontal {
+    height: 100%;
+    float: left;
 }

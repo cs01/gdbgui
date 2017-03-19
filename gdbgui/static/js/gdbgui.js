@@ -6,23 +6,24 @@
  * There are several top-level components, most of which can render new html in the browser.
  *
  * State is managed in a single location (State._state), and each time the state
- * changes, an event is emitted, which Components listen for. Each Component can
- * re-render itself.
+ * changes, an event is emitted, which Components listen for. Each Component then re-renders itself
+ * as necessary.
  *
  * The state can be changed via State.set() and retrieved via State.get(). State._state should not
- * be accessed directly.
+ * be accessed directly. State.get() does not return references to objects, it returns new objects.
+ * When used this way, State._state is only mutable with calls to State.set().
  *
- * This pattern provides for a reactive environment, and was inspired by ReactJS, but
- * is written in plan javascript. This avoids the build system at the cost of rendering
- * less efficiently. How inneficient depends on what's being rendered . Debounce functions are used to
- * mitigate inefficiencies from rendering rapidly (see _.debounce()).
+ * This pattern is written in plain javascript, yet provides for a reactive environment. It was inspired
+ * by ReactJS but does not require a build system or JSX.
  *
- * Since this file is still being actively developed and hasn't compoletely stabilized, the
- * documentation may not be totally complete/correct.
+ * For example, calling State.set('current_line_of_source_code', 100)
+ * will change the highlighted line and automatically scroll to that line in the UI. Or calling
+ * State.set('highlight_source_code', true) will "magically" make the source code be highlighted.
+ * Debounce functions are used to mitigate inefficiencies of rapid state changes (see _.debounce()).
  *
  */
 
-window.State = (function ($, _, Awesomplete, io, moment, debug, initial_data) {
+window.State = (function ($, _, Awesomplete, Split, io, moment, debug, initial_data) {
 "use strict";
 
 /**
@@ -43,6 +44,70 @@ if(debug){
         // stubbed out
     }
 }
+
+
+/**
+ * Some general utility methods
+ */
+const Util = {
+    /**
+     * Get html table
+     * @param columns: array of strings
+     * @param data: array of arrays of data
+     */
+    get_table: function(columns, data, style='') {
+        var result = [`<table class='table table-bordered table-condensed' style="${style}">`];
+        if(columns){
+            result.push("<thead>")
+            result.push("<tr>")
+            for (let h of columns){
+                result.push(`<th>${h}</th>`)
+            }
+            result.push("</tr>")
+            result.push("</thead>")
+        }
+
+        if(data){
+            result.push("<tbody>")
+            for(let row of data) {
+                    result.push("<tr>")
+                    for(let cell of row){
+                            result.push(`<td>${cell}</td>`)
+                    }
+                    result.push("</tr>")
+            }
+        }
+        result.push("</tbody>")
+        result.push("</table>")
+        return result.join('\n')
+    },
+    /**
+     * Escape gdb's output to be browser compatible
+     * @param s: string to mutate
+     */
+    escape: function(s){
+        return s.replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace(/\\n/g, '<br>')
+                .replace(/\\"/g, '"')
+                .replace(/\\t/g, '&nbsp')
+    },
+    /**
+     * @param fullname_and_line: i.e. /path/to/file.c:78
+     * @param default_line_if_not_found: i.e. 0
+     * @return: Array, with 0'th element == path, 1st element == line
+     */
+    parse_fullname_and_line: function(fullname_and_line, default_line_if_not_found=undefined){
+        let user_input_array = fullname_and_line.split(':'),
+            fullname = user_input_array[0],
+            line = default_line_if_not_found
+        if(user_input_array.length === 2){
+            line = user_input_array[1]
+        }
+        return [fullname, line]
+    }
+}
+
 /**
  * Globals
  */
@@ -53,12 +118,16 @@ let State = {
         window.addEventListener('event_inferior_program_paused', State.event_inferior_program_paused)
         window.addEventListener('event_select_frame', State.event_select_frame)
 
-        $(window).keydown(function(e){
+        if(localStorage.getItem('highlight_source_code') === null || !_.isBoolean(JSON.parse(localStorage.getItem('highlight_source_code')))){
+            localStorage.setItem('highlight_source_code', JSON.stringify(true))
+        }
+
+        window.onkeydown = function(e){
            if((e.keyCode === ENTER_BUTTON_NUM)) {
                // when pressing enter in an input, don't redirect entire page
                e.preventDefault()
            }
-       })
+        }
     },
     /**
      * Internal state. This is set upon initialization directly, then
@@ -66,6 +135,7 @@ let State = {
      * New keys cannot be added, they must be statically defined below.
      */
     _state: {
+        // environment
         debug: debug,  // if gdbgui is run in debug mode
         interpreter: initial_data.interpreter,  // either 'gdb' or 'llvm'
         gdbgui_version: initial_data.gdbgui_version,
@@ -73,7 +143,14 @@ let State = {
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
         gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
         gdb_pid: undefined,
-        // choices are:
+
+        // syntax highlighting
+        themes: initial_data.themes,
+        current_theme: localStorage.getItem('theme') || initial_data.themes[0],
+        highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // set to false to make source code raw text (improves performance for big files)
+
+        // inferior program state
+        // choices for inferior_program are:
         // 'running'
         // 'paused'
         // 'exited'
@@ -156,9 +233,6 @@ let State = {
 
         State.set('current_line_of_source_code', State.get('paused_on_frame').line)
         State.set('current_assembly_address', State.get('paused_on_frame').addr)
-    },
-    set_locals: function(locals){
-        State.set('locals', locals)
     },
     /**
      * Set value of one of the keys in the current state.
@@ -262,13 +336,30 @@ let State = {
     },
 }
 /**
- * Debounce the event emission for more efficient/smoother rendering
+ * Debounce the event emission for more efficient/smoother rendering.
+ * Only emit, at most, every 50 milliseconds.
  */
 State.dispatch_state_change = _.debounce((key) => {
         debug_print('dispatching event_global_state_changed')
         window.dispatchEvent(new CustomEvent('event_global_state_changed', {'detail': {'key_changed': key}}))
     }, 50)
 
+
+/**
+ * Modal component that is hidden by default, but shown
+ * when render is called. The user must close the modal to
+ * resume using the GUI.
+ */
+const Modal = {
+    /**
+     * Call when an important modal message must be shown
+     */
+    render: function(title, body){
+        $('#modal_title').html(title)
+        $('#modal_body').html(body)
+        $('#gdb_modal').modal('show')
+    }
+}
 
 /**
  * The StatusBar component display the most recent gdb status
@@ -337,6 +428,49 @@ const StatusBar = {
 }
 
 /**
+ * A component to mimicks the gdb console.
+ * It stores previous commands, and allows you to enter new ones.
+ * It also displays any console output.
+ */
+const GdbConsoleComponent = {
+    el: $('#console'),
+    init: function(){
+        $('.clear_console').click(GdbConsoleComponent.clear_console)
+        $("body").on("click", ".sent_command", GdbConsoleComponent.click_sent_command)
+    },
+    clear_console: function(){
+        GdbConsoleComponent.el.html('')
+        GdbCommandInput.clear_cmd_cache()
+    },
+    add: function(s, stderr=false){
+        let strings = _.isString(s) ? [s] : s,
+            cls = stderr ? 'stderr' : ''
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
+    },
+    add_sent_commands(cmds){
+        if(!_.isArray(cmds)){
+            cmds = [cmds]
+        }
+        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='margin_sm output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
+        GdbConsoleComponent.scroll_to_bottom()
+    },
+    _scroll_to_bottom: function(){
+        GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
+    },
+    click_sent_command: function(e){
+        // when a previously sent command is clicked, populate the command input
+        // with it
+        let previous_cmd_from_history = (e.currentTarget.dataset.cmd)
+        GdbCommandInput.set_input_text(previous_cmd_from_history)
+        // put focus back in input so user can just hit enter
+        GdbCommandInput.el.focus()
+        // reset up-down arrow cmd history index
+        GdbCommandInput.cmd_index = 0
+    },
+}
+GdbConsoleComponent.scroll_to_bottom = _.debounce(GdbConsoleComponent._scroll_to_bottom, 300, {leading: true})
+
+/**
  * This object contains methods to interact with
  * gdb, but does not directly render anything in the DOM.
  */
@@ -382,12 +516,11 @@ const GdbApi = {
             window.onbeforeunload = () => null
 
             // show modal
-            Modal.render('gdb closed on server', `gdb (pid ${State.get('gdb_pid')}) was closed for this tab because the websocket connection for this tab was disconnected.
-                <p>
-                Each tab has its own instance of gdb running on the backend. Open new tab to start new instance of gdb.`)
+            // Modal.render('gdb closed on server', `gdb (pid ${State.get('gdb_pid')}) was closed for this tab because the websocket connection for this tab was disconnected.
+            //     <p>
+            //     Each tab has its own instance of gdb running on the backend. Open new tab to start new instance of gdb.`)
             debug_print('disconnected')
         });
-
     },
     click_run_button: function(e){
         window.dispatchEvent(new Event('event_inferior_program_running'))
@@ -603,110 +736,6 @@ const GdbApi = {
     }
 }
 
-/**
- * Some general utility methods
- */
-const Util = {
-    /**
-     * Get html table
-     * @param columns: array of strings
-     * @param data: array of arrays of data
-     */
-    get_table: function(columns, data, style='') {
-        var result = [`<table class='table table-bordered table-condensed' style="${style}">`];
-        if(columns){
-            result.push("<thead>")
-            result.push("<tr>")
-            for (let h of columns){
-                result.push(`<th>${h}</th>`)
-            }
-            result.push("</tr>")
-            result.push("</thead>")
-        }
-
-        if(data){
-            result.push("<tbody>")
-            for(let row of data) {
-                    result.push("<tr>")
-                    for(let cell of row){
-                            result.push(`<td>${cell}</td>`)
-                    }
-                    result.push("</tr>")
-            }
-        }
-        result.push("</tbody>")
-        result.push("</table>")
-        return result.join('\n')
-    },
-    /**
-     * Escape gdb's output to be browser compatible
-     * @param s: string to mutate
-     */
-    escape: function(s){
-        return s.replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .replace(/\\n/g, '<br>')
-                .replace(/\\"/g, '"')
-                .replace(/\\t/g, '&nbsp')
-    },
-    /**
-     * @param fullname_and_line: i.e. /path/to/file.c:78
-     * @param default_line_if_not_found: i.e. 0
-     * @return: Array, with 0'th element == path, 1st element == line
-     */
-    parse_fullname_and_line: function(fullname_and_line, default_line_if_not_found=undefined){
-        let user_input_array = fullname_and_line.split(':'),
-            fullname = user_input_array[0],
-            line = default_line_if_not_found
-        if(user_input_array.length === 2){
-            line = user_input_array[1]
-        }
-        return [fullname, line]
-    }
-}
-
-/**
- * A component to mimicks the gdb console.
- * It stores previous commands, and allows you to enter new ones.
- * It also displays any console output.
- */
-const GdbConsoleComponent = {
-    el: $('#console'),
-    init: function(){
-        $('.clear_console').click(GdbConsoleComponent.clear_console)
-        $("body").on("click", ".sent_command", GdbConsoleComponent.click_sent_command)
-    },
-    clear_console: function(){
-        GdbConsoleComponent.el.html('')
-        GdbCommandInput.clear_cmd_cache()
-    },
-    add: function(s, stderr=false){
-        let strings = _.isString(s) ? [s] : s,
-            cls = stderr ? 'stderr' : ''
-        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
-    },
-    add_sent_commands(cmds){
-        if(!_.isArray(cmds)){
-            cmds = [cmds]
-        }
-        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='margin_sm output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
-        GdbConsoleComponent.scroll_to_bottom()
-    },
-    _scroll_to_bottom: function(){
-        GdbConsoleComponent.el.animate({'scrollTop': GdbConsoleComponent.el.prop('scrollHeight')})
-    },
-    click_sent_command: function(e){
-        // when a previously sent command is clicked, populate the command input
-        // with it
-        let previous_cmd_from_history = (e.currentTarget.dataset.cmd)
-        GdbCommandInput.set_input_text(previous_cmd_from_history)
-        // put focus back in input so user can just hit enter
-        GdbCommandInput.el.focus()
-        // reset up-down arrow cmd history index
-        GdbCommandInput.cmd_index = 0
-    },
-}
-GdbConsoleComponent.scroll_to_bottom = _.debounce(GdbConsoleComponent._scroll_to_bottom, 300, {leading: true})
 
 /**
  * A component to display, in gory detail, what is
@@ -886,7 +915,7 @@ const SourceCode = {
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
     init: function(){
-        $("body").on("click", ".source_code_row td.line_num", SourceCode.click_gutter)
+        $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
         $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
         $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
@@ -994,7 +1023,24 @@ const SourceCode = {
     make_current_line_visible: function(){
         SourceCode.scroll_to_jq_selector($("#scroll_to_line"))
     },
+    set_theme_in_dom: function(){
+        let code_container = SourceCode.el_code_container
+        , old_theme = code_container.data('theme')
+        , current_theme = State.get('current_theme')
+        if(State.get('themes').indexOf(current_theme) === -1){
+            // somehow an invalid theme got set, update with a valid one
+            State.set('current_theme', State.get('themese')[0])
+        }
+
+        if(old_theme !== current_theme){
+            code_container.removeClass(old_theme)
+            code_container.data('theme', current_theme)
+            code_container.addClass(current_theme)
+        }
+    },
     render: function(){
+        SourceCode.set_theme_in_dom()
+
         let fullname = State.get('fullname_to_render')
         , current_line_of_source_code = parseInt(State.get('current_line_of_source_code'))
         , addr = State.get('current_assembly_address')
@@ -1049,19 +1095,16 @@ const SourceCode = {
             tbody = []
 
         for (let line of source_code){
-            line = line.replace("<", "&lt;")
-            line = line.replace(">", "&gt;")
-
             let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num, addr)
 
             tbody.push(`
-                <tr class='source_code_row'>
-                    <td valign="top" class='line_num right_border' data-line=${line_num} style='width: 30px;'>
+                <tr class='srccode'>
+                    <td valign="top" class='line_num' data-line=${line_num} style='width: 30px;'>
                         <div>${line_num}</div>
                     </td>
 
-                    <td valign="top" class='line_of_code' data-line=${line_num}>
-                        <pre style='white-space: pre-wrap;'>${line}</pre>
+                    <td valign="top" class='loc' data-line=${line_num}>
+                        <span class='wsp'>${line}</span>
                     </td>
 
                     ${assembly_for_line}
@@ -1148,7 +1191,7 @@ const SourceCode = {
 
         // make background blue if gdb is paused on a line in this file
         if(inferior_program_is_paused_in_this_file){
-            let jq_line = $(`.line_of_code[data-line=${State.get('paused_on_frame').line}]`)
+            let jq_line = $(`.loc[data-line=${State.get('paused_on_frame').line}]`)
             if(jq_line.length === 1){
                 jq_line.offset()  // needed so DOM registers change and re-draws animation
                 jq_line.addClass('paused_on_line')
@@ -1160,7 +1203,7 @@ const SourceCode = {
 
         // make this line flash ONLY if it's NOT the line we're paused on
         if(line_num && !paused_on_current_line){
-            let jq_line = $(`.line_of_code[data-line=${line_num}]`)
+            let jq_line = $(`.loc[data-line=${line_num}]`)
             if(jq_line.length === 1){
                 // https://css-tricks.com/restart-css-animation/
                 jq_line.offset()  // needed so DOM registers change and re-draws animation
@@ -1194,13 +1237,13 @@ const SourceCode = {
             url: "/read_file",
             cache: false,
             type: 'GET',
-            data: {path: fullname},
+            data: {path: fullname, highlight: State.get('highlight_source_code')},
             success: function(response){
                 SourceCode.add_source_file_to_cache(fullname, response.source_code, {}, response.last_modified_unix_sec)
             },
             error: function(response){
                 StatusBar.render_ajax_error_msg(response)
-                let source_code = [`failed to fetch file ${fullname}`]
+                let source_code = [`failed to fetch file at path "${fullname}"`]
                 SourceCode.add_source_file_to_cache(fullname, source_code, {}, 0)
             },
             complete: function(){
@@ -1351,7 +1394,7 @@ const SourceFileAutocomplete = {
             if(State.get('source_file_paths').length === 0){
                 // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
                 // request that gdb populate this list.
-                State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large binaries, this may cause the program to crash.`])
+                State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large executables, this may cause gdbgui to freeze.`])
                 GdbApi.run_gdb_command('-file-list-exec-source-files')
                 return
             }
@@ -1502,10 +1545,12 @@ const Registers = {
  */
 const Settings = {
     el: $('#gdbgui_settings_button'),
+    pane: $('#settings_container'),
     init: function(){
+        $('body').on('change', '#theme_selector', Settings.theme_selection_changed)
+        $('body').on('change', '#syntax_highlight_selector', Settings.syntax_highlight_selector_changed)
+        $('body').on('click', '.toggle_settings_view', Settings.click_toggle_settings_view)
         window.addEventListener('event_global_state_changed', Settings.render)
-
-        Settings.el.click(Settings.click_settings_button)
 
         // Fetch the latest version only if using in normal mode. If debugging, we tend to
         // refresh quite a bit, which might make too many requests to github and cause them
@@ -1545,6 +1590,17 @@ const Settings = {
         }
     },
     render: function(){
+        let theme_options = ''
+        , current_theme = State.get('current_theme')
+
+        for(let theme of State.get('themes')){
+            if(theme === current_theme){
+                theme_options += `<option selected value=${theme}>${theme}</option>`
+            }else{
+                theme_options += `<option value=${theme}>${theme}</option>`
+            }
+        }
+
         $('#settings_body').html(
             `<table class='table'>
             <tbody>
@@ -1566,6 +1622,16 @@ const Settings = {
                 </div>
 
             <tr><td>
+                Syntax Highlighting:
+                    <select id=syntax_highlight_selector>
+                        <option value='on' ${State.get('highlight_source_code') === true ? 'selected' : ''} >on</option>
+                        <option value='off' ${State.get('highlight_source_code') === false ? 'selected' : ''} >off</option>
+                    </select>
+                     (better performance for large files when off)
+            <tr><td>
+                Theme: <select id=theme_selector>${theme_options}</select>
+
+            <tr><td>
                 gdb pid for this tab: ${State.get('gdb_pid')}
 
             <tr><td>
@@ -1575,13 +1641,30 @@ const Settings = {
                 gdb version: ${State.get('gdb_version')}
 
             <tr><td>
-            A <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
+            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
+            |  <a href='https://www.amazon.com/?&_encoding=UTF8&tag=tahoechains-20&linkCode=ur2&linkId=0a755fb7040582a6bfd4e457b54a071b&camp=1789&creative=9325'>shop amazon to support gdbgui</a>
             `
 
             )
     },
-    click_settings_button: function(){
-        $('#gdb_settings_modal').modal('show')
+    click_toggle_settings_view: function(e){
+        if(e.target.classList.contains('toggle_settings_view')){  // need this check in case background div has this class
+            e.stopPropagation()  // need this to prevent toggling twice rapidly if a toggle button is over a div
+            Settings.pane.toggleClass('hidden')
+        }
+    },
+    theme_selection_changed: function(e){
+        State.set('current_theme', e.currentTarget.value)
+        localStorage.setItem('theme', e.currentTarget.value)
+    },
+    syntax_highlight_selector_changed: function(e){
+        // update preference in state
+        State.set('highlight_source_code', e.currentTarget.value === 'on')
+        // remove all cached source files, since the cache contains syntax highlighting, or is lacking it
+        State.set('cached_source_files', [])
+        State.set('rendered_source_file_fullname', null)
+        // save preference for later
+        localStorage.setItem('highlight_source_code', JSON.stringify(State.get('highlight_source_code')))
     },
     auto_add_breakpoint_to_main: function(){
         let checked = $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
@@ -2109,7 +2192,11 @@ const Expressions = {
 
         // can only be plotted if: value is an expression (not a local), and value is numeric
         new_obj.can_plot = !new_obj.autocreated_for_locals && !window.isNaN(parseFloat(new_obj.value))
-        new_obj.dom_id_for_plot = new_obj.name.replace(/\./g, '-').replace(/\$/g, '_')  // replace '.' with '-' since '.' does not work in the DOM
+        new_obj.dom_id_for_plot = new_obj.name
+            .replace(/\./g, '-')  // replace '.' with '-'
+            .replace(/\$/g, '_')  // replace '$' with '-'
+            .replace(/\[/g, '_')  // replace '[' with '_'
+            .replace(/\]/g, '_')  // replace ']' with '_'
         new_obj.show_plot = false  // used when rendering to decide whether to show plot or not
         // push to this array each time a new value is assigned if value is numeric.
         // Plots use this data
@@ -2546,7 +2633,7 @@ const Locals = {
                         <span class='var_type'>
                             ${_.trim(local.type)}
                         </span>
-                        <p>
+                        <br>
                         `
             }
 
@@ -2750,22 +2837,6 @@ const ShutdownGdbgui = {
 }
 
 /**
- * Modal component that is hidden by default, but shown
- * when render is called. The user must close the modal to
- * resume using the GUI.
- */
-const Modal = {
-    /**
-     * Call when an important modal message must be shown
-     */
-    render: function(title, body){
-        $('#modal_title').html(title)
-        $('#modal_body').html(body)
-        $('#gdb_modal').modal('show')
-    }
-}
-
-/**
  * This is the main callback when receiving a response from gdb.
  * This callback generally updates the state, which emits an event and
  * makes components re-render themselves.
@@ -2841,15 +2912,21 @@ const process_gdb_response = function(response_array){
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
             }
+            // gdb returns local variables as "variables" which is confusing, because you can also create variables
+            // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
+            // are returned by gdbgui as "changelist", or have the keys "has_more", "numchild", "children", or "name".
             if ('variables' in r.payload){
-                State.set_locals(r.payload.variables)
+                State.set('locals', r.payload.variables)
             }
+            // gdbgui expression (aka a gdb variable was changed)
             if ('changelist' in r.payload){
                 Expressions.handle_changelist(r.payload.changelist)
             }
+            // gdbgui expression was evaluated for the first time for a child variable
             if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
                 Expressions.gdb_created_children_variables(r)
             }
+            // gdbgui expression was evaluated for the first time for a root variable
             if ('name' in r.payload){
                 Expressions.gdb_created_root_variable(r)
             }
@@ -2919,22 +2996,23 @@ const process_gdb_response = function(response_array){
     }
 }
 
+
 /**
- * the w2ui library lets you compartmentalize your dom elements: http://w2ui.com/web/demo
- * I would prefer plan javascript, but this got gdbgui working quickly
+ * Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
  */
-const layout_style = 'background-color: #F5F6F7; border: 1px solid #dfdfdf; padding: 5px;';
-$('#layout').w2layout({
-    name: 'layout',
-    panels: [
-        { type: 'top',  size: 45, resizable: false, style: layout_style, content: $('#top'), overflow: 'hidden' },
-        // { type: 'left', size: 0, resizable: false, style: layout_style, content: 'todo - add file browser' },
-        { type: 'main', style: layout_style, content: $('#main'), overflow: 'hidden' },
-        // { type: 'preview', size: '50%', resizable: true, style: layout_style, content: 'preview' },
-        { type: 'right', size: '35%', 'min-width': '300px', resizable: true, style: layout_style, content: $('#right') },
-        { type: 'bottom', size: 300, resizable: true, style: layout_style, content: $('#bottom') }
-    ]
-});
+Split(['#middle_left', '#middle_right'], {
+    gutterSize: 6,
+    cursor: 'col-resize',
+    direction: 'horizontal',  // horizontal makes a left/right pane, and a divider running vertically
+    sizes: [75, 25],
+})
+
+Split(['#middle', '#bottom'], {
+    gutterSize: 6,
+    cursor: 'row-resize',
+    direction: 'vertical',  // vertical makes a top and bottom pane, and a divider running horizontally
+    sizes: [65, 35],
+})
 
 // initialize components
 State.init()
@@ -2968,4 +3046,4 @@ if(_.isString(initial_data.initial_binary_and_args) && _.trim(initial_data.initi
 }
 
 return State
-})(jQuery, _, Awesomplete, io, moment, debug, initial_data)
+})(jQuery, _, Awesomplete, Split, io, moment, debug, initial_data)
