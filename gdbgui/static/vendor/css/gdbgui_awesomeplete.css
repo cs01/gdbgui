@@ -1,3 +1,5 @@
+/* This is mostly from the vendor, with a few overrides for gdbgui */
+
 .awesomplete [hidden] {
     display: none;
 }
@@ -10,22 +12,31 @@
 .awesomplete {
     display: inline-block;
     position: relative;
+    width: 100%;
 }
 
 .awesomplete > input {
     display: block;
+    height: 2em;
 }
-
+#source_file_dropdown_button{
+    height: 2em;
+}
 .awesomplete > ul {
     position: absolute;
     left: 0;
-    z-index: 1;
+    z-index: 11; /* make dropdown stay above gdbgui's controls */
     min-width: 100%;
     box-sizing: border-box;
     list-style: none;
     padding: 0;
     margin: 0;
     background: #fff;
+
+    /* Limit to 200px high so it doesn't take over the page  */
+    max-height: 200px;
+    /* and add scrollbar */
+    overflow: auto;
 }
 
 .awesomplete > ul:empty {
@@ -35,8 +46,7 @@
 .awesomplete > ul {
 	border-radius: .3em;
 	margin: .2em 0 0;
-	background: hsla(0,0%,100%,.9);
-	background: linear-gradient(to bottom right, white, hsla(0,0%,100%,.8));
+	background: white;
 	border: 1px solid rgba(0,0,0,.3);
 	box-shadow: .05em .2em .6em rgba(0,0,0,.2);
 	text-shadow: none;

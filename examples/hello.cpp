@@ -10,9 +10,11 @@ int main(void)
 
     std::vector<double> d {1.1, 2.2, 3.3, 4.4};
 
+    int i = 0;
     for(auto itr = begin(d); itr != end(d); ++itr)
     {
         std::cout << *itr << std::endl;
+        i++;
     }
 
     str = "Goodbye World";
