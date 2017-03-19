@@ -8,24 +8,11 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-v0.7.4.5-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-v0.7.5.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
-
-.. image:: https://img.shields.io/badge/development-active-green.svg
-  :target: https://github.com/cs01/gdbgui
-
-.. image:: https://badges.gitter.im/gdbgui/Lobby.svg
-   :alt: Join the chat at https://gitter.im/gdbgui/Lobby
-   :target: https://gitter.im/gdbgui/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
-
-.. image:: https://img.shields.io/badge/SayThanks.io-☼-blue.svg
-  :target: https://saythanks.io/to/grassfedcode
-
-.. image:: https://img.shields.io/gratipay/cs01.svg
-  :target: https://gratipay.com/cs01/
 
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
@@ -98,7 +85,7 @@ Why gdbgui?
 - Design influenced by the amazing Chrome debugger
 - Full gdb command line utility built-in
 - Written in widely used languages (Python and JavaScript)
-- Open source and free for personal use, `affordable <http://grassfedcode.com/gdbguicommercial>`_ for commercial use.
+- Open source and free
 
 Examples
 --------
@@ -113,6 +100,11 @@ Flags (all are optional):
   -h, --help            show this help message and exit
   -p PORT, --port PORT  The port on which gdbgui will be hosted
   --host HOST           The host ip address on which gdbgui serve.
+  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser from opening.
+                        This allows remote access to gdbgui and is useful when running on a
+                        remote machine that you want to view/debug from your local
+                        browser, or let someone else debug your application
+                        remotely.
   -g GDB, --gdb GDB     Path to gdb executable or lldb-mi executable. Defaults is 'gdb'. lldb
                         support is experimental and not fully functional at this time.
   -v, --version         Print version
@@ -137,7 +129,7 @@ Contributing
 ------------
 Help the gdbgui project grow by spreading the word. The more people who use it, the better it gets.
 
-.. image:: twitter.png
+.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/twitter.png
   :target: https://twitter.com/intent/tweet?text=check+out+%23gdbgui%2C+a+modern+browser-based+frontend+to+gdb+https%3A%2F%2Fgithub.com%2Fcs01%2Fgdbgui
 
 Creating and voting on issues in github will help me prioritize what to work on.
@@ -164,9 +156,9 @@ Testing
 
 License
 -------
-This software licensed under Creative Commons Attribution-NonCommercial 3.0 for personal use. `Click here <http://grassfedcode.com/gdbguicommercial>`_ for commercial license.
+GNU GPLv3
 
-pyPI and this github page are the only official sources of gdbgui. Any other sites serving gdbgui in any way should be avoided not only due to licensing issues, but due to security concerns as well.
+pyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
