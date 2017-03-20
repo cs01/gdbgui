@@ -8,7 +8,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-v0.7.5.1-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-v0.7.5.2-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -98,7 +98,7 @@ See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_
 Arguments
 ~~~~~~~~~
 Positional arguments:
-  ``command``: (Optional) The binary and arguments to run in gdb. This is a way to script the intial loading of the inferior binary you wish to debug. For example ``gdbgui ./mybinary -myarg -flag1 -flag2``. Binaries and arguments can also be input through the browser interface after launching.
+  ``command``: (Optional) The executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg -flag1 -flag2"`` (note the quotes around the executable and arguments). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
 
 Flags (all are optional):
   -h, --help            show this help message and exit
