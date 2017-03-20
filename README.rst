@@ -11,7 +11,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://img.shields.io/badge/pyPI-v0.7.5.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
-.. image:: https://img.shields.io/badge/python-2.7, 3.4, 3.5, pypy-blue.svg
+.. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 
@@ -20,7 +20,7 @@ view stack traces, and more in C, C++, Go, and Rust! Simply run
 ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
 Install
-------------------------------
+-------
 
 **Linux**
 
@@ -36,12 +36,14 @@ Install
 
 **Windows**
 
+Tested with `cygwin <https://cygwin.com/install.html>`_. If you have run this natively, contact me and let me know so I can update this section.
+
+::
+
     pip install gdbgui --upgrade
 
-    Tested with `cygwin <https://cygwin.com/install.html>`_.
 
 
-Since gdbgui is under active development, consider running this command fairly often.
 
 virtualenv users do not need the ``sudo`` prefix.
 
@@ -89,7 +91,9 @@ Why gdbgui?
 
 Examples
 --------
-See `https://github.com/cs01/gdbgui/tree/master/examples <https://github.com/cs01/gdbgui/tree/master/examples>`_
+Example code and makefiles for C, C++, go, and rust, that build and launch gdb.
+
+See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
 
 Arguments
 ~~~~~~~~~
@@ -117,19 +121,19 @@ Flags (all are optional):
 Compatibility
 -------------
 
-Python versions: 2.7, 3.4, 3.5, pypy
+Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev pypy
 
-Operating systems: Ubuntu 14.04, Ubuntu 16.04, OSX
+Operating systems: Ubuntu 14.04+, OSX
 
 Browsers: Chrome, Firefox, Ubuntu Web Browser
 
-Gdb: 7.7.1 (tested), 7.12 (tested), likely works with intermediate versions
+Gdb: 7.7.1 and 7.12 were tested. Likely works with intermediate versions.
 
 Contributing
 ------------
 Help the gdbgui project grow by spreading the word. The more people who use it, the better it gets.
 
-.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/twitter.png
+.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/static/images/twitter.png
   :target: https://twitter.com/intent/tweet?text=check+out+%23gdbgui%2C+a+modern+browser-based+frontend+to+gdb+https%3A%2F%2Fgithub.com%2Fcs01%2Fgdbgui
 
 Creating and voting on issues in github will help me prioritize what to work on.
@@ -142,6 +146,7 @@ run
     git clone https://github.com/cs01/gdbgui
     cd gdbgui
     pip install -r requirements.txt
+    pip install -r dev_requirements.txt
     gdbgui/backend.py --debug
 
 If you are modifying gdbgui.js, make sure you have the developer console open so the browser doesn't cache the file and miss your changes. When ``--debug`` is passed, there is a new component at the bottom of the right sidebar that displays the raw gdb mi output to help you debug.
@@ -264,3 +269,9 @@ gdbgui at launch:
 
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
+
+
+
+Contact
+-------
+grassfedcode@gmail.com

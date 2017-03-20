@@ -109,7 +109,7 @@ const Util = {
 }
 
 /**
- * Globals
+ * Global state
  */
 let State = {
     init: function(){
@@ -264,7 +264,8 @@ let State = {
             }else{
                 debug_print(`${key} was changed from ${oldval} to ${_value}`)
             }
-            // tell listeners that the state changed
+            // Tell listeners that the state changed.
+            // *This is what makes the app reactive*
             State.dispatch_state_change(key)
         }
     },
@@ -285,6 +286,8 @@ let State = {
         }else if (_.isObject(val)){
             return $.extend(true, {}, val)
         }else{
+            // changes to strings and integers by the calling function will
+            // not mutate the value in State, so just return the value
             return val
         }
     },
