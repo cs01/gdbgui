@@ -7,8 +7,8 @@ returns structured gdb output to the client
 Examples:
 
 gdbgui
-gdbgui /path/to/program
-gdbgui /path/to/program -arg myarg -myflag
+gdbgui "/path/to/program"
+gdbgui "/path/to/program -arg myarg -myflag"
 
 """
 
@@ -76,7 +76,6 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
-
     if debug:
         # gevent works on linux kernels < v3.9, eventlet does not, so gevent is preferred.
         # However, in debug mode gevent monkey patches (removes) python modules used by pygdbmi,
@@ -87,7 +86,12 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
 
         async_mode = 'gevent'
     socketio.server_options['async_mode'] = async_mode
-    socketio.init_app(app)
+    try:
+        socketio.init_app(app)
+    except Exception:
+        print('failed to initialize socketio app with async mode "%s". Continuing with async mode "threading".' % async_mode)
+        socketio.server_options['async_mode'] = 'threading'
+        socketio.init_app(app)
 
     if open_browser is True and debug is False and testing is False:
         text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
