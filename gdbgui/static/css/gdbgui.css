@@ -144,7 +144,6 @@ div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .right_help_ico
 td.assembly{
     padding-bottom: 6px;
     white-space: nowrap;
-    font-size: 0.8em;
 }
 #code_table{
     font-family: monospace;
@@ -172,7 +171,6 @@ td.line_num{
 /* wsp == whitespace. Needed to preserve leading whitespace.
     this span wraps syntax-highlighted source code */
 span.wsp{
-    font-size: 0.8em;
     white-space: pre;
 }
 

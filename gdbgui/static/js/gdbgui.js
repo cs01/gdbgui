@@ -259,13 +259,7 @@ let State = {
         // update the state
         State._state[key] = _value
         if(oldval !== _value){
-            if(_.isArray(oldval) && _.isArray(_value)){
-                debug_print(`${key} was changed from array of length ${oldval.length} to ${_value.length}`)
-            }else{
-                debug_print(`${key} was changed from ${oldval} to ${_value}`)
-            }
-            // Tell listeners that the state changed.
-            // *This is what makes the app reactive*
+            debug_print(key, ' changed from ', oldval, ' to ', _value)
             State.dispatch_state_change(key)
         }
     },
