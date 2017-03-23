@@ -34,6 +34,8 @@ Install
 
     sudo pip install gdbgui --upgrade --user
 
+Follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-the-Debugger.html>`__  to codesign gdb if you get an error such as ``please check gdb is codesigned - see taskgated(8)``
+
 **Windows**
 
 Tested with `cygwin <https://cygwin.com/install.html>`_. If you have run this natively, contact me and let me know so I can update this section.
