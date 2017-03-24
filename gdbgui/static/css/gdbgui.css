@@ -216,12 +216,10 @@ span.wsp{
     background: #f1f1f1;
 }
 #console{
-    font-size: 0.8em !important;
     background-color: #292929;
     color: #d6d6d6 !important;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
     width: 100%;
-    margin-bottom: 12px;
     overflow: auto;
 }
 .sent_command{

@@ -81,6 +81,7 @@ Features
 - Dropdown of all files used to compile binary, with autocomplete functionality
 - Source code explorer with ability to jump to line
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
+- Notifications when new updates are available
 
 Why gdbgui?
 -----------
@@ -123,11 +124,11 @@ Flags (all are optional):
 Compatibility
 -------------
 
-Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev pypy
+Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
 
 Operating systems: Ubuntu 14.04+, OSX
 
-Browsers: Chrome
+Browsers: Chrome, Firefox
 
 Gdb: 7.7.1 and 7.12 were tested. Likely works with intermediate versions.
 

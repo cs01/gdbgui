@@ -118,8 +118,12 @@ let State = {
         window.addEventListener('event_inferior_program_paused', State.event_inferior_program_paused)
         window.addEventListener('event_select_frame', State.event_select_frame)
 
+        // make sure saved preferences are valid
         if(localStorage.getItem('highlight_source_code') === null || !_.isBoolean(JSON.parse(localStorage.getItem('highlight_source_code')))){
             localStorage.setItem('highlight_source_code', JSON.stringify(true))
+        }
+        if(localStorage.getItem('auto_add_breakpoint_to_main') === null || !_.isBoolean(JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')))){
+            localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
         }
 
         window.onkeydown = function(e){
@@ -144,10 +148,13 @@ let State = {
         gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
         gdb_pid: undefined,
 
+        // preferences
         // syntax highlighting
         themes: initial_data.themes,
         current_theme: localStorage.getItem('theme') || initial_data.themes[0],
         highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // set to false to make source code raw text (improves performance for big files)
+
+        auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
 
         // inferior program state
         // choices for inferior_program are:
@@ -1546,6 +1553,7 @@ const Settings = {
     init: function(){
         $('body').on('change', '#theme_selector', Settings.theme_selection_changed)
         $('body').on('change', '#syntax_highlight_selector', Settings.syntax_highlight_selector_changed)
+        $('body').on('change', '#checkbox_auto_add_breakpoint_to_main', Settings.checkbox_auto_add_breakpoint_to_main_changed)
         $('body').on('click', '.toggle_settings_view', Settings.click_toggle_settings_view)
         window.addEventListener('event_global_state_changed', Settings.render)
 
@@ -1604,7 +1612,7 @@ const Settings = {
             <tr><td>
                 <div class=checkbox>
                     <label>
-                        <input id=checkbox_auto_add_breakpoint_to_main type='checkbox' ${Settings.auto_add_breakpoint_to_main() ? 'checked' : ''}>
+                        <input id=checkbox_auto_add_breakpoint_to_main type='checkbox' ${State.get('auto_add_breakpoint_to_main') ? 'checked' : ''}>
                         Auto add breakpoint to main
                     </label>
                 </div>
@@ -1663,12 +1671,10 @@ const Settings = {
         // save preference for later
         localStorage.setItem('highlight_source_code', JSON.stringify(State.get('highlight_source_code')))
     },
-    auto_add_breakpoint_to_main: function(){
+    checkbox_auto_add_breakpoint_to_main_changed: function(){
         let checked = $('#checkbox_auto_add_breakpoint_to_main').prop('checked')
-        if(_.isUndefined(checked)){
-            checked = true
-        }
-        return checked
+        State.set('auto_add_breakpoint_to_main', checked)
+        localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(State.get('auto_add_breakpoint_to_main')))
     },
     pretty_print: function(){
         let checked = $('#checkbox_pretty_print').prop('checked')
@@ -1751,7 +1757,7 @@ const BinaryLoader = {
                 ]
 
         // add breakpoint if we don't already have one
-        if(Settings.auto_add_breakpoint_to_main()){
+        if(State.get('auto_add_breakpoint_to_main')){
             cmds.push('-break-insert main')
         }
         cmds.push(GdbApi.get_break_list_cmd())
