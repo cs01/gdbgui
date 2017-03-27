@@ -9,6 +9,7 @@ Examples:
 gdbgui
 gdbgui "/path/to/program"
 gdbgui "/path/to/program -arg myarg -myflag"
+gdbgui --help
 
 """
 
@@ -309,7 +310,7 @@ def get_last_modified_unix_sec():
 def read_file():
     """Read a file and return its contents as an array"""
     path = request.args.get('path')
-    highlight = json.loads(request.args.get('highlight'))
+    highlight = json.loads(request.args.get('highlight', 'true'))
 
     if path and os.path.isfile(path):
         try:
@@ -320,7 +321,7 @@ def read_file():
             formatter = htmllistformatter.HtmlListFormatter(lineseparator='')  # Don't add newlines after each line
             try:
                 lexer = get_lexer_for_filename(path)
-            except ClassNotFound:
+            except Exception:
                 lexer = None
 
             if lexer and highlight:
