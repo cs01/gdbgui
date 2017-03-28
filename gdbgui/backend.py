@@ -104,7 +104,12 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
             print('\n\n** view app at http://%s:%d **\n\n' % (DEFAULT_HOST, port))
         else:
             print('\n\n** view app at http://%s:%d **\n\n' % (socket.gethostbyname(socket.gethostname()), port))
-        socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
+
+        try:
+            socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
+        except KeyboardInterrupt:
+            # Process was interrupted by ctrl+c on keyboard, show message
+            sys.stdout.write('\n\nsupport gdbgui development when shopping at amazon:\n\nhttps://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20\n\n')
 
 
 def verify_gdb_exists():
@@ -247,12 +252,6 @@ def get_extra_files():
 @app.route('/')
 def gdbgui():
     """Render the main gdbgui interface"""
-    if app.debug:
-        # do not give unique timestamp to files because it wipes out
-        # breakpoints in chrome's debugger
-        time_sec = 0
-    else:
-        time_sec = int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds())
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
 
     THEMES = ['default', 'monokai']
@@ -275,20 +274,19 @@ def gdbgui():
 @app.route('/shutdown')
 def shutdown_webview():
     """Render the main gdbgui interface"""
-    return render_template('shutdown.pug', debug=app.debug)
+    return render_template('shutdown.pug', debug=json.dumps(app.debug))
 
 
 @app.route('/_shutdown')
 def _shutdown():
+    sys.stdout.write('\n\nsupport gdbgui development when shopping at amazon:\n\nhttps://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20\n\n')
     pid = os.getpid()
-
     if app.debug:
         os.kill(pid, signal.SIGINT)
     else:
         socketio.stop()
 
-    dbprint('received user request to shut down gdbgui')
-
+    return jsonify({})
 
 @app.route('/get_last_modified_unix_sec')
 def get_last_modified_unix_sec():
