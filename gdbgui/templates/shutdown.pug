@@ -12,19 +12,6 @@ head
     //- javascript
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
 
-    //- immediately make the ajax call to shut the gdbgui server down
-    if debug == 'false'
-        script.
-            (function(){
-                $.ajax({
-                    url: "/_shutdown",
-                    cache: false,
-                    method: 'GET',
-                    success: null,
-                    error: null,
-                })
-            })()
-
 style.
     body{
         background-color: white;
@@ -57,26 +44,44 @@ body
 
     div.container-fluid
         p
-        h3 gdbgui has been shut down
+        //- immediately make the ajax call to shut the gdbgui server down
+        if debug == 'false'
+            //- do the actual shutdown
+            h3 gdbgui has been shut down
+            script.
+                (function(){
+                    $.ajax({
+                        url: "/_shutdown",
+                        cache: false,
+                        method: 'GET',
+                        success: null,
+                        error: null,
+                    })
+                })()
 
-        div.row
-            h4 support gdbgui development by shopping at amazon
-            .alignleft
-                script(type='text/javascript').
-                    amzn_assoc_ad_type = "banner";
-                    amzn_assoc_marketplace = "amazon";
-                    amzn_assoc_region = "US";
-                    amzn_assoc_placement = "assoc_banner_placement_default";
-                    amzn_assoc_campaigns = "computers_accesories";
-                    amzn_assoc_banner_type = "category";
-                    amzn_assoc_p = "48";
-                    amzn_assoc_isresponsive = "false";
-                    amzn_assoc_banner_id = "051KGKF9H8CVY30HJT82";
-                    amzn_assoc_width = "728";
-                    amzn_assoc_height = "90";
-                    amzn_assoc_tracking_id = "grassfedcode04-20";
-                    amzn_assoc_linkid = "7e5686d67a0ec35d2de0e094a4c76100";
-                script(src='//z-na.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&Operation=GetScript&ID=OneJS&WS=1')
+
+            //- show amazon ad
+            div.row
+                h4 support gdbgui development by shopping at amazon
+                .alignleft
+                    script(type='text/javascript').
+                        amzn_assoc_ad_type = "banner";
+                        amzn_assoc_marketplace = "amazon";
+                        amzn_assoc_region = "US";
+                        amzn_assoc_placement = "assoc_banner_placement_default";
+                        amzn_assoc_campaigns = "computers_accesories";
+                        amzn_assoc_banner_type = "category";
+                        amzn_assoc_p = "48";
+                        amzn_assoc_isresponsive = "false";
+                        amzn_assoc_banner_id = "051KGKF9H8CVY30HJT82";
+                        amzn_assoc_width = "728";
+                        amzn_assoc_height = "90";
+                        amzn_assoc_tracking_id = "grassfedcode04-20";
+                        amzn_assoc_linkid = "7e5686d67a0ec35d2de0e094a4c76100";
+                    script(src='//z-na.amazon-adsystem.com/widgets/q?ServiceVersion=20070822&Operation=GetScript&ID=OneJS&WS=1')
+        else
+            h3 debug mode is on, gdbgui has not been shut down (press ctrl+c in terminal to shutdown)
+
 
         div.row
             a.square(target='_blank', href='https://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20&linkCode=ur2&linkId=cf83012beef419a13f6df4b5c36bc446&camp=1789&creative=9325')

@@ -249,6 +249,9 @@ span.wsp{
     background: rgba(0,0,0, 0.8);
     overflow: auto;
 }
+.blur{
+    filter: blur(3px);
+}
 #gdb_settings_modal{
     width: 800px;
     margin: 50px;
