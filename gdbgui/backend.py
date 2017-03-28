@@ -275,20 +275,19 @@ def gdbgui():
 @app.route('/shutdown')
 def shutdown_webview():
     """Render the main gdbgui interface"""
-    return render_template('shutdown.pug', debug=app.debug)
+    return render_template('shutdown.pug', debug=json.dumps(app.debug))
 
 
 @app.route('/_shutdown')
 def _shutdown():
+    sys.stdout.write('\n\nsupport gdbgui development when shopping at amazon:\n\nhttps://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20\n\n')
     pid = os.getpid()
-
     if app.debug:
         os.kill(pid, signal.SIGINT)
     else:
         socketio.stop()
 
-    dbprint('received user request to shut down gdbgui')
-
+    return jsonify({})
 
 @app.route('/get_last_modified_unix_sec')
 def get_last_modified_unix_sec():
