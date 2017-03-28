@@ -250,7 +250,7 @@ span.wsp{
     overflow: auto;
 }
 .blur{
-    filter: blur(5px);
+    filter: blur(3px);
 }
 #gdb_settings_modal{
     width: 800px;

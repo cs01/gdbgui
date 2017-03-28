@@ -355,6 +355,12 @@ State.dispatch_state_change = _.debounce((key) => {
  * resume using the GUI.
  */
 const Modal = {
+    init: function(){
+        $('#gdb_modal').on('hidden.bs.modal', function () {
+            $('main').removeClass('blur') // unblur the main content
+        })
+
+    },
     /**
      * Call when an important modal message must be shown
      */
@@ -362,6 +368,7 @@ const Modal = {
         $('#modal_title').html(title)
         $('#modal_body').html(body)
         $('#gdb_modal').modal('show')
+        $('main').addClass('blur')  // blur the main content
     }
 }
 
@@ -520,9 +527,7 @@ const GdbApi = {
             window.onbeforeunload = () => null
 
             // show modal
-            // Modal.render('gdb closed on server', `gdb (pid ${State.get('gdb_pid')}) was closed for this tab because the websocket connection for this tab was disconnected.
-            //     <p>
-            //     Each tab has its own instance of gdb running on the backend. Open new tab to start new instance of gdb.`)
+            Modal.render('The gdbgui server has shutdown. This tab will no longer function as expected.')
             debug_print('disconnected')
         });
     },
@@ -1647,7 +1652,7 @@ const Settings = {
 
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
-            |  <a href='https://www.amazon.com/?&_encoding=UTF8&tag=tahoechains-20&linkCode=ur2&linkId=0a755fb7040582a6bfd4e457b54a071b&camp=1789&creative=9325'>shop amazon to support gdbgui</a>
+            |  <a href='https://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20'>shop amazon to support gdbgui</a>
             `
 
             )
@@ -1656,6 +1661,7 @@ const Settings = {
         if(e.target.classList.contains('toggle_settings_view')){  // need this check in case background div has this class
             e.stopPropagation()  // need this to prevent toggling twice rapidly if a toggle button is over a div
             Settings.pane.toggleClass('hidden')
+            $('main').toggleClass('blur')
         }
     },
     theme_selection_changed: function(e){
@@ -2830,11 +2836,15 @@ const ShutdownGdbgui = {
         ShutdownGdbgui.el.click(ShutdownGdbgui.click_shutdown_button)
     },
     click_shutdown_button: function(){
+        // no need to show confirmation before leaving, because we're about to prompt the user
+        window.onbeforeunload = () => null
+        // prompt user
         if (window.confirm('This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?') === true) {
-            // ShutdownGdbgui.shutdown()
+            // user wants to shutdown, redirect them to the shutdown page
             window.location = '/shutdown'
         } else {
-            // don't do anything
+            // re-add confirmation before leaving page (when user actually leaves at a later time)
+            window.onbeforeunload = () => 'some text'
         }
     },
 }
@@ -3021,6 +3031,7 @@ Split(['#middle', '#bottom'], {
 State.init()
 GdbApi.init()
 GdbCommandInput.init()
+Modal.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
 SourceCode.init()
@@ -3039,7 +3050,6 @@ Settings.init()
 
 window.addEventListener("beforeunload", GdbCommandInput.shutdown)
 window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')
-
 
 // and finally, if user supplied an initial command, set it in the UI, and load the
 // inferior binary
