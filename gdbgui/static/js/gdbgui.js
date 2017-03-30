@@ -89,6 +89,7 @@ const Util = {
         return s.replace("<", "&lt;")
                 .replace(">", "&gt;")
                 .replace(/\\n/g, '<br>')
+                .replace(/\\r/g, '')
                 .replace(/\\"/g, '"')
                 .replace(/\\t/g, '&nbsp')
     },
@@ -2969,7 +2970,7 @@ const process_gdb_response = function(response_array){
                     localStorage.setItem('gdb_version', State.get('gdb_version'))
                 }
             }
-        }else if (r.type === 'output'){
+        }else if (r.type === 'output' || r.type === 'target'){
             // output of program
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
         }
