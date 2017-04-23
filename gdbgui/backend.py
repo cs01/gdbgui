@@ -308,7 +308,14 @@ def get_last_modified_unix_sec():
 def read_file():
     """Read a file and return its contents as an array"""
     path = request.args.get('path')
-    highlight = json.loads(request.args.get('highlight', 'true'))
+    try:
+        highlight = json.loads(request.args.get('highlight', 'true'))
+    except Exception as e:
+        if app.debug:
+            print('Raising exception since debug is on')
+            raise e
+        else:
+            highlight = True  # highlight argument was invalid for some reason, default to true
 
     if path and os.path.isfile(path):
         try:
@@ -329,7 +336,7 @@ def read_file():
                 source_code = formatter.get_marked_up_list(tokens)
             else:
                 highlighted = False
-                source_code = code.split('\n')
+                source_code = code.split('\n')  # turn long string into a list
 
             return jsonify({'source_code': source_code,
                             'path': path,

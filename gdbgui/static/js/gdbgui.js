@@ -153,7 +153,7 @@ let State = {
         // syntax highlighting
         themes: initial_data.themes,
         current_theme: localStorage.getItem('theme') || initial_data.themes[0],
-        highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // set to false to make source code raw text (improves performance for big files)
+        highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // get saved boolean to highlight source code
 
         auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
 
