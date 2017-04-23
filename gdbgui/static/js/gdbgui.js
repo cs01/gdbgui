@@ -3055,8 +3055,12 @@ const GlobalEvents = {
 
         $('body').on('keyup', GlobalEvents.body_keyup)
     },
+    /**
+     * keyboard shortcuts to interact with gdb.
+     * enabled only when key is depressed on a target that is NOT an input.
+     */
     body_keyup: function(e){
-        if(e.target.classList.contains('keyboard_controls')){
+        if(e.target.nodeName !== 'INPUT'){
             let char = String.fromCharCode(e.keyCode).toLowerCase()
             if(e.keyCode === DOWN_BUTTON_NUM || char === 's'){
                 GdbApi.click_step_button()
