@@ -34,6 +34,7 @@ const ENTER_BUTTON_NUM = 13
     , UP_BUTTON_NUM = 38
     , RIGHT_BUTTON_NUM = 39
     , DOWN_BUTTON_NUM = 40
+    , COMMA_BUTTON_NUM = 188
     , DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
     , ANIMATED_REFRESH_ICON = "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>"
 
@@ -3067,6 +3068,10 @@ const GlobalEvents = {
                 GdbApi.click_return_button()
             }else if(char === 'r'){
                 GdbApi.click_run_button()
+            }else if(char === 'm'){
+                GdbApi.click_next_instruction_button()
+            }else if(e.keyCode === COMMA_BUTTON_NUM){
+                GdbApi.click_step_instruction_button()
             }
         }
     }
