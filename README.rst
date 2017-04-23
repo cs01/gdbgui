@@ -141,6 +141,8 @@ The following keyboard shortcuts are available when the focus is not in an input
 - Next: n or right arrow
 - Step: s or down arrow
 - Up: u or up arrow
+- Next Instruction: m
+- Step Instruction: ,
 
 
 Contributing
