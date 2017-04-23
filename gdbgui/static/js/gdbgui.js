@@ -94,6 +94,15 @@ const Util = {
                 .replace(/\\t/g, '&nbsp')
     },
     /**
+     * take a string of html in JavaScript and strip out the html
+     * http://stackoverflow.com/a/822486/2893090
+     */
+    get_text_from_html: function(html){
+       var tmp = document.createElement("DIV");
+       tmp.innerHTML = html;
+       return tmp.textContent || tmp.innerText || "";
+    },
+    /**
      * @param fullname_and_line: i.e. /path/to/file.c:78
      * @param default_line_if_not_found: i.e. 0
      * @return: Array, with 0'th element == path, 1st element == line
@@ -813,14 +822,17 @@ const Breakpoint = {
             // if we have the source file cached, we can display the line of text
             let source_file_obj = SourceCode.get_source_file_obj_from_cache(b.fullname_to_display)
             if(source_file_obj && source_file_obj.source_code && source_file_obj.source_code.length >= (b.line - 1)){
-                let line = SourceCode.get_source_file_obj_from_cache(b.fullname_to_display).source_code[b.line - 1]
+                let syntax_highlighted_line = SourceCode.get_source_file_obj_from_cache(b.fullname_to_display).source_code[b.line - 1]
+                , line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
+
                 if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){
                     line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + '...'
                 }
+                let escaped_line = Util.escape(line)
 
                 source_line = `
                 <span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>
-                    ${line}
+                    ${escaped_line}
                 </span>
                 <br>`
             }
@@ -854,9 +866,11 @@ const Breakpoint = {
                 </span>
                 `
             }else{
+                let func = b.func === undefined ? '(unknown function)' : b.func
+
                 function_text = `
                     <span class=monospace>
-                        ${info_glyph} ${b.func}
+                        ${info_glyph} ${func}
                     </span>
                     <span style='color: #bbbbbb; font-style: italic;'>
                         thread groups: ${b['thread-groups']}
@@ -876,7 +890,7 @@ const Breakpoint = {
                         <tr>
                             <td>
                                 ${delete_text}
-                                <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'/>
+                                <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'> </input>
                                 ${function_text}
 
                         <tr>
@@ -1234,11 +1248,16 @@ const SourceCode = {
         SourceCode.make_current_line_visible()
     },
     fetch_file: function(fullname){
-        if(State.get('files_being_fetched').indexOf(fullname) === -1){
+        if(!_.isString(fullname) || !fullname.startsWith('/')){
+            // this can happen when an executable doesn't have debug symbols.
+            // don't try to fetch it because it will never exist.
+            return
+        }else if(State.get('files_being_fetched').indexOf(fullname) === -1){
             let files = State.get('files_being_fetched')
             files.push(fullname)
             State.set('files_being_fetched', files)
         }else{
+            // this file is already being fetched
             return
         }
 
@@ -1404,8 +1423,7 @@ const SourceFileAutocomplete = {
             if(State.get('source_file_paths').length === 0){
                 // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
                 // request that gdb populate this list.
-                State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large executables, this may cause gdbgui to freeze.`])
-                GdbApi.run_gdb_command('-file-list-exec-source-files')
+                SourceFileAutocomplete.fetch_source_files()
                 return
             }
 
@@ -1428,8 +1446,11 @@ const SourceFileAutocomplete = {
             State.set('current_assembly_address', '')
         })
     },
+    fetch_source_files: function(){
+        State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large executables, this may cause gdbgui to freeze.`])
+        GdbApi.run_gdb_command('-file-list-exec-source-files')
+    },
     render: function(e){
-
         if(!_.isEqual(SourceFileAutocomplete.input._list, State.get('source_file_paths'))){
             SourceFileAutocomplete.input.list = State.get('source_file_paths')
             SourceFileAutocomplete.input.evaluate()
@@ -1452,6 +1473,9 @@ const SourceFileAutocomplete = {
             State.set('fullname_to_render',fullname)
             State.set('current_line_of_source_code', line)
             State.set('current_assembly_address', '')
+        }else if (State.get('source_file_paths').length === 0){
+            // source file list has not been fetched yet, so fetch it
+            SourceFileAutocomplete.fetch_source_files()
         }
     }
 }
@@ -2867,8 +2891,17 @@ const process_gdb_response = function(response_array){
             // This is special GDB Machine Interface structured data that we
             // can render in the frontend
             if ('bkpt' in r.payload){
-                // remove duplicate breakpoints
                 let new_bkpt = r.payload.bkpt
+                // if gdb could not determine which function this breakpoint belongs to,
+                // delete it, and don't display it in the frontend
+                if (new_bkpt.func === undefined){
+                    console.warn('removing invalid breakpoint: ', new_bkpt)
+                    let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
+                    GdbApi.run_gdb_command(cmd)
+                    continue
+                }
+
+                // remove duplicate breakpoints
                 let cmds = State.get('breakpoints')
                     .filter(b => (new_bkpt.fullname === b.fullname && new_bkpt.func === b.func && new_bkpt.line === b.line))
                     .map(b => GdbApi.get_delete_break_cmd(b.number))
@@ -2877,10 +2910,15 @@ const process_gdb_response = function(response_array){
                 // save this breakpoint
                 let bkpt = State.save_breakpoint(r.payload.bkpt)
 
-                // a normal breakpoint or child breakpoint
-                State.set('fullname_to_render', bkpt.fullname_to_display)
-                State.set('current_line_of_source_code', bkpt.line)
-                State.set('current_assembly_address', undefined)
+                // if executable does not have debug symbols (i.e. not compiled with -g flag)
+                // gdb will not return a path, but rather the function name. The function name is
+                // not a file, and therefore it cannot be displayed.
+                if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
+                    // a normal breakpoint or child breakpoint
+                    State.set('fullname_to_render', bkpt.fullname_to_display)
+                    State.set('current_line_of_source_code', bkpt.line)
+                    State.set('current_assembly_address', undefined)
+                }
 
                 // refresh all breakpoints
                 GdbApi.refresh_breakpoints()
@@ -2914,14 +2952,19 @@ const process_gdb_response = function(response_array){
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
                     State.set('source_file_paths', _.uniq(r.payload.files.map(f => f.fullname)).sort())
-                }else if (State.get('inferior_binary_path')){
-                    Modal.render('Warning',
-                     `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
-                     <p>
-                     <p>
-                     Read more: <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
-                     '')
+                }else{
+                    State.set('source_file_paths', ['Executable was compiled without debug symbols. Source file paths are unknown.'])
+
+                    if (State.get('inferior_binary_path')){
+                        Modal.render('Warning',
+                         `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
+                         <p>
+                         <p>
+                         Read more: <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
+                         '')
+                    }
                 }
+
             }
             if ('memory' in r.payload){
                 Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents)
