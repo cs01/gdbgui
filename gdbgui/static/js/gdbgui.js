@@ -30,7 +30,9 @@ window.State = (function ($, _, Awesomplete, Split, io, moment, debug, initial_d
  * Constants
  */
 const ENTER_BUTTON_NUM = 13
+    , LEFT_BUTTON_NUM = 37
     , UP_BUTTON_NUM = 38
+    , RIGHT_BUTTON_NUM = 39
     , DOWN_BUTTON_NUM = 40
     , DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
     , ANIMATED_REFRESH_ICON = "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>"
@@ -44,7 +46,6 @@ if(debug){
         // stubbed out
     }
 }
-
 
 /**
  * Some general utility methods
@@ -134,13 +135,6 @@ let State = {
         }
         if(localStorage.getItem('auto_add_breakpoint_to_main') === null || !_.isBoolean(JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')))){
             localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
-        }
-
-        window.onkeydown = function(e){
-           if((e.keyCode === ENTER_BUTTON_NUM)) {
-               // when pressing enter in an input, don't redirect entire page
-               e.preventDefault()
-           }
         }
     },
     /**
@@ -357,7 +351,6 @@ State.dispatch_state_change = _.debounce((key) => {
         debug_print('dispatching event_global_state_changed')
         window.dispatchEvent(new CustomEvent('event_global_state_changed', {'detail': {'key_changed': key}}))
     }, 50)
-
 
 /**
  * Modal component that is hidden by default, but shown
@@ -754,7 +747,6 @@ const GdbApi = {
         State.set('inferior_binary_path', null)
     }
 }
-
 
 /**
  * A component to display, in gory detail, what is
@@ -1479,8 +1471,6 @@ const SourceFileAutocomplete = {
         }
     }
 }
-
-
 
 /**
  * The Registers component
@@ -3053,6 +3043,34 @@ const process_gdb_response = function(response_array){
     }
 }
 
+const GlobalEvents = {
+    init: function(){
+        window.onkeydown = function(e){
+           if((e.keyCode === ENTER_BUTTON_NUM)) {
+               // when pressing enter in an input, don't redirect entire page
+               e.preventDefault()
+           }
+        }
+
+        $('body').on('keyup', GlobalEvents.body_keyup)
+    },
+    body_keyup: function(e){
+        if(e.target.classList.contains('keyboard_controls')){
+            let char = String.fromCharCode(e.keyCode).toLowerCase()
+            if(e.keyCode === DOWN_BUTTON_NUM || char === 's'){
+                GdbApi.click_step_button()
+            }else if(e.keyCode === RIGHT_BUTTON_NUM || char === 'n'){
+                GdbApi.click_next_button()
+            }else if(char === 'c'){
+                GdbApi.click_continue_button()
+            }else if(e.keyCode === UP_BUTTON_NUM || char === 'u'){
+                GdbApi.click_return_button()
+            }else if(char === 'r'){
+                GdbApi.click_run_button()
+            }
+        }
+    }
+}
 
 /**
  * Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
@@ -3090,7 +3108,7 @@ Threads.init()
 VisibilityToggler.init()
 ShutdownGdbgui.init()
 Settings.init()
-
+GlobalEvents.init()
 
 window.addEventListener("beforeunload", GdbCommandInput.shutdown)
 window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')
