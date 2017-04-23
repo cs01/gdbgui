@@ -7,7 +7,7 @@ head
 
     base(target='_blank')
 
-    link(href='static/css/gdbgui.css?_=#{timetag_to_prevent_caching}', rel='stylesheet')
+    link(href='static/css/gdbgui.css?_=#{version}', rel='stylesheet')
     link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
     link(href='static/vendor/css/gdbgui_awesomeplete.css', rel='stylesheet')
 
@@ -208,4 +208,4 @@ script.
     initial_data = JSON.parse('!{initial_data}')
     debug = JSON.parse('!{debug}')
 
-script(type="text/javascript" src='static/js/gdbgui.js?_=#{timetag_to_prevent_caching}')
+script(type="text/javascript" src='static/js/gdbgui.js?_=#{version}')
