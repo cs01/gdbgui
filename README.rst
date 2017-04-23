@@ -132,6 +132,17 @@ Browsers: Chrome, Firefox
 
 Gdb: 7.7.1 and 7.12 were tested. Likely works with intermediate versions.
 
+Keyboard Shortcuts
+------------------
+The following keyboard shortcuts are available when the focus is not in an input field. They have the same effect as when the button is pressed.
+
+- Run: r
+- Continue: c
+- Next: n or right arrow
+- Step: s or down arrow
+- Up: u or up arrow
+
+
 Contributing
 ------------
 Help the gdbgui project grow by spreading the word. The more people who use it, the better it gets.
