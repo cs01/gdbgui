@@ -117,6 +117,27 @@ const Util = {
             line = user_input_array[1]
         }
         return [fullname, line]
+    },
+    /**
+     * Render pygdbmi response
+     * @param mi_obj: gdb mi obj from pygdbmi
+     * @return array of error messages
+     */
+    get_err_text_from_mi_err_response: function(mi_obj){
+        const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
+        let text = []
+        for(let k of interesting_keys){
+            if (mi_obj.payload[k]) {text.push(mi_obj.payload[k])}
+        }
+
+        if (mi_obj.payload.frame){
+            for(let i of ['file', 'func', 'line', 'addr']){
+                if (i in mi_obj.payload.frame){
+                    text.push(`${i}: ${mi_obj.payload.frame[i]}`)
+                }
+            }
+        }
+        return text
     }
 }
 
@@ -383,17 +404,43 @@ const Modal = {
 const StatusBar = {
     el: $('#status'),
     /**
+     * If user runs a command, show warning message if gdb does not respond
+     * in a timely manner. Set a timeout, and store it here. Remove it when gdb
+     * responds.
+     */
+    waiting_timeout: null,
+    /**
      * Render a new status
      * @param status_str: The string to render
      * @param error: Whether this string relates to an error condition. If true,
      *                  a red label appears
      */
-    render: function(status_str, error=false){
+    render: function(status_str, error=false, warn=false){
+        clearTimeout(StatusBar.waiting_timeout)
+        let prefix = ''
         if(error){
-            StatusBar.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
-        }else{
-            StatusBar.el.html(status_str)
+            prefix = "<span class='label label-danger'>error</span>&nbsp;"
+        }else if (warn){
+            prefix = "<span class='label label-warning'>warning</span>&nbsp;"
         }
+        StatusBar.el.html(prefix + status_str)
+    },
+    /**
+     * When waiting for a response render this, and set a timeout.
+     * If response is not received, update the status to indicate there might be
+     * an issue that needs to be addressed by the user.
+     */
+    render_waiting: function(){
+        const WAIT_TIME_SEC = 3
+        StatusBar.render(ANIMATED_REFRESH_ICON)
+        StatusBar.waiting_timeout = setTimeout(
+            () => {
+                let warn_text = `It's been over ${WAIT_TIME_SEC} seconds. Is an inferior program loaded and running?`
+                StatusBar.render(warn_text, false, true)
+                GdbConsoleComponent.add(warn_text, true)
+                GdbConsoleComponent.scroll_to_bottom()
+            },
+            WAIT_TIME_SEC * 1000)
     },
     /**
      * Handle http responses with error codes
@@ -425,18 +472,8 @@ const StatusBar = {
             }
         }
         if (mi_obj.payload){
-            const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
-            for(let k of interesting_keys){
-                if (mi_obj.payload[k]) {status.push(mi_obj.payload[k])}
-            }
-
-            if (mi_obj.payload.frame){
-                for(let i of ['file', 'func', 'line', 'addr']){
-                    if (i in mi_obj.payload.frame){
-                        status.push(`${i}: ${mi_obj.payload.frame[i]}`)
-                    }
-                }
-            }
+            let err_text_array = Util.get_err_text_from_mi_err_response(mi_obj)
+            status = status.concat(err_text_array)
         }
         StatusBar.render(status.join(', '), error)
     }
@@ -461,6 +498,10 @@ const GdbConsoleComponent = {
         let strings = _.isString(s) ? [s] : s,
             cls = stderr ? 'stderr' : ''
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
+    },
+    add_mi_error: function(mi_obj){
+        let err_text_array = Util.get_err_text_from_mi_err_response(mi_obj)
+        GdbConsoleComponent.add(err_text_array, true)
     },
     add_sent_commands(cmds){
         if(!_.isArray(cmds)){
@@ -630,7 +671,7 @@ const GdbApi = {
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
-        StatusBar.render(ANIMATED_REFRESH_ICON)
+        StatusBar.render_waiting()
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
     /**
@@ -2980,6 +3021,7 @@ const process_gdb_response = function(response_array){
             }
         } else if (r.type === 'result' && r.message === 'error'){
             // this is also special gdb mi output, but some sort of error occured
+            GdbConsoleComponent.add_mi_error(r)
 
             // render it in the status bar, and don't render the last response in the array as it does by default
             if(update_status){
@@ -3053,14 +3095,16 @@ const GlobalEvents = {
            }
         }
 
-        $('body').on('keyup', GlobalEvents.body_keyup)
+        $('body').on('keydown', GlobalEvents.body_keydown)
     },
     /**
      * keyboard shortcuts to interact with gdb.
      * enabled only when key is depressed on a target that is NOT an input.
      */
-    body_keyup: function(e){
-        if(e.target.nodeName !== 'INPUT'){
+    body_keydown: function(e){
+        let modifier = e.altKey || e.ctrlKey || e.shiftKey || e.metaKey
+
+        if(e.target.nodeName !== 'INPUT' && !modifier){
             let char = String.fromCharCode(e.keyCode).toLowerCase()
             if(e.keyCode === DOWN_BUTTON_NUM || char === 's'){
                 GdbApi.click_step_button()

@@ -21,7 +21,7 @@ td{
     white-space: pre;
 }
 .stderr{
-    color: red;
+    color: #ff3434;
 }
 .monospace{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
