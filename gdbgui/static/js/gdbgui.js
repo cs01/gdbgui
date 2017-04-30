@@ -171,7 +171,7 @@ let State = {
         gdbgui_version: initial_data.gdbgui_version,
         latest_gdbgui_version: '(not fetched)',
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
-        gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+        gdb_version: undefined,  // this is parsed from gdb's output, but initialized to undefined
         gdb_pid: undefined,
 
         // preferences
@@ -199,6 +199,7 @@ let State = {
 
         // source files
         source_file_paths: [], // all the paths gdb says were used to compile the target binary
+        language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths.
         files_being_fetched: [],
         fullname_to_render: null,
         current_line_of_source_code: null,
@@ -304,7 +305,7 @@ let State = {
         if(!_.isUndefined(arguments[1])){
             console.error('only one argument is allowed to this function')
         }else if(!(key in State._state)){
-            console.error(`tried to update state with key that does not exist: ${key}`)
+            throw `tried to access a key that does not exist: ${key}`
         }
 
         let val = State._state[key]
@@ -558,7 +559,7 @@ const GdbApi = {
         });
 
         GdbApi.socket.on('error_running_gdb_command', function(data) {
-            StatusBar.render(`Error occured on server when running gdb command: ${data.message}`, true)
+            StatusBar.render(`Error occurred on server when running gdb command: ${data.message}`, true)
         });
 
         GdbApi.socket.on('gdb_pid', function(gdb_pid) {
@@ -774,10 +775,16 @@ const GdbApi = {
         }
     },
     get_flush_output_cmd: function(){
-        if(State.get('interpreter') === 'gdb'){
-            return '-data-evaluate-expression fflush(0)'
-        }else if(State.get('interpreter') === 'lldb'){
-            return ''
+        if(State.get('language') === 'c_family'){
+            if(State.get('interpreter') === 'gdb'){
+                return '-data-evaluate-expression fflush(0)'
+            }else if(State.get('interpreter') === 'lldb'){
+                return ''
+            }
+        }else if(State.get('language') === 'go'){
+            return ''  // TODO?
+        }else if (State.get('language') === 'rust'){
+            return ''  // TODO?
         }
     },
     _recieve_last_modified_unix_sec(data){
@@ -1653,7 +1660,7 @@ const Settings = {
             virtualenv users do not need the "sudo" prefix.
             `
         }else{
-            return `There are no updates available at this time. Using ${State.get('gdbgui_version')}`
+            return `gdbgui version ${State.get('gdbgui_version')} (latest version)`
         }
     },
     render: function(){
@@ -1669,7 +1676,7 @@ const Settings = {
         }
 
         $('#settings_body').html(
-            `<table class='table'>
+            `<table class='table table-condensed'>
             <tbody>
             <tr><td>
                 <div class=checkbox>
@@ -1678,15 +1685,17 @@ const Settings = {
                         Auto add breakpoint to main
                     </label>
                 </div>
+
+            <tr><td>
                 <div class=checkbox>
                     <label>
                         <input id=checkbox_pretty_print type='checkbox' ${Settings.pretty_print() ? 'checked' : ''}>
                         Pretty print dynamic variable values rather then internal methods
                     </label>
-                    <p class="bg-info">
-                        Note: once a variable has been created with pretty print enabled, pretty printing cannot be disabled; gdbgui must be restarted. Python support must be compiled into the gdb binary you are using (which is done by default for Ubuntu). <a href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html'>Read more</a>.
-                    </p>
                 </div>
+
+            <tr><td>
+                Theme: <select id=theme_selector>${theme_options}</select>
 
             <tr><td>
                 Syntax Highlighting:
@@ -1695,17 +1704,15 @@ const Settings = {
                         <option value='off' ${State.get('highlight_source_code') === false ? 'selected' : ''} >off</option>
                     </select>
                      (better performance for large files when off)
+
             <tr><td>
-                Theme: <select id=theme_selector>${theme_options}</select>
+                gdb version: ${State.get('gdb_version')}
 
             <tr><td>
                 gdb pid for this tab: ${State.get('gdb_pid')}
 
             <tr><td>
                 ${Settings.get_upgrade_text()}
-
-            <tr><td>
-                gdb version: ${State.get('gdb_version')}
 
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
@@ -1801,6 +1808,7 @@ const BinaryLoader = {
 
         // remove list of source files associated with the loaded binary since we're loading a new one
         State.set('source_file_paths', [])
+        State.set('language', 'c_family')
 
         // find the binary and arguments so gdb can be told which is which
         let binary, args, cmds
@@ -2983,7 +2991,16 @@ const process_gdb_response = function(response_array){
             }
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
-                    State.set('source_file_paths', _.uniq(r.payload.files.map(f => f.fullname)).sort())
+                    let source_file_paths = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                    State.set('source_file_paths', source_file_paths)
+
+                    let language = 'c_family'
+                    if(source_file_paths.some(p => p.endsWith('.rs'))){
+                        language = 'rust'
+                    }else if (source_file_paths.some(p => p.endsWith('.go'))){
+                        language = 'go'
+                    }
+                    State.set('language', language)
                 }else{
                     State.set('source_file_paths', ['Executable was compiled without debug symbols. Source file paths are unknown.'])
 
@@ -3038,12 +3055,11 @@ const process_gdb_response = function(response_array){
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
             if(State.get('gdb_version') === undefined){
                 // parse gdb version from string such as
-                // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
-                let m = /GNU gdb \(.*\)\s*(.*)\./g
+                // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
+                let m = /GNU gdb \(.*\)\s*(.*)\\n/g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
-                    State.get('gdb_version', parseFloat(a[1]))
-                    localStorage.setItem('gdb_version', State.get('gdb_version'))
+                    State.set('gdb_version', a[1])
                 }
             }
         }else if (r.type === 'output' || r.type === 'target'){
