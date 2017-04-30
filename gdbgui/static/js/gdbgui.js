@@ -425,6 +425,12 @@ const StatusBar = {
             prefix = "<span class='label label-warning'>warning</span>&nbsp;"
         }
         StatusBar.el.html(prefix + status_str)
+
+        // also add to the console if error/warning
+        if(error || warn){
+            GdbConsoleComponent.add(status_str, true)
+        }
+
     },
     /**
      * When waiting for a response render this, and set a timeout.
@@ -3037,9 +3043,6 @@ const process_gdb_response = function(response_array){
                 Expressions.gdb_created_root_variable(r)
             }
         } else if (r.type === 'result' && r.message === 'error'){
-            // this is also special gdb mi output, but some sort of error occured
-            GdbConsoleComponent.add_mi_error(r)
-
             // render it in the status bar, and don't render the last response in the array as it does by default
             if(update_status){
                 StatusBar.render_from_gdb_mi_response(r)

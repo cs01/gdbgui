@@ -180,7 +180,9 @@ def run_gdb_command(message):
             _gdb_state['gdb_controllers'].get(request.sid).write(cmd, read_response=False)
 
         except Exception as e:
-            emit('error_running_gdb_command', {'message': str(e)})
+            err = traceback.format_exc()
+            dbprint(traceback.format_exc())
+            emit('error_running_gdb_command', {'message': err})
     else:
         emit('error_running_gdb_command', {'message': 'gdb is not running'})
 
