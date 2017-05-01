@@ -171,7 +171,7 @@ let State = {
         gdbgui_version: initial_data.gdbgui_version,
         latest_gdbgui_version: '(not fetched)',
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
-        gdb_version: undefined,  // this is parsed from gdb's output, but initialized to undefined
+        gdb_version: undefined,  // this is parsed from gdb's output
         gdb_pid: undefined,
 
         // preferences
@@ -205,7 +205,7 @@ let State = {
         current_line_of_source_code: null,
         current_assembly_address: null,
         rendered_source_file_fullname: null,
-        rendered_assembly: false,
+        has_unrendered_assembly: false,
         cached_source_files: [],  // list with keys fullname, source_code
 
         // binary selection
@@ -988,7 +988,7 @@ const SourceCode = {
     init: function(){
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
-        $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
+        $('.fetch_assembly_cur_line').click(SourceCode.fetch_assembly_cur_line)
         $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
 
@@ -1137,13 +1137,10 @@ const SourceCode = {
 
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
 
-        let assembly,
-            show_assembly = SourceCode.show_assembly_box_is_checked()
-
         // don't re-render all the lines if they are already rendered.
         // just update breakpoints and line highlighting
         if(fullname === State.get('rendered_source_file_fullname')){
-            if((!show_assembly && State.get('rendered_assembly') === false) || (show_assembly && State.get('rendered_assembly') === true)) {
+            if(!State.get('has_unrendered_assembly')) {
                 SourceCode.highlight_paused_line_and_scrollto_line(fullname, State.get('current_line_of_source_code'), addr)
                 SourceCode.render_breakpoints()
                 SourceCode.make_current_line_visible()
@@ -1154,19 +1151,12 @@ const SourceCode = {
             }
         }
 
-        if(show_assembly){
-            assembly = SourceCode.get_cached_assembly_for_file(fullname)
-            if(_.isEmpty(assembly)){
-                SourceCode.fetch_disassembly(fullname)
-                return  // when disassembly is returned, the source file will be rendered
-            }
-        }
-
-        let line_num = 1,
-            tbody = []
+        let assembly = SourceCode.get_cached_assembly_for_file(fullname)
+            , line_num = 1
+            , tbody = []
 
         for (let line of source_code){
-            let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num, addr)
+            let assembly_for_line = SourceCode.get_assembly_html_for_line(true, assembly, line_num, addr)
 
             tbody.push(`
                 <tr class='srccode'>
@@ -1190,7 +1180,7 @@ const SourceCode = {
 
 
         State.set('rendered_source_file_fullname', fullname)
-        State.set('rendered_assembly', show_assembly)
+        State.set('has_unrendered_assembly', false)
     },
     // re-render breakpoints on whichever file is loaded
     render_breakpoints: function(){
@@ -1358,12 +1348,11 @@ const SourceCode = {
             return 4
         }
     },
-    get_fetch_disassembly_command: function(fullname=null){
-        let _fullname = fullname || State.get('rendered_source_file_fullname')
-        if(_fullname){
+    get_fetch_disassembly_command: function(fullname, start_line){
+        if(_.isString(fullname) && fullname.startsWith('/')){
             if(State.get('interpreter') === 'gdb'){
                 let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version'))
-                return `-data-disassemble -f ${_fullname} -l ${State.get('current_line_of_source_code')} -n 30 -- ${mi_response_format}`
+                return `-data-disassemble -f ${fullname} -l ${start_line} -n 10 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
                 return `disassemble --frame`
@@ -1373,18 +1362,16 @@ const SourceCode = {
             return null
         }
     },
-    show_assembly_box_is_checked: function(){
-        return $('#checkbox_show_assembly').prop('checked')
-    },
     /**
-     * Fetch disassembly for current file/line. An error is raised
-     * if gdbgui doesn't have that state saved.
+     * Fetch disassembly for current file/line.
      */
-    show_assembly_checkbox_changed: function(e){
-        SourceCode.render()
+    fetch_assembly_cur_line: function(e){
+        let fullname = State.get('fullname_to_render')
+        , line = parseInt(State.get('current_line_of_source_code'))
+        SourceCode.fetch_disassembly(fullname, line)
     },
-    fetch_disassembly: function(fullname){
-        let cmd = SourceCode.get_fetch_disassembly_command(fullname)
+    fetch_disassembly: function(fullname, start_line){
+        let cmd = SourceCode.get_fetch_disassembly_command(fullname, start_line)
         if(cmd){
            GdbApi.run_gdb_command(cmd)
         }
@@ -1411,6 +1398,7 @@ const SourceCode = {
                 break
             }
         }
+        State.set('has_unrendered_assembly', true)
     },
     /**
      * Something in DOM triggered this callback to view a file.
