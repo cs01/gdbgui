@@ -2558,7 +2558,7 @@ const Expressions = {
         obj.show_children_in_ui = true
         // update state
         State.set('expressions', expressions)
-        if((obj.can_have_children) && obj.children.length === 0){
+        if((obj.numchild) && obj.children.length === 0){
             // need to fetch child data
             Expressions._get_children_for_var(gdb_var_name, obj.autocreated_for_locals)
         }else{
