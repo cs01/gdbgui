@@ -182,6 +182,9 @@ let State = {
 
         auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
 
+        pretty_print: true,
+        refresh_state_after_sending_console_command: true,
+
         // inferior program state
         // choices for inferior_program are:
         // 'running'
@@ -1617,6 +1620,8 @@ const Settings = {
         $('body').on('change', '#theme_selector', Settings.theme_selection_changed)
         $('body').on('change', '#syntax_highlight_selector', Settings.syntax_highlight_selector_changed)
         $('body').on('change', '#checkbox_auto_add_breakpoint_to_main', Settings.checkbox_auto_add_breakpoint_to_main_changed)
+        $('body').on('change', '#checkbox_pretty_print', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
+        $('body').on('change', '#refresh_state_after_sending_console_command', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
         $('body').on('click', '.toggle_settings_view', Settings.click_toggle_settings_view)
         window.addEventListener('event_global_state_changed', Settings.render)
 
@@ -1683,8 +1688,16 @@ const Settings = {
             <tr><td>
                 <div class=checkbox>
                     <label>
-                        <input id=checkbox_pretty_print type='checkbox' ${Settings.pretty_print() ? 'checked' : ''}>
-                        Pretty print dynamic variable values rather then internal methods
+                        <input id=checkbox_pretty_print type='checkbox' ${State.get('pretty_print') ? 'checked' : ''}>
+                        Pretty print dynamic variable (values rather than internal methods)
+                    </label>
+                </div>
+
+            <tr><td>
+                <div class=checkbox>
+                    <label>
+                        <input id=refresh_state_after_sending_console_command type='checkbox' ${State.get('refresh_state_after_sending_console_command') ? 'checked' : ''}>
+                        Refresh state after sending console command
                     </label>
                 </div>
 
@@ -1740,13 +1753,11 @@ const Settings = {
         State.set('auto_add_breakpoint_to_main', checked)
         localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(State.get('auto_add_breakpoint_to_main')))
     },
-    pretty_print: function(){
-        let checked = $('#checkbox_pretty_print').prop('checked')
-        if(_.isUndefined(checked)){
-            checked = true
-        }
-        return checked
-    }
+    update_state_from_checkbox_and_id: function(e){
+        let key = e.target.id  // must be an existing key in State
+        , checked = e.target.checked
+        State.set(key, checked)
+    },
 }
 
 /**
@@ -1884,7 +1895,11 @@ const GdbCommandInput = {
         GdbCommandInput.sent_cmds.push(cmd)
         GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
-        GdbApi.run_command_and_refresh_state(cmd)
+        if(State.get('refresh_state_after_sending_console_command')){
+            GdbApi.run_command_and_refresh_state(cmd)
+        }else{
+            GdbApi.run_gdb_command(cmd)
+        }
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
@@ -2226,7 +2241,7 @@ const Expressions = {
             expression = '"' + expression + '"'
         }
         let cmds = []
-        if(Settings.pretty_print()){
+        if(State.get('pretty_print')){
             cmds.push('-enable-pretty-printing')
         }
 

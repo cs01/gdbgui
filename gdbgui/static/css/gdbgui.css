@@ -71,6 +71,9 @@ td{
     /*flex-direction: column;*/
     background-color: white;
 }
+.sent_command{
+    color: #00d8ff;
+}
 .sent_command:hover{
     /* lighten background */
     background-color:rgba(255,255,255,0.1)
@@ -221,9 +224,6 @@ span.wsp{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
     width: 100%;
     overflow: auto;
-}
-.sent_command{
-    color: #00c540;
 }
 #gdb_command_input, .gdb_command_input{
     border-width: 0;
