@@ -117,6 +117,26 @@ const Util = {
             line = user_input_array[1]
         }
         return [fullname, line]
+    },
+    /**
+     * @param mi_obj: gdb mi obj from pygdbmi
+     * @return array of error messages and frame information (if any)
+     */
+    get_err_text_from_mi_err_response: function(mi_obj){
+        const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
+        let text = []
+        for(let k of interesting_keys){
+            if (mi_obj.payload[k]) {text.push(mi_obj.payload[k])}
+        }
+
+        if (mi_obj.payload.frame){
+            for(let i of ['file', 'func', 'line', 'addr']){
+                if (i in mi_obj.payload.frame){
+                    text.push(`${i}: ${mi_obj.payload.frame[i]}`)
+                }
+            }
+        }
+        return text
     }
 }
 
@@ -150,8 +170,10 @@ let State = {
         gdbgui_version: initial_data.gdbgui_version,
         latest_gdbgui_version: '(not fetched)',
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
-        gdb_version: localStorage.getItem('gdb_version') || undefined,  // this is parsed from gdb's output, but initialized to undefined
+        gdb_version: undefined,  // this is parsed from gdb's output
+        gdb_version_array: [],  // this is parsed from gdb's output
         gdb_pid: undefined,
+        can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
 
         // preferences
         // syntax highlighting
@@ -160,6 +182,10 @@ let State = {
         highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // get saved boolean to highlight source code
 
         auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
+
+        pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
+        refresh_state_after_sending_console_command: true,  // If true, send commands to refresh GUI state after each command is sent from console
+        show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
 
         // inferior program state
         // choices for inferior_program are:
@@ -178,12 +204,13 @@ let State = {
 
         // source files
         source_file_paths: [], // all the paths gdb says were used to compile the target binary
+        language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
         files_being_fetched: [],
         fullname_to_render: null,
         current_line_of_source_code: null,
         current_assembly_address: null,
         rendered_source_file_fullname: null,
-        rendered_assembly: false,
+        has_unrendered_assembly: false,
         cached_source_files: [],  // list with keys fullname, source_code
 
         // binary selection
@@ -283,7 +310,7 @@ let State = {
         if(!_.isUndefined(arguments[1])){
             console.error('only one argument is allowed to this function')
         }else if(!(key in State._state)){
-            console.error(`tried to update state with key that does not exist: ${key}`)
+            throw `tried to access a key that does not exist: ${key}`
         }
 
         let val = State._state[key]
@@ -383,17 +410,49 @@ const Modal = {
 const StatusBar = {
     el: $('#status'),
     /**
+     * If user runs a command, show warning message if gdb does not respond
+     * in a timely manner. Set a timeout, and store it here. Remove it when gdb
+     * responds.
+     */
+    waiting_timeout: null,
+    /**
      * Render a new status
      * @param status_str: The string to render
      * @param error: Whether this string relates to an error condition. If true,
      *                  a red label appears
      */
-    render: function(status_str, error=false){
+    render: function(status_str, error=false, warn=false){
+        clearTimeout(StatusBar.waiting_timeout)
+        let prefix = ''
         if(error){
-            StatusBar.el.html(`<span class='label label-danger'>error</span>&nbsp;${status_str}`)
-        }else{
-            StatusBar.el.html(status_str)
+            prefix = "<span class='label label-danger'>error</span>&nbsp;"
+        }else if (warn){
+            prefix = "<span class='label label-warning'>warning</span>&nbsp;"
         }
+        StatusBar.el.html(prefix + status_str)
+
+        // also add to the console if error/warning
+        if(error || warn){
+            GdbConsoleComponent.add(status_str, true)
+        }
+
+    },
+    /**
+     * When waiting for a response render this, and set a timeout.
+     * If response is not received, update the status to indicate there might be
+     * an issue that needs to be addressed by the user.
+     */
+    render_waiting: function(){
+        const WAIT_TIME_SEC = 3
+        StatusBar.render(ANIMATED_REFRESH_ICON)
+        StatusBar.waiting_timeout = setTimeout(
+            () => {
+                let warn_text = `It's been over ${WAIT_TIME_SEC} seconds. Is an inferior program loaded and running?`
+                StatusBar.render(warn_text, false, true)
+                GdbConsoleComponent.add(warn_text, true)
+                GdbConsoleComponent.scroll_to_bottom()
+            },
+            WAIT_TIME_SEC * 1000)
     },
     /**
      * Handle http responses with error codes
@@ -425,18 +484,8 @@ const StatusBar = {
             }
         }
         if (mi_obj.payload){
-            const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
-            for(let k of interesting_keys){
-                if (mi_obj.payload[k]) {status.push(mi_obj.payload[k])}
-            }
-
-            if (mi_obj.payload.frame){
-                for(let i of ['file', 'func', 'line', 'addr']){
-                    if (i in mi_obj.payload.frame){
-                        status.push(`${i}: ${mi_obj.payload.frame[i]}`)
-                    }
-                }
-            }
+            let err_text_array = Util.get_err_text_from_mi_err_response(mi_obj)
+            status = status.concat(err_text_array)
         }
         StatusBar.render(status.join(', '), error)
     }
@@ -461,6 +510,10 @@ const GdbConsoleComponent = {
         let strings = _.isString(s) ? [s] : s,
             cls = stderr ? 'stderr' : ''
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
+    },
+    add_mi_error: function(mi_obj){
+        let err_text_array = Util.get_err_text_from_mi_err_response(mi_obj)
+        GdbConsoleComponent.add(err_text_array, true)
     },
     add_sent_commands(cmds){
         if(!_.isArray(cmds)){
@@ -517,7 +570,7 @@ const GdbApi = {
         });
 
         GdbApi.socket.on('error_running_gdb_command', function(data) {
-            StatusBar.render(`Error occured on server when running gdb command: ${data.message}`, true)
+            StatusBar.render(`Error occurred on server when running gdb command: ${data.message}`, true)
         });
 
         GdbApi.socket.on('gdb_pid', function(gdb_pid) {
@@ -626,11 +679,11 @@ const GdbApi = {
 
         // add the send command to the console to show commands that are
         // automatically run by gdb
-        if(State.get('debug')){
+        if(State.get('show_all_sent_commands_in_console')){
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
-        StatusBar.render(ANIMATED_REFRESH_ICON)
+        StatusBar.render_waiting()
         GdbApi.socket.emit('run_gdb_command', {cmd: cmds});
     },
     /**
@@ -733,10 +786,16 @@ const GdbApi = {
         }
     },
     get_flush_output_cmd: function(){
-        if(State.get('interpreter') === 'gdb'){
-            return '-data-evaluate-expression fflush(0)'
-        }else if(State.get('interpreter') === 'lldb'){
-            return ''
+        if(State.get('language') === 'c_family'){
+            if(State.get('interpreter') === 'gdb'){
+                return '-data-evaluate-expression fflush(0)'
+            }else if(State.get('interpreter') === 'lldb'){
+                return ''
+            }
+        }else if(State.get('language') === 'go'){
+            return ''  // TODO?
+        }else if (State.get('language') === 'rust'){
+            return ''  // TODO?
         }
     },
     _recieve_last_modified_unix_sec(data){
@@ -934,7 +993,7 @@ const SourceCode = {
     init: function(){
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
-        $('#checkbox_show_assembly').change(SourceCode.show_assembly_checkbox_changed)
+        $('.fetch_assembly_cur_line').click(SourceCode.fetch_assembly_cur_line)
         $('#refresh_cached_source_files').click(SourceCode.refresh_cached_source_files)
         SourceCode.el_jump_to_line_input.keydown(SourceCode.keydown_jump_to_line)
 
@@ -1083,36 +1142,22 @@ const SourceCode = {
 
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
 
-        let assembly,
-            show_assembly = SourceCode.show_assembly_box_is_checked()
-
         // don't re-render all the lines if they are already rendered.
         // just update breakpoints and line highlighting
-        if(fullname === State.get('rendered_source_file_fullname')){
-            if((!show_assembly && State.get('rendered_assembly') === false) || (show_assembly && State.get('rendered_assembly') === true)) {
-                SourceCode.highlight_paused_line_and_scrollto_line(fullname, State.get('current_line_of_source_code'), addr)
-                SourceCode.render_breakpoints()
-                SourceCode.make_current_line_visible()
-                return
-            }else{
-                // user wants to see assembly but it hasn't been rendered yet,
-                // so continue on
-            }
+        if(fullname === State.get('rendered_source_file_fullname') && !State.get('has_unrendered_assembly')) {
+            // we already rendered this file, and the assembly, so don't re-render it
+            SourceCode.highlight_paused_line_and_scrollto_line(fullname, State.get('current_line_of_source_code'), addr)
+            SourceCode.render_breakpoints()
+            SourceCode.make_current_line_visible()
+            return
         }
 
-        if(show_assembly){
-            assembly = SourceCode.get_cached_assembly_for_file(fullname)
-            if(_.isEmpty(assembly)){
-                SourceCode.fetch_disassembly(fullname)
-                return  // when disassembly is returned, the source file will be rendered
-            }
-        }
-
-        let line_num = 1,
-            tbody = []
+        let assembly = SourceCode.get_cached_assembly_for_file(fullname)
+            , line_num = 1
+            , tbody = []
 
         for (let line of source_code){
-            let assembly_for_line = SourceCode.get_assembly_html_for_line(show_assembly, assembly, line_num, addr)
+            let assembly_for_line = SourceCode.get_assembly_html_for_line(true, assembly, line_num, addr)
 
             tbody.push(`
                 <tr class='srccode'>
@@ -1136,7 +1181,7 @@ const SourceCode = {
 
 
         State.set('rendered_source_file_fullname', fullname)
-        State.set('rendered_assembly', show_assembly)
+        State.set('has_unrendered_assembly', false)
     },
     // re-render breakpoints on whichever file is loaded
     render_breakpoints: function(){
@@ -1292,11 +1337,11 @@ const SourceCode = {
      * TODO not sure which version this change occured in. I know in 7.7 it needs the '3' option,
      * and in 7.11 it needs the '4' option. I should test the various version at some point.
      */
-    get_dissasembly_format_num: function(gdb_version){
-        if(gdb_version === undefined){
+    get_dissasembly_format_num: function(gdb_version_array){
+        if(gdb_version_array.length === 0){
             // assuming new version, but we shouldn't ever not know the version...
             return 4
-        } else if (gdb_version <= 7.7){
+        } else if (gdb_version_array[0] < 7 || (gdb_version_array[0] == 7 && gdb_version_array[1] <= 7)){
             // this option has been deprecated in newer versions, but is required in older ones
             //
             return 3
@@ -1304,12 +1349,11 @@ const SourceCode = {
             return 4
         }
     },
-    get_fetch_disassembly_command: function(fullname=null){
-        let _fullname = fullname || State.get('rendered_source_file_fullname')
-        if(_fullname){
+    get_fetch_disassembly_command: function(fullname, start_line){
+        if(_.isString(fullname) && fullname.startsWith('/')){
             if(State.get('interpreter') === 'gdb'){
-                let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version'))
-                return `-data-disassemble -f ${_fullname} -l ${State.get('current_line_of_source_code')} -n 30 -- ${mi_response_format}`
+                let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version_array'))
+                return `-data-disassemble -f ${fullname} -l ${start_line} -n 100 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
                 return `disassemble --frame`
@@ -1319,18 +1363,16 @@ const SourceCode = {
             return null
         }
     },
-    show_assembly_box_is_checked: function(){
-        return $('#checkbox_show_assembly').prop('checked')
-    },
     /**
-     * Fetch disassembly for current file/line. An error is raised
-     * if gdbgui doesn't have that state saved.
+     * Fetch disassembly for current file/line.
      */
-    show_assembly_checkbox_changed: function(e){
-        SourceCode.render()
+    fetch_assembly_cur_line: function(e){
+        let fullname = State.get('fullname_to_render')
+        , line = parseInt(State.get('current_line_of_source_code'))
+        SourceCode.fetch_disassembly(fullname, line)
     },
-    fetch_disassembly: function(fullname){
-        let cmd = SourceCode.get_fetch_disassembly_command(fullname)
+    fetch_disassembly: function(fullname, start_line){
+        let cmd = SourceCode.get_fetch_disassembly_command(fullname, start_line)
         if(cmd){
            GdbApi.run_gdb_command(cmd)
         }
@@ -1357,6 +1399,7 @@ const SourceCode = {
                 break
             }
         }
+        State.set('has_unrendered_assembly', true)
     },
     /**
      * Something in DOM triggered this callback to view a file.
@@ -1440,7 +1483,7 @@ const SourceFileAutocomplete = {
         })
     },
     fetch_source_files: function(){
-        State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large executables, this may cause gdbgui to freeze.`])
+        State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
         GdbApi.run_gdb_command('-file-list-exec-source-files')
     },
     render: function(e){
@@ -1486,13 +1529,17 @@ const Registers = {
     },
     get_update_cmds: function(){
         let cmds = []
-        if(State.get('register_names').length === 0){
-            // only fetch register names when we don't have them
-            // assumption is that the names don't change over time
-            cmds.push('-data-list-register-names')
+        if(State.get('can_fetch_register_values') === true){
+            if(State.get('register_names').length === 0){
+                // only fetch register names when we don't have them
+                // assumption is that the names don't change over time
+                cmds.push('-data-list-register-names')
+            }
+            // update all registers values
+            cmds.push('-data-list-register-values x')
+        }else{
+            Registers.clear_cached_values()
         }
-        // update all registers values
-        cmds.push('-data-list-register-values x')
         return cmds
     },
     render_not_paused: function(){
@@ -1575,6 +1622,9 @@ const Settings = {
         $('body').on('change', '#theme_selector', Settings.theme_selection_changed)
         $('body').on('change', '#syntax_highlight_selector', Settings.syntax_highlight_selector_changed)
         $('body').on('change', '#checkbox_auto_add_breakpoint_to_main', Settings.checkbox_auto_add_breakpoint_to_main_changed)
+        $('body').on('change', '#pretty_print', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
+        $('body').on('change', '#refresh_state_after_sending_console_command', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
+        $('body').on('change', '#show_all_sent_commands_in_console', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
         $('body').on('click', '.toggle_settings_view', Settings.click_toggle_settings_view)
         window.addEventListener('event_global_state_changed', Settings.render)
 
@@ -1612,7 +1662,7 @@ const Settings = {
             virtualenv users do not need the "sudo" prefix.
             `
         }else{
-            return `There are no updates available at this time. Using ${State.get('gdbgui_version')}`
+            return `gdbgui version ${State.get('gdbgui_version')} (latest version)`
         }
     },
     render: function(){
@@ -1628,7 +1678,7 @@ const Settings = {
         }
 
         $('#settings_body').html(
-            `<table class='table'>
+            `<table class='table table-condensed'>
             <tbody>
             <tr><td>
                 <div class=checkbox>
@@ -1637,15 +1687,34 @@ const Settings = {
                         Auto add breakpoint to main
                     </label>
                 </div>
+
+            <tr><td>
                 <div class=checkbox>
                     <label>
-                        <input id=checkbox_pretty_print type='checkbox' ${Settings.pretty_print() ? 'checked' : ''}>
-                        Pretty print dynamic variable values rather then internal methods
+                        <input id=pretty_print type='checkbox' ${State.get('pretty_print') ? 'checked' : ''}>
+                        Pretty print dynamic variables (shows human readable values rather than internal methods)
                     </label>
-                    <p class="bg-info">
-                        Note: once a variable has been created with pretty print enabled, pretty printing cannot be disabled; gdbgui must be restarted. Python support must be compiled into the gdb binary you are using (which is done by default for Ubuntu). <a href='https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html'>Read more</a>.
-                    </p>
                 </div>
+
+            <tr><td>
+                <div class=checkbox>
+                    <label>
+                        <input id=refresh_state_after_sending_console_command type='checkbox' ${State.get('refresh_state_after_sending_console_command') ? 'checked' : ''}>
+                        Refresh state after sending command from the console widget
+                    </label>
+                </div>
+
+
+            <tr><td>
+                <div class=checkbox>
+                    <label>
+                        <input id=show_all_sent_commands_in_console type='checkbox' ${State.get('show_all_sent_commands_in_console') ? 'checked' : ''}>
+                        Show all sent commands in console
+                    </label>
+                </div>
+
+            <tr><td>
+                Theme: <select id=theme_selector>${theme_options}</select>
 
             <tr><td>
                 Syntax Highlighting:
@@ -1654,17 +1723,15 @@ const Settings = {
                         <option value='off' ${State.get('highlight_source_code') === false ? 'selected' : ''} >off</option>
                     </select>
                      (better performance for large files when off)
+
             <tr><td>
-                Theme: <select id=theme_selector>${theme_options}</select>
+                gdb version: ${State.get('gdb_version')}
 
             <tr><td>
                 gdb pid for this tab: ${State.get('gdb_pid')}
 
             <tr><td>
                 ${Settings.get_upgrade_text()}
-
-            <tr><td>
-                gdb version: ${State.get('gdb_version')}
 
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
@@ -1698,13 +1765,11 @@ const Settings = {
         State.set('auto_add_breakpoint_to_main', checked)
         localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(State.get('auto_add_breakpoint_to_main')))
     },
-    pretty_print: function(){
-        let checked = $('#checkbox_pretty_print').prop('checked')
-        if(_.isUndefined(checked)){
-            checked = true
-        }
-        return checked
-    }
+    update_state_from_checkbox_and_id: function(e){
+        let key = e.target.id  // must be an existing key in State
+        , checked = e.target.checked
+        State.set(key, checked)
+    },
 }
 
 /**
@@ -1760,6 +1825,7 @@ const BinaryLoader = {
 
         // remove list of source files associated with the loaded binary since we're loading a new one
         State.set('source_file_paths', [])
+        State.set('language', 'c_family')
 
         // find the binary and arguments so gdb can be told which is which
         let binary, args, cmds
@@ -1841,7 +1907,11 @@ const GdbCommandInput = {
         GdbCommandInput.sent_cmds.push(cmd)
         GdbConsoleComponent.add_sent_commands(cmd)
         GdbCommandInput.clear()
-        GdbApi.run_command_and_refresh_state(cmd)
+        if(State.get('refresh_state_after_sending_console_command')){
+            GdbApi.run_command_and_refresh_state(cmd)
+        }else{
+            GdbApi.run_gdb_command(cmd)
+        }
     },
     set_input_text: function(new_text){
         GdbCommandInput.el.val(new_text)
@@ -2183,7 +2253,7 @@ const Expressions = {
             expression = '"' + expression + '"'
         }
         let cmds = []
-        if(Settings.pretty_print()){
+        if(State.get('pretty_print')){
             cmds.push('-enable-pretty-printing')
         }
 
@@ -2488,7 +2558,7 @@ const Expressions = {
         obj.show_children_in_ui = true
         // update state
         State.set('expressions', expressions)
-        if(obj.numchild > 0 && obj.children.length === 0){
+        if((obj.numchild) && obj.children.length === 0){
             // need to fetch child data
             Expressions._get_children_for_var(gdb_var_name, obj.autocreated_for_locals)
         }else{
@@ -2887,6 +2957,7 @@ const process_gdb_response = function(response_array){
                 // delete it, and don't display it in the frontend
                 if (new_bkpt.func === undefined){
                     console.warn('removing invalid breakpoint: ', new_bkpt)
+                    GdbConsoleComponent.add('Could not add breakpoint. Click file dropdown to open file and visually add breakpoints.', true)
                     let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
                     GdbApi.run_gdb_command(cmd)
                     continue
@@ -2942,7 +3013,22 @@ const process_gdb_response = function(response_array){
             }
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
-                    State.set('source_file_paths', _.uniq(r.payload.files.map(f => f.fullname)).sort())
+                    let source_file_paths = _.uniq(r.payload.files.map(f => f.fullname)).sort()
+                    State.set('source_file_paths', source_file_paths)
+
+                    let language = 'c_family'
+                    if(source_file_paths.some(p => p.endsWith('.rs'))){
+                        language = 'rust'
+                        let gdb_version_array = State.get('gdb_version_array')
+                        // rust cannot view registers with gdb 7.12.x
+                        if(gdb_version_array[0] == 7 && gdb_version_array[1] == 12){
+                            GdbConsoleComponent.add(`Warning: Due to a bug in gdb version ${State.get('gdb_version')}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`, true)
+                            State.set('can_fetch_register_values', false)
+                        }
+                    }else if (source_file_paths.some(p => p.endsWith('.go'))){
+                        language = 'go'
+                    }
+                    State.set('language', language)
                 }else{
                     State.set('source_file_paths', ['Executable was compiled without debug symbols. Source file paths are unknown.'])
 
@@ -2979,8 +3065,6 @@ const process_gdb_response = function(response_array){
                 Expressions.gdb_created_root_variable(r)
             }
         } else if (r.type === 'result' && r.message === 'error'){
-            // this is also special gdb mi output, but some sort of error occured
-
             // render it in the status bar, and don't render the last response in the array as it does by default
             if(update_status){
                 StatusBar.render_from_gdb_mi_response(r)
@@ -2996,12 +3080,12 @@ const process_gdb_response = function(response_array){
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
             if(State.get('gdb_version') === undefined){
                 // parse gdb version from string such as
-                // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.
-                let m = /GNU gdb \(.*\)\s*(.*)\./g
+                // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
+                let m = /GNU gdb \(.*\)\s*(.*)\\n/g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
-                    State.get('gdb_version', parseFloat(a[1]))
-                    localStorage.setItem('gdb_version', State.get('gdb_version'))
+                    State.set('gdb_version', a[1])
+                    State.set('gdb_version_array', a[1].split('.'))
                 }
             }
         }else if (r.type === 'output' || r.type === 'target'){
@@ -3053,14 +3137,16 @@ const GlobalEvents = {
            }
         }
 
-        $('body').on('keyup', GlobalEvents.body_keyup)
+        $('body').on('keydown', GlobalEvents.body_keydown)
     },
     /**
      * keyboard shortcuts to interact with gdb.
      * enabled only when key is depressed on a target that is NOT an input.
      */
-    body_keyup: function(e){
-        if(e.target.nodeName !== 'INPUT'){
+    body_keydown: function(e){
+        let modifier = e.altKey || e.ctrlKey || e.shiftKey || e.metaKey
+
+        if(e.target.nodeName !== 'INPUT' && !modifier){
             let char = String.fromCharCode(e.keyCode).toLowerCase()
             if(e.keyCode === DOWN_BUTTON_NUM || char === 's'){
                 GdbApi.click_step_button()

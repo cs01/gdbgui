@@ -10,7 +10,7 @@
     border-color: #868686 !important;
 }
 
-.monokai .assembly { color: white; }
+.monokai .assembly { color: #d8d8d8; }
 
 /* show a flash of color */
 .monokai .flash {
