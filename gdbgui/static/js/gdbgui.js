@@ -119,9 +119,8 @@ const Util = {
         return [fullname, line]
     },
     /**
-     * Render pygdbmi response
      * @param mi_obj: gdb mi obj from pygdbmi
-     * @return array of error messages
+     * @return array of error messages and frame information (if any)
      */
     get_err_text_from_mi_err_response: function(mi_obj){
         const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
@@ -174,6 +173,7 @@ let State = {
         gdb_version: undefined,  // this is parsed from gdb's output
         gdb_version_array: [],  // this is parsed from gdb's output
         gdb_pid: undefined,
+        can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
 
         // preferences
         // syntax highlighting
@@ -183,8 +183,8 @@ let State = {
 
         auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
 
-        pretty_print: true,
-        refresh_state_after_sending_console_command: true,
+        pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
+        refresh_state_after_sending_console_command: true,  // If true, send commands to refresh GUI state after each command is sent from console
         show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
 
         // inferior program state
@@ -204,7 +204,7 @@ let State = {
 
         // source files
         source_file_paths: [], // all the paths gdb says were used to compile the target binary
-        language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths.
+        language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
         files_being_fetched: [],
         fullname_to_render: null,
         current_line_of_source_code: null,
@@ -1144,16 +1144,12 @@ const SourceCode = {
 
         // don't re-render all the lines if they are already rendered.
         // just update breakpoints and line highlighting
-        if(fullname === State.get('rendered_source_file_fullname')){
-            if(!State.get('has_unrendered_assembly')) {
-                SourceCode.highlight_paused_line_and_scrollto_line(fullname, State.get('current_line_of_source_code'), addr)
-                SourceCode.render_breakpoints()
-                SourceCode.make_current_line_visible()
-                return
-            }else{
-                // user wants to see assembly but it hasn't been rendered yet,
-                // so continue on
-            }
+        if(fullname === State.get('rendered_source_file_fullname') && !State.get('has_unrendered_assembly')) {
+            // we already rendered this file, and the assembly, so don't re-render it
+            SourceCode.highlight_paused_line_and_scrollto_line(fullname, State.get('current_line_of_source_code'), addr)
+            SourceCode.render_breakpoints()
+            SourceCode.make_current_line_visible()
+            return
         }
 
         let assembly = SourceCode.get_cached_assembly_for_file(fullname)
@@ -1487,7 +1483,7 @@ const SourceFileAutocomplete = {
         })
     },
     fetch_source_files: function(){
-        State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program. For very large executables, this may cause gdbgui to freeze.`])
+        State.set('source_file_paths', [`${ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
         GdbApi.run_gdb_command('-file-list-exec-source-files')
     },
     render: function(e){
@@ -1533,13 +1529,17 @@ const Registers = {
     },
     get_update_cmds: function(){
         let cmds = []
-        if(State.get('register_names').length === 0){
-            // only fetch register names when we don't have them
-            // assumption is that the names don't change over time
-            cmds.push('-data-list-register-names')
+        if(State.get('can_fetch_register_values') === true){
+            if(State.get('register_names').length === 0){
+                // only fetch register names when we don't have them
+                // assumption is that the names don't change over time
+                cmds.push('-data-list-register-names')
+            }
+            // update all registers values
+            cmds.push('-data-list-register-values x')
+        }else{
+            Registers.clear_cached_values()
         }
-        // update all registers values
-        cmds.push('-data-list-register-values x')
         return cmds
     },
     render_not_paused: function(){
@@ -2957,6 +2957,7 @@ const process_gdb_response = function(response_array){
                 // delete it, and don't display it in the frontend
                 if (new_bkpt.func === undefined){
                     console.warn('removing invalid breakpoint: ', new_bkpt)
+                    GdbConsoleComponent.add('removing invalid breakpoint because its function could not be determined', true)
                     let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
                     GdbApi.run_gdb_command(cmd)
                     continue
@@ -3021,7 +3022,8 @@ const process_gdb_response = function(response_array){
                         let gdb_version_array = State.get('gdb_version_array')
                         // rust cannot view registers with gdb 7.12.x
                         if(gdb_version_array[0] == 7 && gdb_version_array[1] == 12){
-                            Modal.render(`gdb version ${State.get('gdb_version')} cannot cannot debug rust executables. See https://github.com/cs01/gdbgui/issues/64.`)
+                            GdbConsoleComponent.add(`Warning: Due to a bug in gdb version ${State.get('gdb_version')}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`, true)
+                            State.set('can_fetch_register_values', false)
                         }
                     }else if (source_file_paths.some(p => p.endsWith('.go'))){
                         language = 'go'
