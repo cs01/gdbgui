@@ -1341,7 +1341,7 @@ const SourceCode = {
         if(gdb_version_array.length === 0){
             // assuming new version, but we shouldn't ever not know the version...
             return 4
-        } else if (gdb_version_array[0] < 7 || (gdb_version_array[0] == 7 && gdb_version_array[1] < 7)){
+        } else if (gdb_version_array[0] < 7 || (gdb_version_array[0] == 7 && gdb_version_array[1] <= 7)){
             // this option has been deprecated in newer versions, but is required in older ones
             //
             return 3
@@ -1353,7 +1353,7 @@ const SourceCode = {
         if(_.isString(fullname) && fullname.startsWith('/')){
             if(State.get('interpreter') === 'gdb'){
                 let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version_array'))
-                return `-data-disassemble -f ${fullname} -l ${start_line} -n 10 -- ${mi_response_format}`
+                return `-data-disassemble -f ${fullname} -l ${start_line} -n 100 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
                 return `disassemble --frame`
@@ -2957,7 +2957,7 @@ const process_gdb_response = function(response_array){
                 // delete it, and don't display it in the frontend
                 if (new_bkpt.func === undefined){
                     console.warn('removing invalid breakpoint: ', new_bkpt)
-                    GdbConsoleComponent.add('removing invalid breakpoint because its function could not be determined', true)
+                    GdbConsoleComponent.add('Could not add breakpoint. Click file dropdown to open file and visually add breakpoints.', true)
                     let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
                     GdbApi.run_gdb_command(cmd)
                     continue
