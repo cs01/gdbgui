@@ -1,14 +1,13 @@
 A browser-based frontend/gui for GDB
 ====================================
 
-
 .. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png
    :alt: gdbgui
 
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-0.7.5.6-blue.svg
+.. image:: https://img.shields.io/badge/pyPI-0.7.6.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -64,7 +63,9 @@ Run
 
 ::
 
-    gdbgui [binary to debug]
+    gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
+              [--hide_gdbgui_upgrades] [--debug] [-n]
+              [cmd [cmd ...]]
 
 A new tab in your browser will open with gdbgui in it.
 
@@ -85,8 +86,8 @@ Features
 
 Why gdbgui?
 -----------
-- Actively developed and compatible with the latest version of gdb (7.12)
-- Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be. Just a lightweight frontend.
+- Actively developed to be compatible with current gdb releases
+- Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be.
 - Design influenced by the amazing Chrome debugger
 - Full gdb command line utility built-in
 - Written in widely used languages (Python and JavaScript)
@@ -114,10 +115,10 @@ Flags (all are optional):
                         remotely.
   -g GDB, --gdb GDB     Path to gdb executable or lldb-mi executable. Defaults is 'gdb'. lldb
                         support is experimental and not fully functional at this time.
-  -v, --version         Print version
-  --debug               The debug flag of this Flask application. Pass this
+  -v, --version         Print gdbgui version
+  --debug               The debug flag of gdbgui. Pass this
                         flag when debugging gdbgui itself to automatically
-                        reload the server when changes are detected
+                        reload the server when changes are detected.
   -n, --no_browser          By default, the browser will open with gdb gui. Pass
                         this flag so the browser does not open.
 
@@ -128,9 +129,15 @@ Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
 
 Operating systems: Ubuntu 14.04+, OSX
 
-Browsers: Chrome, Firefox
+Browsers: Chrome
 
-Gdb: 7.7.1 and 7.12 were tested. Likely works with intermediate versions.
+Gdb: 7.7.1 - 8
+
+Rust users: gdb v7.12.x cannot display register values due to a `gdb bug <https://sourceware.org/bugzilla/show_bug.cgi?id=21451>`_
+
+Settings
+--------
+gdbgui settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for the url and port.
 
 Keyboard Shortcuts
 ------------------
@@ -147,7 +154,7 @@ The following keyboard shortcuts are available when the focus is not in an input
 
 Contributing
 ------------
-Help the gdbgui project grow by spreading the word. The more people who use it, the better it gets.
+Help the gdbgui project grow by spreading the word.
 
 .. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/static/images/twitter.png
   :target: https://twitter.com/intent/tweet?text=check+out+%23gdbgui%2C+a+modern+browser-based+frontend+to+gdb+https%3A%2F%2Fgithub.com%2Fcs01%2Fgdbgui

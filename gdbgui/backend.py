@@ -17,7 +17,7 @@ import os
 import argparse
 import signal
 import webbrowser
-import datetime
+import traceback
 import json
 import sys
 import platform
@@ -180,7 +180,9 @@ def run_gdb_command(message):
             _gdb_state['gdb_controllers'].get(request.sid).write(cmd, read_response=False)
 
         except Exception as e:
-            emit('error_running_gdb_command', {'message': str(e)})
+            err = traceback.format_exc()
+            dbprint(traceback.format_exc())
+            emit('error_running_gdb_command', {'message': err})
     else:
         emit('error_running_gdb_command', {'message': 'gdb is not running'})
 
@@ -222,7 +224,7 @@ def read_and_forward_gdb_output():
                     break
 
             except Exception as e:
-                dbprint(e)
+                dbprint(traceback.format_exc())
 
 
 def server_error(obj):

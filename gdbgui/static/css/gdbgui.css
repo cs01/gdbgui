@@ -21,13 +21,13 @@ td{
     white-space: pre;
 }
 .stderr{
-    color: red;
+    color: #ff3434;
 }
 .monospace{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
 .memory_address{
-    color: #337ab7;
+    color: #489ce4;
     text-decoration: none;
 }
 .lighttext{
@@ -70,6 +70,9 @@ td{
 .gdb_content_div{
     /*flex-direction: column;*/
     background-color: white;
+}
+.sent_command{
+    color: #00d8ff;
 }
 .sent_command:hover{
     /* lighten background */
@@ -221,9 +224,6 @@ span.wsp{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
     width: 100%;
     overflow: auto;
-}
-.sent_command{
-    color: #00c540;
 }
 #gdb_command_input, .gdb_command_input{
     border-width: 0;
