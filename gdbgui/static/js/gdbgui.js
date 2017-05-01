@@ -172,6 +172,7 @@ let State = {
         latest_gdbgui_version: '(not fetched)',
         show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
         gdb_version: undefined,  // this is parsed from gdb's output
+        gdb_version_array: [],  // this is parsed from gdb's output
         gdb_pid: undefined,
 
         // preferences
@@ -184,6 +185,7 @@ let State = {
 
         pretty_print: true,
         refresh_state_after_sending_console_command: true,
+        show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
 
         // inferior program state
         // choices for inferior_program are:
@@ -677,7 +679,7 @@ const GdbApi = {
 
         // add the send command to the console to show commands that are
         // automatically run by gdb
-        if(State.get('debug')){
+        if(State.get('show_all_sent_commands_in_console')){
             GdbConsoleComponent.add_sent_commands(cmds)
         }
 
@@ -1339,11 +1341,11 @@ const SourceCode = {
      * TODO not sure which version this change occured in. I know in 7.7 it needs the '3' option,
      * and in 7.11 it needs the '4' option. I should test the various version at some point.
      */
-    get_dissasembly_format_num: function(gdb_version){
-        if(gdb_version === undefined){
+    get_dissasembly_format_num: function(gdb_version_array){
+        if(gdb_version_array.length === 0){
             // assuming new version, but we shouldn't ever not know the version...
             return 4
-        } else if (gdb_version <= 7.7){
+        } else if (gdb_version_array[0] < 7 || (gdb_version_array[0] == 7 && gdb_version_array[1] < 7)){
             // this option has been deprecated in newer versions, but is required in older ones
             //
             return 3
@@ -1354,7 +1356,7 @@ const SourceCode = {
     get_fetch_disassembly_command: function(fullname, start_line){
         if(_.isString(fullname) && fullname.startsWith('/')){
             if(State.get('interpreter') === 'gdb'){
-                let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version'))
+                let mi_response_format = SourceCode.get_dissasembly_format_num(State.get('gdb_version_array'))
                 return `-data-disassemble -f ${fullname} -l ${start_line} -n 10 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
@@ -1620,8 +1622,9 @@ const Settings = {
         $('body').on('change', '#theme_selector', Settings.theme_selection_changed)
         $('body').on('change', '#syntax_highlight_selector', Settings.syntax_highlight_selector_changed)
         $('body').on('change', '#checkbox_auto_add_breakpoint_to_main', Settings.checkbox_auto_add_breakpoint_to_main_changed)
-        $('body').on('change', '#checkbox_pretty_print', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
+        $('body').on('change', '#pretty_print', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
         $('body').on('change', '#refresh_state_after_sending_console_command', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
+        $('body').on('change', '#show_all_sent_commands_in_console', Settings.update_state_from_checkbox_and_id)  // id must match existing key in state
         $('body').on('click', '.toggle_settings_view', Settings.click_toggle_settings_view)
         window.addEventListener('event_global_state_changed', Settings.render)
 
@@ -1688,8 +1691,8 @@ const Settings = {
             <tr><td>
                 <div class=checkbox>
                     <label>
-                        <input id=checkbox_pretty_print type='checkbox' ${State.get('pretty_print') ? 'checked' : ''}>
-                        Pretty print dynamic variable (values rather than internal methods)
+                        <input id=pretty_print type='checkbox' ${State.get('pretty_print') ? 'checked' : ''}>
+                        Pretty print dynamic variables (shows human readable values rather than internal methods)
                     </label>
                 </div>
 
@@ -1697,7 +1700,16 @@ const Settings = {
                 <div class=checkbox>
                     <label>
                         <input id=refresh_state_after_sending_console_command type='checkbox' ${State.get('refresh_state_after_sending_console_command') ? 'checked' : ''}>
-                        Refresh state after sending console command
+                        Refresh state after sending command from the console widget
+                    </label>
+                </div>
+
+
+            <tr><td>
+                <div class=checkbox>
+                    <label>
+                        <input id=show_all_sent_commands_in_console type='checkbox' ${State.get('show_all_sent_commands_in_console') ? 'checked' : ''}>
+                        Show all sent commands in console
                     </label>
                 </div>
 
@@ -2546,7 +2558,7 @@ const Expressions = {
         obj.show_children_in_ui = true
         // update state
         State.set('expressions', expressions)
-        if(obj.numchild > 0 && obj.children.length === 0){
+        if((obj.can_have_children) && obj.children.length === 0){
             // need to fetch child data
             Expressions._get_children_for_var(gdb_var_name, obj.autocreated_for_locals)
         }else{
@@ -3006,6 +3018,11 @@ const process_gdb_response = function(response_array){
                     let language = 'c_family'
                     if(source_file_paths.some(p => p.endsWith('.rs'))){
                         language = 'rust'
+                        let gdb_version_array = State.get('gdb_version_array')
+                        // rust cannot view registers with gdb 7.12.x
+                        if(gdb_version_array[0] == 7 && gdb_version_array[1] == 12){
+                            Modal.render(`gdb version ${State.get('gdb_version')} cannot cannot debug rust executables. See https://github.com/cs01/gdbgui/issues/64.`)
+                        }
                     }else if (source_file_paths.some(p => p.endsWith('.go'))){
                         language = 'go'
                     }
@@ -3066,6 +3083,7 @@ const process_gdb_response = function(response_array){
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
                     State.set('gdb_version', a[1])
+                    State.set('gdb_version_array', a[1].split('.'))
                 }
             }
         }else if (r.type === 'output' || r.type === 'target'){
