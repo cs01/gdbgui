@@ -504,7 +504,6 @@ const GdbConsoleComponent = {
     },
     clear_console: function(){
         GdbConsoleComponent.el.html('')
-        GdbCommandInput.clear_cmd_cache()
     },
     add: function(s, stderr=false){
         let strings = _.isString(s) ? [s] : s,
@@ -2954,8 +2953,10 @@ const process_gdb_response = function(response_array){
             if ('bkpt' in r.payload){
                 let new_bkpt = r.payload.bkpt
                 // if gdb could not determine which function this breakpoint belongs to,
-                // delete it, and don't display it in the frontend
-                if (new_bkpt.func === undefined){
+                // delete it, and don't display it in the frontend.
+                // <MULTIPLE> indicates the breakpoint is on an inline function or template
+                // that has mutliple child breakpoints, which is okay and shouldn't be deleted
+                if (new_bkpt.func === undefined && new_bkpt.addr !== '<MULTIPLE>'){
                     console.warn('removing invalid breakpoint: ', new_bkpt)
                     GdbConsoleComponent.add('Could not add breakpoint. Click file dropdown to open file and visually add breakpoints.', true)
                     let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
