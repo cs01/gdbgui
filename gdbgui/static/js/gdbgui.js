@@ -150,12 +150,14 @@ let State = {
         window.addEventListener('event_inferior_program_paused', State.event_inferior_program_paused)
         window.addEventListener('event_select_frame', State.event_select_frame)
 
-        // make sure saved preferences are valid
-        if(localStorage.getItem('highlight_source_code') === null || !_.isBoolean(JSON.parse(localStorage.getItem('highlight_source_code')))){
+        // make sure saved preferences are set/valid
+        if(localStorage.getItem('highlight_source_code') === null){
             localStorage.setItem('highlight_source_code', JSON.stringify(true))
+            State.set('highlight_source_code', true)
         }
-        if(localStorage.getItem('auto_add_breakpoint_to_main') === null || !_.isBoolean(JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')))){
+        if(localStorage.getItem('auto_add_breakpoint_to_main') === null){
             localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
+            State.set('auto_add_breakpoint_to_main', true)
         }
     },
     /**
@@ -1038,6 +1040,7 @@ const SourceCode = {
         SourceCode.render()
     },
     clear_cached_source_files: function(){
+        State.set('rendered_source_file_fullname', null)
         State.set('cached_source_files', [])
     },
     /**
@@ -1123,6 +1126,7 @@ const SourceCode = {
         if(State.get('fullname_to_render') === null){
             return
         }else if(!SourceCode.is_cached(State.get('fullname_to_render'))){
+            SourceCode.el.html('')
             SourceCode.fetch_file(State.get('fullname_to_render'))
             return
         }
