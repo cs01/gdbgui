@@ -103,7 +103,10 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
         if host == DEFAULT_HOST:
             print('\n\n** view app at http://%s:%d **\n\n' % (DEFAULT_HOST, port))
         else:
-            print('\n\n** view app at http://%s:%d **\n\n' % (socket.gethostbyname(socket.gethostname()), port))
+            try:
+                print('\n\n** view app at http://%s:%d **\n\n' % (socket.gethostbyname(socket.gethostname()), port))
+            except Exception:
+                print('\n\n** view app at http://%s:%d **\n\n' % (host, port))
 
         try:
             socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())

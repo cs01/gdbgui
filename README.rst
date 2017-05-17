@@ -21,6 +21,7 @@ view stack traces, and more in C, C++, Go, and Rust! Simply run
 Install
 -------
 
+
 **Linux**
 
 ::
@@ -37,7 +38,7 @@ Follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-
 
 **Windows**
 
-Tested with `cygwin <https://cygwin.com/install.html>`_. If you have run this natively, contact me and let me know so I can update this section.
+Tested with `cygwin <https://cygwin.com/install.html>`_.
 
 ::
 
@@ -47,6 +48,8 @@ Tested with `cygwin <https://cygwin.com/install.html>`_. If you have run this na
 
 
 virtualenv users do not need the ``sudo`` prefix.
+
+If you get ``fatal error: Python.h: No such file or directory``, install ```python-dev``. If using apt-get, ``sudo apt-get install python3-dev`` for python3, or ``sudo apt-get install python-dev`` for python2.
 
 
 **Alternatively, you can clone and run directly**
