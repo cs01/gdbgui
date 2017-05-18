@@ -193,9 +193,10 @@ pyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
-It uses Python to manage gdb as a subprocess. Specifically, the `pygdbmi library <https://github.com/cs01/pygdbmi>`__,  which returns key/value pairs (dictionaries) that can be used to create a frontend. To make a usable frontend, first a server must made to interface with gdb. In this case, the Flask server is used, which does three things: creates a managed gdb subprocess with pygdbmi, spawns a separate thread to constantly check for output from the gdb subprocess, and creates endpoints for the browser including http requests and websocket connections.
-
-As output is parsed in the reader thread, it is immediately sent to the frontend through the websocket. As the browser receives these websocket messages, it maintains the state of gdb (whether it's running, paused, or exited, where breakpoints are, what the stack is, etc.) and updates the DOM as appropriate. The browser also sends commands to gdb through a websocket to Flask server, which then passes the command to gdb. Gdb writes new output, which is picked up by the reader thread.
+1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns key/value pairs (dictionaries).
+2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A thread is spawned constantly read and forward output from gdb to the browser.
+3. The `pypugjs <https://github.com/matannoam/pypugjs>`__ template engine is used to reduce html LOC
+4. The browser manages its ui and state with the plain JavaScript library `stator <https://github.com/cs01/stator>`__
 
 ``gdbgui`` was designed to be easily hackable and extendable. There is
 no build system necessary to run or develop this app.
