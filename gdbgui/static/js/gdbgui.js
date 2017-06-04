@@ -218,7 +218,8 @@ const initial_state = {
     // expressions
     expr_gdb_parent_var_currently_fetching_children: null,  // parent gdb variable name (i.e. var7)
     expr_being_created: null,  // the expression being created (i.e. myvar)
-    expr_type: null,  // 'local', 'hover', 'expr' (change from true when an expression is being autocreated for a local, false otherwise)
+    // type of expression being created. Choices are: 'local' (autocreated local var), 'hover' (created when hovering in source coee), 'expr' (a "watch" expression )
+    expr_type: null,
     expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
 }
 
@@ -2131,7 +2132,7 @@ const Expressions = {
      * gdb returns objects for its variables,, but before we save that
      * data locally, we will add more fields to make it more useful for gdbgui
      * @param obj (object): mi object returned from gdb
-     * @param expr_type (bool): true if expression was autocreated for the locals component
+     * @param expr_type (str): type of expression being created (see state creation for documentation)
      */
     prepare_gdb_obj_for_storage: function(obj, expr_type){
         let new_obj = $.extend(true, {}, obj)
@@ -2602,7 +2603,7 @@ const HoverVar = {
             obj = hover_objs[0]
         }
         HoverVar.obj = obj
-        if (obj){  // todo filter all expression to find one that was made for "hover"
+        if (obj){
             let is_root = true
             if(obj.numchild > 0){
                 return Expressions.get_ul_for_var_with_children(obj.expression, obj, is_root)
