@@ -264,6 +264,23 @@ span.wsp{
     margin-right: auto;
 }
 
+#hovervar{
+    background: white;
+    width: 350px;
+    height: 200px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: none;
+    overflow: auto;
+    padding: 10px;
+    border: solid 1px #989898;
+    border-radius: 5px;
+    /* http://www.cssmatic.com/box-shadow */
+    -webkit-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+    box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+}
 
 #gdb_mi_output{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -274,7 +291,7 @@ span.wsp{
 }
 
 /* styling for "Expressions" component */
-#expressions li, #locals li{
+#expressions li, #locals li, #hovervar li{
     list-style: none;
 }
 ul.variable{
