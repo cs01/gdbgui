@@ -218,7 +218,8 @@ const initial_state = {
     // expressions
     expr_gdb_parent_var_currently_fetching_children: null,  // parent gdb variable name (i.e. var7)
     expr_being_created: null,  // the expression being created (i.e. myvar)
-    expr_autocreated_for_locals: null,  // true when an expression is being autocreated for a local, false otherwise
+    // type of expression being created. Choices are: 'local' (autocreated local var), 'hover' (created when hovering in source coee), 'expr' (a "watch" expression )
+    expr_type: null,
     expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
 }
 
@@ -873,7 +874,6 @@ const SourceCode = {
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
     init: function(){
-
         new Reactor('#code_table', SourceCode.render, {after_render: SourceCode.after_render})
 
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
@@ -2038,8 +2038,8 @@ const Expressions = {
     /**
      * Locally save the variable to our cached variables
      */
-    save_new_expression: function(expression, expr_autocreated_for_locals, obj){
-        let new_obj = Expressions.prepare_gdb_obj_for_storage(obj, expr_autocreated_for_locals)
+    save_new_expression: function(expression, expr_type, obj){
+        let new_obj = Expressions.prepare_gdb_obj_for_storage(obj, expr_type)
         new_obj.expression = expression
         let expressions = state.get('expressions')
         expressions.push(new_obj)
@@ -2102,7 +2102,7 @@ const Expressions = {
         if((e.keyCode === ENTER_BUTTON_NUM)) {
             let expr = Expressions.el_input.val()
             if(_.trim(expr) !== ''){
-                Expressions.create_variable(Expressions.el_input.val(), false)
+                Expressions.create_variable(Expressions.el_input.val(), 'expr')
             }
         }
     },
@@ -2110,9 +2110,9 @@ const Expressions = {
      * Create a new variable in gdb. gdb automatically assigns
      * a unique variable name.
      */
-    create_variable: function(expression, expr_autocreated_for_locals){
+    create_variable: function(expression, expr_type){
         state.set('expr_being_created', expression)
-        state.set('expr_autocreated_for_locals', expr_autocreated_for_locals)
+        state.set('expr_type', expr_type)
 
         // - means auto assign variable name in gdb
         // * means evaluate it at the current frame
@@ -2132,9 +2132,9 @@ const Expressions = {
      * gdb returns objects for its variables,, but before we save that
      * data locally, we will add more fields to make it more useful for gdbgui
      * @param obj (object): mi object returned from gdb
-     * @param expr_autocreated_for_locals (bool): true if expression was autocreated for the locals component
+     * @param expr_type (str): type of expression being created (see state creation for documentation)
      */
-    prepare_gdb_obj_for_storage: function(obj, expr_autocreated_for_locals){
+    prepare_gdb_obj_for_storage: function(obj, expr_type){
         let new_obj = $.extend(true, {}, obj)
         // obj was copied, now add some additional fields used by gdbgui
 
@@ -2150,10 +2150,10 @@ const Expressions = {
         // it is returned when the variables are updated
         // it is returned by gdb mi as a string, and we assume it starts out in scope
         new_obj.in_scope = 'true'
-        new_obj.autocreated_for_locals = state.get('expr_autocreated_for_locals')
+        new_obj.expr_type = state.get('expr_type')
 
         // can only be plotted if: value is an expression (not a local), and value is numeric
-        new_obj.can_plot = !new_obj.autocreated_for_locals && !window.isNaN(parseFloat(new_obj.value))
+        new_obj.can_plot = (new_obj.expr_type === 'expr') && !window.isNaN(parseFloat(new_obj.value))
         new_obj.dom_id_for_plot = new_obj.name
             .replace(/\./g, '-')  // replace '.' with '-'
             .replace(/\$/g, '_')  // replace '$' with '-'
@@ -2190,7 +2190,7 @@ const Expressions = {
             //      "type": "int",
             //      "value": "0"
             //  },
-            Expressions.save_new_expression(expr, state.get('expr_autocreated_for_locals'), r.payload)
+            Expressions.save_new_expression(expr, state.get('expr_type'), r.payload)
             state.set('expr_being_created', null)
             // automatically fetch first level of children for root variables
             Expressions.fetch_and_show_children_for_var(r.payload.name)
@@ -2230,7 +2230,7 @@ const Expressions = {
         //     }
 
         let parent_name = state.get('expr_gdb_parent_var_currently_fetching_children')
-        , autocreated_for_locals = state.get('expr_autocreated_for_locals')
+        , expr_type = state.get('expr_type')
 
         state.set('expr_gdb_parent_var_currently_fetching_children', null)
 
@@ -2239,7 +2239,7 @@ const Expressions = {
         let parent_obj = Expressions.get_obj_from_gdb_var_name(expressions, parent_name)
         if(parent_obj){
             // prepare all the child objects we received for local storage
-            let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, autocreated_for_locals))
+            let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
             // save these children as a field to their parent
             parent_obj.children = children
             state.set('expressions', expressions)
@@ -2261,7 +2261,7 @@ const Expressions = {
 
         let sorted_expression_objs = _.sortBy(state.get('expressions'), unsorted_obj => unsorted_obj.expression)
         // only render variables in scope that were not created for the Locals component
-        , objs_to_render = sorted_expression_objs.filter(obj => obj.in_scope === 'true' && obj.autocreated_for_locals === false)
+        , objs_to_render = sorted_expression_objs.filter(obj => obj.in_scope === 'true' && obj.expr_type === 'expr')
         , objs_to_delete = sorted_expression_objs.filter(obj => obj.in_scope === 'invalid')
 
         // delete invalid objects
@@ -2431,7 +2431,7 @@ const Expressions = {
         state.set('expressions', expressions)
         if((obj.numchild) && obj.children.length === 0){
             // need to fetch child data
-            Expressions._get_children_for_var(gdb_var_name, obj.autocreated_for_locals)
+            Expressions._get_children_for_var(gdb_var_name, obj.expr_type)
         }else{
             // already have child data, re-render will occur from event dispatch
         }
@@ -2470,9 +2470,9 @@ const Expressions = {
      * Send command to gdb to give us all the children and values
      * for a gdb variable. Note that the gdb variable itself may be a child.
      */
-    _get_children_for_var: function(gdb_variable_name, expr_autocreated_for_locals){
+    _get_children_for_var: function(gdb_variable_name, expr_type){
         state.set('expr_gdb_parent_var_currently_fetching_children', gdb_variable_name)
-        state.set('expr_autocreated_for_locals', expr_autocreated_for_locals)
+        state.set('expr_type', expr_type)
         GdbApi.run_gdb_command(`-var-list-children --all-values "${gdb_variable_name}"`)
     },
     get_update_cmds: function(){
@@ -2496,7 +2496,7 @@ const Expressions = {
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
 
             if(obj){
-                if('value' in changelist && !obj.autocreated_for_locals){
+                if('value' in changelist && obj.expr_type === 'expr'){
                     // this object is an expression and it had a value updated.
                     // save the value to an array for plotting
                     if(changelist.value.indexOf('0x') === 0){
@@ -2536,6 +2536,95 @@ const Expressions = {
         _.remove(expressions, v => v.name === gdb_var_name)
         state.set('expressions', expressions)
     },
+}
+
+const HoverVar = {
+    init: function(){
+        $('body').on('mouseover', '#code_table span.n', HoverVar.mouseover_variable)
+        $('body').on('mouseover', '#code_table span.nx', HoverVar.mouseover_variable)
+        $('body').on('mouseenter', '#hovervar', HoverVar.mouseover_hover_window)
+        $('body').on('mouseleave', '#code_table span.n', HoverVar.mouseout_variable)
+        $('body').on('mouseleave', '#code_table span.nx', HoverVar.mouseout_variable)
+        $('body').on('mouseleave', '#hovervar', HoverVar.mouseout_hover_window)
+        new Reactor('#hovervar', HoverVar.render, {after_dom_update: HoverVar.after_dom_update})
+    },
+    enter_timeout: undefined,  // debounce fetching the expression
+    exit_timeout: undefined,  // debounce removing the box
+    left: 0,
+    top: 0,
+    mouseover_variable: function(e){
+        HoverVar.clear_hover_state()
+
+        let rect = e.target.getBoundingClientRect()
+        , var_name = e.target.textContent
+
+        // store coordinates of where the box should be displayed
+        HoverVar.left = rect.left
+        HoverVar.top = rect.bottom
+
+        const WAIT_TIME_SEC = 0.5
+        HoverVar.enter_timeout = setTimeout(
+            ()=>{
+                let program_stopped = state.get('stack').length > 0
+                if(program_stopped){
+                    Expressions.create_variable(var_name, 'hover')
+                }
+            },
+            WAIT_TIME_SEC * 1000)
+    },
+    mouseout_variable: function(e){
+        const WAIT_TIME_SEC = 0.1
+        HoverVar.exit_timeout = setTimeout(
+            ()=>{
+                HoverVar.clear_hover_state()
+            },
+            WAIT_TIME_SEC * 1000
+        )
+    },
+    mouseover_hover_window: function(e){
+        // Mouse went from hovering over variable name in source code to
+        // hovering over the window showing the contents of the variable.
+        // Don't remove the window in this case.
+        clearTimeout(HoverVar.exit_timeout)
+    },
+    mouseout_hover_window: function(e){
+        HoverVar.clear_hover_state()
+    },
+    clear_hover_state: function(){
+        clearTimeout(HoverVar.enter_timeout)
+        clearTimeout(HoverVar.exit_timeout)
+        let exprs_objs_to_remove = state.get('expressions').filter(obj => obj.expr_type === 'hover')
+        exprs_objs_to_remove.map(obj => Expressions.delete_gdb_variable(obj.name))
+    },
+    render: function(r){
+        let hover_objs = state.get('expressions').filter(o => o.expr_type === 'hover')
+        , obj
+        if(Array.isArray(hover_objs) && hover_objs.length === 1){
+            obj = hover_objs[0]
+        }
+        HoverVar.obj = obj
+        if (obj){
+            let is_root = true
+            if(obj.numchild > 0){
+                return Expressions.get_ul_for_var_with_children(obj.expression, obj, is_root)
+            }else{
+                return Expressions.get_ul_for_var_without_children(obj.expression, obj, is_root)
+            }
+        }else{
+            return 'no variable hovered'
+        }
+    },
+    after_dom_update: function(r){
+        if(HoverVar.obj){
+            r.node.style.left = HoverVar.left
+            r.node.style.top = HoverVar.top
+            r.node.classList.remove('hidden')
+        }else{
+            r.node.classList.add('hidden')
+        }
+
+    }
+
 }
 
 const Locals = {
@@ -2602,19 +2691,19 @@ const Locals = {
     click_locals_autocreate_new_expr: function(e){
         let expr = e.currentTarget.dataset.expression
         if(expr){
-            Expressions.create_variable(expr, true)
+            Expressions.create_variable(expr, 'local')
         }
     },
     get_autocreated_obj_from_expr: function(expr){
         for(let obj of state.get('expressions')){
-            if(obj.expression === expr && obj.autocreated_for_locals === true){
+            if(obj.expression === expr && obj.expr_type === 'local'){
                 return obj
             }
         }
         return null
     },
     clear_autocreated_exprs: function(){
-        let exprs_objs_to_remove = state.get('expressions').filter(obj => obj.autocreated_for_locals !== false)
+        let exprs_objs_to_remove = state.get('expressions').filter(obj => obj.expr_type === 'local')
         exprs_objs_to_remove.map(obj => Expressions.delete_gdb_variable(obj.name))
     },
     clear: function(){
@@ -3109,6 +3198,7 @@ Registers.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Expressions.init()
+HoverVar.init()
 Locals.init()
 Threads.init()
 VisibilityToggler.init()
