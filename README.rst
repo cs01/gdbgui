@@ -79,6 +79,7 @@ Features
 - View stack, threads
 - Switch frame on stack, switch between threads
 - Intuitively explore local variables when paused
+- Hover over variables in source code to view contents
 - Evaluate arbitrary expressions and plot their values over time
 - Inspect memory in hex/character form
 - View all registers
