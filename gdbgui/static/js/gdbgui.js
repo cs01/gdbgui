@@ -405,7 +405,8 @@ const GdbApi = {
         window.addEventListener('event_inferior_program_paused', GdbApi.event_inferior_program_paused)
         window.addEventListener('event_select_frame', GdbApi.event_select_frame)
 
-        GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`);
+        const TIMEOUT_MIN = 5
+        GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
 
         GdbApi.socket.on('connect', function(){
             debug_print('connected')
