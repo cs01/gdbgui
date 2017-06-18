@@ -57,6 +57,7 @@ app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
 app.config['initial_binary_and_args'] = []
 app.config['gdb_path'] = DEFAULT_GDB_EXECUTABLE
+app.config['gdb_command'] = None
 app.config['show_gdbgui_upgrades'] = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['LLDB'] = False  # assume false, okay to change later
@@ -156,6 +157,9 @@ def client_connected():
             # as well. Please create an issue if you encounter one since I do not own a mac.
             # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
             gdb_args.append('--init-eval-command=set startup-with-shell off')
+
+        if app.config['gdb_command']:
+            gdb_args.append('-x=%s' % app.config['gdb_command'])
 
         _gdb_state['gdb_controllers'][request.sid] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
 
@@ -372,6 +376,7 @@ def main():
     parser.add_argument('--debug', help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
+    parser.add_argument('-x', '--command', help='Execute GDB commands from file file.', action='store')
     args = parser.parse_args()
 
     if args.version:
@@ -380,6 +385,7 @@ def main():
 
     app.config['initial_binary_and_args'] = ' '.join(args.cmd)
     app.config['gdb_path'] = args.gdb
+    app.config['gdb_command'] = args.command
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
     verify_gdb_exists()
     if args.remote:
