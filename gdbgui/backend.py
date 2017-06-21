@@ -376,7 +376,7 @@ def main():
     parser.add_argument('--debug', help='The debug flag of this Flask application. '
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
-    parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.', action='store')
+    parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
     args = parser.parse_args()
 
     if args.version:
