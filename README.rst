@@ -110,21 +110,30 @@ Positional arguments:
 
 Flags (all are optional):
   -h, --help            show this help message and exit
-  -p PORT, --port PORT  The port on which gdbgui will be hosted
-  --host HOST           The host ip address on which gdbgui serve.
-  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser from opening.
-                        This allows remote access to gdbgui and is useful when running on a
-                        remote machine that you want to view/debug from your local
-                        browser, or let someone else debug your application
-                        remotely.
-  -g GDB, --gdb GDB     Path to gdb executable or lldb-mi executable. Defaults is 'gdb'. lldb
-                        support is experimental and not fully functional at this time.
-  -v, --version         Print gdbgui version
-  --debug               The debug flag of gdbgui. Pass this
+  -p PORT, --port PORT  The port on which gdbgui will be hosted. Defaults to
+                        5000
+  --host HOST           The host ip address on which gdbgui serve. Defaults to
+                        127.0.0.1
+  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser
+                        from opening. This allows remote access to gdbgui and
+                        is useful when running on a remote machine that you
+                        want to view/debug from your local browser, or let
+                        someone else debug your application remotely.
+  -g GDB, --gdb GDB     Path to gdb or lldb executable. Defaults to gdb. lldb
+                        support is experimental.
+  --lldb                Use lldb commands (experimental)
+  -v, --version         Print version
+  --hide_gdbgui_upgrades
+                        Hide messages regarding newer version of gdbgui.
+                        Defaults to False.
+  --debug               The debug flag of this Flask application. Pass this
                         flag when debugging gdbgui itself to automatically
-                        reload the server when changes are detected.
-  -n, --no_browser          By default, the browser will open with gdb gui. Pass
+                        reload the server when changes are detected
+  -n, --no_browser      By default, the browser will open with gdb gui. Pass
                         this flag so the browser does not open.
+  -x GDB_CMD_FILE, --gdb_cmd_file GDB_CMD_FILE
+                        Execute GDB commands from file.
+
 
 Compatibility
 -------------
