@@ -940,10 +940,11 @@ const SourceCode = {
             for(let i of instructions_for_this_line){
                 let cls = (addr === i.address) ? 'current_assembly_command assembly' : 'assembly'
                 , addr_link = Memory.make_addrs_into_links(i.address)
-                , instruction = Memory.make_addrs_into_links(i.inst)
+                , instruction = Memory.make_addrs_into_links(Util.escape(i.inst))
+                , opcodes = i.opcodes ? `(${i.opcodes})` : ''
                 instruction_content.push(`
                     <span style="white-space: nowrap;" class='${cls}' data-addr=${i.address}>
-                        ${instruction}(${i.opcodes}) ${i['func-name']}+${i['offset']} ${addr_link}
+                        ${instruction}${opcodes} ${i['func-name']}+${i['offset']} ${addr_link}
                     </span>`)
                 // i.e. mov $0x400684,%edi(00) main+8 0x0000000000400585
             }
