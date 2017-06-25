@@ -2088,6 +2088,7 @@ const Expressions = {
                     obj = child_obj
                 }else{
                     console.error(`could not find ${name_to_find}`)
+                    return undefined
                 }
             }
             return obj
@@ -2498,6 +2499,11 @@ const Expressions = {
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
 
             if(obj){
+                if('new_children' in changelist){
+                    let expr_type = state.get("expr_type")
+                    let new_children = changelist.new_children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
+                    obj.children = obj.children.concat(new_children)
+                }
                 if('value' in changelist && obj.expr_type === 'expr'){
                     // this object is an expression and it had a value updated.
                     // save the value to an array for plotting
