@@ -46,7 +46,10 @@ const ENTER_BUTTON_NUM = 13
     , COMMA_BUTTON_NUM = 188
     , DATE_FORMAT = 'dddd, MMMM Do YYYY, h:mm:ss a'
     , ANIMATED_REFRESH_ICON = "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>"
-
+    // gdbgui convention to prefix MI commands with this number to ignore errors when response is received
+    // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Input-Syntax.html#GDB_002fMI-Input-Syntax
+    , IGNORE_ERRORS_TOKEN_STR = '1'
+    , IGNORE_ERRORS_TOKEN_INT = parseInt(IGNORE_ERRORS_TOKEN_STR)
 // print to console if debug is true
 let debug_print
 if(debug){
@@ -636,7 +639,7 @@ const GdbApi = {
     get_flush_output_cmd: function(){
         if(state.get('language') === 'c_family'){
             if(state.get('interpreter') === 'gdb'){
-                return '-data-evaluate-expression fflush(0)'
+                return IGNORE_ERRORS_TOKEN_STR + '-data-evaluate-expression fflush(0)'
             }else if(state.get('interpreter') === 'lldb'){
                 return ''
             }
@@ -2115,7 +2118,7 @@ const Expressions = {
      * Create a new variable in gdb. gdb automatically assigns
      * a unique variable name.
      */
-    create_variable: function(expression, expr_type){
+    create_variable: function(expression, expr_type, ignore_errors=false){
         state.set('expr_being_created', expression)
         state.set('expr_type', expr_type)
 
@@ -2129,7 +2132,11 @@ const Expressions = {
             cmds.push('-enable-pretty-printing')
         }
 
-        cmds.push(`-var-create - * ${expression}`)
+        let var_create_cmd = `-var-create - * ${expression}`
+        if(ignore_errors){
+            var_create_cmd = IGNORE_ERRORS_TOKEN_STR + var_create_cmd
+        }
+        cmds.push(var_create_cmd)
 
         GdbApi.run_gdb_command(cmds)
     },
@@ -2577,7 +2584,8 @@ const HoverVar = {
             ()=>{
                 let program_stopped = state.get('stack').length > 0
                 if(program_stopped){
-                    Expressions.create_variable(var_name, 'hover')
+                    let ignore_errors = true
+                    Expressions.create_variable(var_name, 'hover', ignore_errors)
                 }
             },
             WAIT_TIME_SEC * 1000)
@@ -2907,10 +2915,23 @@ const ShutdownGdbgui = {
 const process_gdb_response = function(response_array){
     // update status with error or with last response
     let update_status = true
+    /**
+     * Determines if response is an error and client does not want to be notified of errors for this particular response.
+     * @param response: gdb mi response object
+     * @return (bool): true if response should be ignored
+     */
+    , ignore = function(response){
+        return response.token === IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
+    }
 
     for (let r of response_array){
         // gdb mi output
         GdbMiOutput.add_mi_output(r)
+
+        if(ignore(r)){
+            continue
+        }
+
 
         if (r.type === 'result' && r.message === 'done' && r.payload){
             // This is special GDB Machine Interface structured data that we
@@ -3076,7 +3097,7 @@ const process_gdb_response = function(response_array){
                 // signal nicely
 
             }else{
-                console.log('TODO handle new reason for stopping')
+                console.log('TODO handle new reason for stopping. Notify developer of this.')
                 console.log(r)
             }
         }
@@ -3085,8 +3106,12 @@ const process_gdb_response = function(response_array){
     // perform any final actions
     if(update_status){
         // render response of last element of array
-        StatusBar.render_from_gdb_mi_response(_.last(response_array))
-        update_status = false
+        let last_response = _.last(response_array)
+        if(ignore(last_response)){
+            StatusBar.render('')
+        }else{
+            StatusBar.render_from_gdb_mi_response(last_response)
+        }
     }
 
     if(response_array.length > 0){
