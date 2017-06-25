@@ -196,7 +196,8 @@ const initial_state = {
     current_line_of_source_code: null,
     current_assembly_address: null,
     rendered_source_file_fullname: null,
-    has_unrendered_assembly: false,
+    has_unrendered_assembly: false,  // set to true when new assembly has been fetched and is cached in browser, but not displayed in source code window
+    make_current_line_visible: false,  // set to true when source code window should jump to current line
     cached_source_files: [],  // list with keys fullname, source_code
 
     // binary selection
@@ -875,7 +876,7 @@ const SourceCode = {
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
     init: function(){
-        new Reactor('#code_table', SourceCode.render, {after_render: SourceCode.after_render})
+        new Reactor('#code_table', SourceCode.render, {should_render: SourceCode.should_render, after_render: SourceCode.after_render})
 
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
         $("body").on("click", ".view_file", SourceCode.click_view_file)
@@ -948,13 +949,11 @@ const SourceCode = {
                     </span>`)
                 // i.e. mov $0x400684,%edi(00) main+8 0x0000000000400585
             }
-
-            instruction_content = instruction_content.join('<br>')
         }
 
         return `
         <td valign="top" class='assembly'>
-            ${instruction_content}
+            ${instruction_content.join('<br>')}
         </td>`
     },
     /**
@@ -989,6 +988,7 @@ const SourceCode = {
         if(state.get('themes').indexOf(current_theme) === -1){
             // somehow an invalid theme got set, update with a valid one
             state.set('current_theme', state.get('themese')[0])
+            current_theme = state.get('current_theme')
         }
 
         if(old_theme !== current_theme){
@@ -1003,12 +1003,10 @@ const SourceCode = {
         // just update breakpoints and line highlighting
         if(fullname === state.get('rendered_source_file_fullname') && !state.get('has_unrendered_assembly')) {
             // we already rendered this file, and the assembly, so don't re-render it
-            SourceCode.highlight_paused_line_and_scrollto_line(fullname, state.get('current_line_of_source_code'), addr)
-            SourceCode.render_breakpoints()
-            SourceCode.make_current_line_visible()
             return false
+        }else{
+            return true
         }
-        return true
     },
     render: function(reactor){
         SourceCode.set_theme_in_dom()
@@ -1069,7 +1067,11 @@ const SourceCode = {
     },
     after_render: function(reactor){
         SourceCode.render_breakpoints()
-        SourceCode.highlight_paused_line_and_scrollto_line()
+        SourceCode.highlight_paused_line()
+        if(state.get('make_current_line_visible')){
+            state.set('make_current_line_visible', false)
+            SourceCode.make_current_line_visible()
+        }
         state.set('has_unrendered_assembly', false)
     },
     // re-render breakpoints on whichever file is loaded
@@ -1131,7 +1133,7 @@ const SourceCode = {
         document.querySelectorAll('.current_assembly_command').forEach(el => el.classList.remove('current_assembly_command'))
         document.querySelectorAll('.paused_on_line').forEach(el => el.classList.remove('paused_on_line'))
     },
-    highlight_paused_line_and_scrollto_line: function(){
+    highlight_paused_line: function(){
         SourceCode.remove_line_highlights()
 
         let fullname = state.get('rendered_source_file_fullname')
@@ -1171,8 +1173,6 @@ const SourceCode = {
                 jq_assembly.addClass('current_assembly_command')
             }
         }
-
-        SourceCode.make_current_line_visible()
     },
     fetch_file: function(fullname){
         if(!_.isString(fullname) || !fullname.startsWith('/')){
@@ -1299,17 +1299,19 @@ const SourceCode = {
      * The current target must have data embedded in it with:
      * fullname: full path of source code file to view
      * line (optional): line number to scroll to
-     * hightlight (default: 'false'): if 'true', the line is highlighted
+     * addr (optional): instruction address to highlight
      */
     click_view_file: function(e){
         state.set('fullname_to_render', e.currentTarget.dataset['fullname'])
         state.set('current_line_of_source_code', parseInt(e.currentTarget.dataset['line']))
         state.set('current_assembly_address', e.currentTarget.dataset['addr'])
+        state.set('make_current_line_visible', true)
     },
     keydown_jump_to_line: function(e){
         if (e.keyCode === ENTER_BUTTON_NUM){
             let line = parseInt(e.currentTarget.value)
             state.set('current_line_of_source_code', line)
+            state.set('make_current_line_visible', true)
         }
     },
     get_attrs_to_view_file: function(fullname, line=0, addr=''){
@@ -2938,10 +2940,12 @@ const process_gdb_response = function(response_array){
 
                 // if executable does not have debug symbols (i.e. not compiled with -g flag)
                 // gdb will not return a path, but rather the function name. The function name is
-                // not a file, and therefore it cannot be displayed.
+                // not a file, and therefore it cannot be displayed. Make sure the path is known before
+                // trying to render the file of the newly created breakpoint.
                 if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
                     // a normal breakpoint or child breakpoint
                     state.set('fullname_to_render', bkpt.fullname_to_display)
+                    state.set('make_current_line_visible', true)
                     state.set('current_line_of_source_code', parseInt(bkpt.line))
                     state.set('current_assembly_address', undefined)
                 }
@@ -3165,13 +3169,14 @@ const GlobalEvents = {
         state.set('inferior_program', 'paused')
         state.set('paused_on_frame', frame)
         state.set('fullname_to_render', frame.fullname)
-
+        state.set('make_current_line_visible', true)
         state.set('current_line_of_source_code', parseInt(frame.line))
         state.set('current_assembly_address', frame.addr)
     },
     event_select_frame: function(e){
         let selected_frame_num = e.detail || 0
         state.set('selected_frame_num', selected_frame_num)
+        state.set('make_current_line_visible', true)
     },
 }
 
