@@ -50,6 +50,8 @@ const ENTER_BUTTON_NUM = 13
     // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Input-Syntax.html#GDB_002fMI-Input-Syntax
     , IGNORE_ERRORS_TOKEN_STR = '1'
     , IGNORE_ERRORS_TOKEN_INT = parseInt(IGNORE_ERRORS_TOKEN_STR)
+    , DISASSEMBLY_FOR_MISSING_FILE_STR = '2'
+    , DISASSEMBLY_FOR_MISSING_FILE_INT = parseInt(DISASSEMBLY_FOR_MISSING_FILE_STR)
 // print to console if debug is true
 let debug_print
 if(debug){
@@ -202,6 +204,9 @@ const initial_state = {
     has_unrendered_assembly: false,  // set to true when new assembly has been fetched and is cached in browser, but not displayed in source code window
     make_current_line_visible: false,  // set to true when source code window should jump to current line
     cached_source_files: [],  // list with keys fullname, source_code
+    disassembly_for_missing_file: [],  // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
+    missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
+
 
     // binary selection
     inferior_binary_path: null,
@@ -212,6 +217,7 @@ const initial_state = {
     register_names: [],
     previous_register_values: {},
     current_register_values: {},
+    fetch_registers: false,
 
     // memory
     memory_cache: {},
@@ -879,6 +885,7 @@ const SourceCode = {
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
     init: function(){
+        new Reactor('#source_code_heading', () => {return `file path: ${state.get('rendered_source_file_fullname')}`})
         new Reactor('#code_table', SourceCode.render, {should_render: SourceCode.should_render, after_render: SourceCode.after_render})
 
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
@@ -917,7 +924,7 @@ const SourceCode = {
                 return file.assembly
             }
         }
-        return null
+        return []
     },
     refresh_cached_source_files: function(e){
         SourceCode.clear_cached_source_files()
@@ -958,6 +965,15 @@ const SourceCode = {
         <td valign="top" class='assembly'>
             ${instruction_content.join('<br>')}
         </td>`
+    },
+    _get_assembly_html: function(cur_addr, i){
+        let cls = (cur_addr === i.address) ? 'current_assembly_command assembly' : 'assembly'
+        , addr_link = Memory.make_addrs_into_links(i.address)
+        , instruction = Memory.make_addrs_into_links(i.inst)
+
+        return `<span style="white-space: nowrap;" class='${cls}' data-addr=${i.address}>
+            ${instruction}(${i.opcodes}) ${i['func-name']}+${i['offset']} ${addr_link}
+        </span>`
     },
     /**
      * Show modal warning if user is trying to show a file that was modified after the binary was compiled
@@ -1000,43 +1016,82 @@ const SourceCode = {
             code_container.addClass(current_theme)
         }
     },
+    /**
+     * To make rendering efficient, only render the (potentially very large) source file when we need to.
+     * Otherwise just update breakpoints and line highlighting through DOM manipluation in "after_render"
+     * param reactor: reactor object (see stator.js) tied to DOM node
+     */
     should_render: function(reactor){
+        SourceCode.set_theme_in_dom()
         let fullname = state.get('fullname_to_render')
-        // don't re-render all the lines if they are already rendered.
-        // just update breakpoints and line highlighting
-        if(fullname === state.get('rendered_source_file_fullname') && !state.get('has_unrendered_assembly')) {
-            // we already rendered this file, and the assembly, so don't re-render it
-            return false
-        }else{
+
+        if(fullname === undefined || state.get('missing_files').indexOf(fullname) !== -1){
+            // don't try to be super efficient when rendering disassembly. It's not that large, and the logic
+            // to determine this accurately is difficult.
             return true
         }
+
+        if(fullname === state.get('rendered_source_file_fullname')){
+            // we already rendered this file, but if we have new assembly, it should update
+            return state.get('has_unrendered_assembly')
+        }
+        // rendering a different source file, it should update
+        return true
     },
     render: function(reactor){
-        SourceCode.set_theme_in_dom()
 
-        if(state.get('fullname_to_render') === null){
+        let anon_file_source = state.get('disassembly_for_missing_file')
+        , addr = state.get('current_assembly_address')
+        , fullname = state.get('fullname_to_render')
+        , current_line_of_source_code = parseInt(state.get('current_line_of_source_code'))
+
+        if(fullname === null){
             state.set('rendered_source_file_fullname', null)
             return ''
+
         }else if(!SourceCode.is_cached(state.get('fullname_to_render'))){
-            SourceCode.fetch_file(state.get('fullname_to_render'))
-            state.set('rendered_source_file_fullname', null)
-            return ''
+            // if file is not missing or undefined, continue
+            let source_file_does_not_exist = fullname === undefined || state.get('missing_files').indexOf(fullname) !== -1
+            , assembly_is_cached_for_this_addr = anon_file_source.some(obj => obj.address === addr)
+            if(source_file_does_not_exist){
+                if(!assembly_is_cached_for_this_addr){
+                    if(addr === undefined){
+                        return 'stopped on unknown address'
+                    }
+                    SourceCode.fetch_disassembly_for_missing_file(parseInt(addr))
+                    return 'fetching assembly'
+                }
+            }else{
+                // source file *might* exist. Try to fetch it. If it exists, this render function will be called again
+                // and either the source will be displayed (if it exists), or the assembly will be fetched.
+                let file_to_fetch = state.get('fullname_to_render')
+                SourceCode.fetch_file(state.get('fullname_to_render'))
+                state.set('rendered_source_file_fullname', null)
+                return 'fetching file ' + file_to_fetch
+            }
         }
 
-        let fullname = state.get('fullname_to_render')
-        , current_line_of_source_code = parseInt(state.get('current_line_of_source_code'))
-        , addr = state.get('current_assembly_address')
-
         let f = _.find(state.get('cached_source_files'), i => i.fullname === fullname)
-        let source_code = f.source_code
+        let source_code
+        if(f){
+            source_code = f.source_code
+        }else{
+            let anon_file_source = state.get('disassembly_for_missing_file')
+            if(anon_file_source){
+                source_code = anon_file_source.map(i => SourceCode._get_assembly_html(addr, i))
+            }else{
+                // this shouldn't be possible
+                return 'no source code, no assembly'
+            }
+        }
 
         // make sure desired line is within number of lines of source code
         if(current_line_of_source_code > source_code.length){
             SourceCode.el_jump_to_line_input.val(source_code.length)
             state.set('current_line_of_source_code', source_code.length)
-        }else if (current_line_of_source_code <= 0){
-            SourceCode.el_jump_to_line_input.val(1)
-            state.set('current_line_of_source_code', 1)
+        }else if (current_line_of_source_code < 0){
+            SourceCode.el_jump_to_line_input.val(0)
+            state.set('current_line_of_source_code', 0)
         }
 
         SourceCode.show_modal_if_file_modified_after_binary(fullname)
@@ -1065,16 +1120,18 @@ const SourceCode = {
         }
 
         state.set('rendered_source_file_fullname', fullname)
-        SourceCode.el_title.text(fullname)
         return tbody.join('')
     },
     after_render: function(reactor){
-        SourceCode.render_breakpoints()
-        SourceCode.highlight_paused_line()
-        if(state.get('make_current_line_visible')){
-            state.set('make_current_line_visible', false)
-            SourceCode.make_current_line_visible()
+        let fullname = state.get('fullname_to_render')
+        if(state.get('missing_files').indexOf(fullname) === -1){
+            SourceCode.render_breakpoints()
+            SourceCode.highlight_paused_line()
+            if(state.get('make_current_line_visible')){
+                SourceCode.make_current_line_visible()
+            }
         }
+        state.set('make_current_line_visible', false)
         state.set('has_unrendered_assembly', false)
     },
     // re-render breakpoints on whichever file is loaded
@@ -1178,6 +1235,12 @@ const SourceCode = {
         }
     },
     fetch_file: function(fullname){
+        if(state.get('missing_files').indexOf(fullname) !== -1){
+            // file doesn't exist and we already know about it
+            // don't keep trying to fetch disassembly
+            return
+        }
+
         if(!_.isString(fullname) || !fullname.startsWith('/')){
             // this can happen when an executable doesn't have debug symbols.
             // don't try to fetch it because it will never exist.
@@ -1201,8 +1264,14 @@ const SourceCode = {
             },
             error: function(response){
                 StatusBar.render_ajax_error_msg(response)
-                let source_code = [`failed to fetch file at path "${fullname}"`]
-                SourceCode.add_source_file_to_cache(fullname, source_code, {}, 0)
+
+                let missing_files = state.get('missing_files')
+                missing_files.push(fullname)
+                state.set('missing_files', missing_files)
+
+                let source_code = [`failed to fetch file at path "${fullname}"`,
+                'will display the disassembly here if possible',
+                'view disassembly dump in console by typing "disassembly"']
             },
             complete: function(){
                 let files = state.get('files_being_fetched')
@@ -1210,11 +1279,13 @@ const SourceCode = {
             }
         })
     },
-    add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec){
+    add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec, exists=true){
         let new_source_file = {'fullname': fullname,
                                 'source_code': source_code,
                                 'assembly': assembly,
-                                'last_modified_unix_sec': last_modified_unix_sec}
+                                'last_modified_unix_sec': last_modified_unix_sec,
+                                'exists': exists,
+                            }
         , cached_source_files = state.get('cached_source_files')
         cached_source_files.push(new_source_file)
         state.set('cached_source_files', cached_source_files)
@@ -1246,17 +1317,16 @@ const SourceCode = {
         }
     },
     get_fetch_disassembly_command: function(fullname, start_line){
+        let mi_response_format = SourceCode.get_dissasembly_format_num(state.get('gdb_version_array'))
         if(_.isString(fullname) && fullname.startsWith('/')){
             if(state.get('interpreter') === 'gdb'){
-                let mi_response_format = SourceCode.get_dissasembly_format_num(state.get('gdb_version_array'))
                 return `-data-disassemble -f ${fullname} -l ${start_line} -n 100 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
                 return `disassemble --frame`
             }
         }else{
-            // we don't have a file to fetch disassembly for
-            return null
+            console.warn('not fetching undefined file')
         }
     },
     /**
@@ -1273,24 +1343,57 @@ const SourceCode = {
            GdbApi.run_gdb_command(cmd)
         }
     },
-    /**
-     * Save assembly and render source code if desired
-     */
-    save_new_assembly: function(mi_assembly){
-        if(!_.isArray(mi_assembly) || mi_assembly.length === 0){
-            console.error("Attempted to save unexpected assembly")
+    fetch_disassembly_for_missing_file: function(hex_addr){
+        let mi_response_format = SourceCode.get_dissasembly_format_num(state.get('gdb_version_array'))
+        // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Data-Manipulation.html
+        if(window.isNaN(hex_addr)){
+            return
         }
 
+        let start = hex_addr
+        , end = hex_addr + 100
+        GdbApi.run_gdb_command(DISASSEMBLY_FOR_MISSING_FILE_STR + `-data-disassemble -s 0x${start.toString((16))} -e 0x${end.toString((16))} -- 0`)
+    },
+    /**
+     * Save assembly and render source code if desired
+     * @param mi_assembly: array of assembly instructions
+     * @param mi_token (int): corresponds to either null (when src file is known and exists),
+     *  DISASSEMBLY_FOR_MISSING_FILE_INT when source file is undefined or does not exist on filesystem
+     */
+    save_new_assembly: function(mi_assembly, mi_token){
+        if(!_.isArray(mi_assembly) || mi_assembly.length === 0){
+            console.error('Attempted to save unexpected assembly', mi_assembly)
+        }
+
+        let fullname = mi_assembly[0].fullname
+        if(mi_token === DISASSEMBLY_FOR_MISSING_FILE_INT){
+            state.set('disassembly_for_missing_file', mi_assembly)
+            state.set('has_unrendered_assembly', true)
+            return
+        }
+
+        // convert assembly to an object, with key corresponding to line numbers
+        // and values corresponding to asm instructions for that line
         let assembly_to_save = {}
         for(let obj of mi_assembly){
             assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn
         }
 
-        let fullname = mi_assembly[0].fullname
         let cached_source_files = state.get('cached_source_files')
         for (let cached_file of cached_source_files){
             if(cached_file.fullname === fullname){
                 cached_file.assembly = $.extend(true, cached_file.assembly, assembly_to_save)
+
+                let max_assm_line = Math.max(Object.keys(cached_file.assembly))
+
+                if(max_assm_line > cached_file.source_code.length){
+                    cached_file.source_code[max_assm_line] = ''
+                    for(let i = 0; i < max_assm_line; i++){
+                        if(!cached_file.source_code[i]){
+                            cached_file.source_code[i] = ''
+                        }
+                    }
+                }
                 state.set('cached_source_files', cached_source_files)
                 break
             }
@@ -1307,7 +1410,6 @@ const SourceCode = {
     click_view_file: function(e){
         state.set('fullname_to_render', e.currentTarget.dataset['fullname'])
         state.set('current_line_of_source_code', parseInt(e.currentTarget.dataset['line']))
-        state.set('current_assembly_address', e.currentTarget.dataset['addr'])
         state.set('make_current_line_visible', true)
     },
     keydown_jump_to_line: function(e){
@@ -1317,17 +1419,9 @@ const SourceCode = {
             state.set('make_current_line_visible', true)
         }
     },
-    get_attrs_to_view_file: function(fullname, line=0, addr=''){
-        return `class='view_file pointer' data-fullname=${fullname} data-line=${line} data-addr=${addr}`
+    get_attrs_to_view_file: function(fullname, line=0){
+        return `class='view_file pointer' data-fullname=${fullname} data-line=${line}`
     },
-    get_link_to_view_file: function(fullname, line=0, addr='', text='View'){
-        // create local copies so we don't modify the references
-        let _fullname = fullname
-            , _line = line
-            , _addr = addr
-            , _text = text
-        return `<a class='view_file pointer' data-fullname=${_fullname} data-line=${_line} data-addr=${_addr}>${_text}</a>`
-    }
 }
 
 /**
@@ -1377,7 +1471,6 @@ const SourceFileAutocomplete = {
             let fullname = e.currentTarget.value
             state.set('fullname_to_render', fullname)
             state.set('current_line_of_source_code', 1)
-            state.set('current_assembly_address', '')
         })
     },
     fetch_source_files: function(){
@@ -1406,7 +1499,6 @@ const SourceFileAutocomplete = {
 
             state.set('fullname_to_render',fullname)
             state.set('current_line_of_source_code', line)
-            state.set('current_assembly_address', '')
         }else if (state.get('source_file_paths').length === 0){
             // source file list has not been fetched yet, so fetch it
             SourceFileAutocomplete.fetch_source_files()
@@ -1424,6 +1516,10 @@ const Registers = {
         window.addEventListener('event_inferior_program_running', Registers.event_inferior_program_running)
     },
     get_update_cmds: function(){
+        if(!state.get('fetch_registers')){
+            return []
+        }
+
         let cmds = []
         if(state.get('can_fetch_register_values') === true){
             if(state.get('register_names').length === 0){
@@ -2824,7 +2920,7 @@ const Threads = {
                     ${s.func}
                 </span>`
 
-            table_data.push([function_name, `${s.file}:${s.line}`])
+            table_data.push([function_name, `${s.file}:${s.line} ${Memory.make_addrs_into_links(s.addr)}`])
             frame_num++
         }
         if(_stack.length === 0){
@@ -2835,9 +2931,7 @@ const Threads = {
     update_stack: function(stack){
         state.set('stack', stack)
         state.set('paused_on_frame', stack[state.get('selected_frame_num') || 0])
-
         state.set('fullname_to_render', state.get('paused_on_frame').fullname)
-
         state.set('current_line_of_source_code', parseInt(state.get('paused_on_frame').line))
         state.set('current_assembly_address', state.get('paused_on_frame').addr)
     },
@@ -2874,10 +2968,22 @@ const VisibilityToggler = {
         $(e.currentTarget.dataset.visibility_target_selector_string).toggleClass('hidden')
 
         // make triangle point down or to the right
-        if($(e.currentTarget.dataset.visibility_target_selector_string).hasClass('hidden')){
+        let is_hidden = $(e.currentTarget.dataset.visibility_target_selector_string).hasClass('hidden')
+        if(is_hidden){
             $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-right').removeClass('glyphicon-chevron-down')
         }else{
             $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-right')
+        }
+
+        if(e.target.textContent.trim() === 'registers'){
+            // registers were toggled
+            let is_visible = !is_hidden
+            state.set('fetch_registers', is_visible)
+
+            if (is_visible){
+                GdbApi.run_gdb_command(Registers.get_update_cmds())
+            }
+
         }
     }
 }
@@ -2942,13 +3048,12 @@ const process_gdb_response = function(response_array){
                 // delete it, and don't display it in the frontend.
                 // <MULTIPLE> indicates the breakpoint is on an inline function or template
                 // that has mutliple child breakpoints, which is okay and shouldn't be deleted
-                if (new_bkpt.func === undefined && new_bkpt.addr !== '<MULTIPLE>'){
-                    console.warn('removing invalid breakpoint: ', new_bkpt)
-                    GdbConsoleComponent.add('Could not add breakpoint. Click file dropdown to open file and visually add breakpoints.', true)
-                    let cmd = [GdbApi.get_delete_break_cmd(new_bkpt.number), GdbApi.get_break_list_cmd()]
-                    GdbApi.run_gdb_command(cmd)
-                    continue
-                }
+
+                // if (new_bkpt.func === undefined && new_bkpt.addr !== '<MULTIPLE>'){
+                //     console.warn('removing invalid breakpoint: ', new_bkpt)
+                //     GdbConsoleComponent.add('Warning: Source file for breakpoint could not be determined. Click file dropdown to open file and visually add breakpoints.', true)
+                //     continue
+                // }
 
                 // remove duplicate breakpoints
                 let cmds = state.get('breakpoints')
@@ -2968,7 +3073,6 @@ const process_gdb_response = function(response_array){
                     state.set('fullname_to_render', bkpt.fullname_to_display)
                     state.set('make_current_line_visible', true)
                     state.set('current_line_of_source_code', parseInt(bkpt.line))
-                    state.set('current_assembly_address', undefined)
                 }
 
                 // refresh all breakpoints
@@ -2998,7 +3102,7 @@ const process_gdb_response = function(response_array){
                 state.set('current_register_values', r.payload['register-values'])
             }
             if ('asm_insns' in r.payload) {
-                SourceCode.save_new_assembly(r.payload.asm_insns)
+                SourceCode.save_new_assembly(r.payload.asm_insns, r.token)
             }
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
@@ -3182,6 +3286,7 @@ const GlobalEvents = {
         state.set('locals', [])
     },
     event_inferior_program_exited: function(){
+        state.set('disassembly_for_missing_file', [])
         state.set('inferior_program', 'exited')
         GlobalEvents.clear_program_state()
     },
