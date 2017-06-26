@@ -2602,13 +2602,13 @@ const Expressions = {
     handle_changelist: function(changelist_array){
         for(let changelist of changelist_array){
             let expressions = state.get('expressions')
-            let expr_type = state.get("expr_type")
+            , expr_type = state.get("expr_type")
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
 
             if(obj){
-                if(changelist['has_more'] == 1 && 'name' in changelist){
-                    // already retrieved children of obj
-                    obj.has_more = 0
+                if(parseInt(changelist['has_more']) === 1 && 'name' in changelist){
+                    // already retrieved children of obj, but more fields were added.
+                    // Re-fetch the object from gdb
                     Expressions._get_children_for_var(changelist['name'], expr_type)
                 } else {
                     if('new_children' in changelist){
