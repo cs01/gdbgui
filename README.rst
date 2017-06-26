@@ -7,7 +7,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.7.7.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.7.8.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -86,6 +86,7 @@ Features
 - Dropdown of all files used to compile binary, with autocomplete functionality
 - Source code explorer with ability to jump to line
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
+- Assembly is displayed if source code cannot be found
 - Notifications when new updates are available
 
 Why gdbgui?
