@@ -2350,6 +2350,7 @@ const Expressions = {
             let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
             // save these children as a field to their parent
             parent_obj.children = children
+            parent_obj.numchild = children.length
             state.set('expressions', expressions)
         }else{
             console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
@@ -2601,27 +2602,33 @@ const Expressions = {
     handle_changelist: function(changelist_array){
         for(let changelist of changelist_array){
             let expressions = state.get('expressions')
+            let expr_type = state.get("expr_type")
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
 
             if(obj){
-                if('new_children' in changelist){
-                    let expr_type = state.get("expr_type")
-                    let new_children = changelist.new_children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
-                    obj.children = obj.children.concat(new_children)
-                }
-                if('value' in changelist && obj.expr_type === 'expr'){
-                    // this object is an expression and it had a value updated.
-                    // save the value to an array for plotting
-                    if(changelist.value.indexOf('0x') === 0){
-                        obj.can_plot = true
-                        obj.values.push(parseInt(changelist.value, 16))
-                    }else if (!window.isNaN(parseFloat(changelist.value))){
-                        obj.can_plot = true
-                        obj.values.push(changelist.value)
+                if(changelist['has_more'] == 1 && 'name' in changelist){
+                    // already retrieved children of obj
+                    obj.has_more = 0
+                    Expressions._get_children_for_var(changelist['name'], expr_type)
+                } else {
+                    if('new_children' in changelist){
+                        let new_children = changelist.new_children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
+                        obj.children = obj.children.concat(new_children)
                     }
+                    if('value' in changelist && obj.expr_type === 'expr'){
+                        // this object is an expression and it had a value updated.
+                        // save the value to an array for plotting
+                        if(changelist.value.indexOf('0x') === 0){
+                            obj.can_plot = true
+                            obj.values.push(parseInt(changelist.value, 16))
+                        }else if (!window.isNaN(parseFloat(changelist.value))){
+                            obj.can_plot = true
+                            obj.values.push(changelist.value)
+                        }
+                    }
+                    // overwrite fields of obj with fields from changelist
+                    _.assign(obj, changelist)
                 }
-                // overwrite fields of obj with fields from changelist
-                _.assign(obj, changelist)
                 // update expressions array which will trigger and event, which will
                 // cause components to re-render
                 state.set('expressions', expressions)
