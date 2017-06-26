@@ -102,8 +102,8 @@ const Util = {
      * @param s: string to mutate
      */
     escape: function(s){
-        return s.replace("<", "&lt;")
-                .replace(">", "&gt;")
+        return s.replace(/\>/g, "&gt;")
+                .replace(/\</g, "&lt;")
                 .replace(/\\n/g, '<br>')
                 .replace(/\\r/g, '')
                 .replace(/\\"/g, '"')
