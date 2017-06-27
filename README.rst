@@ -14,63 +14,8 @@ A browser-based frontend/gui for GDB
   :target: https://pypi.python.org/pypi/gdbgui/
 
 
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
-view stack traces, and more in C, C++, Go, and Rust! Simply run
-``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
-Install
--------
-
-
-**Linux**
-
-::
-
-    sudo pip install gdbgui --upgrade
-
-**macOS**
-
-::
-
-    sudo pip install gdbgui --upgrade --user
-
-Follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-the-Debugger.html>`__  to codesign gdb if you get an error such as ``please check gdb is codesigned - see taskgated(8)``
-
-**Windows**
-
-Tested with `cygwin <https://cygwin.com/install.html>`_.
-
-::
-
-    pip install gdbgui --upgrade
-
-
-
-
-virtualenv users do not need the ``sudo`` prefix.
-
-If you get ``fatal error: Python.h: No such file or directory``, install ```python-dev``. If using apt-get, ``sudo apt-get install python3-dev`` for python3, or ``sudo apt-get install python-dev`` for python2.
-
-
-**Alternatively, you can clone and run directly**
-
-::
-
-    git clone https://github.com/cs01/gdbgui
-    cd gdbgui
-    pip install -r requirements.txt
-    gdbgui/backend.py
-
-Run
----
-
-::
-
-    gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
-              [--hide_gdbgui_upgrades] [--debug] [-n]
-              [cmd [cmd ...]]
-
-A new tab in your browser will open with gdbgui in it.
 
 Features
 --------
@@ -83,11 +28,11 @@ Features
 - Evaluate arbitrary expressions and plot their values over time
 - Inspect memory in hex/character form
 - View all registers
-- Dropdown of all files used to compile binary, with autocomplete functionality
+- Dropdown of files used to compile binary, with autocomplete functionality
 - Source code explorer with ability to jump to line
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
 - Assembly is displayed if source code cannot be found
-- Notifications when new updates are available
+- Notifications when new gdbgui updates are available
 
 Why gdbgui?
 -----------
@@ -98,11 +43,104 @@ Why gdbgui?
 - Written in widely used languages (Python and JavaScript)
 - Open source and free
 
-Examples
---------
-Example code and makefiles for C, C++, go, and rust, that build and launch gdb.
+Compatibility
+-------------
 
-See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
+Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
+
+Operating systems: Ubuntu 14.04+, macOS, Windows (in cygwin)
+
+Browsers: Chrome
+
+gdb: 7.7+
+
+Languages: C, C++, golang, rust (any language supported by gdb itself)
+
+Prerequisites
+---------------
+pip version 8 or higher. Python 2.7 or 3.4+. Python 3.x is recommended.
+
+::
+
+    sudo apt-get install python-pip
+    python -m pip install --upgrade pip
+
+If you cannot upgrade pip due to a system-owned installation, you can run in a virtualenv, which safely sandboxes your python environment:
+
+::
+
+    python -m pip install virtualenv
+    virtualenv venv -p python3
+    source venv/bin/activate
+    python -m pip install --upgrade pip
+
+macOS users should follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-the-Debugger.html>`__  to codesign gdb for the error ``please check gdb is codesigned - see taskgated(8)``
+
+You must also have gdb installed system-wide or have a gdb executable available.
+
+
+Install
+-------
+
+using pip (recommended)
+~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    pip install gdbgui --upgrade
+
+Or, to install it system wide:
+
+::
+
+    sudo pip install gdbgui --upgrade
+
+macOS users should run this for system wide installations:
+
+::
+
+    sudo pip install gdbgui --upgrade --user
+
+Windows has been tested to work with `cygwin <https://cygwin.com/install.html>`_.
+
+manually
+~~~~~~~~
+
+::
+
+    git clone https://github.com/cs01/gdbgui
+    cd gdbgui
+    [sudo] pip install -r requirements.txt [--user]
+    gdbgui/backend.py
+
+Run
+---
+
+Running Locally
+~~~~~~~~~~~~~~~~
+::
+
+    gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
+              [--hide_gdbgui_upgrades] [--debug] [-n]
+              [cmd [cmd ...]]
+
+A new tab in your browser will open with gdbgui in it.
+
+- If the browser did not open: open it and navigate to the ip/port that gdbgui is being served on (i.e. ``localhost:5000``)
+- Type the path to the executable in the input at the top (next to "Load the Binary and Args"). The executable should already exist and have been compiled with the ``-g`` flag.
+- Click ``Load the Binary and Args``. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically (this can be changed in settings)
+- The source code will display if the program was compiled with debug symbols. If it's not, make sure you compiled your program with the ``-g`` flag.
+- Click the ``Run`` button, which is on the top right and looks like a circular arrow.
+- Step through the program by clicking the ``Next``, ``Step``, ``Continue``, etc. as desired. These are also on the top right.
+
+Running Remotely
+~~~~~~~~~~~~~~~~
+Because gdbgui is a server, it naturally allows you to debug programs running on other computers.
+
+- ``ssh`` into the computer with the program that needs to be debugged.
+- run ``gdbgui -r`` on the remote machine (this will serve publicly so beware of security here)
+- on your local machine, open your browser and access the remote machine's ip and port
+- debug the remote computer in your local browser
 
 Arguments
 ~~~~~~~~~
@@ -135,19 +173,11 @@ Flags (all are optional):
   -x GDB_CMD_FILE, --gdb_cmd_file GDB_CMD_FILE
                         Execute GDB commands from file.
 
+Examples
+--------
+Example code and makefiles for C, C++, go, and rust, that build and launch gdb.
 
-Compatibility
--------------
-
-Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
-
-Operating systems: Ubuntu 14.04+, OSX
-
-Browsers: Chrome
-
-Gdb: 7.7.1 - 8
-
-Rust users: gdb v7.12.x cannot display register values due to a `gdb bug <https://sourceware.org/bugzilla/show_bug.cgi?id=21451>`_
+See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
 
 Settings
 --------
@@ -164,37 +194,6 @@ The following keyboard shortcuts are available when the focus is not in an input
 - Up: u or up arrow
 - Next Instruction: m
 - Step Instruction: ,
-
-
-Contributing
-------------
-Help the gdbgui project grow by spreading the word.
-
-.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/static/images/twitter.png
-  :target: https://twitter.com/intent/tweet?text=check+out+%23gdbgui%2C+a+modern+browser-based+frontend+to+gdb+https%3A%2F%2Fgithub.com%2Fcs01%2Fgdbgui
-
-Creating and voting on issues in github will help me prioritize what to work on.
-
-Documentation, spelling fixes, bug fixes, features, etc. are of course welcome too. To get started with development, set up a new virtual environment, then
-run
-
-::
-
-    git clone https://github.com/cs01/gdbgui
-    cd gdbgui
-    pip install -r requirements.txt
-    pip install -r dev_requirements.txt
-    gdbgui/backend.py --debug
-
-If you are modifying gdbgui.js, make sure you have the developer console open so the browser doesn't cache the file and miss your changes. When ``--debug`` is passed, there is a new component at the bottom of the right sidebar that displays the raw gdb mi output to help you debug.
-
-
-Testing
-~~~~~~~
-
-``make test`` runs unit tests and verifies README.rst is properly formatted.
-``gdbgui/tests/test_app.py``. Add new tests there as necessary.
-
 
 License
 -------
@@ -314,7 +313,10 @@ gdbgui at launch:
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
 
+Contributing
+------------
 
+See `CONTRIBUTING <https://github.com/cs01/gdbgui/blob/master/CONTRIBUTING.md>`_
 
 Contact
 -------
