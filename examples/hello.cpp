@@ -8,8 +8,11 @@ int main(void)
     std::string str = "Hello World";
 	std::cout << str << std::endl;
 
-    std::vector<double> d {1.1, 2.2, 3.3, 4.4};
-
+    std::vector<double> d {};
+    d.push_back(1.1);
+    d.push_back(2.2);
+    d.push_back(3.3);
+    d.push_back(4.4);
     int i = 0;
     for(auto itr = begin(d); itr != end(d); ++itr)
     {
