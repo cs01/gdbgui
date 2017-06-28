@@ -2353,6 +2353,7 @@ const Expressions = {
             let children = r.payload.children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
             // save these children as a field to their parent
             parent_obj.children = children
+            parent_obj.numchild = children.length
             state.set('expressions', expressions)
         }else{
             console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
@@ -2605,11 +2606,14 @@ const Expressions = {
         for(let changelist of changelist_array){
             let expressions = state.get('expressions')
             , obj = Expressions.get_obj_from_gdb_var_name(expressions, changelist.name)
-
             if(obj){
+                if(parseInt(changelist['has_more']) === 1 && 'name' in changelist){
+                    // already retrieved children of obj, but more fields were added.
+                    // Re-fetch the object from gdb
+                    Expressions._get_children_for_var(changelist['name'], obj.expr_type)
+                }
                 if('new_children' in changelist){
-                    let expr_type = state.get("expr_type")
-                    let new_children = changelist.new_children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, expr_type))
+                    let new_children = changelist.new_children.map(child_obj => Expressions.prepare_gdb_obj_for_storage(child_obj, obj.expr_type))
                     obj.children = obj.children.concat(new_children)
                 }
                 if('value' in changelist && obj.expr_type === 'expr'){
