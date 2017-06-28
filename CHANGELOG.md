@@ -1,7 +1,10 @@
 # gdbgui release history
 
 ## dev
+
+## 0.7.8.2
 * bugfix in logic when jumping to source code line
+* bugfix for when variable goes from`empty -> 1 element`
 * add CODE OF CONDUCT, CONTRIBUTING, and CHANGELOG files
 
 ## 0.7.8.1
