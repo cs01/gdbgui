@@ -1120,11 +1120,12 @@ const SourceCode = {
         }
 
         state.set('rendered_source_file_fullname', fullname)
+        state.set('make_current_line_visible', true)
         return tbody.join('')
     },
     after_render: function(reactor){
         let fullname = state.get('fullname_to_render')
-        if(state.get('missing_files').indexOf(fullname) === -1){
+        if(fullname && state.get('missing_files').indexOf(fullname) === -1){
             SourceCode.render_breakpoints()
             SourceCode.highlight_paused_line()
             if(state.get('make_current_line_visible')){
@@ -1471,6 +1472,7 @@ const SourceFileAutocomplete = {
             let fullname = e.currentTarget.value
             state.set('fullname_to_render', fullname)
             state.set('current_line_of_source_code', 1)
+            state.set('make_current_line_visible', true)
         })
     },
     fetch_source_files: function(){
@@ -1499,6 +1501,7 @@ const SourceFileAutocomplete = {
 
             state.set('fullname_to_render',fullname)
             state.set('current_line_of_source_code', line)
+            state.set('make_current_line_visible', true)
         }else if (state.get('source_file_paths').length === 0){
             // source file list has not been fetched yet, so fetch it
             SourceFileAutocomplete.fetch_source_files()
@@ -2934,6 +2937,7 @@ const Threads = {
         state.set('fullname_to_render', state.get('paused_on_frame').fullname)
         state.set('current_line_of_source_code', parseInt(state.get('paused_on_frame').line))
         state.set('current_assembly_address', state.get('paused_on_frame').addr)
+        state.set('make_current_line_visible', true)
     },
     set_threads: function(threads){
         state.Set('threads', $.extend(true, [], threads))
@@ -3071,8 +3075,8 @@ const process_gdb_response = function(response_array){
                 if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
                     // a normal breakpoint or child breakpoint
                     state.set('fullname_to_render', bkpt.fullname_to_display)
-                    state.set('make_current_line_visible', true)
                     state.set('current_line_of_source_code', parseInt(bkpt.line))
+                    state.set('make_current_line_visible', true)
                 }
 
                 // refresh all breakpoints
