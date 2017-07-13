@@ -217,7 +217,6 @@ const initial_state = {
     register_names: [],
     previous_register_values: {},
     current_register_values: {},
-    fetch_registers: false,
 
     // memory
     memory_cache: {},
@@ -1519,10 +1518,6 @@ const Registers = {
         window.addEventListener('event_inferior_program_running', Registers.event_inferior_program_running)
     },
     get_update_cmds: function(){
-        if(!state.get('fetch_registers')){
-            return []
-        }
-
         let cmds = []
         if(state.get('can_fetch_register_values') === true){
             if(state.get('register_names').length === 0){
@@ -2981,17 +2976,6 @@ const VisibilityToggler = {
             $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-right').removeClass('glyphicon-chevron-down')
         }else{
             $(e.currentTarget.dataset.glyph_selector).addClass('glyphicon-chevron-down').removeClass('glyphicon-chevron-right')
-        }
-
-        if(e.target.textContent.trim() === 'registers'){
-            // registers were toggled
-            let is_visible = !is_hidden
-            state.set('fetch_registers', is_visible)
-
-            if (is_visible){
-                GdbApi.run_gdb_command(Registers.get_update_cmds())
-            }
-
         }
     }
 }

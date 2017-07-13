@@ -2,6 +2,9 @@
 
 ## dev
 
+## 0.7.8.3
+* Remove optimization for fetching registers due to potential bug
+
 ## 0.7.8.2
 * bugfix in logic when jumping to source code line
 * bugfix for when variable goes from`empty -> 1 element`
