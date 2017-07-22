@@ -1,6 +1,11 @@
 # gdbgui release history
 
 ## dev
+Changes that are in master but have not yet been pushed to pyPI (pip)
+*
+
+## 0.7.9.0
+* Add interactive tree explorer of variables
 
 ## 0.7.8.3
 * Remove optimization for fetching registers due to potential bug
