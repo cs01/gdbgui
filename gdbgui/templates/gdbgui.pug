@@ -20,6 +20,7 @@ head
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
     script(type="text/javascript" src='static/vendor/js/lodash.min.js')
     script(type="text/javascript" src='static/vendor/js/moment.min.js')
+    script(type="text/javascript" src='static/vendor/js/vis-4.20.1.min.js')
     script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
     script(type="text/javascript" src='static/vendor/js/socket.io-2.0.3.min.js')
     script(type="text/javascript" src='static/vendor/js/splitjs.min-1.2.0.js')
@@ -124,6 +125,13 @@ body(style='margin: 0; width: 100%; height: 100%;')
                     div#expressions_collapse_wrapper
                         input#expressions_input.form-control(placeholder='expression or variable', style="height:25px;")
                         div#expressions.gdb_content_div(style='margin-top: 6px;')
+
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#tree_collapse_wrapper", data-glyph_selector='#tree_glyph')
+                        span.glyphicon.glyphicon-chevron-down#tree_glyph(style='margin-right: 6px;')
+                        span.lighttext tree view
+                    div#tree_collapse_wrapper
+                        div#tree.gdb_content_div(style='margin-top: 6px;')
 
                 div.no_padding
                     div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')

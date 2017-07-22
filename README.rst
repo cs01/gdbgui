@@ -7,15 +7,30 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.7.8.3-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.7.9.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
+.. image:: https://img.shields.io/badge/donate-gratipay-yellow.svg
+  :target: https://gratipay.com/gdbgui/
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
 
+If you like gdbgui consider sharing:
+
+.. raw:: html
+
+  <ul>
+    <li><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A//github.com/cs01/gdbgui">Share on Facebook</a>
+    <li><a href="https://twitter.com/home?status=https%3A//github.com/cs01/gdbgui">Share on Twitter</a>
+    <li><a href="https://plus.google.com/share?url=https%3A//github.com/cs01/gdbgui">Share on Google+</a>
+    <li><a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A//github.com/cs01/gdbgui&title=gdbgui%20-%20browser%20based%20frontend%20to%20gdb&summary=&source=">Share on LinkedIn</a>
+    <li><a href="mailto:?&subject=gdbgui - browser based frontend to gdb&body=check%20out%20gdbgui,%20a%20browser%20based%20frontend%20to%20gdb%20https%3A//github.com/cs01/gdbgui">Send Email</a>
+  </ul>
+
+If you are using gdbgui in a commercial setting, `consider donating to the project <https://gratipay.com/gdbgui/>`_.
 
 Features
 --------
@@ -26,6 +41,8 @@ Features
 - Intuitively explore local variables when paused
 - Hover over variables in source code to view contents
 - Evaluate arbitrary expressions and plot their values over time
+- Explore an interactive tree view of your data structures
+- Jump back into the program's state to continue debug unexpected faults (i.e. SEGFAULT)
 - Inspect memory in hex/character form
 - View all registers
 - Dropdown of files used to compile binary, with autocomplete functionality
@@ -40,7 +57,8 @@ Why gdbgui?
 - Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be.
 - Design influenced by the amazing Chrome debugger
 - Full gdb command line utility built-in
-- Written in widely used languages (Python and JavaScript)
+- The only gdb frontend built with Python and JavaScript
+- Rapid development cycle and rich feature set due to ecosystem of Python and JavaScript
 - Open source and free
 
 Compatibility
@@ -195,6 +213,10 @@ The following keyboard shortcuts are available when the focus is not in an input
 - Next Instruction: m
 - Step Instruction: ,
 
+Debugging Faults
+----------------
+If your program exits unexpectedly from something like a SEGFAULT, simply type ``bt`` in the gdb console widget to make gdb run a "backtrace". This will repopulate gdbgui with the state that it was in when it exited, and allow you to inspect memory and variables.
+
 License
 -------
 GNU GPLv3
@@ -204,12 +226,10 @@ pyPI and this github page are the only official sources of gdbgui.
 How Does it Work?
 -----------------
 1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns key/value pairs (dictionaries).
-2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A thread is spawned constantly read and forward output from gdb to the browser.
-3. The `pypugjs <https://github.com/matannoam/pypugjs>`__ template engine is used to reduce html LOC
-4. The browser manages its ui and state with the plain JavaScript library `stator <https://github.com/cs01/stator>`__
+2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
+3. The browser manages its ui with mostly vanilla JavaScript and some libraries
 
-``gdbgui`` was designed to be easily hackable and extendable. There is
-no build system necessary to run or develop this app.
+There is no build system necessary to run or develop this app.
 
 The main components of gdbgui are
 
@@ -282,7 +302,10 @@ Expressions record their previous values, and can be displayed in an x/y plot.
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
 
+Expressions can be interactively explored in a tree view.
 
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/tree_explorer.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/tree_explorer.png
 
 Memory Viewer
 -------------
@@ -317,6 +340,32 @@ Contributing
 ------------
 
 See `CONTRIBUTING <https://github.com/cs01/gdbgui/blob/master/CONTRIBUTING.md>`_
+
+Authors
+-------
+``gdbgui`` would not be possible without the work of several amazing open source libraries
+
+JavaScript
+
+- splitjs: https://github.com/nathancahill/Split.js
+- awesomplete: https://github.com/LeaVerou/awesomplete
+- vis.js: http://visjs.org/
+- moment.js
+- lodash
+- bootstrap
+- jquery
+
+Python
+
+- flask: http://flask.pocoo.org/
+- socket.io: https://socket.io/
+- flask-socket-io: https://flask-socketio.readthedocs.io/en/latest/
+- pypugjs: https://github.com/matannoam/pypugjs
+- Pygments: http://pygments.org/
+- gevent: http://www.gevent.org/
+- pygdbmi: https://github.com/cs01/pygdbmi
+
+and `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_. Thank you!
 
 Contact
 -------
