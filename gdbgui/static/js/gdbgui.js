@@ -29,10 +29,11 @@
  /* global Split */
  /* global io */
  /* global moment */
+ /* global vis */
  /* global debug */
  /* global initial_data */
 
-window.state = (function ($, _, state, Reactor, Awesomplete, Split, io, moment, debug, initial_data) {
+window.state = (function ($, _, state, Reactor, Awesomplete, Split, io, moment, vis, debug, initial_data) {
 "use strict";
 
 /**
@@ -52,6 +53,19 @@ const ENTER_BUTTON_NUM = 13
     , IGNORE_ERRORS_TOKEN_INT = parseInt(IGNORE_ERRORS_TOKEN_STR)
     , DISASSEMBLY_FOR_MISSING_FILE_STR = '2'
     , DISASSEMBLY_FOR_MISSING_FILE_INT = parseInt(DISASSEMBLY_FOR_MISSING_FILE_STR)
+    , PAYPAL_DONATE_BUTTON =`<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                  <input type="hidden" name="cmd" value="_donations">
+                  <input type="hidden" name="business" value="grassfedcode@gmail.com">
+                  <input type="hidden" name="lc" value="US">
+                  <input type="hidden" name="item_name" value="gdbgui">
+                  <input type="hidden" name="amount" value="30.00">
+                  <input type="hidden" name="currency_code" value="USD">
+                  <input type="hidden" name="no_note" value="0">
+                  <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
+                  <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                  <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+              </form>`
+
 // print to console if debug is true
 let debug_print
 if(debug){
@@ -230,6 +244,7 @@ const initial_state = {
     // type of expression being created. Choices are: 'local' (autocreated local var), 'hover' (created when hovering in source coee), 'expr' (a "watch" expression )
     expr_type: null,
     expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
+    root_gdb_tree_var: null,  // draw tree for this variable
 }
 
 state.options.debug = debug
@@ -1639,7 +1654,10 @@ const Settings = {
     },
     get_upgrade_text: function(){
         if(Settings.needs_to_update_gdbgui_version()){
-            return `gdbgui version ${state.get('latest_gdbgui_version')} is available. You are using ${state.get('gdbgui_version')}. <p><p>
+            return `gdbgui version ${state.get('latest_gdbgui_version')} is available. You are using ${state.get('gdbgui_version')}.
+            <p><p>
+            <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
+            <p><p>
             To upgrade:<p>
             Linux: <br>
             <span class='monospace bold'>sudo pip install gdbgui --upgrade</span><p>
@@ -1721,6 +1739,9 @@ const Settings = {
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
             |  <a href='https://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20'>shop amazon to support gdbgui</a>
+
+            <td><td>
+                ${PAYPAL_DONATE_BUTTON}
             `
     },
     click_toggle_settings_view: function(e){
@@ -2131,8 +2152,10 @@ const Expressions = {
 
         new Reactor('#expressions', Expressions.render, {after_render: Expressions.after_render})
 
-        // remove var when icon is clicked
+        // remove var when trash icon is clicked
         $("body").on("click", ".delete_gdb_variable", Expressions.click_delete_gdb_variable)
+        // plot tree when tree icon is clicked
+        $("body").on("click", ".draw_tree_gdb_variable", Expressions.click_draw_tree_gdb_variable)
         $("body").on("click", ".toggle_children_visibility", Expressions.click_toggle_children_visibility)
         $("body").on("click", ".toggle_plot", Expressions.click_toggle_plot)
     },
@@ -2157,6 +2180,12 @@ const Expressions = {
         }
         return undefined
     },
+    get_root_name_from_gdbvar_name: function(gdb_var_name){
+        return gdb_var_name.split('.')[0]
+    },
+    get_child_names_from_gdbvar_name: function(gdb_var_name){
+        return gdb_var_name.split('.').slice(1, gdb_var_name.length)
+    },
     /**
      * Get object from gdb variable name. gdb variable names are unique, and don't match
      * the expression being evaluated. If drilling down into fields of structures, the
@@ -2166,9 +2195,9 @@ const Expressions = {
      */
     get_obj_from_gdb_var_name: function(expressions, gdb_var_name){
         // gdb provides names in dot notation
-        let gdb_var_names = gdb_var_name.split('.'),
-            top_level_var_name = gdb_var_names[0],
-            children_names = gdb_var_names.slice(1, gdb_var_names.length)
+        // let gdb_var_names = gdb_var_name.split('.'),
+        let top_level_var_name = Expressions.get_root_name_from_gdbvar_name(gdb_var_name),
+            children_names = Expressions.get_child_names_from_gdbvar_name(gdb_var_name)
 
         let objs = expressions.filter(v => v.name === top_level_var_name)
 
@@ -2193,7 +2222,6 @@ const Expressions = {
             return obj
 
         }else if (objs.length === 0){
-            console.error(`Couldnt find gdb variable ${top_level_var_name}. This is likely because the page was refreshed, so gdb's variables are out of sync with the browsers variables.`)
             return undefined
         }else{
             console.error(`Somehow found multiple local gdb variables with the name ${top_level_var_name}. Not using any of them. File a bug report with the developer.`)
@@ -2489,7 +2517,8 @@ const Expressions = {
     _get_ul_for_var: function(expression, mi_obj, is_root, plus_or_minus='', child_tree='', show_children_in_ui=false, numchild=0){
         let
             delete_button = is_root ? `<span class='glyphicon glyphicon-trash delete_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
-            ,toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
+            , tree = numchild > 0 ? `<span class='glyphicon glyphicon-tree-deciduous draw_tree_gdb_variable pointer' data-gdb_variable='${mi_obj.name}' />` : ''
+            , toggle_classes = numchild > 0 ? 'toggle_children_visibility pointer' : ''
             , val = _.isString(mi_obj.value) ? Memory.make_addrs_into_links(mi_obj.value) : mi_obj.value
             , plot_content = ''
             , plot_button = ''
@@ -2518,6 +2547,7 @@ const Expressions = {
 
 
                 <div class='right_help_icon_show_on_hover'>
+                    ${tree}
                     ${plot_button}
                     ${delete_button}
                 </div>
@@ -2552,9 +2582,11 @@ const Expressions = {
         }
     },
     click_toggle_children_visibility: function(e){
-        let gdb_var_name = e.currentTarget.dataset.gdb_variable_name
+        Expressions._toggle_children_visibility(e.currentTarget.dataset.gdb_variable_name)
+    },
+    _toggle_children_visibility(gdb_var_name){
         // get data object, which has field that says whether its expanded or not
-        , obj = Expressions.get_obj_from_gdb_var_name(state.get('expressions'), gdb_var_name)
+        let obj = Expressions.get_obj_from_gdb_var_name(state.get('expressions'), gdb_var_name)
         , showing_children_in_ui = obj.show_children_in_ui
 
         if(showing_children_in_ui){
@@ -2636,6 +2668,10 @@ const Expressions = {
         e.stopPropagation() // not sure if this is still needed
         Expressions.delete_gdb_variable(e.currentTarget.dataset.gdb_variable)
     },
+    click_draw_tree_gdb_variable: function(e){
+        e.stopPropagation() // not sure if this is still needed
+        state.set('root_gdb_tree_var', e.currentTarget.dataset.gdb_variable)
+    },
     delete_gdb_variable: function(gdbvar){
         // delete locally
         Expressions._delete_local_gdb_var_data(gdbvar)
@@ -2650,6 +2686,159 @@ const Expressions = {
         let expressions = state.get('expressions')
         _.remove(expressions, v => v.name === gdb_var_name)
         state.set('expressions', expressions)
+    },
+}
+
+// a widget to visualize a tree view of a variable with children
+// utilizes the amazing http://visjs.org library
+const Tree = {
+    init: function(){
+        state.subscribe(Tree.render)
+        Tree.el = document.getElementById('tree')
+    },
+    network: null,  // initialize to null
+    rendered_gdb_var_tree_root: null,
+    gdb_var_being_updated: null,  // if user clicks deep in a tree, only rerender that subtree, don't start from root again
+    render: function(){
+        let gdbvar = state.get('root_gdb_tree_var')
+        if(!gdbvar) {
+            Tree.el.innerHTML = `<span class=placeholder>
+            create an Expression, then click <span class='glyphicon glyphicon-tree-deciduous'></span>
+            when viewing a variable with children to interactively explore a tree view. You can click nodes to
+            expand/collapse them.
+            </span>`
+            return
+        }
+
+        let expressions = state.get('expressions')
+        , gdb_root_var_to_update = Tree.gdb_var_being_updated ? Tree.gdb_var_being_updated : gdbvar
+        , gdb_var_obj = Expressions.get_obj_from_gdb_var_name(expressions, gdb_root_var_to_update)
+
+        if(!gdb_var_obj){
+            // couldn't find this variable name in our list of variables. Probably was a local variable the
+            // user graphed, then hit continue, and the variable was erased by gdb. This is expected.
+            // "Expressions" that users enter persist between stepping through the program though,
+            // so it's not expected that this line will be executed for an expression
+            state.set('root_gdb_tree_var', '')
+            return
+        }
+
+        if(gdbvar === Tree.rendered_gdb_var_tree_root){
+            // nodes is an Object with keys corresponding to node id's (which are gdb_var_names)
+            Tree._add_nodes_and_edges(gdb_var_obj, undefined, Tree.network.body.nodes, Tree.network.body.edges)
+        }else{
+            Tree.render_new_network(gdb_var_obj)
+        }
+        Tree.rendered_gdb_var_tree_root = gdbvar
+        Tree.gdb_var_being_updated = null
+    },
+    // @param node: gdb variable object
+    // @return string for node label in the tree
+    _get_node_label: function(node){
+        let value = node.value || '(no value)'
+        , type = node.type || '(no type)'
+        , child_text = ''
+        if(node.show_children_in_ui === false && node.numchild > 0){
+            let child_or_children = parseInt(node.numchild) === 1 ? 'child' : 'children'
+            child_text = `\n${node.numchild} ${child_or_children}`
+        }
+        return `${value}\n${type} ${child_text}`
+    },
+    // mutates Tree.nodes and Tree.edges  to (recursively) reflect node and its children
+    // by either adding new nodes, modifying existing nodes, or deleting nodes that should be hidden
+    // depending on the state of the existing nodes.
+    // If updating a node, the background is highlighted yellow if the value changed
+    // @param node: gdb variable object that should be added to Tree.nodes
+    // @param parent: parent node of node. undefined when node is root.
+    // @return nothing
+    _add_nodes_and_edges: function(node, parent){
+        // add/update this node
+        let new_label = Tree._get_node_label(node)
+        if(node.name in Tree.nodes._data){
+            // compare old value and new value
+            // if value changed, make it yellow!
+            let old_label = Tree.nodes._data[node.name].label
+            , bgcolor =  (new_label === old_label) ? 'white' : 'yellow'
+            Tree.nodes.update({id: node.name, label: Tree._get_node_label(node), color: {background: bgcolor}})
+        }else{
+            Tree.nodes.add({id: node.name, label: Tree._get_node_label(node)})
+        }
+
+        // add edge from this node to parent if it's not there
+        if(parent && (!(node.name in Tree.edges._data))){
+            Tree.edges.add({id: node.name, from: parent.name, to: node.name, label: node.exp})
+        }
+
+        // add/update/delete child nodes
+        if(node.show_children_in_ui){
+            // add/update child nodes
+            for(let child of node.children){
+                Tree._add_nodes_and_edges(child, node)
+            }
+        }else{
+            // recursively delete to make invisible
+            for(let child of node.children){
+                Tree._dfs(child, function(node){
+                        Tree.nodes.remove({id: node.name})
+                        Tree.edges.remove({id: node.name})
+                    })
+            }
+        }
+    },
+    // depth-first search of node and its children. `callback` is run on each node as it is visited by
+    // this function
+    _dfs: function(node, callback){
+        callback(node)
+        for(let child of node.children){
+            Tree._dfs(child, callback)
+        }
+    },
+    // sets Tree.network to be a visjs network consisting of root_gdb_var_obj and all its children
+    // @param root_gdb_var_obj root gdb variable object for which a network should be rendered
+    // @return nothing
+    render_new_network: function(root_gdb_var_obj){
+        Tree.nodes = new vis.DataSet();
+        Tree.edges = new vis.DataSet();
+        Tree._add_nodes_and_edges(root_gdb_var_obj)
+
+        // create the network
+        var data = {
+            nodes: Tree.nodes,
+            edges: Tree.edges
+        }
+
+        // options found by browsing through examples here:
+        // http://visjs.org/network_examples.html
+        const options = {
+            nodes: {
+                shape: 'box',
+                color: {background:'white'},
+            },
+            layout:{
+                randomSeed: 0,
+                hierarchical: {
+                    direction: "UD",
+                    sortMethod: "directed"
+                }
+            },
+            interaction: {dragNodes: true},
+            physics: {
+                enabled: false
+            },
+        }
+        Tree.network = new vis.Network(Tree.el, data, options)
+
+        // http://visjs.org/examples/network/events/interactionEvents.html
+        Tree.network.on("click", function(params) {
+
+            // left click toggles child visibility
+            let gdb_var_name = this.getNodeAt(params.pointer.DOM)
+            Tree.gdb_var_being_updated = gdb_var_name
+            if(!gdb_var_name) {return}
+            if(gdb_var_name){
+                Expressions._toggle_children_visibility(gdb_var_name)
+            }
+        })
     },
 }
 
@@ -3191,6 +3380,9 @@ const process_gdb_response = function(response_array){
             }else if (r.payload.reason === 'signal-received'){
                 // TODO not sure what to do here, but the status bar already renders the
                 // signal nicely
+                GdbConsoleComponent.add('gdbgui noticed a signal was recieved. ' +
+                    'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
+                    'occurred by running "backtrace" or "bt" in this command console.')
 
             }else{
                 console.log('TODO handle new reason for stopping. Notify developer of this.')
@@ -3280,6 +3472,7 @@ const GlobalEvents = {
     event_inferior_program_exited: function(){
         state.set('disassembly_for_missing_file', [])
         state.set('inferior_program', 'exited')
+        state.set('root_gdb_tree_var', null)
         GlobalEvents.clear_program_state()
     },
     event_inferior_program_running: function(){
@@ -3333,6 +3526,7 @@ Registers.init()
 SourceFileAutocomplete.init()
 Memory.init()
 Expressions.init()
+Tree.init()
 HoverVar.init()
 Locals.init()
 Threads.init()
@@ -3351,4 +3545,4 @@ if(_.isString(initial_data.initial_binary_and_args) && _.trim(initial_data.initi
 }
 
 return state
-})(jQuery, _, state, Reactor, Awesomplete, Split, io, moment, debug, initial_data)
+})(jQuery, _, state, Reactor, Awesomplete, Split, io, moment, vis, debug, initial_data)
