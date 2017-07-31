@@ -2738,11 +2738,26 @@ const Tree = {
         let value = node.value || '(no value)'
         , type = node.type || '(no type)'
         , child_text = ''
-        if(node.show_children_in_ui === false && node.numchild > 0){
-            let child_or_children = parseInt(node.numchild) === 1 ? 'child' : 'children'
-            child_text = `\n${node.numchild} ${child_or_children}`
+        , hidden_children = 0
+
+        let label = [value, type]
+        for(let child of node.children){
+            if(child.numchild === 0){
+                label.push(`${child.name}: ${child.value} (${child.type})`)
+            }else{
+                hidden_children++
+            }
         }
-        return `${value}\n${type} ${child_text}`
+
+        if(node.show_children_in_ui === false && hidden_children > 0){
+            let child_text = hidden_children === 1 ? 'child' : 'children'
+            label.push('+ ${hidden_children} ${child_text}')
+            // child_text = `\n${node.numchild} ${child_or_children}`
+        }
+
+        // `${value}\n${type} ${child_text}`
+
+        return label.join('\n')
     },
     // mutates Tree.nodes and Tree.edges  to (recursively) reflect node and its children
     // by either adding new nodes, modifying existing nodes, or deleting nodes that should be hidden
@@ -2753,12 +2768,12 @@ const Tree = {
     // @return nothing
     _add_nodes_and_edges: function(node, parent){
         // add/update this node
-        let new_label = Tree._get_node_label(node)
+        let node_label = Tree._get_node_label(node)
         if(node.name in Tree.nodes._data){
             // compare old value and new value
             // if value changed, make it yellow!
             let old_label = Tree.nodes._data[node.name].label
-            , bgcolor =  (new_label === old_label) ? 'white' : 'yellow'
+            , bgcolor =  (node_label === old_label) ? 'white' : 'yellow'
             Tree.nodes.update({id: node.name, label: Tree._get_node_label(node), color: {background: bgcolor}})
         }else{
             Tree.nodes.add({id: node.name, label: Tree._get_node_label(node)})
@@ -2929,7 +2944,6 @@ const HoverVar = {
         }
 
     }
-
 }
 
 const Locals = {
