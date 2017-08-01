@@ -24,5 +24,9 @@ tree: tree.c
 
 linked_list: linked_list.cpp
 	g++ linked_list.cpp -o linked_list_cpp.a -std=c++11 -g
-	../gdbgui/backend.py linked_list.a
+	../gdbgui/backend.py linked_list_cpp.a
+
+array: array.f90
+	gfortran array.f90 -o array.a -g
+	../gdbgui/backend.py array.a
 
