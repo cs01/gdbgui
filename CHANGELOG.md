@@ -4,6 +4,10 @@
 Changes that are in master but have not yet been pushed to pyPI (pip)
 *
 
+## 0.7.9.1
+* Collapse simple fields to the parent node in tree explorer
+* Add button to re-enter program state when signals are received (i.e. SEGFAULT)
+
 ## 0.7.9.0
 * Add interactive tree explorer of variables
 

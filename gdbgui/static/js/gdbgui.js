@@ -381,6 +381,9 @@ const GdbConsoleComponent = {
             cls = stderr ? 'stderr' : ''
         strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
     },
+    add_no_escape: function(raw_string){
+        GdbConsoleComponent.el.append(raw_string)
+    },
     add_mi_error: function(mi_obj){
         let err_text_array = Util.get_err_text_from_mi_err_response(mi_obj)
         GdbConsoleComponent.add(err_text_array, true)
@@ -423,6 +426,7 @@ const GdbApi = {
         $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
         $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
         $('#send_interrupt_button').click(GdbApi.click_send_interrupt_button)
+        $('body').on('click', '.backtrace', GdbApi.backtrace)
 
         window.addEventListener('event_inferior_program_exited', GdbApi.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', GdbApi.event_inferior_program_running)
@@ -572,6 +576,11 @@ const GdbApi = {
         }else if (_.isString(user_cmd) && user_cmd.length > 0){
             cmds.push(user_cmd)
         }
+        cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds())
+        GdbApi.run_gdb_command(cmds)
+    },
+    backtrace: function(){
+        let cmds = ['backtrace']
         cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds())
         GdbApi.run_gdb_command(cmds)
     },
@@ -1738,7 +1747,6 @@ const Settings = {
 
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
-            |  <a href='https://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20'>shop amazon to support gdbgui</a>
 
             <td><td>
                 ${PAYPAL_DONATE_BUTTON}
@@ -2735,28 +2743,40 @@ const Tree = {
     // @param node: gdb variable object
     // @return string for node label in the tree
     _get_node_label: function(node){
-        let value = node.value || '(no value)'
-        , type = node.type || '(no type)'
-        , child_text = ''
-        , hidden_children = 0
+        let label = []
+        if(node.value){
+            label.push(node.value)
+        }
+        if(node.type){
+            label.push(node.type)
+        }
 
-        let label = [value, type]
+        if(node.children.some(c => c.numchild === 0)){
+            label.push('field(s):')
+        }
+        // children field is only populated when user expands a data structure
+        // numchild is always present
+        // if children have been fetched and are simple values (i.e. don't have children of their own),
+        // show them in the same node. If the child has children of its own, show it as a "hidden child" of this node
+        let hidden_children = 0
         for(let child of node.children){
             if(child.numchild === 0){
-                label.push(`${child.name}: ${child.value} (${child.type})`)
+                label.push(`${child.exp}: ${child.value} (${child.type})`)
             }else{
                 hidden_children++
             }
         }
 
         if(node.show_children_in_ui === false && hidden_children > 0){
+            // children have previously been fetched but are now hidden since user toggled visibility
             let child_text = hidden_children === 1 ? 'child' : 'children'
-            label.push('+ ${hidden_children} ${child_text}')
-            // child_text = `\n${node.numchild} ${child_or_children}`
+            label.push(`+ ${hidden_children} ${child_text}`)
+        }else if (node.numchild !== node.children.length){
+            // children have not yet been fetched, but gdb told us this node has children. We don't know if they
+            // are "simple" values, or complex with children of their own. We just know they exist.
+            let child_text = node.numchild === 1 ? 'child' : 'children'
+            label.push(`+ ${node.numchild} ${child_text}`)
         }
-
-        // `${value}\n${type} ${child_text}`
-
         return label.join('\n')
     },
     // mutates Tree.nodes and Tree.edges  to (recursively) reflect node and its children
@@ -2788,7 +2808,9 @@ const Tree = {
         if(node.show_children_in_ui){
             // add/update child nodes
             for(let child of node.children){
-                Tree._add_nodes_and_edges(child, node)
+                if(child.numchild > 0){
+                    Tree._add_nodes_and_edges(child, node)
+                }
             }
         }else{
             // recursively delete to make invisible
@@ -3392,11 +3414,10 @@ const process_gdb_response = function(response_array){
                 window.dispatchEvent(new CustomEvent('event_inferior_program_paused', {'detail': r.payload.frame}))
 
             }else if (r.payload.reason === 'signal-received'){
-                // TODO not sure what to do here, but the status bar already renders the
-                // signal nicely
                 GdbConsoleComponent.add('gdbgui noticed a signal was recieved. ' +
                     'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
-                    'occurred by running "backtrace" or "bt" in this command console.')
+                    'occurred by clicking the below button.')
+                GdbConsoleComponent.add_no_escape(`<a style="font-family: arial; margin-left: 10px;" class='btn btn-success backtrace'>Re-Enter Program (backtrace)</a>`)
 
             }else{
                 console.log('TODO handle new reason for stopping. Notify developer of this.')
