@@ -113,7 +113,7 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
             socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('\n\nsupport gdbgui development when shopping at amazon:\n\nhttps://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20\n\n')
+            sys.stdout.write('\ngdbgui has exited\n')
 
 
 def verify_gdb_exists():
@@ -288,7 +288,7 @@ def shutdown_webview():
 
 @app.route('/_shutdown')
 def _shutdown():
-    sys.stdout.write('\n\nsupport gdbgui development when shopping at amazon:\n\nhttps://www.amazon.com/?&_encoding=UTF8&tag=grassfedcode04-20\n\n')
+    sys.stdout.write('\ngdbgui has exited\n')
     pid = os.getpid()
     if app.debug:
         os.kill(pid, signal.SIGINT)

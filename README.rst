@@ -1,4 +1,4 @@
-A browser-based frontend/gui for GDB
+A browser-based frontend for GDB
 ====================================
 
 .. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png
@@ -7,7 +7,7 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.7.9.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.7.9.1-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -58,8 +58,8 @@ Why gdbgui?
 - Design influenced by the amazing Chrome debugger
 - Full gdb command line utility built-in
 - The only gdb frontend built with Python and JavaScript
-- Rapid development cycle and rich feature set due to ecosystem of Python and JavaScript
 - Open source and free
+- Useful to both beginners and experienced developers
 
 Compatibility
 -------------
@@ -138,18 +138,11 @@ Running Locally
 ~~~~~~~~~~~~~~~~
 ::
 
-    gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
-              [--hide_gdbgui_upgrades] [--debug] [-n]
-              [cmd [cmd ...]]
+    gdbgui
 
-A new tab in your browser will open with gdbgui in it.
+A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. ``http://localhost:5000``).
 
-- If the browser did not open: open it and navigate to the ip/port that gdbgui is being served on (i.e. ``localhost:5000``)
-- Type the path to the executable in the input at the top (next to "Load the Binary and Args"). The executable should already exist and have been compiled with the ``-g`` flag.
-- Click ``Load the Binary and Args``. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically (this can be changed in settings)
-- The source code will display if the program was compiled with debug symbols. If it's not, make sure you compiled your program with the ``-g`` flag.
-- Click the ``Run`` button, which is on the top right and looks like a circular arrow.
-- Step through the program by clicking the ``Next``, ``Step``, ``Continue``, etc. as desired. These are also on the top right.
+For a list of ``gdbgui`` arguments, see the ``Arguments`` section below or type ``gdbgui --help``.
 
 Running Remotely
 ~~~~~~~~~~~~~~~~
@@ -160,10 +153,20 @@ Because gdbgui is a server, it naturally allows you to debug programs running on
 - on your local machine, open your browser and access the remote machine's ip and port
 - debug the remote computer in your local browser
 
+Step-By-Step Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+After opening the webpage in a supported browser:
+
+- Type the path to the executable in the input at the top (next to "Load the Binary and Args"). The executable should already exist and have been compiled with the ``-g`` flag.
+- Click ``Load the Binary and Args``. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically (this can be changed in settings).
+- The line of source code corresponding to ``main`` will display if the program was compiled with debug symbols (i.e. ``-g``).
+- Click the ``Run`` button, which is on the top right and looks like a circular arrow.
+- Step through the program by clicking the ``Next``, ``Step``, ``Continue``, etc. as desired. These are also on the top right.
+
 Arguments
 ~~~~~~~~~
 Positional arguments:
-  ``command``: (Optional) The executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg -flag1 -flag2"`` (note the quotes around the executable and arguments). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
+  ``command``: (Optional) The quote-enclosed executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg value -flag1 -flag2"`` (note the quotes around the executable and arguments!). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
 
 Flags (all are optional):
   -h, --help            show this help message and exit
@@ -199,7 +202,7 @@ See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_
 
 Settings
 --------
-gdbgui settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for the url and port.
+``gdbgui`` settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for a given url and port.
 
 Keyboard Shortcuts
 ------------------
@@ -215,7 +218,11 @@ The following keyboard shortcuts are available when the focus is not in an input
 
 Debugging Faults
 ----------------
-If your program exits unexpectedly from something like a SEGFAULT, simply type ``bt`` in the gdb console widget to make gdb run a "backtrace". This will repopulate gdbgui with the state that it was in when it exited, and allow you to inspect memory and variables.
+If your program exits unexpectedly from something like a SEGFAULT, ``gdbgui`` displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.
+
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
+
 
 License
 -------
@@ -225,9 +232,9 @@ pyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
-1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns key/value pairs (dictionaries).
+1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns structured data to the frontend.
 2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
-3. The browser manages its ui with mostly vanilla JavaScript and some libraries
+3. The browser manages its ui with mostly vanilla JavaScript and some libraries.
 
 There is no build system necessary to run or develop this app.
 
