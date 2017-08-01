@@ -26,7 +26,7 @@ linked_list: linked_list.cpp
 	g++ linked_list.cpp -o linked_list_cpp.a -std=c++11 -g
 	../gdbgui/backend.py linked_list_cpp.a
 
-fortran: array.f90
-	gfortran array.f90 -o array.a -g
-	../gdbgui/backend.py array.a
+fortran: fortran_array.f90
+	gfortran fortran_array.f90 -o fortran_array.a -g
+	../gdbgui/backend.py fortran_array.a
 

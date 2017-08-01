@@ -20,7 +20,7 @@ program array
     print *, b(ii)
   enddo
 
-  c = reshape( [( ii, ii=1,n**2 )], [n,n] )
+  c = reshape( [( real(ii), ii=1,n**2 )], [n,n] )
   do ii = 1, n
     print *, c(ii,:)
   enddo
