@@ -119,7 +119,7 @@ macOS users should run this for system wide installations:
 
     sudo pip install gdbgui --upgrade --user
 
-Windows has been tested to work with `cygwin <https://cygwin.com/install.html>`_.
+Windows has been tested to work with `cygwin <https://cygwin.com/install.html>`_ with the python3, python3-pip, python3-devel, gdb, gcc-core, and gcc-g++ cygwin packages installed.
 
 manually
 ~~~~~~~~
