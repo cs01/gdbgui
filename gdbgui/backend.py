@@ -95,25 +95,29 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
         socketio.server_options['async_mode'] = 'threading'
         socketio.init_app(app)
 
-    if open_browser is True and debug is False and testing is False:
-        text = 'Opening gdbgui in browser (%s)' % (url_with_prefix)
-        print(colorize(text))
-        webbrowser.open(url_with_prefix)
-
     if testing is False:
         if host == DEFAULT_HOST:
-            print('\n\n** view app at http://%s:%d **\n\n' % (DEFAULT_HOST, port))
+            url = (DEFAULT_HOST, port)
         else:
             try:
-                print('\n\n** view app at http://%s:%d **\n\n' % (socket.gethostbyname(socket.gethostname()), port))
+                url = (socket.gethostbyname(socket.gethostname()), port)
             except Exception:
-                print('\n\n** view app at http://%s:%d **\n\n' % (host, port))
+                url = (host, port)
+
+        if open_browser is True and debug is False:
+            text = 'Opening gdbgui in browser at http://%s:%d' % url
+            print(colorize(text))
+            webbrowser.open(url_with_prefix)
+        else:
+            print(colorize('View gdbgui at http://%s:%d' % url))
+
+        print('exit gdbgui by pressing CTRL+C')
 
         try:
             socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('\ngdbgui has exited\n')
+            sys.stdout.write('gdbgui has exited. Support gdbgui development @ https://paypal.me/grassfedcode/20\n')
 
 
 def verify_gdb_exists():
@@ -135,7 +139,7 @@ def dbprint(*args):
 
 def colorize(text):
     if IS_A_TTY:
-        return '\x1b[6;30;42m' + text + '\x1b[0m'
+        return '\033[1;32m' + text + '\x1b[0m'
     else:
         return text
 

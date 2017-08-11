@@ -53,18 +53,6 @@ const ENTER_BUTTON_NUM = 13
     , IGNORE_ERRORS_TOKEN_INT = parseInt(IGNORE_ERRORS_TOKEN_STR)
     , DISASSEMBLY_FOR_MISSING_FILE_STR = '2'
     , DISASSEMBLY_FOR_MISSING_FILE_INT = parseInt(DISASSEMBLY_FOR_MISSING_FILE_STR)
-    , PAYPAL_DONATE_BUTTON =`<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-                  <input type="hidden" name="cmd" value="_donations">
-                  <input type="hidden" name="business" value="grassfedcode@gmail.com">
-                  <input type="hidden" name="lc" value="US">
-                  <input type="hidden" name="item_name" value="gdbgui">
-                  <input type="hidden" name="amount" value="30.00">
-                  <input type="hidden" name="currency_code" value="USD">
-                  <input type="hidden" name="no_note" value="0">
-                  <input type="hidden" name="bn" value="PP-DonationsBF:btn_donateCC_LG.gif:NonHostedGuest">
-                  <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-                  <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-              </form>`
 
 // print to console if debug is true
 let debug_print
@@ -1746,10 +1734,10 @@ const Settings = {
                 ${Settings.get_upgrade_text()}
 
             <tr><td>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a>
+            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
 
             <td><td>
-                ${PAYPAL_DONATE_BUTTON}
+                <a href='https://paypal.me/grassfedcode/20'>Donate via paypal</a>
             `
     },
     click_toggle_settings_view: function(e){
