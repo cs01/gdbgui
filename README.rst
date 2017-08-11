@@ -13,24 +13,10 @@ A browser-based frontend for GDB
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
-.. image:: https://img.shields.io/badge/donate-gratipay-yellow.svg
-  :target: https://gratipay.com/gdbgui/
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ for demos and tutorials..
 
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below, or watch a `video demo <https://www.youtube.com/watch?v=Cd0BOOdGjrw>`_..
+If you are using gdbgui in a commercial setting, `consider donating to the project <https://paypal.me/grassfedcode/20>`_.
 
-If you like gdbgui consider sharing:
-
-.. raw:: html
-
-  <ul>
-    <li><a href="https://www.facebook.com/sharer/sharer.php?u=https%3A//github.com/cs01/gdbgui">Share on Facebook</a>
-    <li><a href="https://twitter.com/home?status=https%3A//github.com/cs01/gdbgui">Share on Twitter</a>
-    <li><a href="https://plus.google.com/share?url=https%3A//github.com/cs01/gdbgui">Share on Google+</a>
-    <li><a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A//github.com/cs01/gdbgui&title=gdbgui%20-%20browser%20based%20frontend%20to%20gdb&summary=&source=">Share on LinkedIn</a>
-    <li><a href="mailto:?&subject=gdbgui - browser based frontend to gdb&body=check%20out%20gdbgui,%20a%20browser%20based%20frontend%20to%20gdb%20https%3A//github.com/cs01/gdbgui">Send Email</a>
-  </ul>
-
-If you are using gdbgui in a commercial setting, `consider donating to the project <https://gratipay.com/gdbgui/>`_.
 
 Features
 --------
