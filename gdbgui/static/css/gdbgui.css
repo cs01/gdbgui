@@ -4,6 +4,8 @@ body{
     color: grey;
     border-color: grey;
     overflow: hidden;
+    padding: 0px;
+    height: 100%;
 }
 pre{
     overflow: visible !important;
@@ -106,7 +108,7 @@ div.breakpoint{
     background-color: #f5f5f5;
 }
 .breakpoint_trashcan, .right_help_icon_show_on_hover{
-    float: right;
+    float: inline-end;
     margin-right: 5px;
     display: none !important;
 }
@@ -151,6 +153,7 @@ td.assembly{
 #code_table{
     font-family: monospace;
     border-collapse: separate;
+    font-size: 0.9em;
 }
 .srccode td{
     padding-left: 3px;
@@ -342,16 +345,3 @@ ul.variable{
         to { transform: scale(1) rotate(360deg);}
 }
 
-/* splitjs classes for splitting the body of the webpage (https://github.com/nathancahill/Split.js) */
-.gutter-horizontal {
-    cursor: col-resize;
-}
-.gutter-vertical {
-    cursor: row-resize;
-}
-/* splitjs is so unopinionated, it doesn't work without specific css classes (float: left) when splitting into two side-by-side
- panes ("horizonal" */
-.split.split-horizontal, .gutter.gutter-horizontal {
-    height: 100%;
-    float: left;
-}

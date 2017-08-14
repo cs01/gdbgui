@@ -806,9 +806,9 @@ const Breakpoint = {
                     <table style='width: 100%; font-size: 0.9em; border-width: 1px; border-color: black;' class='lighttext table-condensed'>
                         <tr>
                             <td>
-                                ${delete_text}
                                 <input type='checkbox' ${checked} class='toggle_breakpoint_enable' data-breakpoint_num='${b.number}'> </input>
                                 ${function_text}
+                                ${delete_text}
 
                         <tr>
                             <td>
@@ -2946,8 +2946,8 @@ const HoverVar = {
     },
     after_dom_update: function(r){
         if(HoverVar.obj){
-            r.node.style.left = HoverVar.left
-            r.node.style.top = HoverVar.top
+            r.node.style.left = HoverVar.left + 'px'
+            r.node.style.top = HoverVar.top + 'px'
             r.node.classList.remove('hidden')
         }else{
             r.node.classList.add('hidden')
@@ -3522,17 +3522,17 @@ const GlobalEvents = {
  * Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
  */
 Split(['#middle_left', '#middle_right'], {
-    gutterSize: 6,
+    gutterSize: 8,
     cursor: 'col-resize',
     direction: 'horizontal',  // horizontal makes a left/right pane, and a divider running vertically
-    sizes: [75, 25],
+    sizes: [70, 30],
 })
 
 Split(['#middle', '#bottom'], {
-    gutterSize: 6,
+    gutterSize: 8,
     cursor: 'row-resize',
     direction: 'vertical',  // vertical makes a top and bottom pane, and a divider running horizontally
-    sizes: [65, 35],
+    sizes: [70, 30],
 })
 
 // initialize components
