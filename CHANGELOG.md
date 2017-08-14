@@ -4,6 +4,10 @@
 Changes that are in master but have not yet been pushed to pyPI (pip)
 *
 
+## 0.7.9.3
+* Changes to layout
+* Fix character escaping in breakpoint line display
+
 ## 0.7.9.2
 * Fix firefox css bug
 * Update examples
