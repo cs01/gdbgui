@@ -300,7 +300,7 @@ span.wsp{
 #expressions, #locals, #hovervar{
     white-space: nowrap;
     font-family: monospace;
-    font-size: 0.8em;
+    font-size: 0.9em;
     overflow: auto;
 }
 
