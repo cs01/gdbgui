@@ -17,31 +17,38 @@ head
 body
     #top(style='background: #f5f6f7; margin-bottom: 5px;')
         //- binary selection
-        form(role=form, style='margin-bottom: 1px;')
-            div.input-group.input-group-sm
-                span.input-group-btn
-                    button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
-                input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
-                datalist#past_binaries
-
-                div(style="display:table-cell; vertical-align: middle; width: 80px;")
-                    span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer.toggle_settings_view(style='padding-left: 15px', title='settings')
-
-                    span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-right: 10px; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
-
-
         div.flexrow
-            //- input to jump to a line in the source code
-            input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
+            form(role=form, style='margin-bottom: 1px; flex: 2 0 0;')
+                div.input-group.input-group-sm
+                    span.input-group-btn
+                        button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
 
-            label(style='margin-left: 10px; font-weight: normal;')
-                a.btn.btn-default.btn-xs.fetch_assembly_cur_line fetch disassembly
+                    input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
+                datalist#past_binaries
+            .btn-group.btn-group(role="group", style='margin-bottom: 6px; flex: 1 0 0; height: 25px;')
+                button.btn.btn-default.btn-sm#run_button(type='button', title='Start inferior program from the beginning (keyboard shortcut: r)')
+                    span.glyphicon.glyphicon-repeat
+                button.btn.btn-default.btn-sm#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)')
+                    span.glyphicon.glyphicon-play
+                button.btn.btn-default.btn-sm#next_button(type='button', title="Step over next function call (keyboard shortcut: n or right arrow)")
+                    span.glyphicon.glyphicon-step-forward
+                button.btn.btn-default.btn-sm#step_button(type='button', title="Step into next function call (keyboard shortcut: s or down arrow)")
+                    span.glyphicon.glyphicon-arrow-down
+                button.btn.btn-default.btn-sm#return_button(type='button', title='Step out of current function (keyboard shortcut: u or up arrow)')
+                    span.glyphicon.glyphicon-arrow-up
 
-            label(style='margin-left: 10px; font-weight: normal;')
-                a.btn.btn-default.btn-xs#refresh_cached_source_files reload/hide disassembly
+                div.btn-group.btn-group-xs(role="group")
+                    button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)") NI
 
-            //- displays loaded file path and input to jump to line
-            span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 3px; white-space: nowrap;") (no source code file loaded)
+                    button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)") SI
+
+            span#status(style="flex: 0.5 0 0; overflow-x: scroll; white-space: nowrap; font-family: monospace; font-size: 0.7em;") GDB is waiting to run a command
+
+            div(style="flex: 0.3 0 0;")
+                span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer.toggle_settings_view(style='padding-left: 15px', title='settings')
+
+                span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-right: 00px; padding-left: 15px', title='shutdown gdbgui (kill gdbgui server and close this tab)')
+
 
         div.flexrow
             //- displays source file path input, and dropdown
@@ -49,6 +56,18 @@ body
 
             button#source_file_dropdown_button.dropdown-btn(type="button")
                 span.caret
+
+        div.flexrow(style="margin-top: 3px;")
+            //- input to jump to a line in the source code
+            input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
+
+            .btn-group.btn-group(role="group", style='height: 25px; ')
+                button.btn.btn-default.btn-xs.fetch_assembly_cur_line(type='button', title='fetch disassembly')
+                    span fetch disassembly
+                button.btn.btn-default.btn-xs#refresh_cached_source_files(type='button', title='fetch disassembly')
+                    span reload file/hide disassembly
+            span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 5px; white-space: nowrap; font-family: monospace; font-size: 0.7em;")
+
     #middle
         #middle_left.content(style='height: 100%; float: left;')
             //- source code
@@ -59,34 +78,6 @@ body
                         td(style='font-family: arial; font-style: italic;') Source code will be displayed here when applicable
 
         #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
-            //- controls
-            #controls(style='position: absolute; background: #f5f6f7; z-index: 10; width: 100%; margin-top: -5px; padding-top: 5px; height: 60px;')
-                div.btn-group.btn-group(role="group", style='margin-bottom: 6px;')
-                    button.btn.btn-default#run_button(type='button', title='Start inferior program from the beginning (keyboard shortcut: r)')
-                        span.glyphicon.glyphicon-repeat
-
-                    button.btn.btn-default#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)')
-                        span.glyphicon.glyphicon-play
-
-                    button.btn.btn-default#next_button(type='button', title="Step over next function call (keyboard shortcut: n or right arrow)")
-                        span.glyphicon.glyphicon-step-forward
-
-                    button.btn.btn-default#step_button(type='button', title="Step into next function call (keyboard shortcut: s or down arrow)")
-                        span.glyphicon.glyphicon-arrow-down
-
-                    button.btn.btn-default#return_button(type='button', title='Step out of current function (keyboard shortcut: u or up arrow)')
-                        span.glyphicon.glyphicon-arrow-up
-
-                div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)") NI
-
-                    button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)") SI
-
-                div(style='white-space: nowrap; height: 1.8em;')
-                    span#status GDB is waiting to run a command
-
-
-            div(style='height: 60px')
             //- stack, vars, memory, breakpoints, registers
             div.no_padding
                 div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
@@ -106,7 +97,7 @@ body
                     span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
                     span.lighttext expressions
                 div#expressions_collapse_wrapper
-                    input#expressions_input.form-control(placeholder='expression or variable', style="height:25px;")
+                    input#expressions_input.form-control(placeholder='expression or variable')
                     div#expressions.gdb_content_div(style='margin-top: 6px;')
 
             div.no_padding

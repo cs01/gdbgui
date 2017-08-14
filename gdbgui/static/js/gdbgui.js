@@ -896,7 +896,15 @@ const SourceCode = {
     el_title: $('#source_code_heading'),
     el_jump_to_line_input: $('#jump_to_line'),
     init: function(){
-        new Reactor('#source_code_heading', () => {return `file path: ${state.get('rendered_source_file_fullname')}`})
+        new Reactor('#source_code_heading', () => {
+            let source_file = state.get('rendered_source_file_fullname')
+            if(source_file){
+                return source_file
+                // TODO: make into a link: return `<a href="file:/${source_file}">${source_file}</a>`
+            }else{
+                return ''
+            }
+        })
         new Reactor('#code_table', SourceCode.render, {should_render: SourceCode.should_render, after_render: SourceCode.after_render})
 
         $("body").on("click", ".srccode td.line_num", SourceCode.click_gutter)
