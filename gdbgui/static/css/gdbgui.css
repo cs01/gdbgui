@@ -297,6 +297,13 @@ span.wsp{
 #expressions li, #locals li, #hovervar li{
     list-style: none;
 }
+#expressions, #locals, #hovervar{
+    white-space: nowrap;
+    font-family: monospace;
+    font-size: 0.8em;
+    overflow: auto;
+}
+
 ul.variable{
         padding-left: 0;
         padding-top: 0;
