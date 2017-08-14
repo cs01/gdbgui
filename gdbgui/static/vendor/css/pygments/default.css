@@ -1,8 +1,8 @@
 /* gdbgui-specific stuff */
-.default#code_container { background-color: white; }
-
-/* text color */
-.default .loc { color: black; }
+.default#code_container {
+    background-color: white;
+    color: black;
+}
 
 /* when hovering, set background color of entire row */
 .default .paused_on_line {

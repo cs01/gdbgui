@@ -745,7 +745,7 @@ const Breakpoint = {
                 if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){
                     line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + '...'
                 }
-                let escaped_line = Util.escape(line)
+                let escaped_line = line.replace(/\>/g, "&gt;").replace(/\</g, "&lt;")
 
                 source_line = `
                 <span class='monospace' style='white-space: nowrap; font-size: 0.9em;'>
