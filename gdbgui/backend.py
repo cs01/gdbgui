@@ -117,7 +117,7 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
             socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('gdbgui has exited. Support gdbgui development @ https://paypal.me/grassfedcode/20\n')
+            sys.stdout.write('gdbgui has exited. Support gdbgui development @https://paypal.me/grassfedcode/20\n')
 
 
 def verify_gdb_exists():

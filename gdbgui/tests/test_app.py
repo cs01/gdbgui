@@ -53,7 +53,7 @@ class Test(unittest.TestCase):
         response = self.app.get('/')
         assert response.status_code == 200
         data = response.data.decode() if PYTHON3 else response.data
-        assert '<html>' in data
+        assert '<!DOCTYPE html>' in data
 
 
 def main():
