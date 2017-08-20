@@ -367,7 +367,7 @@ const GdbConsoleComponent = {
     add: function(s, stderr=false){
         let strings = _.isString(s) ? [s] : s,
             cls = stderr ? 'stderr' : ''
-        strings.map(string => GdbConsoleComponent.el.append(`<p class='margin_sm output ${cls}'>${Util.escape(string)}</p>`))
+        strings.map(string => GdbConsoleComponent.el.append(`<p class='otpt ${cls}'>${Util.escape(string)}</p>`))
     },
     add_no_escape: function(raw_string){
         GdbConsoleComponent.el.append(raw_string)
@@ -380,7 +380,7 @@ const GdbConsoleComponent = {
         if(!_.isArray(cmds)){
             cmds = [cmds]
         }
-        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='margin_sm output sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
+        cmds.map(cmd => GdbConsoleComponent.el.append(`<p class='otpt sent_command pointer' data-cmd="${cmd}">${Util.escape(cmd)}</p>`))
         GdbConsoleComponent.scroll_to_bottom()
     },
     _scroll_to_bottom: function(){
@@ -1622,6 +1622,7 @@ const Registers = {
 const Settings = {
     el: $('#gdbgui_settings_button'),
     pane: $('#settings_container'),
+    menudropdown: $('#menudropdown'),
     init: function(){
         new Reactor('#settings_body', Settings.render)
 
@@ -1743,9 +1744,6 @@ const Settings = {
 
             <tr><td>
             a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href=https://github.com/cs01/gdbgui>github</a> | <a href=https://pypi.python.org/pypi/gdbgui>pyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
-
-            <td><td>
-                <a href='https://paypal.me/grassfedcode/20'>Donate via paypal</a>
             `
     },
     click_toggle_settings_view: function(e){
@@ -1753,6 +1751,7 @@ const Settings = {
             e.stopPropagation()  // need this to prevent toggling twice rapidly if a toggle button is over a div
             Settings.pane.toggleClass('hidden')
             $('main').toggleClass('blur')
+            Settings.menudropdown.removeClass('open')
         }
     },
     theme_selection_changed: function(e){
@@ -1790,6 +1789,7 @@ const BinaryLoader = {
     init: function(){
         // events
         $('#set_target_app').click(BinaryLoader.click_set_target_app)
+        $('#attach').click(BinaryLoader.click_attach)
         BinaryLoader.el.keydown(BinaryLoader.keydown_on_binary_input)
 
         try{
@@ -1811,23 +1811,26 @@ const BinaryLoader = {
         BinaryLoader.el_past_binaries.html(BinaryLoader.past_binaries.map(b => `<option>${b}</option`))
     },
     click_set_target_app: function(e){
-        BinaryLoader.set_target_app()
+        BinaryLoader.set_target_app('binary')
+    },
+    click_attach: function(){
+        BinaryLoader.set_target_app('attach')
     },
     /**
      * Set the target application and arguments based on the
      * current fields in the DOM
      */
-    set_target_app: function(){
-        var binary_and_args = _.trim(BinaryLoader.el.val())
+    set_target_app: function(cmdtype='binary'){
+        let user_input = _.trim(BinaryLoader.el.val())
 
-        if (_.trim(binary_and_args) === ''){
+        if (_.trim(user_input) === ''){
             StatusBar.render('enter a binary path and arguments', true)
             return
         }
 
         // save to list of binaries used that autopopulates the input dropdown
-        _.remove(BinaryLoader.past_binaries, i => i === binary_and_args)
-        BinaryLoader.past_binaries.unshift(binary_and_args)
+        _.remove(BinaryLoader.past_binaries, i => i === user_input)
+        BinaryLoader.past_binaries.unshift(user_input)
         localStorage.setItem('past_binaries', JSON.stringify(BinaryLoader.past_binaries) || [])
         BinaryLoader.render_past_binary_options_datalist()
 
@@ -1835,22 +1838,27 @@ const BinaryLoader = {
         state.set('source_file_paths', [])
         state.set('language', 'c_family')
 
-        // find the binary and arguments so gdb can be told which is which
-        let binary, args, cmds
-        let index_of_first_space = binary_and_args.indexOf(' ')
-        if( index_of_first_space === -1){
-            binary = binary_and_args
-            args = ''
-        }else{
-            binary = binary_and_args.slice(0, index_of_first_space)
-            args = binary_and_args.slice(index_of_first_space + 1, binary_and_args.length)
-        }
+        let cmds, binary
+        if(cmdtype === 'binary'){
+            // find the binary and arguments so gdb can be told which is which
+            let args
+            let index_of_first_space = user_input.indexOf(' ')
+            if( index_of_first_space === -1){
+                binary = user_input
+                args = ''
+            }else{
+                binary = user_input.slice(0, index_of_first_space)
+                args = user_input.slice(index_of_first_space + 1, user_input.length)
+            }
 
-        // tell gdb which arguments to use when calling the binary, before loading the binary
-        cmds = [
-                `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
-                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
-                ]
+            // tell gdb which arguments to use when calling the binary, before loading the binary
+            cmds = [
+                    `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+                    `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
+                    ]
+        }else if(cmdtype === 'attach'){
+            cmds = [`-target-attach ${user_input}`]
+        }
 
         // add breakpoint if we don't already have one
         if(state.get('auto_add_breakpoint_to_main')){
@@ -1861,8 +1869,13 @@ const BinaryLoader = {
         window.dispatchEvent(new Event('event_inferior_program_exited'))
         GdbApi.run_gdb_command(cmds)
 
-        state.set('inferior_binary_path', binary)
-        GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
+        if(cmdtype === 'binary'){
+            state.set('inferior_binary_path', binary)
+            GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
+        }else{
+            state.set('inferior_binary_path', null)
+            GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
+        }
     },
     render: function(binary){
         BinaryLoader.el.val(binary)
@@ -3450,12 +3463,12 @@ const GlobalEvents = {
         }
 
         $('body').on('keydown', GlobalEvents.body_keydown)
+        $('[data-toggle="tooltip"]').tooltip()
 
         window.addEventListener('event_inferior_program_exited', GlobalEvents.event_inferior_program_exited)
         window.addEventListener('event_inferior_program_running', GlobalEvents.event_inferior_program_running)
         window.addEventListener('event_inferior_program_paused', GlobalEvents.event_inferior_program_paused)
         window.addEventListener('event_select_frame', GlobalEvents.event_select_frame)
-
         // make sure saved preferences are set/valid
         if(localStorage.getItem('highlight_source_code') === null){
             localStorage.setItem('highlight_source_code', JSON.stringify(true))
