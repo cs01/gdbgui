@@ -2,208 +2,230 @@
 //- Try instant online conversion at http://www.html2jade.org/
 
 doctype html
-head
-    title gdbgui - gdb in a browser
+html
+    head
+        title gdbgui - gdb in a browser
 
-    base(target='_blank')
+        base(target='_blank')
 
-    link(href='static/css/gdbgui.css?_=#{version}', rel='stylesheet')
-    link(href='static/css/splitjs-gdbgui.css?_=#{version}', rel='stylesheet')
-    link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
-    link(href='static/vendor/css/gdbgui_awesomeplete.css', rel='stylesheet')
-    - for theme in themes
-        link(href='static/vendor/css/pygments/#{theme}.css', rel='stylesheet')
+        link(href='static/css/gdbgui.css?_=#{version}', rel='stylesheet')
+        link(href='static/css/splitjs-gdbgui.css?_=#{version}', rel='stylesheet')
+        link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
+        link(href='static/vendor/css/gdbgui_awesomeplete.css', rel='stylesheet')
+        - for theme in themes
+            link(href='static/vendor/css/pygments/#{theme}.css', rel='stylesheet')
 
-body
-    #top(style='background: #f5f6f7; margin-bottom: 5px;')
-        //- binary selection
-        div.flexrow
-            form(role=form, style='margin-bottom: 1px; flex: 2 0 0;')
-                div.input-group.input-group-sm
-                    span.input-group-btn
-                        button.btn.btn-primary#set_target_app(type="button") Load This Binary and Args
+    body
+        #top(style='background: #f5f6f7; margin-bottom: 5px;')
+            //- binary selection
+            div.flexrow
+                form(role=form, style='margin-bottom: 1px; flex: 2 0 0;')
+                    div.input-group.input-group-sm
+                        span.input-group-btn
+                            //- button.btn.btn-primary#attach(type="button") Attach
+                            button.btn.btn-primary#set_target_app(type="button", title='Loads the binary and any arguments present in the input to the right') Load Binary
 
-                    input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
-                datalist#past_binaries
+                        input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
+                    datalist#past_binaries
 
-            span#status(style="flex: 1 0 0; overflow-x: auto; white-space: nowrap; font-family: monospace; font-size: 0.7em;") GDB is waiting to run a command
+                span#status(style="flex: 1 0 0; overflow-x: auto; white-space: nowrap; font-family: monospace; font-size: 0.7em;") GDB is waiting to run a command
 
-            .btn-group.btn-group(role="group", style='margin-bottom: 6px; height: 25px; width: 220px;')
-                button.btn.btn-default.btn-sm#run_button(type='button', title='Start inferior program from the beginning (keyboard shortcut: r)')
-                    span.glyphicon.glyphicon-repeat
-                button.btn.btn-default.btn-sm#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)')
-                    span.glyphicon.glyphicon-play
-                button.btn.btn-default.btn-sm#next_button(type='button', title="Step over next function call (keyboard shortcut: n or right arrow)")
-                    span.glyphicon.glyphicon-step-forward
-                button.btn.btn-default.btn-sm#step_button(type='button', title="Step into next function call (keyboard shortcut: s or down arrow)")
-                    span.glyphicon.glyphicon-arrow-down
-                button.btn.btn-default.btn-sm#return_button(type='button', title='Step out of current function (keyboard shortcut: u or up arrow)')
-                    span.glyphicon.glyphicon-arrow-up
+                .btn-group.btn-group(role="group", style='margin-bottom: 6px; height: 25px; width: 220px;')
+                    button.btn.btn-default.btn-sm#run_button(type='button', title='Start inferior program from the beginning (keyboard shortcut: r)')
+                        span.glyphicon.glyphicon-repeat
+                    button.btn.btn-default.btn-sm#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)')
+                        span.glyphicon.glyphicon-play
+                    button.btn.btn-default.btn-sm#next_button(type='button', title="Step over next function call (keyboard shortcut: n or right arrow)")
+                        span.glyphicon.glyphicon-step-forward
+                    button.btn.btn-default.btn-sm#step_button(type='button', title="Step into next function call (keyboard shortcut: s or down arrow)")
+                        span.glyphicon.glyphicon-arrow-down
+                    button.btn.btn-default.btn-sm#return_button(type='button', title='Step out of current function (keyboard shortcut: u or up arrow)')
+                        span.glyphicon.glyphicon-arrow-up
 
-                div.btn-group.btn-group-xs(role="group")
-                    button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)") NI
+                    div.btn-group.btn-group-xs(role="group")
+                        button.btn.btn-default#next_instruction_button(type='button', title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)") NI
 
-                    button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)") SI
+                        button.btn.btn-default#step_instruction_button(type='button', title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)") SI
 
-            div(style="width: 60px;")
-                span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer.toggle_settings_view(style='padding-left: 5px', title='settings')
+                ul.nav.navbar-nav.navbar-right(style='height: 25px; padding: 0;')
+                    li.dropdown#menudropdown
+                        a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', style='height: 25px; padding: 0; padding-right: 20px')
+                            span.glyphicon.glyphicon-menu-hamburger
+                                =' '
+                        ul.dropdown-menu
+                            li
+                                a#gdbgui_settings_button.pointer.toggle_settings_view(title='settings') Settings
+                            li
+                                a.pointer(title='donate', href='/donate') Donate
+                            li
+                                a.pointer(title='Help', href='https://github.com/cs01/gdbgui/blob/master/HELP.md') Help
+                            li.divider(role='separator')
+                            li
+                                a#shutdown_gdbgui.pointer(title='shutdown') Shutdown
 
-                span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-left: 5px;', title='shutdown gdbgui (kill gdbgui server and close this tab)')
 
 
-        div.flexrow
-            //- displays source file path input, and dropdown
-            input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='width: 100%;')
+                //- div(style="width: 60px;")
+                    //- span#gdbgui_settings_button.glyphicon.glyphicon-cog.pointer.toggle_settings_view(style='padding-left: 5px', title='settings')
 
-            button#source_file_dropdown_button.dropdown-btn(type="button")
-                span.caret
+                //-     span#shutdown_gdbgui.glyphicon.glyphicon-off.pointer(style='padding-left: 5px;', title='shutdown gdbgui (kill gdbgui server and close this tab)')
 
-        div.flexrow(style="margin-top: 3px;")
-            //- input to jump to a line in the source code
-            input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
+                //-     a.glyphicon.glyphicon-heart.pointer(style='padding-left: 5px;', title='support gdbgui', href="todo")
 
-            .btn-group.btn-group(role="group", style='height: 25px; ')
-                button.btn.btn-default.btn-xs.fetch_assembly_cur_line(type='button', title='fetch disassembly')
-                    span fetch disassembly
-                button.btn.btn-default.btn-xs#refresh_cached_source_files(type='button', title='fetch disassembly')
-                    span reload file/hide disassembly
-            span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 5px; white-space: nowrap; font-family: monospace; font-size: 0.7em;")
 
-    #middle
-        #middle_left.content(style='height: 100%; float: left;')
-            //- source code
-            div#code_container.gdb_content_div(style='overflow: auto; height: 100%;')
-                #hovervar.hidden todo - display content
-                table#code_table.code
+            div.flexrow
+                //- displays source file path input, and dropdown
+                input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='width: 100%;')
+
+                button#source_file_dropdown_button.dropdown-btn(type="button")
+                    span.caret
+
+            div.flexrow(style="margin-top: 3px;")
+                //- input to jump to a line in the source code
+                input#jump_to_line.form-control.dropdown-input(autocomplete='on', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
+
+                .btn-group.btn-group(role="group", style='height: 25px; ')
+                    button.btn.btn-default.btn-xs.fetch_assembly_cur_line(type='button', title='fetch disassembly')
+                        span fetch disassembly
+                    button.btn.btn-default.btn-xs#refresh_cached_source_files(type='button', title='fetch disassembly')
+                        span reload file/hide disassembly
+                span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 5px; white-space: nowrap; font-family: monospace; font-size: 0.7em;")
+
+        #middle
+            #middle_left.content(style='height: 100%; float: left;')
+                //- source code
+                div#code_container.gdb_content_div(style='overflow: auto; height: 100%;')
+                    #hovervar.hidden todo - display content
+                    table#code_table.code
+                        tr
+                            td(style='font-family: arial; font-style: italic;') Source code will be displayed here
+
+            #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
+                //- stack, vars, memory, breakpoints, registers
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
+                        span.glyphicon.glyphicon-chevron-down#threads_glyph(style='margin-right: 6px;')
+                        span.lighttext call stack
+                    div#threads.gdb_content_div
+
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#locals_collapse_wrapper", data-glyph_selector='#locals_glyph')
+                        span.glyphicon.glyphicon-chevron-down#locals_glyph(style='margin-right: 6px;')
+                        span.lighttext locals
+                    div#locals_collapse_wrapper
+                        div#locals.gdb_content_div(style='margin-top: 6px;')
+
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#expressions_collapse_wrapper", data-glyph_selector='#expressions_glyph')
+                        span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
+                        span.lighttext expressions
+                    div#expressions_collapse_wrapper
+                        input#expressions_input.form-control(placeholder='expression or variable')
+                        div#expressions.gdb_content_div(style='margin-top: 6px;')
+
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#tree_collapse_wrapper", data-glyph_selector='#tree_glyph')
+                        span.glyphicon.glyphicon-chevron-down#tree_glyph(style='margin-right: 6px;')
+                        span.lighttext tree view
+                    div#tree_collapse_wrapper
+                        div#tree.gdb_content_div(style='margin-top: 6px;')
+
+                div.no_padding
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')
+                        span.glyphicon.glyphicon-chevron-down#memory_glyph(style='margin-right: 6px;')
+                        span.lighttext memory
+                    div#memory_collapse_wrapper
+                        input#memory_start_address(placeholder='start address (hex)', style="height:25px")
+                        input#memory_end_address(placeholder='end address (hex)', style="height:25px")
+                        input#memory_bytes_per_line(placeholder='bytes per line (dec)', style="height:25px;")
+                        div#memory.gdb_content_div(style='margin-top: 6px;')
+
+                div.no_padding
+                    div.titlebar.visibility_toggler(data-visibility_target_selector_string="#breakpoints", data-glyph_selector='#breakpoints_glyph')
+                        span.glyphicon.glyphicon-chevron-down#breakpoints_glyph(style='margin-right: 6px;')
+                        span.lighttext breakpoints
+                    div#breakpoints.gdb_content_div
+
+                div.no_padding
+                    div.titlebar.visibility_toggler(data-visibility_target_selector_string="#registers", data-glyph_selector='#registers_glyph')
+                        span.glyphicon.glyphicon-chevron-right#registers_glyph(style='margin-right: 6px;')
+                        span.lighttext registers
+                    div#registers.gdb_content_div.hidden
+
+                //- gdb mi output is shown only when debug=true
+                if debug == 'true'
+                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#gdb_mi_output", data-glyph_selector='#gdb_mi_output_glyph')
+                        span.glyphicon.glyphicon-chevron-right#gdb_mi_output_glyph(style='margin-right: 6px;')
+                        span.lighttext gdb machine interface output
+                        button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
+                                span.glyphicon.glyphicon-ban-circle
+                    div#gdb_mi_output.gdb_content_div.hidden
+
+
+
+        #bottom.split.split-horizontal(style='padding-bottom: 90px; width: 100%;')
+            .split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
+                //- position of this split pane is relative so that other divs can be absolute and use it as an anchor
+
+                //- gdb console output
+                div#console(style='font-size: 0.9em; border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; height: 100%;')
+
+                //- gdb console input
+                table.gdb_command_input(style='width: 100%; height: 30px; position: absolute; bottom: 0px; left: 0px; ')
                     tr
-                        td(style='font-family: arial; font-style: italic;') Source code will be displayed here
-
-        #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
-            //- stack, vars, memory, breakpoints, registers
-            div.no_padding
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#threads", data-glyph_selector='#threads_glyph')
-                    span.glyphicon.glyphicon-chevron-down#threads_glyph(style='margin-right: 6px;')
-                    span.lighttext call stack
-                div#threads.gdb_content_div
-
-            div.no_padding
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#locals_collapse_wrapper", data-glyph_selector='#locals_glyph')
-                    span.glyphicon.glyphicon-chevron-down#locals_glyph(style='margin-right: 6px;')
-                    span.lighttext locals
-                div#locals_collapse_wrapper
-                    div#locals.gdb_content_div(style='margin-top: 6px;')
-
-            div.no_padding
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#expressions_collapse_wrapper", data-glyph_selector='#expressions_glyph')
-                    span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
-                    span.lighttext expressions
-                div#expressions_collapse_wrapper
-                    input#expressions_input.form-control(placeholder='expression or variable')
-                    div#expressions.gdb_content_div(style='margin-top: 6px;')
-
-            div.no_padding
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#tree_collapse_wrapper", data-glyph_selector='#tree_glyph')
-                    span.glyphicon.glyphicon-chevron-down#tree_glyph(style='margin-right: 6px;')
-                    span.lighttext tree view
-                div#tree_collapse_wrapper
-                    div#tree.gdb_content_div(style='margin-top: 6px;')
-
-            div.no_padding
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')
-                    span.glyphicon.glyphicon-chevron-down#memory_glyph(style='margin-right: 6px;')
-                    span.lighttext memory
-                div#memory_collapse_wrapper
-                    input#memory_start_address(placeholder='start address (hex)', style="height:25px")
-                    input#memory_end_address(placeholder='end address (hex)', style="height:25px")
-                    input#memory_bytes_per_line(placeholder='bytes per line (dec)', style="height:25px;")
-                    div#memory.gdb_content_div(style='margin-top: 6px;')
-
-            div.no_padding
-                div.titlebar.visibility_toggler(data-visibility_target_selector_string="#breakpoints", data-glyph_selector='#breakpoints_glyph')
-                    span.glyphicon.glyphicon-chevron-down#breakpoints_glyph(style='margin-right: 6px;')
-                    span.lighttext breakpoints
-                div#breakpoints.gdb_content_div
-
-            div.no_padding
-                div.titlebar.visibility_toggler(data-visibility_target_selector_string="#registers", data-glyph_selector='#registers_glyph')
-                    span.glyphicon.glyphicon-chevron-right#registers_glyph(style='margin-right: 6px;')
-                    span.lighttext registers
-                div#registers.gdb_content_div.hidden
-
-            //- gdb mi output is shown only when debug=true
-            if debug == 'true'
-                div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#gdb_mi_output", data-glyph_selector='#gdb_mi_output_glyph')
-                    span.glyphicon.glyphicon-chevron-right#gdb_mi_output_glyph(style='margin-right: 6px;')
-                    span.lighttext gdb machine interface output
-                    button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
-                            span.glyphicon.glyphicon-ban-circle
-                div#gdb_mi_output.gdb_content_div.hidden
+                        td(style='width: 30px; vertical-align: middle;')
+                            span(style='margin-top: 10px') (#{interpreter})
+                        td(style='width: 100%; ')
+                            input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command', )
+                         td(style='width: 15px; vertical-align: middle; padding-right: 10px')
+                            span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console', )
 
 
+        //- modal window, hidden by default, used to show various modal dialogs
+        #gdb_modal.modal.fade(role='dialog')
+            .modal-dialog
+                .modal-content(style='padding: 20px;')
+                    #modal_header
+                        button.close(type='button', data-dismiss='modal') ×
 
-    #bottom.split.split-horizontal(style='padding-bottom: 90px; width: 100%;')
-        .split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
-            //- position of this split pane is relative so that other divs can be absolute and use it as an anchor
+                    h4#modal_title Modal Header
 
-            //- gdb console output
-            div#console(style='font-size: 0.9em; border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; height: 100%;')
+                    #modal_body(style='margin-top: 20px;')
 
-            //- gdb console input
-            table.gdb_command_input(style='width: 100%; height: 30px; position: absolute; bottom: 0px; left: 0px; ')
-                tr
-                    td(style='width: 30px; vertical-align: middle;')
-                        span(style='margin-top: 10px') (#{interpreter})
-                    td(style='width: 100%; ')
-                        input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command', )
-                     td(style='width: 15px; vertical-align: middle; padding-right: 10px')
-                        span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console', )
+                    #modal_footer(style='margin-top: 20px;')
+                        button.btn.btn-success(type='button', data-dismiss='modal') Close
 
 
-    //- modal window, hidden by default, used to show various modal dialogs
-    #gdb_modal.modal.fade(role='dialog')
-        .modal-dialog
-            .modal-content(style='padding: 20px;')
-                #modal_header
-                    button.close(type='button', data-dismiss='modal') ×
+        //- settings, hidden by default
+        //- settings_container takes up whole screen
+        #settings_container.hidden.toggle_settings_view
 
-                h4#modal_title Modal Header
+            //- actual settings window, shown in middle of screen
+            #gdb_settings_modal
+                button.close.toggle_settings_view(type='button') ×
+                h4 Settings
 
-                #modal_body(style='margin-top: 20px;')
+                #settings_body
 
-                #modal_footer(style='margin-top: 20px;')
-                    button.btn.btn-success(type='button', data-dismiss='modal') Close
-
-
-    //- settings, hidden by default
-    //- settings_container takes up whole screen
-    #settings_container.hidden.toggle_settings_view
-
-        //- actual settings window, shown in middle of screen
-        #gdb_settings_modal
-            button.close.toggle_settings_view(type='button') ×
-            h4 Settings
-
-            #settings_body
-
-            div(style='margin-top: 20px;')
-                button.btn.btn-success.toggle_settings_view(type='button', data-dismiss='modal') Close
+                div(style='margin-top: 20px;')
+                    button.btn.btn-success.toggle_settings_view(type='button', data-dismiss='modal') Close
 
 
 
 
 
-script.
-    initial_data = JSON.parse('!{initial_data}')
-    debug = JSON.parse('!{debug}')
+    script.
+        initial_data = JSON.parse('!{initial_data}')
+        debug = JSON.parse('!{debug}')
 
-script(type="text/javascript" src='static/vendor/js/stator.min.js')
-script(type="text/javascript" src='static/vendor/js/jquery.min.js')
-script(type="text/javascript" src='static/vendor/js/jquery.flot-0.8.3.min.js')
-script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
-script(type="text/javascript" src='static/vendor/js/lodash.min.js')
-script(type="text/javascript" src='static/vendor/js/moment.min.js')
-script(type="text/javascript" src='static/vendor/js/vis-4.20.1.min.js')
-script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
-script(type="text/javascript" src='static/vendor/js/socket.io-2.0.3.min.js')
-script(type="text/javascript" src='static/vendor/js/splitjs.min-1.2.0.js')
-script(type="text/javascript" src='static/js/gdbgui.js?_=#{version}')
+    script(type="text/javascript" src='static/vendor/js/stator.min.js')
+    script(type="text/javascript" src='static/vendor/js/jquery.min.js')
+    script(type="text/javascript" src='static/vendor/js/jquery.flot-0.8.3.min.js')
+    script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
+    script(type="text/javascript" src='static/vendor/js/lodash.min.js')
+    script(type="text/javascript" src='static/vendor/js/moment.min.js')
+    script(type="text/javascript" src='static/vendor/js/vis-4.20.1.min.js')
+    script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
+    script(type="text/javascript" src='static/vendor/js/socket.io-2.0.3.min.js')
+    script(type="text/javascript" src='static/vendor/js/splitjs.min-1.2.0.js')
+    script(type="text/javascript" src='static/js/gdbgui.js?_=#{version}')

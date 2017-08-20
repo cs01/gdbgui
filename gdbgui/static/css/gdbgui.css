@@ -104,6 +104,10 @@ div.breakpoint{
     border-bottom-width: 1px;
     border-color: #f5f5f5; /* make border color the same as the background color */
 }
+.breakpoint td{
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
 .breakpoint:hover{
     background-color: #f5f5f5;
 }
@@ -176,7 +180,7 @@ td.line_num{
 }
 /* wsp == whitespace. Needed to preserve leading whitespace.
     this span wraps syntax-highlighted source code */
-span.wsp{
+.wsp{
     white-space: pre;
 }
 
@@ -283,6 +287,12 @@ span.wsp{
     -webkit-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
     -moz-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
     box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+}
+
+.otpt{ /* output (shortened to keep dom as small as possible */
+    min-height: 1em;
+    margin: 2px;
+    white-space: pre;
 }
 
 #gdb_mi_output{

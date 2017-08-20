@@ -26,7 +26,7 @@ import socket
 import re
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request, render_template, jsonify, redirect
 from flask_socketio import SocketIO, emit
 from pygdbmi.gdbcontroller import GdbController
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -117,7 +117,7 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
             socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('gdbgui has exited. Support gdbgui development @https://paypal.me/grassfedcode/20\n')
+            sys.stdout.write('gdbgui has exited\n')
 
 
 def verify_gdb_exists():
@@ -286,8 +286,17 @@ def gdbgui():
 
 @app.route('/shutdown')
 def shutdown_webview():
-    """Render the main gdbgui interface"""
-    return render_template('shutdown.pug', debug=json.dumps(app.debug))
+    return render_template('donate.pug', debug=json.dumps(app.debug))
+
+
+@app.route('/donate')
+def donate():
+    return render_template('donate.pug')
+
+
+@app.route('/help')
+def help():
+    return redirect('https://github.com/cs01/gdbgui/blob/master/HELP.md')
 
 
 @app.route('/_shutdown')
