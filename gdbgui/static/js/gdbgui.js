@@ -2709,9 +2709,18 @@ const Expressions = {
 // a widget to visualize a tree view of a variable with children
 // utilizes the amazing http://visjs.org library
 const Tree = {
+    el: document.getElementById('tree'),
+    width_input: document.getElementById('tree_width'),
+    height_input: document.getElementById('tree_height'),
     init: function(){
         state.subscribe(Tree.render)
-        Tree.el = document.getElementById('tree')
+        let render_on_enter = (e)=>{
+            if(e.keyCode===13){
+                Tree.render()
+            }
+        }
+        Tree.width_input.onkeyup = render_on_enter
+        Tree.height_input.onkeyup = render_on_enter
     },
     network: null,  // initialize to null
     rendered_gdb_var_tree_root: null,
@@ -2746,8 +2755,23 @@ const Tree = {
         }else{
             Tree.render_new_network(gdb_var_obj)
         }
+        Tree._update_canvas_size()
         Tree.rendered_gdb_var_tree_root = gdbvar
         Tree.gdb_var_being_updated = null
+    },
+    _update_canvas_size: function(){
+        if(Tree.network && Tree.network.canvas && Tree.network.canvas.options){
+            if(parseInt(Tree.width_input.value)){
+                Tree.network.canvas.options['width'] = parseInt(Tree.width_input.value) + 'px'
+            }else{
+                Tree.network.canvas.options['width'] = '100%'
+            }
+            if(Tree.height_input.value){
+                Tree.network.canvas.options['height'] = parseInt(Tree.height_input.value) + 'px'
+            }else{
+                Tree.network.canvas.options['height'] = '100%'
+            }
+        }
     },
     // @param node: gdb variable object
     // @return string for node label in the tree
@@ -2872,6 +2896,7 @@ const Tree = {
                 enabled: false
             },
         }
+
         Tree.network = new vis.Network(Tree.el, data, options)
 
         // http://visjs.org/examples/network/events/interactionEvents.html
