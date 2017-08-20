@@ -120,7 +120,7 @@ html
                         span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
                         span.lighttext expressions
                     div#expressions_collapse_wrapper
-                        input#expressions_input.form-control(placeholder='expression or variable')
+                        input#expressions_input.form-control(placeholder='expression or variable', style='display: inline; padding: 6px 6px; height: 20px; font-size: 1em; margin-top: 5px;')
                         div#expressions.gdb_content_div(style='margin-top: 6px;')
 
                 div.no_padding
@@ -128,7 +128,10 @@ html
                         span.glyphicon.glyphicon-chevron-down#tree_glyph(style='margin-right: 6px;')
                         span.lighttext tree view
                     div#tree_collapse_wrapper
-                        div#tree.gdb_content_div(style='margin-top: 6px;')
+                        div.gdb_content_div(style='margin-top: 6px;')
+                            input#tree_width.form-control(placeholder='width (px)', style='display: inline; width: 100px; padding: 6px 6px; height: 20px; font-size: 1em;')
+                            input#tree_height.form-control(placeholder='height (px)', style='display: inline; width: 100px; padding: 6px 6px; height: 20px; font-size: 1em')
+                            div#tree
 
                 div.no_padding
                     div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')

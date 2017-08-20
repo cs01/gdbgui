@@ -2,6 +2,9 @@
 
 ## dev
 Changes that are in master but have not yet been pushed to pyPI (pip)
+
+## 0.7.9.4
+* add inputs to resize Tree view
 * add menu in top right
 * css updates to preserve whitespace in terminal
 * add top-level html to wrap body+head elements in gdbgui.pug
