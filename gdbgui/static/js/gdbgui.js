@@ -1662,14 +1662,11 @@ const Settings = {
         if(Settings.needs_to_update_gdbgui_version()){
             return `gdbgui version ${state.get('latest_gdbgui_version')} is available. You are using ${state.get('gdbgui_version')}.
             <p><p>
-            <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
+            To upgrade, run<p>
+            <span class='monospace bold'>[sudo] pip install gdbgui --upgrade</span><p>
+            or see <a href='https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md'>installation instructions</a> for more detailed instructions.
             <p><p>
-            To upgrade:<p>
-            Linux: <br>
-            <span class='monospace bold'>sudo pip install gdbgui --upgrade</span><p>
-            macOS:<br>
-            <span class='monospace bold'>sudo pip install gdbgui --upgrade --user</span><p>
-            virtualenv users do not need the "sudo" prefix.
+            <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
             `
         }else{
             return `gdbgui version ${state.get('gdbgui_version')} (latest version)`
