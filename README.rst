@@ -60,62 +60,11 @@ gdb: 7.7+
 
 Languages: C, C++, golang, rust (any language supported by gdb itself)
 
-Prerequisites
----------------
-pip version 8 or higher. Python 2.7 or 3.4+. Python 3.x is recommended.
-
-::
-
-    sudo apt-get install python-pip
-    python -m pip install --upgrade pip
-
-If you cannot upgrade pip due to a system-owned installation, you can run in a virtualenv, which safely sandboxes your python environment:
-
-::
-
-    python -m pip install virtualenv
-    virtualenv venv -p python3
-    source venv/bin/activate
-    python -m pip install --upgrade pip
-
-macOS users should follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-the-Debugger.html>`__  to codesign gdb for the error ``please check gdb is codesigned - see taskgated(8)``
-
-You must also have gdb installed system-wide or have a gdb executable available.
-
-
 Install
 -------
+``pip install gdbgui --upgrade``
 
-using pip (recommended)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    pip install gdbgui --upgrade
-
-Or, to install it system wide:
-
-::
-
-    sudo pip install gdbgui --upgrade
-
-macOS users should run this for system wide installations:
-
-::
-
-    sudo pip install gdbgui --upgrade --user
-
-Windows has been tested to work with `cygwin <https://cygwin.com/install.html>`_ with the python3, python3-pip, python3-devel, gdb, gcc-core, and gcc-g++ cygwin packages installed.
-
-manually
-~~~~~~~~
-
-::
-
-    git clone https://github.com/cs01/gdbgui
-    cd gdbgui
-    [sudo] pip install -r requirements.txt [--user]
-    gdbgui/backend.py
+See `INSTALLATION <https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md>`_ for detailed instructions.
 
 Run
 ---

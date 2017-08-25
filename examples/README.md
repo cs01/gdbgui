@@ -11,8 +11,8 @@ To get started, first clone this repository:
 
 ## Install Dependencies
 If you already installed `gdbgui` with `pip`, you have all dependencies installed. If not, you need to install them manually:
-```
-[sudo] pip install -r gdbgui/requirements.txt [--user]
+```bash
+pip install -r gdbgui/requirements.txt  # run as sudo if this fails
 ```
 
 ## Build Executables and Debug with gdbgui
