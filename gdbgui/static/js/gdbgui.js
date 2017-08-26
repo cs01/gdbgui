@@ -1556,6 +1556,9 @@ const Registers = {
         // filter out non-empty names
         state.set('register_names', names.filter(name => name))
     },
+    clear_register_name_cache: function(){
+        state.set('register_names', [])
+    },
     clear_cached_values: function(){
         state.set('previous_register_values', {})
         state.set('current_register_values', {})
@@ -1567,14 +1570,25 @@ const Registers = {
         // Registers.render_not_paused()
     },
     render: function(){
-        if(state.get('register_names').length === Object.keys(state.get('current_register_values')).length){
+        let num_register_names = state.get('register_names').length
+        , num_register_values = Object.keys(state.get('current_register_values')).length
+
+        if(num_register_names > 0 && num_register_values > 0 && num_register_names !== num_register_values){
+            // Somehow register names and values do not match. Clear cached values, then refetch both.
+            Registers.clear_register_name_cache()
+            Registers.clear_cached_values()
+            GdbApi.run_gdb_command(Registers.get_update_cmds())
+        }else if(num_register_names === num_register_values){
             let columns = ['name', 'value (hex)', 'value (decimal)']
             , register_table_data = []
             , hex_val_raw = ''
+            , register_names = state.get('register_names')
+            , register_values = state.get('current_register_values')
+            , prev_register_values = state.get('previous_register_values')
 
-            for (let i in state.get('register_names')){
-                let name = state.get('register_names')[i]
-                    , obj = _.find(state.get('current_register_values'), v => v['number'] === i)
+            for (let i in register_names){
+                let name = register_names[i]
+                    , obj = _.find(register_values, v => v['number'] === i)
                     , hex_val_raw = ''
                     , disp_hex_val = ''
                     , disp_dec_val = ''
@@ -1582,7 +1596,7 @@ const Registers = {
                 if (obj){
                     hex_val_raw = obj['value']
 
-                    let old_obj = _.find(state.get('previous_register_values'), v => v['number'] === i)
+                    let old_obj = _.find(prev_register_values, v => v['number'] === i)
                     , old_hex_val_raw
                     , changed = false
                     if(old_obj) {old_hex_val_raw = old_obj['value']}
@@ -3286,22 +3300,11 @@ const process_gdb_response = function(response_array){
             continue
         }
 
-
         if (r.type === 'result' && r.message === 'done' && r.payload){
             // This is special GDB Machine Interface structured data that we
             // can render in the frontend
             if ('bkpt' in r.payload){
                 let new_bkpt = r.payload.bkpt
-                // if gdb could not determine which function this breakpoint belongs to,
-                // delete it, and don't display it in the frontend.
-                // <MULTIPLE> indicates the breakpoint is on an inline function or template
-                // that has mutliple child breakpoints, which is okay and shouldn't be deleted
-
-                // if (new_bkpt.func === undefined && new_bkpt.addr !== '<MULTIPLE>'){
-                //     console.warn('removing invalid breakpoint: ', new_bkpt)
-                //     GdbConsoleComponent.add('Warning: Source file for breakpoint could not be determined. Click file dropdown to open file and visually add breakpoints.', true)
-                //     continue
-                // }
 
                 // remove duplicate breakpoints
                 let cmds = state.get('breakpoints')

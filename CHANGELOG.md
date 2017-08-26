@@ -3,6 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to pyPI (pip)
 
+## 0.7.9.5
+* re-fetch registers if name/value count does not match
+
 ## 0.7.9.4
 * add inputs to resize Tree view
 * add menu in top right
