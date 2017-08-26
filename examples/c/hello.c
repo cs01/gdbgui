@@ -9,12 +9,15 @@ struct mystruct_t{
     int value;
     char letter;
     char* string;
+
+    struct{
+        double dbl;
+    } substruct; /* named sub-struct */
+
     struct{
         float fp;
-        struct{
-            double dbl;
-        };
-    };
+    };  /* anonymous struct */
+
     void* ptr;
     size_t struct_size;
 };
@@ -24,14 +27,14 @@ int main(void) {
 
     int retval = 1;
 
-    struct mystruct_t s;  // sizeof(struct mystruct_t) bytes are allocated for s, but still contain garbage
+    struct mystruct_t s;  /* sizeof(struct mystruct_t) bytes are allocated for s, but still contain garbage */
     s.value = 100;
     s.string = "pass";
+    s.substruct.dbl = 567.8;
     s.letter = 'P';
     s.fp = 123.4;
-    s.dbl = 567.8;
-    s.ptr = say_goodbye;  // address of function
-    s.ptr = &say_goodbye;  // also address of function
+    s.ptr = say_goodbye;  /* address of function */
+    s.ptr = &say_goodbye;  /* also address of function */
     s.struct_size = sizeof(struct mystruct_t);
 
     for(int i=0; i < 2; i++){
