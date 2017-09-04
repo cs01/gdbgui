@@ -21,7 +21,7 @@ If you want the feature to be merged into master, [create an issue on github](ht
 
 ### Instructions
 To get started with development, set up a new virtual environment, then
-run
+run the Flask server with the `debug` flag.
 ```
 git clone https://github.com/cs01/gdbgui
 
@@ -31,13 +31,20 @@ pip install -r dev_requirements.txt
 gdbgui/backend.py --debug
 ```
 
+In another terminal, have `webpack` watch source JavaScript files for changes by running `yarn watch`:
+```
+yarn install
+yarn watch
+[yarn](https://yarnpkg.com/lang/en/docs/install/) must be installed.```
+
+
 The `--debug` flag does two things:
 1. adds a new component at the bottom of the right sidebar called "gdb machine interface output" that displays the raw gdb mi output to help you debug.
 1. displays all changes to state data in the browser's developer console, such as `rendered_source_file_fullname null  ->  /home/chad/git/gdbgui/examples/hello.c`
 
 Note:
 * If you are modifying `gdbgui.js`, make sure you have the developer console open so the browser doesn't cache the file and miss your changes.
-* Update the `dev` section in `CHANGELOG.md` for release notes. I will move it to the appropriate version when I make the next release.
+* Update the `dev` section in `CHANGELOG.md` for release notes. It will be moved to the appropriate version during the next release.
 
 
 ### Testing

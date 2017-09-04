@@ -171,8 +171,6 @@ How Does it Work?
 2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
 3. The browser manages its ui with mostly vanilla JavaScript and some libraries.
 
-There is no build system necessary to run or develop this app.
-
 The main components of gdbgui are
 
 1. ``backend.py``: The backend consists of a single Python file, which

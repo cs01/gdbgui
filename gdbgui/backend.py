@@ -250,15 +250,18 @@ def get_extra_files():
     """returns a list of files that should be watched by the Flask server
     when in debug mode to trigger a reload of the server
     """
+    FILES_TO_SKIP = ['src/gdbgui.js']
     THIS_DIR = os.path.dirname(os.path.abspath(__file__))
     extra_dirs = [THIS_DIR]
     extra_files = []
     for extra_dir in extra_dirs:
         for dirname, dirs, files in os.walk(extra_dir):
             for filename in files:
-                filename = os.path.join(dirname, filename)
-                if os.path.isfile(filename) and filename not in extra_files:
-                    extra_files.append(filename)
+                filepath = os.path.join(dirname, filename)
+                if os.path.isfile(filepath) and filepath not in extra_files:
+                    for skipfile in FILES_TO_SKIP:
+                        if skipfile not in filepath:
+                            extra_files.append(filepath)
     return extra_files
 
 
