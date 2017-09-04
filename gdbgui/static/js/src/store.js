@@ -1,5 +1,13 @@
 "use strict;"
 
+/*
+ * The store can be changed via store.set() and retrieved via store.get(). store.get() does not return references to objects, it returns new objects.
+ * store is only mutable with calls to store.set().
+ *
+ * For example, calling store.set('current_line_of_source_code', 100)
+ * will change the highlighted line and automatically scroll to that line in the UI. Or calling
+ * store.set('highlight_source_code', true) will "magically" make the source code be highlighted.
+ */
 const store = {
     /**
      * Set the initial store. This can only be done once, and must be done before the
@@ -165,7 +173,7 @@ const store = {
 }
 
 /**
- * DEPRECATED - Use ReactJS Components
+ * DEPRECATED - Use ReactJS Components instead
  * TODO Replace all Reactors with ReactJS Components and erase this class
  *
  * Reactive component that links a html-returning function to a DOM node. _Any changes to `store` will cause all `Reactor`s to
@@ -190,11 +198,11 @@ function Reactor(element, render_callback, options={}){
     let default_options = {
         listen_to_global_store: true,
         render_on_init: true,
-        before_render: (reactor)=>{},
-        should_render: (reactor)=>{return true},
-        before_dom_update: (reactor)=>{},
-        after_dom_update: (reactor)=>{},
-        after_render: (reactor)=>{},
+        before_render: (reactor)=>{void reactor},
+        should_render: (reactor)=>{void reactor; return true},
+        before_dom_update: (reactor)=>{void reactor},
+        after_dom_update: (reactor)=>{void reactor},
+        after_render: (reactor)=>{void reactor},
     }
     let invalid_options = Object.keys(options)
                             .filter(o => Object.keys(default_options).indexOf(o) === -1)
@@ -234,12 +242,7 @@ Reactor.prototype.render = function(){
         // compute new value of node (it may or may not have changed)
         let new_html = this._render(this)
 
-        if(Array.isArray(new_html)){
-            new_html = new_html
-        }
-
-        let is_string = typeof new_html === 'string'
-        , do_update = this.options.force_update
+        let do_update = this.options.force_update
 
         if(new_html !== this.old_new_html){
             do_update = true
@@ -283,7 +286,93 @@ function _value_changed(a, b){
     }
 }
 
+/* global debug */
+/* global initial_data */
+const initial_store_data = {
+    // environment
+    debug: debug,  // if gdbgui is run in debug mode
+    interpreter: initial_data.interpreter,  // either 'gdb' or 'llvm'
+    gdbgui_version: initial_data.gdbgui_version,
+    latest_gdbgui_version: '(not fetched)',
+    show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
+    gdb_version: undefined,  // this is parsed from gdb's output
+    gdb_version_array: [],  // this is parsed from gdb's output
+    gdb_pid: undefined,
+    can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
+
+    // preferences
+    // syntax highlighting
+    themes: initial_data.themes,
+    current_theme: localStorage.getItem('theme') || initial_data.themes[0],
+    highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // get saved boolean to highlight source code
+
+    auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
+
+    pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
+    refresh_state_after_sending_console_command: true,  // If true, send commands to refresh GUI store after each command is sent from console
+    show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
+
+    // inferior program store
+    // choices for inferior_program are:
+    // 'running'
+    // 'paused'
+    // 'exited'
+    // undefined
+    inferior_program: undefined,
+
+    paused_on_frame: undefined,
+    selected_frame_num: 0,
+    current_thread_id: undefined,
+    stack: [],
+    locals: [],
+    threads: [],
+
+    // source files
+    source_file_paths: [], // all the paths gdb says were used to compile the target binary
+    language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
+    files_being_fetched: [],
+    fullname_to_render: null,
+    current_line_of_source_code: null,
+    current_assembly_address: null,
+    rendered_source_file_fullname: null,
+    has_unrendered_assembly: false,  // set to true when new assembly has been fetched and is cached in browser, but not displayed in source code window
+    make_current_line_visible: false,  // set to true when source code window should jump to current line
+    cached_source_files: [],  // list with keys fullname, source_code
+    disassembly_for_missing_file: [],  // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
+    missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
+
+
+    // binary selection
+    inferior_binary_path: null,
+    inferior_binary_path_last_modified_unix_sec: null,
+    warning_shown_for_old_binary: false,
+
+    // registers
+    register_names: [],
+    previous_register_values: {},
+    current_register_values: {},
+
+    // memory
+    memory_cache: {},
+
+    // breakpoints
+    breakpoints: [],
+
+    // expressions
+    expr_gdb_parent_var_currently_fetching_children: null,  // parent gdb variable name (i.e. var7)
+    expr_being_created: null,  // the expression being created (i.e. myvar)
+    // type of expression being created. Choices are: 'local' (autocreated local var), 'hover' (created when hovering in source coee), 'expr' (a "watch" expression )
+    expr_type: null,
+    expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
+    root_gdb_tree_var: null,  // draw tree for this variable
+
+    status: {'text': '', 'error': false, 'warn': false},
+    waiting_for_response: false
+}
+
+
 module.exports = {
     store: store,
-    Reactor: Reactor
+    Reactor: Reactor,
+    initial_store_data: initial_store_data
 }

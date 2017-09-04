@@ -7,12 +7,13 @@ import {store} from './store.js';
  */
 class StatusBar extends React.Component {
     constructor(props) {
+        void(props)
         super();
         this.state = store.get()
         store.subscribe(this._store_change_callback.bind(this))
     }
 
-    _store_change_callback(e){
+    _store_change_callback(){
         this.setState(store.get())
     }
 
