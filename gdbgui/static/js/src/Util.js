@@ -39,8 +39,8 @@ const Util = {
      * @param s: string to mutate
      */
     escape: function(s){
-        return s.replace(/\>/g, "&gt;")
-                .replace(/\</g, "&lt;")
+        return s.replace(/>/g, "&gt;")
+                .replace(/</g, "&lt;")
                 .replace(/\\n/g, '<br>')
                 .replace(/\\r/g, '')
                 .replace(/\\"/g, '"')

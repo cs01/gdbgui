@@ -5,8 +5,20 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.js$/, use: 'babel-loader', exclude: /node_modules/ },
-      { test: /\.jsx$/, use: 'babel-loader', exclude: /node_modules/ }
+      { test: /\.js$/,
+        use: [
+        'babel-loader',
+        'eslint-loader',
+        ],
+        exclude: /node_modules/
+      },
+      { test: /\.jsx$/,
+        use: [
+          'babel-loader',
+          'eslint-loader',
+        ],
+        exclude: /node_modules/
+      }
     ]
   },
   devtool: 'source-map'
