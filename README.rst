@@ -181,7 +181,7 @@ The main components of gdbgui are
 
 2. ``gdbgui.pug``: HTML file that defines the frontend
 
-3. ``gdbgui.js``: The majority of the application is contained in this file. It dynamically updates the page, and maintains gdb state. It sends AJAX requests and uses websockets to interact with gdb through the server, then gets the response and updates the DOM as necessary.
+3. Various JavaScript files: Communicate with gdb via websockets and dynamically update the page.
 
 4. ``gdbgui.css``: css stylesheet
 
@@ -287,6 +287,7 @@ Authors
 
 JavaScript
 
+- React
 - splitjs: https://github.com/nathancahill/Split.js
 - awesomplete: https://github.com/LeaVerou/awesomplete
 - vis.js: http://visjs.org/
@@ -306,6 +307,14 @@ Python
 - pygdbmi: https://github.com/cs01/pygdbmi
 
 and `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_. Thank you!
+
+Users of gdbgui
+--------------------------------
+
+- `Arch Linux <https://www.archlinux.org//>`_
+- `BlackArch Linux <https://www.blackarch.org/>`_
+- `Free BSD <https://www.freebsd.org//>`_
+- Create a PR and add your name, school, or project here
 
 Contact
 -------

@@ -1,6 +1,6 @@
 ## Bug Reports
 
-If you think you have found a bug or aren't sure, create an issue or email grassfedcode@gmail.com.
+If you think you have found a bug or aren't sure, create an issue.
 
 When filing a bug report please include
 
