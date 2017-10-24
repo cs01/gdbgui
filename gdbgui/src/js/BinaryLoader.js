@@ -1,6 +1,7 @@
 import {store} from './store.js';
 import constants from './constants.js';
 import GdbApi from './GdbApi.js';
+import Actions from './Actions.js';
 
 /**
  * The BinaryLoader component allows the user to select their binary
@@ -89,7 +90,7 @@ const BinaryLoader = {
         }
         cmds.push(GdbApi.get_break_list_cmd())
 
-        window.dispatchEvent(new Event('event_inferior_program_exited'))
+        Actions.inferior_program_exited()
         GdbApi.run_gdb_command(cmds)
 
         if(cmdtype === 'binary'){

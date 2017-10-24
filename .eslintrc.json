@@ -25,5 +25,6 @@
             0
         ],
         "react/jsx-uses-vars": 1
-    }
+    },
+    "parser": "babel-eslint"
 }

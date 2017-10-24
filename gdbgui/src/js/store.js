@@ -1,10 +1,10 @@
-"use strict;"
+import constants from './constants.js';
 
 /*
  * The store can be changed via store.set() and retrieved via store.get(). store.get() does not return references to objects, it returns new objects.
  * store is only mutable with calls to store.set().
  *
- * For example, calling store.set('current_line_of_source_code', 100)
+ * For example, calling store.set('line_of_source_to_flash', 100)
  * will change the highlighted line and automatically scroll to that line in the UI. Or calling
  * store.set('highlight_source_code', true) will "magically" make the source code be highlighted.
  */
@@ -62,15 +62,18 @@ const store = {
 
         // update the store
         if(_value_changed(oldval, value)){
+            _check_type_match(oldval, value, key)
 
             if(store.options.debug) {
-                console.log('stator ' + key, oldval, ' -> ', value)
+                console.log(key, oldval, ' -> ', value)
             }
-
-            _check_type_match(oldval, value, key)
 
             // *replace* the property with a clone of the value
             t[key] = _clone_obj(value)
+
+            if(store._changed_keys.indexOf(key) === -1){
+                store._changed_keys.push(key)
+            }
 
             // suppress active timeouts (if any)
             if(store._debounce_timeout){
@@ -78,8 +81,7 @@ const store = {
                 store._batched_event_count++
             }
 
-            // emit event, or schedule event to be emitted so that Reactors and listeners are notified
-            // that the store changed
+            // publish changes, or schedule changes to be published
             if(store._batched_event_count >= store.options.max_batched_event_count){
                 // emit event immediately since we have suppressed enough already
                 if(store.options.debug){
@@ -104,6 +106,9 @@ const store = {
         if(arguments.length === 0){
             // return the whole store
             return _clone_obj(store._store)
+        }else if(arguments.length > 1){
+            console.error('unexpected number of arguments')
+            return
         }
         // the "get" trap returns a value
         if(store._store.hasOwnProperty(key)){
@@ -132,13 +137,27 @@ const store = {
         store._callbacks = store._callbacks.filter(c => c !== callback_function)
     },
     /**
-     * Run subscribers' callback functions. Reactors are automatically part of this list.
+     * Run subscribers' callback functions. An array of the changed keys is passed to the callback function.
      */
     publish: function(){
+        const changed_keys = store._changed_keys
+        if(changed_keys.length === 0){
+            console.error('no keys were changed, yet we are trying to publish a store change')
+            return
+        }
+
+        // make sure _changed_keys is reset before executing callbacks
+        // (if callbacks modify state, the list of keys the callback changed would be wiped out)
+        store._changed_keys = []
         store._clear_debounce_timeout()
         store._batched_store_changes = 0
-        store._callbacks.map(c => c())
+        store._callbacks.map(c => c(changed_keys))
+
     },
+    /**
+     * keys that were modified in the store since the last publish
+     */
+    _changed_keys: [],
     /**
      * array of functions to be called when store changes (usually Reactor.render())
      */
@@ -172,94 +191,6 @@ const store = {
     _store_created: false
 }
 
-/**
- * DEPRECATED - Use ReactJS Components instead
- * TODO Replace all Reactors with ReactJS Components and erase this class
- *
- * Reactive component that links a html-returning function to a DOM node. _Any changes to `store` will cause all `Reactor`s to
- * call their respective render functions and potentially update the html of their DOM node.
- * @param {string} element selector to have its inner html updated (i.e. `#my_id`). Selector must match exactly one node or an error will be raised.
- * @param {function} render_callback function that returns html that relplaces the inner html of element. This function is run when the store is updated.
- * @param {object} options Option list:
- */
-function Reactor(element, render_callback, options={}){
-    // select from dom once and cache it
-    let nodes = document.querySelectorAll(element)
-    if(nodes.length !== 1){
-        throw `Reactor: querySelector "${element}" matched ${nodes.length} nodes. Expected 1.`
-    }else if (store._elements.indexOf(element) !== -1) {
-        throw `Reactor: querySelector "${element}" is already bound to a Reactor.`
-    }else{
-        store._elements.push(element)
-    }
-    this.element = element
-    this.node = nodes[0]
-
-    let default_options = {
-        listen_to_global_store: true,
-        render_on_init: true,
-        before_render: (reactor)=>{void reactor},
-        should_render: (reactor)=>{void reactor; return true},
-        before_dom_update: (reactor)=>{void reactor},
-        after_dom_update: (reactor)=>{void reactor},
-        after_render: (reactor)=>{void reactor},
-    }
-    let invalid_options = Object.keys(options)
-                            .filter(o => Object.keys(default_options).indexOf(o) === -1)
-
-    if(invalid_options.length > 0){
-        invalid_options.map(o => console.error(`Reactor got invalid option "${o}"`))
-        return
-    }
-    // save options
-    this.options = Object.assign(default_options, options)
-
-    // store the render callback
-    if(!render_callback || typeof render_callback !== 'function'){
-        throw `Reactor did not receive a render callback function. This argument should be a function that returns html to populate the DOM element.`
-    }
-    this._render = render_callback.bind(this)  // this._render is called in this.render
-
-    if(this.options.listen_to_global_store){
-        // call render function when global store changes
-        store.subscribe(this.render.bind(this))
-    }
-    if(this.options.render_on_init){
-        this.render() // call the update function immediately so it renders itself
-    }
-}
-
-/**
- * Calls the `render()` callback of the Reactor instance, and updates the inner html
- * of the Reactors's node if the new html does not match the previously rendered html.
- * i.e. `myreactor.render()`
- *
- * The render function looks like this has various lifecycle functions, all of them optional. The source code is displayed below for clarity.
- */
-Reactor.prototype.render = function(){
-    this.options.before_render(this)
-    if(this.options.should_render(this)){
-        // compute new value of node (it may or may not have changed)
-        let new_html = this._render(this)
-
-        let do_update = this.options.force_update
-
-        if(new_html !== this.old_new_html){
-            do_update = true
-        }
-
-        // update dom only if the return value of render changed
-        if(do_update){
-            this.options.force_update = false
-            this.options.before_dom_update(this)
-            this.node.innerHTML = new_html
-            this.options.after_dom_update(this)
-            this.old_new_html = new_html
-        }
-    }
-    this.options.after_render(this)
-}
-
 /****** helper functions ********/
 
 function _clone_obj(obj){
@@ -282,7 +213,7 @@ function _value_changed(a, b){
     if(Array.isArray(a) && Array.isArray(b) && a.length === 0 && b.length === 0){
         return false
     }else{
-        return a !== b
+        return !_.isEqual(a, b)
     }
 }
 
@@ -299,6 +230,7 @@ const initial_store_data = {
     gdb_version_array: [],  // this is parsed from gdb's output
     gdb_pid: undefined,
     can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
+    show_settings: true,
 
     // preferences
     // syntax highlighting
@@ -306,19 +238,14 @@ const initial_store_data = {
     current_theme: localStorage.getItem('theme') || initial_data.themes[0],
     highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // get saved boolean to highlight source code
 
-    auto_add_breakpoint_to_main: JSON.parse(localStorage.getItem('auto_add_breakpoint_to_main')),
+    auto_add_breakpoint_to_main: true,
 
     pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
     refresh_state_after_sending_console_command: true,  // If true, send commands to refresh GUI store after each command is sent from console
     show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
 
-    // inferior program store
-    // choices for inferior_program are:
-    // 'running'
-    // 'paused'
-    // 'exited'
-    // undefined
-    inferior_program: undefined,
+    inferior_program: constants.inferior_states.unknown,
+    inferior_pid: null,
 
     paused_on_frame: undefined,
     selected_frame_num: 0,
@@ -332,20 +259,20 @@ const initial_store_data = {
     language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
     files_being_fetched: [],
     fullname_to_render: null,
-    current_line_of_source_code: null,
+    line_of_source_to_flash: null,
     current_assembly_address: null,
-    rendered_source_file_fullname: null,
+    // rendered_source: {},
     has_unrendered_assembly: false,  // set to true when new assembly has been fetched and is cached in browser, but not displayed in source code window
     make_current_line_visible: false,  // set to true when source code window should jump to current line
     cached_source_files: [],  // list with keys fullname, source_code
     disassembly_for_missing_file: [],  // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
     missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
-
+    source_code_state: constants.source_code_states.NONE_AVAILABLE,
+    render_paused_frame_or_user_selection: 'paused_frame',  // 'paused_frame' or 'user_selection'
 
     // binary selection
     inferior_binary_path: null,
     inferior_binary_path_last_modified_unix_sec: null,
-    warning_shown_for_old_binary: false,
 
     // registers
     register_names: [],
@@ -354,6 +281,10 @@ const initial_store_data = {
 
     // memory
     memory_cache: {},
+    start_addr: '',
+    end_addr: '',
+    bytes_per_line: 8,
+
 
     // breakpoints
     breakpoints: [],
@@ -370,9 +301,18 @@ const initial_store_data = {
     waiting_for_response: false
 }
 
+// restore saved localStorage data
+for(let key in initial_store_data){
+    if(typeof initial_store_data[key] === 'boolean'){
+        if(localStorage.hasOwnProperty(key)){
+            initial_store_data[key] = JSON.parse(localStorage.getItem(key))
+
+        }
+    }
+}
+
 
 module.exports = {
     store: store,
-    Reactor: Reactor,
     initial_store_data: initial_store_data
 }

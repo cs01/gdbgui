@@ -20,6 +20,10 @@ struct mystruct_t{
 
     void* ptr;
     size_t struct_size;
+    union {
+        int unionint;
+        double uniondouble;
+    }
 };
 
 int main(void) {
@@ -35,7 +39,8 @@ int main(void) {
     s.fp = 123.4;
     s.ptr = say_goodbye;  /* address of function */
     s.ptr = &say_goodbye;  /* also address of function */
-    s.struct_size = sizeof(struct mystruct_t);
+    s.unionint = 0;
+    s.uniondouble = 1.0;
 
     for(int i=0; i < 2; i++){
         printf("i is %d\n", i);
