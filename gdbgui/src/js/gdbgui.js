@@ -9,6 +9,7 @@
  *
  */
 
+import GdbApi from './GdbApi.js';
 import {store, initial_store_data} from './store.js';
 import ReactDOM from 'react-dom';
 import React from 'react';
@@ -16,19 +17,23 @@ import StatusBar from './StatusBar.jsx';
 import BinaryLoader from './BinaryLoader.js';
 import GlobalEvents from './GlobalEvents.js';
 import SourceCode from './SourceCode.jsx';
-import Breakpoint from './Breakpoint.jsx';
+import SourceCodeHeading from './SourceCodeHeading.jsx';
+import SourceFileAutocomplete from './SourceFileAutocomplete.js';
+import FileOps from './FileOps.js';
+import Breakpoints from './Breakpoints.jsx';
 import Tree from './Tree.js';
-import Registers from './Registers.js';
+import Registers from './Registers.jsx';
 import GdbMiOutput from './GdbMiOutput.js';
 import Settings from './Settings.jsx';
 import Modal from './Modal.js';
-import Threads from './Threads.js';
+import Threads from './Threads.jsx';
 import GdbCommandInput from './GdbCommandInput.js';
-import {Expressions, Locals, HoverVar} from './Variables.js';
+import Expressions from './Expressions.jsx';
+import Locals from './Locals.jsx';
+import HoverVar from './HoverVar.jsx';
 import GdbConsoleComponent from './GdbConsole.js';
-import Memory from './Memory.js';
-import GdbApi from './GdbApi.js';
-import SourceFileAutocomplete from './SourceFileAutocomplete.js';
+import Memory from './Memory.jsx';
+import InferiorProgramInfo from './InferiorProgramInfo.jsx';
 
  /* global Split */
  /* global debug */
@@ -114,31 +119,36 @@ Split(['#middle', '#bottom'], {
     sizes: [70, 30],
 })
 
-// initialize components
-void(React)  // ReactDOM secretly depends on React; avoid "'React' is defined but never used  no-unused-vars"
-ReactDOM.render(<StatusBar/>, document.getElementById('status'))
 // TODO make all these into react components
 // TODO remove jquery dependency
+
 GlobalEvents.init()
 GdbApi.init()
 GdbCommandInput.init()
 Modal.init()
 GdbConsoleComponent.init()
 GdbMiOutput.init()
-SourceCode.init()
-Breakpoint.init()
 BinaryLoader.init()
-Registers.init()
 SourceFileAutocomplete.init()
-Memory.init()
-Expressions.init()
 Tree.init()
-HoverVar.init()
-Locals.init()
-Threads.init()
 VisibilityToggler.init()
 ShutdownGdbgui.init()
-Settings.init()
+FileOps.init()
+
+void(React)  // ReactDOM secretly depends on React; avoid "'React' is defined but never used  no-unused-vars"
+ReactDOM.render(<StatusBar/>, document.getElementById('status'))
+ReactDOM.render(<Threads/>, document.getElementById('threads'))
+ReactDOM.render(<Breakpoints/>, document.getElementById('breakpoints'))
+ReactDOM.render(<SourceCodeHeading/>, document.getElementById('source_code_heading'))
+ReactDOM.render(<SourceCode/>, document.getElementById('code_container'))
+ReactDOM.render(<InferiorProgramInfo signals={initial_data.signals} />, document.getElementById('inferior_program_info'))
+ReactDOM.render(<Registers signals={initial_data.signals} />, document.getElementById('registers'))
+ReactDOM.render(<Memory />, document.getElementById('memory'))
+ReactDOM.render(<Settings />, document.getElementById('settings_container'))
+ReactDOM.render(<Expressions />, document.getElementById('expressions'))
+ReactDOM.render(<Locals />, document.getElementById('locals'))
+ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))
+
 
 window.addEventListener("beforeunload", GdbCommandInput.shutdown)
 window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')

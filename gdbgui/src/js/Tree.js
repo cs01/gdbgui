@@ -1,5 +1,5 @@
 import {store} from './store.js';
-import {Expressions} from './Variables.js';
+import GdbVariable from './GdbVariable.jsx';
 
  /* global vis */
 
@@ -35,12 +35,12 @@ const Tree = {
 
         let expressions = store.get('expressions')
         , gdb_root_var_to_update = Tree.gdb_var_being_updated ? Tree.gdb_var_being_updated : gdbvar
-        , gdb_var_obj = Expressions.get_obj_from_gdb_var_name(expressions, gdb_root_var_to_update)
+        , gdb_var_obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_root_var_to_update)
 
         if(!gdb_var_obj){
             // couldn't find this variable name in our list of variables. Probably was a local variable the
             // user graphed, then hit continue, and the variable was erased by gdb. This is expected.
-            // "Expressions" that users enter persist between stepping through the program though,
+            // "GdbVariable" that users enter persist between stepping through the program though,
             // so it's not expected that this line will be executed for an expression
             store.set('root_gdb_tree_var', '')
             return
@@ -204,7 +204,7 @@ const Tree = {
             Tree.gdb_var_being_updated = gdb_var_name
             if(!gdb_var_name) {return}
             if(gdb_var_name){
-                Expressions._toggle_children_visibility(gdb_var_name)
+                GdbVariable._toggle_children_visibility(gdb_var_name)
             }
         })
     },

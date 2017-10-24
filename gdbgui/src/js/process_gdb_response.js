@@ -1,9 +1,25 @@
-
 /**
  * This is the main callback when receiving a response from gdb.
- * This callback generally updates the store, which emits an event and
- * makes components re-render themselves.
+ * This callback generally updates the store, which causes components
+ * to update.
  */
+
+import {store} from './store.js';
+import GdbMiOutput from './GdbMiOutput.js';
+import Breakpoints from './Breakpoints.jsx';
+import constants from './constants.js';
+import Threads from './Threads.jsx';
+import FileOps from './FileOps.js';
+import StatusBar from './StatusBar.jsx';
+import Memory from './Memory.jsx';
+import GdbApi from './GdbApi.js';
+import Locals from './Locals.jsx';
+import GdbConsoleComponent from './GdbConsole.js';
+import GdbVariable from './GdbVariable.jsx';
+import Modal from './Modal.js';
+import Actions from './Actions.js';
+import SourceCode from './SourceCode.jsx';
+
 const process_gdb_response = function(response_array){
     // update status with error or with last response
     let update_status = true
@@ -13,15 +29,19 @@ const process_gdb_response = function(response_array){
      * @return (bool): true if response should be ignored
      */
     , ignore = function(response){
-        return response.token === IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
+        return response.token === constants.IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
     }
 
     for (let r of response_array){
         // gdb mi output
         GdbMiOutput.add_mi_output(r)
 
-        if(ignore(r)){
-            continue
+        if(r.message === 'error'){
+            if (r.token === constants.IGNORE_ERRORS_TOKEN_INT){
+                continue
+            }else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT){
+                FileOps.fetch_disassembly_for_missing_file_failed()
+            }
         }
 
         if (r.type === 'result' && r.message === 'done' && r.payload){
@@ -37,7 +57,7 @@ const process_gdb_response = function(response_array){
                 GdbApi.run_gdb_command(cmds)
 
                 // save this breakpoint
-                let bkpt = Breakpoint.save_breakpoint(r.payload.bkpt)
+                let bkpt = Breakpoints.save_breakpoint(r.payload.bkpt)
 
                 // if executable does not have debug symbols (i.e. not compiled with -g flag)
                 // gdb will not return a path, but rather the function name. The function name is
@@ -45,16 +65,14 @@ const process_gdb_response = function(response_array){
                 // trying to render the file of the newly created breakpoint.
                 if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
                     // a normal breakpoint or child breakpoint
-                    store.set('fullname_to_render', bkpt.fullname_to_display)
-                    store.set('current_line_of_source_code', parseInt(bkpt.line))
-                    store.set('make_current_line_visible', true)
+                    SourceCode.view_file(bkpt.fullname_to_display, parseInt(bkpt.line))
                 }
 
                 // refresh all breakpoints
                 GdbApi.refresh_breakpoints()
             }
             if ('BreakpointTable' in r.payload){
-                Breakpoint.save_breakpoints(r.payload)
+                Breakpoints.save_breakpoints(r.payload)
             }
             if ('stack' in r.payload) {
                 Threads.update_stack(r.payload.stack)
@@ -77,7 +95,7 @@ const process_gdb_response = function(response_array){
                 store.set('current_register_values', r.payload['register-values'])
             }
             if ('asm_insns' in r.payload) {
-                SourceCode.save_new_assembly(r.payload.asm_insns, r.token)
+                FileOps.save_new_assembly(r.payload.asm_insns, r.token)
             }
             if ('files' in r.payload){
                 if(r.payload.files.length > 0){
@@ -118,19 +136,19 @@ const process_gdb_response = function(response_array){
             // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
             // are returned by gdbgui as "changelist", or have the keys "has_more", "numchild", "children", or "name".
             if ('variables' in r.payload){
-                store.set('locals', r.payload.variables)
+                Locals.save_locals(r.payload.variables)
             }
             // gdbgui expression (aka a gdb variable was changed)
             if ('changelist' in r.payload){
-                Expressions.handle_changelist(r.payload.changelist)
+                GdbVariable.handle_changelist(r.payload.changelist)
             }
             // gdbgui expression was evaluated for the first time for a child variable
             if('has_more' in r.payload && 'numchild' in r.payload && 'children' in r.payload){
-                Expressions.gdb_created_children_variables(r)
+                GdbVariable.gdb_created_children_variables(r)
             }
             // gdbgui expression was evaluated for the first time for a root variable
             if ('name' in r.payload){
-                Expressions.gdb_created_root_variable(r)
+                GdbVariable.gdb_created_root_variable(r)
             }
         } else if (r.type === 'result' && r.message === 'error'){
             // render it in the status bar, and don't render the last response in the array as it does by default
@@ -141,7 +159,7 @@ const process_gdb_response = function(response_array){
 
             // we tried to load a binary, but gdb couldn't find it
             if(r.payload.msg === `${store.get('inferior_binary_path')}: No such file or directory.`){
-                window.dispatchEvent(new Event('event_inferior_program_exited'))
+                Actions.inferior_program_exited()
             }
 
         } else if (r.type === 'console'){
@@ -159,21 +177,26 @@ const process_gdb_response = function(response_array){
         }else if (r.type === 'output' || r.type === 'target'){
             // output of program
             GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
+        } else if (r.type === 'notify'){
+            if(r.message === "thread-group-started"){
+                store.set('inferior_pid', parseInt(r.payload.pid))
+            }
+
         }
 
         if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
             if(r.payload.reason.includes('exited')){
-                window.dispatchEvent(new Event('event_inferior_program_exited'))
+                Actions.inferior_program_exited()
 
             }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
                 if (r.payload['new-thread-id']){
                     Threads.set_thread_id(r.payload['new-thread-id'])
                 }
-                window.dispatchEvent(new CustomEvent('event_inferior_program_paused', {'detail': r.payload.frame}))
+                Actions.inferior_program_paused(r.payload.frame)
 
             }else if (r.payload.reason === 'signal-received'){
                 GdbConsoleComponent.add('gdbgui noticed a signal was recieved. ' +
-                    'If the program exited due to a fault, you can attempt to re-enter the store of the program when the fault ' +
+                    'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
                     'occurred by clicking the below button.')
                 GdbConsoleComponent.add_no_escape(`<a style="font-family: arial; margin-left: 10px;" class='btn btn-success backtrace'>Re-Enter Program (backtrace)</a>`)
 

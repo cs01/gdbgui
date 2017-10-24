@@ -2,6 +2,9 @@
 
 ## dev
 Changes that are in master but have not yet been pushed to pyPI (pip)
+* Rewrite all components to React
+* Add component to send signals to inferior program
+* Improve CSS in various components
 
 ## 0.7.9.5
 * re-fetch registers if name/value count does not match

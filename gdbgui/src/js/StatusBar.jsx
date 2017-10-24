@@ -6,16 +6,29 @@ import {store} from './store.js';
  * Component to render a status message with optional error/warning label
  */
 class StatusBar extends React.Component {
-    constructor(props) {
-        void(props)
+    store_keys = [
+        'waiting_for_response',
+        'status'
+    ]
+    constructor() {
         super();
-        this.state = store.get()
+        this._store_change_callback = this._store_change_callback.bind(this)
+        this.state = this._get_applicable_global_state()
         store.subscribe(this._store_change_callback.bind(this))
     }
-
-    _store_change_callback(){
-        this.setState(store.get())
+    _store_change_callback(keys){
+        if(_.intersection(this.store_keys, keys).length){
+            this.setState(this._get_applicable_global_state())
+        }
     }
+    _get_applicable_global_state(){
+        let applicable_state = {}
+        for (let k of this.store_keys){
+            applicable_state[k] = store._store[k]
+        }
+        return applicable_state
+    }
+
 
     // statc method to update the store with mi object
     static render_from_gdb_mi_response(mi_obj){
