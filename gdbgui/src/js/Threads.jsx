@@ -109,7 +109,7 @@ class Threads extends React.Component {
                             onClick={()=>{Threads.select_thread_id(thread.id)}}
                             title='Select this thread'
                             style={{fontSize: '75%'}}
-                     >select thread</button>
+                     >select</button>
         }
         return <span key={'thread'+thread.id} className={`${cls}`} style={{fontSize: '0.9em'}}>
                      {status} {Memory.make_addrs_into_links_react(thread['target-id'])}, core {thread.core}, {thread.state}, id {thread.id}
