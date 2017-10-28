@@ -12,6 +12,130 @@ import {store} from './store.js';
 import GdbApi from './GdbApi.js';
 
 
+/**
+ * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
+ * to fetch children for, and fetches them in serial.
+ */
+let ChildVarFetcher = {
+    expr_gdb_parent_var_currently_fetching_children: null,  // parent gdb variable name (i.e. var7)
+    _is_fetching: false,
+    _queue: [],  // objects with keys 'expr_gdb_parent_var_currently_fetching_children' and 'expr_type'
+    _fetch_next_in_queue: function(){
+        if(ChildVarFetcher._is_fetching){
+            return
+        }
+        if(ChildVarFetcher._queue.length){
+            let obj = ChildVarFetcher._queue.shift()
+            ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children = obj.expr_of_parent
+            ChildVarFetcher._is_fetching = true
+            GdbApi.run_gdb_command(`-var-list-children --all-values "${obj.expr_of_parent}"`)
+        }else{
+            ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children = null
+        }
+    },
+    fetch_children(expr_of_parent, expr_type){
+        ChildVarFetcher._queue.push({'expr_of_parent': expr_of_parent, 'expr_type': expr_type})
+        ChildVarFetcher._fetch_next_in_queue()
+    },
+    fetch_complete(){
+        ChildVarFetcher._is_fetching = false
+        ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children = null
+        ChildVarFetcher._fetch_next_in_queue()
+    }
+}
+
+/**
+ * Simple object to manage fetching of variables. Maintains a queue of expressions
+ * to fetch, and fetches them in serial.
+ */
+let VarCreator = {
+    _queue: [],  // list of objs with keys expr_being_created, expr_type
+    _is_fetching: false,
+    expr_being_created: null,
+    expr_type: null,
+
+    _fetch_next_in_queue: function(){
+        if(VarCreator._is_fetching){
+            return
+        }
+        if(VarCreator._queue.length){
+            let obj = VarCreator._queue.shift()
+            , expression = obj.expression
+            , expr_type = obj.expr_type
+
+            VarCreator._is_fetching = true
+
+            VarCreator.expr_being_created = expression
+            VarCreator.expr_type = expr_type
+
+            // surround in quotes if we found a quote
+            if(expression.length > 0 && expression.indexOf('"') !== 0){
+                expression = '"' + expression + '"'
+            }
+            let cmds = []
+            if(store.get('pretty_print')){
+                cmds.push('-enable-pretty-printing')
+            }
+
+            // - means auto assign variable name in gdb
+            // * means evaluate it at the current frame
+            let var_create_cmd = `-var-create - * ${expression}`
+            if(expr_type === 'hover'){
+                var_create_cmd = constants.IGNORE_ERRORS_TOKEN_STR + var_create_cmd
+            }
+            cmds.push(var_create_cmd)
+
+            GdbApi.run_gdb_command(cmds)
+
+        }else{
+            VarCreator._clear_state()
+        }
+    },
+    /**
+     * Create a new variable in gdb. gdb automatically chooses and assigns
+     * a unique variable name.
+     */
+    create_variable: function(expression, expr_type){
+        VarCreator._queue.push({expression: expression, expr_type: expr_type})
+        VarCreator._fetch_next_in_queue()
+    },
+    /**
+     * After a variable is created, we need to link the gdb
+     * variable name (which is automatically created by gdb),
+     * and the expression the user wanted to evailuate. The
+     * new variable is saved locally. The variable UI element is then re-rendered
+     * @param r (object): gdb mi object
+     */
+    created_variable(r){
+        VarCreator._is_fetching = false
+        let expr = VarCreator.expr_being_created
+        if(expr){
+            // example payload:
+            // "payload": {
+            //      "has_more": "0",
+            //      "name": "var2",
+            //      "numchild": "0",
+            //      "thread-id": "1",
+            //      "type": "int",
+            //      "value": "0"
+            //  },
+            GdbVariable.save_new_expression(expr, VarCreator.expr_type, r.payload)
+            VarCreator.expr_being_created = null
+            // automatically fetch first level of children for root variables
+            GdbVariable.fetch_and_show_children_for_var(r.payload.name)
+        }else{
+            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
+        }
+        VarCreator._clear_state()
+        VarCreator._fetch_next_in_queue()
+    },
+    _clear_state: function(){
+        VarCreator.expr_being_created = null
+        VarCreator.expr_type = null
+        VarCreator._is_fetching = false
+    }
+
+}
 
 class GdbVariable extends React.Component {
 
@@ -146,64 +270,11 @@ class GdbVariable extends React.Component {
             {child_tree}
         </ul>
     }
-
-    /* ======================================== */
-    // static methods - These might be moved to their own object
-    /* ======================================== */
-
-    /**
-     * Create a new variable in gdb. gdb automatically chooses and assigns
-     * a unique variable name.
-     */
     static create_variable(expression, expr_type){
-        store.set('expr_being_created', expression)
-        store.set('expr_type', expr_type)
-
-        // surround in quotes if we found a quote
-        if(expression.length > 0 && expression.indexOf('"') !== 0){
-            expression = '"' + expression + '"'
-        }
-        let cmds = []
-        if(store.get('pretty_print')){
-            cmds.push('-enable-pretty-printing')
-        }
-
-        // - means auto assign variable name in gdb
-        // * means evaluate it at the current frame
-        let var_create_cmd = `-var-create - * ${expression}`
-        if(expr_type === 'hover'){
-            var_create_cmd = constants.IGNORE_ERRORS_TOKEN_STR + var_create_cmd
-        }
-        cmds.push(var_create_cmd)
-
-        GdbApi.run_gdb_command(cmds)
+        VarCreator.create_variable(expression, expr_type)
     }
-    /**
-     * After a variable is created, we need to link the gdb
-     * variable name (which is automatically created by gdb),
-     * and the expression the user wanted to evailuate. The
-     * new variable is saved locally. The variable UI element is then re-rendered
-     * @param r (object): gdb mi object
-     */
     static gdb_created_root_variable(r){
-        let expr = store.get('expr_being_created')
-        if(expr){
-            // example payload:
-            // "payload": {
-            //      "has_more": "0",
-            //      "name": "var2",
-            //      "numchild": "0",
-            //      "thread-id": "1",
-            //      "type": "int",
-            //      "value": "0"
-            //  },
-            GdbVariable.save_new_expression(expr, store.get('expr_type'), r.payload)
-            store.set('expr_being_created', null)
-            // automatically fetch first level of children for root variables
-            GdbVariable.fetch_and_show_children_for_var(r.payload.name)
-        }else{
-            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
-        }
+        VarCreator.created_variable(r)
     }
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
@@ -236,10 +307,12 @@ class GdbVariable extends React.Component {
         //         ]
         //     }
 
-        let parent_name = store.get('expr_gdb_parent_var_currently_fetching_children')
+        let parent_name = ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children
         if(!parent_name){
             console.error('developer error: gdb created child variable, but the parent variable is unknown')
         }
+        ChildVarFetcher.fetch_complete()
+
 
         // get the parent object of these children
         let expressions = store.get('expressions')
@@ -285,7 +358,7 @@ class GdbVariable extends React.Component {
         // it is returned when the variables are updated
         // it is returned by gdb mi as a string, and we assume it starts out in scope
         new_obj.in_scope = 'true'
-        new_obj.expr_type = store.get('expr_type')
+        new_obj.expr_type = VarCreator.expr_type
 
         // can only be plotted if: value is an expression (not a local), and value is numeric
         new_obj.can_plot = (new_obj.expr_type === 'expr') && !window.isNaN(parseFloat(new_obj.value))
@@ -374,7 +447,7 @@ class GdbVariable extends React.Component {
         store.set('expressions', expressions)
         if((obj.numchild) && obj.children.length === 0){
             // need to fetch child data
-            GdbVariable._get_children_for_var(gdb_var_name, obj.expr_type)
+            ChildVarFetcher.fetch_children(gdb_var_name, obj.expr_type)
         }else{
             // already have child data, re-render will occur from event dispatch
         }
@@ -416,15 +489,6 @@ class GdbVariable extends React.Component {
             store.set('expressions', expressions)
         }
     }
-    /**
-     * Send command to gdb to give us all the children and values
-     * for a gdb variable. Note that the gdb variable itself may be a child.
-     */
-    static _get_children_for_var(gdb_variable_name, expr_type){
-        store.set('expr_gdb_parent_var_currently_fetching_children', gdb_variable_name)
-        store.set('expr_type', expr_type)
-        GdbApi.run_gdb_command(`-var-list-children --all-values "${gdb_variable_name}"`)
-    }
     static get_update_cmds(){
         function _get_cmds_for_obj(obj){
             let cmds = [`-var-update --all-values ${obj.name}`]
@@ -448,7 +512,7 @@ class GdbVariable extends React.Component {
                 if(parseInt(changelist['has_more']) === 1 && 'name' in changelist){
                     // already retrieved children of obj, but more fields were added.
                     // Re-fetch the object from gdb
-                    GdbVariable._get_children_for_var(changelist['name'], obj.expr_type)
+                    ChildVarFetcher.fetch_children(changelist['name'], obj.expr_type)
                 }
                 if('new_children' in changelist){
                     let new_children = changelist.new_children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj))

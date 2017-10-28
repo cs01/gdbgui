@@ -1,56 +1,55 @@
 #include <stdio.h>
 #include <string.h>
 
-void say_goodbye(){
-    printf("Goodbye\n");
-}
+void say_goodbye() { printf("Goodbye\n"); }
 
-struct mystruct_t{
-    int value;
-    char letter;
-    char* string;
+struct mystruct_t {
+  int value;
+  char letter;
+  char *string;
 
-    struct{
-        double dbl;
-    } substruct; /* named sub-struct */
+  struct {
+    double dbl;
+  } substruct; /* named sub-struct */
 
-    struct{
-        float fp;
-    };  /* anonymous struct */
+  struct {
+    float fp;
+  }; /* anonymous struct */
 
-    void* ptr;
-    size_t struct_size;
-    union {
-        int unionint;
-        double uniondouble;
-    }
+  void *ptr;
+  size_t struct_size;
+  union {
+    int unionint;
+    double uniondouble;
+  }
 };
 
 int main(void) {
-    printf("Hello World\n");
+  printf("Hello World\n");
 
-    int retval = 1;
+  int retval = 1;
 
-    struct mystruct_t s;  /* sizeof(struct mystruct_t) bytes are allocated for s, but still contain garbage */
-    s.value = 100;
-    s.string = "pass";
-    s.substruct.dbl = 567.8;
-    s.letter = 'P';
-    s.fp = 123.4;
-    s.ptr = say_goodbye;  /* address of function */
-    s.ptr = &say_goodbye;  /* also address of function */
-    s.unionint = 0;
-    s.uniondouble = 1.0;
+  struct mystruct_t s; /* sizeof(struct mystruct_t) bytes are allocated for s,
+                          but still contain garbage */
+  s.value = 100;
+  s.string = "pass";
+  s.substruct.dbl = 567.8;
+  s.letter = 'P';
+  s.fp = 123.4;
+  s.ptr = say_goodbye;  /* address of function */
+  s.ptr = &say_goodbye; /* also address of function */
+  s.unionint = 0;
+  s.uniondouble = 1.0;
 
-    for(int i=0; i < 2; i++){
-        printf("i is %d\n", i);
-    }
+  for (int i = 0; i < 2; i++) {
+    printf("i is %d\n", i);
+  }
 
-    if(!strcmp(s.string, "pass")){
-        retval = 0;
-    }
+  if (!strcmp(s.string, "pass")) {
+    retval = 0;
+  }
 
-    printf("returning %d\n", retval);
-    say_goodbye();
-    return retval;
+  printf("returning %d\n", retval);
+  say_goodbye();
+  return retval;
 }

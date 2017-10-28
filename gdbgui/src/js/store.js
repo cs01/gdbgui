@@ -1,8 +1,8 @@
 import constants from './constants.js';
 
 /*
- * The store can be changed via store.set() and retrieved via store.get(). store.get() does not return references to objects, it returns new objects.
- * store is only mutable with calls to store.set().
+ * The store can be changed via store.set() and retrieved via store.get(). store.get() returns references to objects.
+ * store should only be changed with calls to store.set() so that listeners are notified.
  *
  * For example, calling store.set('line_of_source_to_flash', 100)
  * will change the highlighted line and automatically scroll to that line in the UI. Or calling
@@ -20,7 +20,7 @@ const store = {
             throw 'cannot create more than one global store'
         }
         for(let k in initial_store){
-            store._store[k] = _clone_obj(initial_store[k])
+            store._store[k] = initial_store[k]
         }
         store._store_created = true
     },
@@ -68,8 +68,7 @@ const store = {
                 console.log(key, oldval, ' -> ', value)
             }
 
-            // *replace* the property with a clone of the value
-            t[key] = _clone_obj(value)
+            t[key] = value
 
             if(store._changed_keys.indexOf(key) === -1){
                 store._changed_keys.push(key)
@@ -105,7 +104,7 @@ const store = {
         }
         if(arguments.length === 0){
             // return the whole store
-            return _clone_obj(store._store)
+            return store._store
         }else if(arguments.length > 1){
             console.error('unexpected number of arguments')
             return
@@ -113,7 +112,7 @@ const store = {
         // the "get" trap returns a value
         if(store._store.hasOwnProperty(key)){
             // return copy since store cannot be mutated in place
-            return _clone_obj(store._store[key])
+            return store._store[key]
         }else{
             throw `attempted to access key that was not set during initialization: ${key}`
         }
@@ -192,12 +191,6 @@ const store = {
 }
 
 /****** helper functions ********/
-
-function _clone_obj(obj){
-    if(obj === undefined){return undefined}
-    return JSON.parse(JSON.stringify(obj))
-}
-
 function _check_type_match(a, b, key){
     if(a !== undefined && b !== undefined && a !== null && b !== null){
         let old_type = typeof a
@@ -259,6 +252,7 @@ const initial_store_data = {
     language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
     files_being_fetched: [],
     fullname_to_render: null,
+    fullname_rendered: null,
     line_of_source_to_flash: null,
     current_assembly_address: null,
     // rendered_source: {},
@@ -285,15 +279,10 @@ const initial_store_data = {
     end_addr: '',
     bytes_per_line: 8,
 
-
     // breakpoints
     breakpoints: [],
 
     // expressions
-    expr_gdb_parent_var_currently_fetching_children: null,  // parent gdb variable name (i.e. var7)
-    expr_being_created: null,  // the expression being created (i.e. myvar)
-    // type of expression being created. Choices are: 'local' (autocreated local var), 'hover' (created when hovering in source coee), 'expr' (a "watch" expression )
-    expr_type: null,
     expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
     root_gdb_tree_var: null,  // draw tree for this variable
 
