@@ -14,7 +14,7 @@ const GdbCommandInput = {
         GdbCommandInput.el.keydown(GdbCommandInput.keydown_on_gdb_cmd_input)
         $('.run_gdb_command').click(GdbCommandInput.run_current_command)
     },
-    shutdown: function(){
+    save_sent_commands: function(){
         localStorage.setItem('sent_cmds', JSON.stringify(GdbCommandInput.sent_cmds))
     },
     keydown_on_gdb_cmd_input: function(e){

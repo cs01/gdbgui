@@ -26,7 +26,9 @@ let constants = {
         'running': 'running',
         'paused': 'paused',
         'exited': 'exited',
-    }
+    },
+
+    'tree_component_id': 'tree'
 }
 constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR)
 constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(constants.DISASSEMBLY_FOR_MISSING_FILE_STR)

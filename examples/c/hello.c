@@ -1,7 +1,10 @@
 #include <stdio.h>
 #include <string.h>
 
-void say_goodbye() { printf("Goodbye\n"); }
+void say_something(const char* str)
+{
+  printf("%s\n", str);
+}
 
 struct mystruct_t {
   int value;
@@ -36,8 +39,8 @@ int main(void) {
   s.substruct.dbl = 567.8;
   s.letter = 'P';
   s.fp = 123.4;
-  s.ptr = say_goodbye;  /* address of function */
-  s.ptr = &say_goodbye; /* also address of function */
+  s.ptr = say_something;  /* address of function */
+  s.ptr = &say_something; /* also address of function */
   s.unionint = 0;
   s.uniondouble = 1.0;
 
@@ -50,6 +53,6 @@ int main(void) {
   }
 
   printf("returning %d\n", retval);
-  say_goodbye();
+  say_something("Goodbye");
   return retval;
 }
