@@ -1,28 +1,24 @@
-import {store} from './store.js';
+/**
+ * Setup global DOM events
+ */
+
 import constants from './constants.js';
+import GdbCommandInput from './GdbCommandInput.js';
 import GdbApi from './GdbApi.js';
 
 const GlobalEvents = {
     init: function(){
         window.onkeydown = function(e){
            if((e.keyCode === constants.ENTER_BUTTON_NUM)) {
-               // when pressing enter in an input, don't redirect entire page
+               // when pressing enter in an input, don't redirect entire page!
                e.preventDefault()
            }
         }
-
         $('body').on('keydown', GlobalEvents.body_keydown)
         $('[data-toggle="tooltip"]').tooltip()
 
-        // make sure saved preferences are set/valid
-        if(localStorage.getItem('highlight_source_code') === null){
-            localStorage.setItem('highlight_source_code', JSON.stringify(true))
-            store.set('highlight_source_code', true)
-        }
-        if(localStorage.getItem('auto_add_breakpoint_to_main') === null){
-            localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
-            store.set('auto_add_breakpoint_to_main', true)
-        }
+        window.addEventListener("beforeunload", GdbCommandInput.save_sent_commands)
+        window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')
     },
     /**
      * keyboard shortcuts to interact with gdb.

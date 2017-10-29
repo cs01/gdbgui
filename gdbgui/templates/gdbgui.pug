@@ -45,9 +45,6 @@ html
                         button#step_instruction_button(class='btn btn-default', type='button', title='Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)')
                             | SI
 
-
-
-
                 ul.nav.navbar-nav.navbar-right(style='height: 25px; padding: 0;')
                     li.dropdown#menudropdown
                         a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', style='height: 25px; padding: 0; padding-right: 20px')
@@ -91,69 +88,7 @@ html
 
             #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
                 //- stack, vars, memory, breakpoints, registers
-                div.no_padding
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#callstack", data-glyph_selector='#callstack_glyph')
-                        span.glyphicon.glyphicon-chevron-down#callstack_glyph(style='margin-right: 6px;')
-                        span.lighttext call stack
-                    div#callstack
-                        #inferior_program_info.gdb_content_div
-                        br
-                        #threads.gdb_content_div
 
-                div.no_padding
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#locals_collapse_wrapper", data-glyph_selector='#locals_glyph')
-                        span.glyphicon.glyphicon-chevron-down#locals_glyph(style='margin-right: 6px;')
-                        span.lighttext locals
-                    div#locals_collapse_wrapper
-                        #locals
-
-                div.no_padding
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#expressions_collapse_wrapper", data-glyph_selector='#expressions_glyph')
-                        span.glyphicon.glyphicon-chevron-down#expressions_glyph(style='margin-right: 6px;')
-                        span.lighttext expressions
-                    div#expressions_collapse_wrapper
-                        #expressions
-
-                div.no_padding
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#tree_collapse_wrapper", data-glyph_selector='#tree_glyph')
-                        span.glyphicon.glyphicon-chevron-down#tree_glyph(style='margin-right: 6px;')
-                        span.lighttext tree view
-                    div#tree_collapse_wrapper
-                        div.gdb_content_div(style='margin-top: 6px;')
-                            input#tree_width.form-control(placeholder='width (px)', style='display: inline; width: 100px; padding: 6px 6px; height: 25px; font-size: 1em;')
-                            input#tree_height.form-control(placeholder='height (px)', style='display: inline; width: 100px; padding: 6px 6px; height: 25px; font-size: 1em')
-                            div#tree
-
-                div.no_padding
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#memory_collapse_wrapper", data-glyph_selector='#memory_glyph')
-                        span.glyphicon.glyphicon-chevron-down#memory_glyph(style='margin-right: 6px;')
-                        span.lighttext memory
-                    div#memory_collapse_wrapper
-                        input#memory_start_address(placeholder='start address (hex)', style="height:25px")
-                        input#memory_end_address(placeholder='end address (hex)', style="height:25px")
-                        input#memory_bytes_per_line(placeholder='bytes per line (dec)', style="height:25px;")
-                        div#memory.gdb_content_div(style='margin-top: 6px;')
-
-                div.no_padding
-                    div.titlebar.visibility_toggler(data-visibility_target_selector_string="#breakpoints", data-glyph_selector='#breakpoints_glyph')
-                        span.glyphicon.glyphicon-chevron-down#breakpoints_glyph(style='margin-right: 6px;')
-                        span.lighttext breakpoints
-                    div#breakpoints.gdb_content_div
-
-                div.no_padding
-                    div.titlebar.visibility_toggler(data-visibility_target_selector_string="#registers", data-glyph_selector='#registers_glyph')
-                        span.glyphicon.glyphicon-chevron-right#registers_glyph(style='margin-right: 6px;')
-                        span.lighttext registers
-                    div#registers.gdb_content_div.hidden
-
-                //- gdb mi output is shown only when debug=true
-                if debug == 'true'
-                    div.titlebar.flex.visibility_toggler(data-visibility_target_selector_string="#gdb_mi_output", data-glyph_selector='#gdb_mi_output_glyph')
-                        span.glyphicon.glyphicon-chevron-right#gdb_mi_output_glyph(style='margin-right: 6px;')
-                        span.lighttext gdb machine interface output
-                        button.btn.btn-default.clear_mi_output(type='button', title='Clear (clears ui element, does not send a gdb command)')
-                                span.glyphicon.glyphicon-ban-circle
-                    div#gdb_mi_output.gdb_content_div.hidden
 
 
 

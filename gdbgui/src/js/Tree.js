@@ -1,34 +1,51 @@
-import {store} from './store.js';
-import GdbVariable from './GdbVariable.jsx';
-
- /* global vis */
-
 // a widget to visualize a tree view of a variable with children
 // utilizes the amazing http://visjs.org library
+
+ /* global vis */
+import {store} from './store.js';
+import GdbVariable from './GdbVariable.jsx';
+import constants from './constants.js';
+
 const Tree = {
-    el: document.getElementById('tree'),
-    width_input: document.getElementById('tree_width'),
-    height_input: document.getElementById('tree_height'),
+    el: null,  // tree id must be available in DOM before calling `init`
+    width_input: null,
+    height_input: null,
     init: function(){
         store.subscribe(Tree.render)
         let render_on_enter = (e)=>{
             if(e.keyCode===13){
-                Tree.render()
+                Tree._render()
             }
         }
+        Tree.el = document.getElementById(constants.tree_component_id)
+        Tree.width_input = document.getElementById('tree_width')
+        Tree.height_input = document.getElementById('tree_height')
+
         Tree.width_input.onkeyup = render_on_enter
         Tree.height_input.onkeyup = render_on_enter
     },
     network: null,  // initialize to null
     rendered_gdb_var_tree_root: null,
     gdb_var_being_updated: null,  // if user clicks deep in a tree, only rerender that subtree, don't start from root again
-    render: function(){
+
+    /**
+     * Update the tree component.
+     */
+    render: function(keys){
+        if(!_.intersection(['root_gdb_tree_var', 'expressions', 'root_gdb_tree_var'], keys).length){
+            // no inputs to this component have changed
+            return
+        }
+        Tree._render()
+    },
+    _render: function(){
         let gdbvar = store.get('root_gdb_tree_var')
         if(!gdbvar) {
-            Tree.el.innerHTML = `<span class=placeholder>
-            create an Expression, then click <span class='glyphicon glyphicon-tree-deciduous'></span>
-            when viewing a variable with children to interactively explore a tree view. You can click nodes to
-            expand/collapse them.
+            Tree.el.innerHTML = `
+            <span class=placeholder>
+                create an Expression, then click <span class='glyphicon glyphicon-tree-deciduous'></span>
+                when viewing a variable with children to interactively explore a tree view. You can click nodes to
+                expand/collapse them.
             </span>`
             return
         }

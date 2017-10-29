@@ -1,4 +1,6 @@
 import constants from './constants.js';
+/* global debug */
+/* global initial_data */
 
 /*
  * The store can be changed via store.set() and retrieved via store.get(). store.get() returns references to objects.
@@ -27,12 +29,10 @@ const store = {
     /**
      * options object with the following fields. Can be set like `store.options.debounce_ms = 30`
      * * **debounce_ms (int, default: 10)**  update subscribers only after this much time has passed and an update has not occurred
-     * * **max_batched_event_count (int, default: 10)** emit event only after this much time has passed and subscribers have not been notified <= 0 will notify immediately. max delay is: debounce_ms * max_batched_event_count
      * * **debug (bool, default: false)**: if true, print store changes to console
      */
     options: {
         debounce_ms: 10,
-        max_batched_event_count: 10,
         debug: false,
     },
     /**
@@ -52,51 +52,56 @@ const store = {
         }
 
         let key = key_or_new_store
-        let t = store._store  // t is the target object to update
-        if(!(t.hasOwnProperty(key))){
+        if(!(store._store.hasOwnProperty(key))){
             // use hasOwnProperty for better performance (entrie prototype chain is not traversed)
             throw `cannot create new key after initialization (attempted to create ${key})`
         }
 
-        let oldval = t[key]
-
-        // update the store
-        if(_value_changed(oldval, value)){
-            _check_type_match(oldval, value, key)
-
-            if(store.options.debug) {
-                console.log(key, oldval, ' -> ', value)
-            }
-
-            t[key] = value
-
-            if(store._changed_keys.indexOf(key) === -1){
-                store._changed_keys.push(key)
-            }
-
-            // suppress active timeouts (if any)
-            if(store._debounce_timeout){
-                store._clear_debounce_timeout()
-                store._batched_event_count++
-            }
-
-            // publish changes, or schedule changes to be published
-            if(store._batched_event_count >= store.options.max_batched_event_count){
-                // emit event immediately since we have suppressed enough already
-                if(store.options.debug){
-                    console.log(`suppressed ${store._batched_event_count} events (${store.options.max_batched_event_count} max). Emitting event now.`)
-                }
-                store.publish()
-            }else{
-                // delay event emission and set new timeout id
-                store._debounce_timeout = setTimeout(store.publish, store.options.debounce_ms)
-            }
+        let oldval = store._store[key]
+        _check_type_match(oldval, value, key)
+        if (_value_changed(oldval, value)){
+            store._enqueue_change(key, oldval, value)
         }
+
     },
     /**
-     * Get copy of value (not reference) of one of the keys in the current store.
-     * @param {str} key key of the store object to get a copy of
-     * @return copy of value of the current store's key
+     * enqueue a change to the store. Event will be emitted based on
+     * timeout rules.
+     *
+     * @param key     key to change
+     * @param oldval  original value (for logging purposes)
+     * @param value   new value to assign
+     */
+    _enqueue_change: function(key, oldval, value){
+
+        if(store.options.debug) {
+            // this is only meaningful when the store data is immutable
+            // and updates aren't just references to the existing object
+            if(KEYS_TO_NOT_LOG_CHANGES.indexOf(key) === -1){
+                console.log(key, oldval, ' -> ', value)
+            }
+        }
+
+        store._store[key] = value
+
+        if(store._changed_keys.indexOf(key) === -1){
+            store._changed_keys.push(key)
+        }
+
+        // suppress active timeout (if any)
+        if(store._debounce_timeout){
+            store._clear_debounce_timeout()
+        }
+
+        // delay event emission and set new timeout id
+        store._debounce_timeout = setTimeout(store.publish, store.options.debounce_ms)
+    },
+    /**
+     * Get reference to one of the keys in the current store.
+     * @param {str} key of the store object to get a reference to
+     * @return reference to value in the store.
+     * NOTE: The store should *only* be update by calling `store.set(...)`
+     *   Throws error if key does not exist in store.
      */
     get: function(key){
         if(!store._store_created){
@@ -111,7 +116,7 @@ const store = {
         }
         // the "get" trap returns a value
         if(store._store.hasOwnProperty(key)){
-            // return copy since store cannot be mutated in place
+            // TODO should this return a copy or reference?
             return store._store[key]
         }else{
             throw `attempted to access key that was not set during initialization: ${key}`
@@ -137,6 +142,7 @@ const store = {
     },
     /**
      * Run subscribers' callback functions. An array of the changed keys is passed to the callback function.
+     * Be careful how often this is called, since re-rendering components can become expensive.
      */
     publish: function(){
         const changed_keys = store._changed_keys
@@ -202,16 +208,21 @@ function _check_type_match(a, b, key){
     }
 }
 
+
 function _value_changed(a, b){
-    if(Array.isArray(a) && Array.isArray(b) && a.length === 0 && b.length === 0){
-        return false
+    if(_.isObject(a)){
+        return true
     }else{
         return !_.isEqual(a, b)
     }
 }
 
-/* global debug */
-/* global initial_data */
+/**
+ * The initial store data. Keys cannot be added after initialization.
+ * All fields in here should be shared by > 1 component, otherwise they should
+ * exist as local state for that component.
+ *
+ */
 const initial_store_data = {
     // environment
     debug: debug,  // if gdbgui is run in debug mode
@@ -287,8 +298,12 @@ const initial_store_data = {
     root_gdb_tree_var: null,  // draw tree for this variable
 
     status: {'text': '', 'error': false, 'warn': false},
-    waiting_for_response: false
+    waiting_for_response: false,
+
+    gdb_mi_output: []
 }
+
+const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output']
 
 // restore saved localStorage data
 for(let key in initial_store_data){
@@ -298,6 +313,16 @@ for(let key in initial_store_data){
 
         }
     }
+}
+
+// make sure saved preferences are set/valid
+if(localStorage.getItem('highlight_source_code') === null){
+    localStorage.setItem('highlight_source_code', JSON.stringify(true))
+    store.set('highlight_source_code', true)
+}
+if(localStorage.getItem('auto_add_breakpoint_to_main') === null){
+    localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
+    store.set('auto_add_breakpoint_to_main', true)
 }
 
 

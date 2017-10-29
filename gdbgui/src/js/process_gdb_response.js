@@ -5,7 +5,7 @@
  */
 
 import {store} from './store.js';
-import GdbMiOutput from './GdbMiOutput.js';
+import GdbMiOutput from './GdbMiOutput.jsx';
 import Breakpoints from './Breakpoints.jsx';
 import constants from './constants.js';
 import Threads from './Threads.jsx';
@@ -219,7 +219,6 @@ const process_gdb_response = function(response_array){
 
     if(response_array.length > 0){
         // scroll to the bottom
-        GdbMiOutput.scroll_to_bottom()
         GdbConsoleComponent.scroll_to_bottom()
     }
 }
