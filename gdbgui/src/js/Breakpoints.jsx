@@ -166,7 +166,6 @@ class Breakpoints extends React.Component {
     static has_breakpoint(fullname, line){
         let bkpts = store.get('breakpoints')
         for (let b of bkpts){
-            console.log(b)
             if (b.fullname === fullname && b.line == line){
                 return true
             }

@@ -2,8 +2,10 @@
 
 ## dev
 Changes that are in master but have not yet been pushed to pyPI (pip)
-* Rewrite all components to React
-* Add component to send signals to inferior program
+* Add ability to change radix of variables (issue #102)
+* Add component to send signals to inferior program (issues #31, #90)
+* Parse gdb version from arm-non-eabi-gdb (issue #83)
+* Rewrite most components to React (issue #17)
 * Improve CSS in various components
 
 ## 0.7.9.5

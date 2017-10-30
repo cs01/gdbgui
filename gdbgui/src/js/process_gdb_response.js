@@ -167,12 +167,14 @@ const process_gdb_response = function(response_array){
             if(store.get('gdb_version') === undefined){
                 // parse gdb version from string such as
                 // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
-                let m = /GNU gdb \(.*\)\s*(.*)\\n/g
+                let m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g
                 let a = m.exec(r.payload)
                 if(_.isArray(a) && a.length === 2){
                     store.set('gdb_version', a[1])
                     store.set('gdb_version_array', a[1].split('.'))
                 }
+
+
             }
         }else if (r.type === 'output' || r.type === 'target'){
             // output of program

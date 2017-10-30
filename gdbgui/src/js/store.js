@@ -288,7 +288,7 @@ const initial_store_data = {
     memory_cache: {},
     start_addr: '',
     end_addr: '',
-    bytes_per_line: 8,
+    bytes_per_line: '8',
 
     // breakpoints
     breakpoints: [],
