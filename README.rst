@@ -13,7 +13,7 @@ A browser-based frontend for GDB
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `See SCREENSHOTS.md <https://github.com/cs01/gdbgui/SCREENSHOTS.md>`_, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
 
 If you are using gdbgui in a commercial setting, `consider donating to the project <https://paypal.me/grassfedcode/20>`_.
 
@@ -160,13 +160,16 @@ If your program exits unexpectedly from something like a SEGFAULT, ``gdbgui`` di
 
 Screenshots
 -----------
-`See SCREENSHOTS.md <https://github.com/cs01/gdbgui/SCREENSHOTS.md>`_
+.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
+  :target: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
+
+See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_ for more.
 
 License
 -------
 GNU GPLv3
 
-pyPI and this github page are the only official sources of gdbgui.
+PyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
