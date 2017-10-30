@@ -26,7 +26,7 @@ class Collapser extends React.Component {
     }
     render(){
         return(
-            <div id={this.props.id}>
+            <div>
                 <div className='pointer titlebar' onClick={this.toggle_visibility.bind(this)}>
                     <span
                         className={`glyphicon glyphicon-chevron-${this.state.collapsed ? 'right' : 'down'}`}
@@ -35,7 +35,7 @@ class Collapser extends React.Component {
                     <span className='lighttext'>{this.props.title}</span>
                 </div>
 
-                <div className={this.state.collapsed ? 'hidden' : ''}>
+                <div className={this.state.collapsed ? 'hidden' : ''} id={this.props.id}>
                     {this.props.content}
                 </div>
             </div>
@@ -45,17 +45,6 @@ class Collapser extends React.Component {
 
 
 class RightSidebar extends React.Component {
-    constructor(){
-        super()
-        // this.state = store._store
-        // store.subscribe(this._store_change_callback.bind(this))
-    }
-
-    // _store_change_callback(keys){
-    //     if(_.intersection(['expressions'], keys).length){
-    //         this.setState(store._store)
-    //     }
-    // }
     render(){
         let input_style = {'display': 'inline', width: '100px', padding: '6px 6px', height: '25px', fontSize: '1em'}
         , mi_output = ''
@@ -79,14 +68,7 @@ class RightSidebar extends React.Component {
                     <div id={constants.tree_component_id} />
                 </div>
             } />
-            <Collapser id='memory' title='memory' content={
-                <div>
-                    <input id='memory_start_address' className='form-control' placeholder='start address (hex)' style={input_style} />
-                    <input id='memory_end_address' className='form-control' placeholder='end address (hex)' style={input_style} />
-                    <input id='memory_bytes_per_line' className='form-control' placeholder='bytes per line (dec)' style={input_style} />
-                    <Memory />
-                </div>
-            } />
+            <Collapser id='memory' title='memory' content={<Memory />} />
             <Collapser title='breakpoints' content={<Breakpoints />} />
             <Collapser title='registers' content={<Registers />} />
             {mi_output}

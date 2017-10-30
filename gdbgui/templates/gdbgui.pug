@@ -56,6 +56,8 @@ html
                             li
                                 a.pointer(title='donate', href='/donate') Donate
                             li
+                                a.pointer(href='https://github.com/cs01/gdbgui') Homepage / github
+                            li
                                 a.pointer(title='Help', href='https://github.com/cs01/gdbgui/blob/master/HELP.md') Help
                             li.divider(role='separator')
                             li
@@ -80,20 +82,14 @@ html
                 span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 5px; white-space: nowrap; font-family: monospace; font-size: 0.7em;")
 
         #middle
-            #middle_left.content(style='height: 100%; float: left;')
-                //- source code
-                #hovervar_container
-                    //- .hidden todo - display content
-                div#code_container.gdb_content_div(style='overflow: auto; height: 100%;')
-
+            #middle_left(style='height: 100%; float: left;')
             #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
-                //- stack, vars, memory, breakpoints, registers
 
 
 
 
         #bottom.split.split-horizontal(style='padding-bottom: 90px; width: 100%;')
-            .split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
+            #bottom_content.split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
                 //- position of this split pane is relative so that other divs can be absolute and use it as an anchor
 
                 //- gdb console output
@@ -105,7 +101,7 @@ html
                         td(style='width: 30px; vertical-align: middle;')
                             span(style='margin-top: 10px') (#{interpreter})
                         td(style='width: 100%; ')
-                            input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command', )
+                            input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command. To interrupt inferior, send SIGINT.', )
                          td(style='width: 15px; vertical-align: middle; padding-right: 10px')
                             span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console', )
 
@@ -124,7 +120,8 @@ html
                     #modal_footer(style='margin-top: 20px;')
                         button.btn.btn-success(type='button', data-dismiss='modal') Close
 
-        #settings_container()
+        #hovervar_container
+        #settings_container
 
     script.
         initial_data = JSON.parse('!{initial_data}')

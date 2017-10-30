@@ -21,7 +21,7 @@ import React from 'react';
 import StatusBar from './StatusBar.jsx';
 import BinaryLoader from './BinaryLoader.js';
 import GlobalEvents from './GlobalEvents.js';
-import SourceCode from './SourceCode.jsx';
+import MiddleLeft from './MiddleLeft.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';
 import SourceFileAutocomplete from './SourceFileAutocomplete.js';
 import FileOps from './FileOps.js';
@@ -65,8 +65,7 @@ ShutdownGdbgui.init()
 SourceFileAutocomplete.init()
 
 // middle left
-ReactDOM.render(<SourceCode/>, document.getElementById('code_container'))
-ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))
+ReactDOM.render(<MiddleLeft />, document.getElementById('middle_left'))
 
 // middle right
 ReactDOM.render(<RightSidebar signals={initial_data.signals} debug={debug} />, document.getElementById('middle_right'))
@@ -76,6 +75,7 @@ GdbConsoleComponent.init()
 GdbCommandInput.init()
 
 // full page/javascript objects
+ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))
 ReactDOM.render(<Settings />, document.getElementById('settings_container'))
 GlobalEvents.init()
 Modal.init()

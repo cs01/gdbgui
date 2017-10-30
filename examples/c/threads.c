@@ -1,46 +1,44 @@
 #include <pthread.h>
 #include <stdio.h>
 
+static const int num_increments = 2;
+
 /* this function is run by the second thread */
-void *inc_x(void *x_void_ptr)
+void *thread_callback(void *arg)
 {
-
-    /* increment x to 100 */
-    int *x_ptr = (int *)x_void_ptr;
-    while(++(*x_ptr) < 2);
-
-    printf("x increment finished\n");
-
-    /* the function must return something - NULL will do */
-    return NULL;
-
+    int *val = (int*)arg;
+    while((*val) < num_increments){
+        printf("incrementing\n");
+        (*val)++;
+    }
+    printf("increment finished\n");
 }
 
 int main()
 {
     int x = 0, y = 0;
-    /* show the initial values of x and y */
     printf("x: %d, y: %d\n", x, y);
-    /* this variable is our reference to the second thread */
-    pthread_t inc_x_thread;
+    pthread_t thread_to_increment_x, thread_to_increment_y;
 
-    /* create a second thread which executes inc_x(&x) */
-    if(pthread_create(&inc_x_thread, NULL, inc_x, &x)) {
-        fprintf(stderr, "Error creating thread\n");
+    /* create and run threads */
+    if(pthread_create(&thread_to_increment_x, NULL, thread_callback, &x)) {
+        printf("error: pthread_create returned non-zero value\n");
+        return 1;
+    }
+    if(pthread_create(&thread_to_increment_y, NULL, thread_callback, &y)) {
+        printf("error: pthread_create returned non-zero value\n");
         return 1;
     }
 
-    /* increment y to 100 in the first thread */
-    while(++y < 2);
-    printf("y increment finished\n");
-
-    /* wait for the second thread to finish */
-    if(pthread_join(inc_x_thread, NULL)) {
-        fprintf(stderr, "Error joining thread\n");
-        return 2;
+    /* wait for threads to finish */
+    if(pthread_join(thread_to_increment_x, NULL)) {
+        printf("error: pthread_join returned non-zero value\n");
+        return 1;
     }
-
-    /* show the results - x is now 100 thanks to the second thread */
+    if(pthread_join(thread_to_increment_y, NULL)) {
+        printf("error: pthread_join returned non-zero value\n");
+        return 1;
+    }
     printf("x: %d, y: %d\n", x, y);
 
     return 0;

@@ -317,7 +317,7 @@ const FileOps = {
         let cached_source_files = store.get('cached_source_files')
         for (let cached_file of cached_source_files){
             if(cached_file.fullname === fullname){
-                cached_file.assembly = $.extend(true, cached_file.assembly, assembly_to_save)
+                cached_file.assembly = Object.assign(cached_file.assembly, assembly_to_save)
 
                 let max_assm_line = Math.max(Object.keys(cached_file.assembly))
 

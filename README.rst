@@ -13,7 +13,7 @@ A browser-based frontend for GDB
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. `See SCREENSHOTS.md <https://github.com/cs01/gdbgui/SCREENSHOTS.md>`_, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
 
 If you are using gdbgui in a commercial setting, `consider donating to the project <https://paypal.me/grassfedcode/20>`_.
 
@@ -158,6 +158,9 @@ If your program exits unexpectedly from something like a SEGFAULT, ``gdbgui`` di
 .. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
   :target: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
 
+Screenshots
+-----------
+`See SCREENSHOTS.md <https://github.com/cs01/gdbgui/SCREENSHOTS.md>`_
 
 License
 -------
@@ -167,8 +170,8 @@ pyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
-1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns structured data to the frontend.
-2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
+1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`_ manages gdb as a subprocess, and returns structured data to the frontend.
+2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`_ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
 3. The browser manages its ui with mostly vanilla JavaScript and some libraries.
 
 The main components of gdbgui are
@@ -185,96 +188,6 @@ The main components of gdbgui are
 
 4. ``gdbgui.css``: css stylesheet
 
-
-Screenshots
------------
-Enter the binary and args just as you'd call them on the command line. Binary is restored when gdbgui is opened at a later time.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
-
-Intuitive control of your program. From left to right: Run, Continue, Next, Step, Return, Next Instruction, Step Instruction, send interrupt signal (SIGINT) to inferior process.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
-
-Stack/Threads
--------------------------
-View all threads, the full stack on the active thread, the current frame on inactive threads. Switch between frames on the stack, or threads by pointing and clicking.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
-
-Source Code
------------
-View source, assembly, add breakpoints. All symbols used to compile the target are listed in a dropdown above the source code viewer, and have autocompletion capabilities.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
-
-With assembly. Note the bold line is the current instruction that gdb is stopped on.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
-
-
-Variables and Expressions
--------------------------
-
-All local variables are automatically displayed, and are clickable to explore their fields.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
-
-Hover over a variable and explore it, just like in the Chrome debugger.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/hover.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/hover.png
-
-
-Arbitrary expressions can be evaluated as well.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
-
-Expressions record their previous values, and can be displayed in an x/y plot.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
-
-Expressions can be interactively explored in a tree view.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/tree_explorer.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/tree_explorer.png
-
-Memory Viewer
--------------
-All hex addresses are automatically converted to clickable links to explore memory. Length of memory is configurable. In this case 16 bytes are displayed per row.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
-
-
-Registers
----------
-View all registers. If a register was updated it is highlighted in yellow.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
-
-
-gdb console
------------
-Read gdb output, and write to the gdb subprocess as desired. Don't let any gdb commandline skills you've developed go to waste.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
-
-
-gdbgui at launch:
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
 
 Contributing
 ------------

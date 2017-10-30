@@ -10,7 +10,7 @@ import MemoryLink from './MemoryLink.jsx';
 import constants from './constants.js';
 
 class SourceCode extends React.Component {
-    static el_code_container = $('#code_container')  // todo: no jquery
+    static el_code_container = null  // todo: no jquery
     store_keys = [
         'fullname_to_render',
         'cached_source_files',

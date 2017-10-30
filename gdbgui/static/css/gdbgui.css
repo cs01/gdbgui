@@ -16,6 +16,9 @@ td{
 
 
 /* styling for generic classes */
+.inline{
+    display: inline;
+}
 .bold{
     font-weight: bold;
 }
@@ -116,7 +119,8 @@ div.breakpoint{
     margin-right: 5px;
     display: none !important;
 }
-div.breakpoint:hover div.breakpoint_trashcan, .variable:hover .right_help_icon_show_on_hover{
+div.breakpoint:hover div.breakpoint_trashcan,
+.varLI:hover .right_help_icon_show_on_hover{
     display: inline !important;
 }
 .line_num{
@@ -315,7 +319,14 @@ td.line_num{
     padding: 0;
 }
 
-ul.variable{
+.varLI .btn-radix{
+    display: none!important;
+}
+.varLI:hover .btn-radix{
+    display: inline !important;
+}
+
+ul.varUL{
         padding-left: 0;
         padding-top: 0;
         border: 0;

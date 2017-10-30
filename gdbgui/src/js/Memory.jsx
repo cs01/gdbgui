@@ -10,21 +10,19 @@ import GdbApi from './GdbApi.js';
 import constants from './constants.js'
 import MemoryLink from './MemoryLink.jsx';
 import ReactTable from './ReactTable.jsx';
+import GdbConsoleComponent from './GdbConsole.js';
 import React from 'react';
 
 class Memory extends React.Component {
-    static el_start = document.getElementById('memory_start_address')
-    static el_end = document.getElementById('memory_end_address')
-    static el_bytes_per_line = document.getElementById('memory_bytes_per_line')
     static MAX_ADDRESS_DELTA_BYTES = 1000
     static DEFAULT_ADDRESS_DELTA_BYTES = 31
-    static DEFAULT_BYTES_PER_LINE = 31
+    static DEFAULT_BYTES_PER_LINE = 8
 
     store_keys = [
+        'memory_cache',
         'start_addr',
         'end_addr',
         'bytes_per_line',
-        'memory_cache',
     ]
     constructor() {
         super()
@@ -32,10 +30,6 @@ class Memory extends React.Component {
         this._store_change_callback = this._store_change_callback.bind(this)
         this.state = this._get_applicable_global_state()
         store.subscribe(this._store_change_callback.bind(this))
-
-        Memory.el_start.onkeyup = Memory.keyup_in_memory_inputs
-        Memory.el_end.onkeyup = Memory.keyup_in_memory_inputs
-        Memory.el_bytes_per_line.onkeyup = Memory.keyup_in_memory_inputs
     }
     _store_change_callback(keys){
         if(_.intersection(this.store_keys, keys).length){
@@ -49,12 +43,7 @@ class Memory extends React.Component {
         }
         return applicable_state
     }
-
-    /**
-     * Internal render function. Not called directly to avoid wasting DOM cycles
-     * when memory is being received from gdb at a high rate.
-     */
-    render(){
+    get_memory_component_jsx_content(){
         if(Object.keys(store.get('memory_cache')).length === 0){
             return <span key='nothing' className='placeholder'>no memory to display</span>
         }
@@ -116,34 +105,55 @@ class Memory extends React.Component {
             )
         }
 
+        return <ReactTable data={data} header={['address', 'hex' , 'char']} />
+    }
+    render(){
+        let input_style = {'display': 'inline', width: '100px', padding: '6px 6px', height: '25px', fontSize: '1em'}
+        , content = this.get_memory_component_jsx_content()
         return  <div>
-                    <ReactTable data={data} header={['address', 'hex' , 'char']} />
+                    <input id='memory_start_address'
+                        className='form-control'
+                        placeholder='start address (hex)'
+                        style={input_style}
+                        value={this.state.start_addr}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e)=>{
+                            store.set('start_addr', e.target.value)
+                        }}
+                    />
+                    <input id='memory_end_address'
+                        className='form-control'
+                        placeholder='end address (hex)'
+                        style={input_style}
+                        value={this.state.end_addr}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e)=>{
+                            store.set('end_addr', e.target.value)
+                        }}
+                    />
+                    <input id='memory_bytes_per_line'
+                        className='form-control'
+                        placeholder='bytes per line (dec)'
+                        style={input_style}
+                        value={this.state.bytes_per_line}
+                        onKeyUp={Memory.keypress_on_input}
+                        onChange={(e)=>{
+                            store.set('bytes_per_line', e.target.value)
+                        }}
+                    />
+                    {content}
+
                 </div>
     }
-
-    static keyup_in_memory_inputs(e){
+    static keypress_on_input(e){
         if (e.keyCode === constants.ENTER_BUTTON_NUM){
-            store.set('start_addr', Memory.el_start.value)
-            store.set('end_addr', Memory.el_end.value)
-            store.set('bytes_per_line', parseInt(Memory.el_bytes_per_line.value))
             Memory.fetch_memory_from_state()
         }
     }
-
-    static click_memory_address(e){
-        e.stopPropagation()
-        let addr = e.currentTarget.dataset['memadr']
-        Memory.set_inputs_from_address(addr)
-    }
-
     static set_inputs_from_address(addr){
         // set inputs in DOM
         store.set('start_addr', '0x' + (parseInt(addr, 16)).toString(16),)
         store.set('end_addr', '0x' + (parseInt(addr,16) + Memory.DEFAULT_ADDRESS_DELTA_BYTES).toString(16))
-        Memory.el_start.value = store.get('start_addr')
-        Memory.el_end.value = store.get('end_addr')
-        Memory.el_bytes_per_line.value = store.get('bytes_per_line')
-        // fetch memory from whatever's in DOM
         Memory.fetch_memory_from_state()
     }
 
@@ -162,8 +172,10 @@ class Memory extends React.Component {
                 store.set('end_addr', '0x' + end_addr.toString(16))
 
             }else if((end_addr - start_addr) > Memory.MAX_ADDRESS_DELTA_BYTES){
+                let orig_end_addr = end_addr
                 end_addr = start_addr + Memory.MAX_ADDRESS_DELTA_BYTES
                 store.set('end_addr', '0x' + end_addr.toString(16))
+                GdbConsoleComponent.add(`Cannot fetch ${orig_end_addr - start_addr} bytes. Changed end address to ${store.get('end_addr')} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`, true)
             }
 
             let cur_addr = start_addr
@@ -206,12 +218,6 @@ class Memory extends React.Component {
         , byte_offset = store.get('bytes_per_line') * NUM_ROWS
         store.set('end_addr', '0x' + (end_addr + byte_offset).toString(16))
         Memory.fetch_memory_from_state()
-    }
-
-    static _make_addr_into_link(addr, name=addr){
-        let _addr = addr
-            , _name = name
-        return `<a class='pointer memadr' data-memadr='${_addr}'>${_name}</a>`
     }
 
     static _make_addr_into_link_react(addr, name=addr){

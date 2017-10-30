@@ -130,8 +130,6 @@ let VarCreator = {
         VarCreator._fetch_next_in_queue()
     },
     _clear_state: function(){
-        VarCreator.expr_being_created = null
-        VarCreator.expr_type = null
         VarCreator._is_fetching = false
     }
 
@@ -212,6 +210,34 @@ class GdbVariable extends React.Component {
     get_ul_for_var_without_children(expression, mi_obj, expr_type, is_root=false){
         return this._get_ul_for_var(expression, mi_obj, expr_type, is_root)
     }
+    static _get_value_jsx(obj){
+        let val
+        if(obj.is_int){
+            val = (<div className='inline'>
+                    <span className='gdbVarValue'>
+                        {Memory.make_addrs_into_links_react(obj._int_value_to_str_in_radix)}
+                        <button
+                            className="btn btn-default btn-xs btn-radix"
+                            onClick={()=>{GdbVariable.change_radix(obj)}}
+                            title='click to change radix'
+                            style={{fontSize: '60%'}}
+                        >base {obj._radix}</button>
+                    </span>
+                    </div>)
+        }else{
+            val = _.isString(obj.value) ? Memory.make_addrs_into_links_react(obj.value) : obj.value
+        }
+        return val
+    }
+    static change_radix(obj){
+        if(obj._radix === 16){
+            obj._radix = 2
+        }else{
+            obj._radix += 2
+        }
+        GdbVariable._update_radix_values(obj)
+        store.set('expressions', store.get('expressions'))
+    }
     /**
      * Get ul for a variable with or without children
      */
@@ -222,11 +248,10 @@ class GdbVariable extends React.Component {
             , can_draw_tree = (has_children && (expr_type === 'expr' || expr_type === 'local'))  // hover var can't draw tree
             , tree = can_draw_tree ? <span style={glyph_style} className='glyphicon glyphicon-tree-deciduous pointer' onClick={()=>GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)} /> : ''
             , toggle_classes = has_children ? 'pointer' : ''
-            , val = _.isString(mi_obj.value) ? Memory.make_addrs_into_links_react(mi_obj.value) : mi_obj.value
+            , val = GdbVariable._get_value_jsx(mi_obj)
             , plot_content = ''
             , plot_button = ''
             , plusminus_click_callback = has_children ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name) : ()=>{}
-
         if(mi_obj.can_plot && mi_obj.show_plot){
             // dots are not allowed in the dom as id's. replace with '-'.
             let id = mi_obj.dom_id_for_plot
@@ -245,9 +270,9 @@ class GdbVariable extends React.Component {
                            />
         }
 
-        return <ul key={expression} className='variable'>
-            <li>
-                <span className={toggle_classes} onClick={plusminus_click_callback} data-gdb_variable_name={mi_obj.name}>
+        return <ul key={expression} className='varUL'>
+            <li className='varLI'>
+                <span className={toggle_classes} onClick={plusminus_click_callback}>
                     {plus_or_minus} {expression}:
                 </span>
 
@@ -331,7 +356,7 @@ class GdbVariable extends React.Component {
         // if this field is an anonymous struct, the user will want to
         // see this expanded by default
         for(let child of parent_obj.children){
-            if (child.exp.includes('anonymous')){
+            if (child.exp.includes('<anonymous')){
                 GdbVariable.fetch_and_show_children_for_var(child.name)
             }
         }
@@ -343,7 +368,7 @@ class GdbVariable extends React.Component {
      * @param expr_type (str): type of expression being created (see store creation for documentation)
      */
     static prepare_gdb_obj_for_storage(obj){
-        let new_obj = $.extend(true, {}, obj)
+        let new_obj = Object.assign({}, obj)
         // obj was copied, now add some additional fields used by gdbgui
 
         // A varobj's contents may be provided by a Python-based pretty-printer.
@@ -360,8 +385,8 @@ class GdbVariable extends React.Component {
         new_obj.in_scope = 'true'
         new_obj.expr_type = VarCreator.expr_type
 
-        // can only be plotted if: value is an expression (not a local), and value is numeric
-        new_obj.can_plot = (new_obj.expr_type === 'expr') && !window.isNaN(parseFloat(new_obj.value))
+        GdbVariable._update_numeric_properties(new_obj)
+
         new_obj.dom_id_for_plot = new_obj.name
             .replace(/\./g, '-')  // replace '.' with '-'
             .replace(/\$/g, '_')  // replace '$' with '-'
@@ -372,12 +397,39 @@ class GdbVariable extends React.Component {
         // Plots use this data
         if(new_obj.value.indexOf('0x') === 0){
             new_obj.values = [parseInt(new_obj.value, 16)]
+            new_obj._radix = 16
         }else if (!window.isNaN(parseFloat(new_obj.value))){
             new_obj.values = [new_obj.value]
+            if(new_obj.is_int){
+                new_obj._radix = 10
+            }else{
+                new_obj._radix = 0
+            }
         }else{
             new_obj.values = []
+            new_obj._radix = 0
         }
+        GdbVariable._update_radix_values(new_obj) // mutates new_obj
         return new_obj
+    }
+    static _update_numeric_properties(obj){
+        obj.is_numeric = !window.isNaN(parseFloat(obj.value))
+        obj.can_plot = obj.is_numeric && obj.expr_type === 'expr'
+        obj.is_int = obj.is_numeric ? parseFloat(obj.value) % 1 === 0 : false
+    }
+    static _update_radix_values(obj){
+        if (obj.is_int){
+            obj._int_value_decimal = parseInt(obj.value)
+            if(obj._radix < 2 || obj._radix > 36){
+                // defensive programming
+                console.warn('Got invalid radix. Setting to 10.')
+                obj._radix = 10
+            }
+            obj._int_value_to_str_in_radix = obj._int_value_decimal.toString(obj._radix)
+            if(obj._radix === 16){
+                obj._int_value_to_str_in_radix = '0x' + obj._int_value_to_str_in_radix
+            }
+        }
     }
     /**
      * function render a plot on an existing element
@@ -518,21 +570,13 @@ class GdbVariable extends React.Component {
                     let new_children = changelist.new_children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj))
                     obj.children = obj.children.concat(new_children)
                 }
-                if('value' in changelist && obj.expr_type === 'expr'){
-                    // this object is an expression and it had a value updated.
-                    // save the value to an array for plotting
-                    if(changelist.value.indexOf('0x') === 0){
-                        obj.can_plot = true
-                        obj.values.push(parseInt(changelist.value, 16))
-                    }else if (!window.isNaN(parseFloat(changelist.value))){
-                        obj.can_plot = true
-                        obj.values.push(changelist.value)
-                    }
-                }
                 // overwrite fields of obj with fields from changelist
-                _.assign(obj, changelist)
-                // update expressions array which will trigger and event, which will
-                // cause components to re-render
+                obj = Object.assign(obj, changelist)
+                GdbVariable._update_numeric_properties(obj)
+                GdbVariable._update_radix_values(obj)
+                if(obj.can_plot){
+                    obj.values.push(obj._int_value_decimal)
+                }
                 store.set('expressions', expressions)
             }else{
                 // error

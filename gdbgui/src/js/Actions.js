@@ -2,6 +2,7 @@ import {store} from './store.js';
 import GdbApi from './GdbApi.js';
 import SourceCode from './SourceCode.jsx';
 import Locals from './Locals.jsx';
+import Memory from './Memory.jsx';
 import constants from './constants.js';
 
 const Actions = {
@@ -12,7 +13,7 @@ const Actions = {
         store.set('current_thread_id', undefined)
         store.set('stack', [])
         store.set('threads', [])
-        store.set('memory_cache', {})
+        Memory.clear_cache()
         Locals.clear()
     },
     inferior_program_running: function(){
