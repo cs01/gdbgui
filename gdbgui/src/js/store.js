@@ -208,7 +208,6 @@ function _check_type_match(a, b, key){
     }
 }
 
-
 function _value_changed(a, b){
     if(_.isObject(a)){
         return true
@@ -234,13 +233,13 @@ const initial_store_data = {
     gdb_version_array: [],  // this is parsed from gdb's output
     gdb_pid: undefined,
     can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
-    show_settings: true,
+    show_settings: false,
 
     // preferences
     // syntax highlighting
     themes: initial_data.themes,
     current_theme: localStorage.getItem('theme') || initial_data.themes[0],
-    highlight_source_code: JSON.parse(localStorage.getItem('highlight_source_code')),  // get saved boolean to highlight source code
+    highlight_source_code: true,  // get saved boolean to highlight source code
 
     auto_add_breakpoint_to_main: true,
 
@@ -307,22 +306,21 @@ const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output']
 
 // restore saved localStorage data
 for(let key in initial_store_data){
-    if(typeof initial_store_data[key] === 'boolean'){
-        if(localStorage.hasOwnProperty(key)){
-            initial_store_data[key] = JSON.parse(localStorage.getItem(key))
+    try{
+        if(typeof initial_store_data[key] === 'boolean'){
+            if(localStorage.hasOwnProperty(key)){
+                let savedval = JSON.parse(localStorage.getItem(key))
+                , oldval = initial_store_data[key]
 
+                if((typeof oldval) === (typeof savedval)){
+                    initial_store_data[key] = savedval
+                }
+
+            }
         }
+    }catch(err){
+        console.log(err)
     }
-}
-
-// make sure saved preferences are set/valid
-if(localStorage.getItem('highlight_source_code') === null){
-    localStorage.setItem('highlight_source_code', JSON.stringify(true))
-    store.set('highlight_source_code', true)
-}
-if(localStorage.getItem('auto_add_breakpoint_to_main') === null){
-    localStorage.setItem('auto_add_breakpoint_to_main', JSON.stringify(true))
-    store.set('auto_add_breakpoint_to_main', true)
 }
 
 
