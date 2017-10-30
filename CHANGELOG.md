@@ -3,6 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.8.0.1
+* fix bug when restoring old settings
+
 ## 0.8.0.0
 * Add ability to change radix of variables (issue #102)
 * Add component to send signals to inferior program (issues #31, #90)
