@@ -1,7 +1,9 @@
 # gdbgui release history
 
 ## dev
-Changes that are in master but have not yet been pushed to pyPI (pip)
+Changes that are in master but have not yet been pushed to PyPI.
+
+## 0.8.0.0
 * Add ability to change radix of variables (issue #102)
 * Add component to send signals to inferior program (issues #31, #90)
 * Parse gdb version from arm-non-eabi-gdb (issue #83)

@@ -7,3 +7,6 @@ test:
 
 publish: test
 	python setup.py sdist upload
+
+testpublish: test
+	python setup.py sdist upload -r pypitest
