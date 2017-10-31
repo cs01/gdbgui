@@ -2,6 +2,7 @@ import {store} from './store.js';
 import constants from './constants.js';
 import GdbApi from './GdbApi.js';
 import Util from './Util.js';
+import FileOps from './FileOps.js';
 
 /**
  * The autocomplete dropdown of source files is complicated enough
@@ -50,10 +51,7 @@ const SourceFileAutocomplete = {
         // perform action when an item is selected
          Awesomplete.$('#source_file_input').addEventListener('awesomplete-selectcomplete', function(e){
             let fullname = e.currentTarget.value
-            store.set('fullname_to_render', fullname)
-            store.set('line_of_source_to_flash', 1)
-            store.set('make_current_line_visible', true)
-            store.set('render_paused_frame_or_user_selection', 'user_selection')
+            FileOps.user_select_file_to_view(fullname, 1)
         })
     },
     fetch_source_files: function(){
@@ -79,12 +77,7 @@ const SourceFileAutocomplete = {
             , line
 
             [fullname, line] = Util.parse_fullname_and_line(user_input, default_line)
-
-            store.set('fullname_to_render',fullname)
-            store.set('line_of_source_to_flash', line)
-            store.set('make_current_line_visible', true)
-            store.set('render_paused_frame_or_user_selection', 'user_selection')
-
+            FileOps.user_select_file_to_view(fullname, line)
 
         }else if (store.get('source_file_paths').length === 0){
             // source file list has not been fetched yet, so fetch it

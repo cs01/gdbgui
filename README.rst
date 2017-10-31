@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.8.0.1-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.8.0.2-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -187,7 +187,7 @@ The main components of gdbgui are
 
 2. `gdbgui.pug <https://github.com/cs01/gdbgui/blob/master/gdbgui/templates/gdbgui.pug>`__: HTML file that defines the frontend
 
-3. Various JavaScript files: Communicate with gdb via websockets and dynamically update the page.
+3. `gdbgui.js <https://github.com/cs01/gdbgui/blob/master/gdbgui/src/js/gdbgui.js>`__: Communicate with gdb via websockets and dynamically update the page.
 
 4. `gdbgui.css <https://github.com/cs01/gdbgui/blob/master/gdbgui/static/css/gdbgui.css>`__: css stylesheet
 

@@ -247,26 +247,6 @@ class SourceCode extends React.Component {
             }
         }
     }
-    shouldComponentUpdate(){
-        return true
-        // TODO fine tune this
-        // SourceCode.set_theme_in_dom()
-        // if(store.get('has_unrendered_assembly')){
-        //     return true
-        // }
-
-        // if (this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
-        //     this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED){
-        //     if(store.get('fullname_to_render') === store.get('fullname_rendered')){
-        //         // no need to render the whole file all over again. Just make "decorations" are up to date
-        //         render_breakpoints()
-        //         highlight_paused_line()
-        //         highlight_current_instruction()
-        //         return false
-        //     }
-        // }
-        // return true
-    }
     render(){
         return(<div className={this.state.current_theme} style={{height: '100%'}}>
                     <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>

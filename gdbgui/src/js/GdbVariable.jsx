@@ -6,7 +6,6 @@
  */
 import React from 'react';
 import Memory from './Memory.jsx';
-import Util from './Util.js';
 import constants from './constants.js';
 import {store} from './store.js';
 import GdbApi from './GdbApi.js';
@@ -279,7 +278,7 @@ class GdbVariable extends React.Component {
                 {val}
 
                 <span className='var_type'>
-                    {Util.escape(mi_obj.type || '')}
+                    {_.trim(mi_obj.type) || ''}
                 </span>
 
 
