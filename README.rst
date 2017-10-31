@@ -179,17 +179,17 @@ How Does it Work?
 
 The main components of gdbgui are
 
-1. ``backend.py``: The backend consists of a single Python file, which
+1. `backend.py <https://github.com/cs01/gdbgui/blob/master/gdbgui/backend.py>`__: The backend consists of a single Python file, which
    makes use of `pygdbmi <https://github.com/cs01/pygdbmi>`__ to
    interact with a gdb subprocess, and
    `Flask <http://flask.pocoo.org/>`__ to set up url routing, websockets,
    and http responses.
 
-2. ``gdbgui.pug``: HTML file that defines the frontend
+2. `gdbgui.pug <https://github.com/cs01/gdbgui/blob/master/gdbgui/templates/gdbgui.pug>`__: HTML file that defines the frontend
 
 3. Various JavaScript files: Communicate with gdb via websockets and dynamically update the page.
 
-4. ``gdbgui.css``: css stylesheet
+4. `gdbgui.css <https://github.com/cs01/gdbgui/blob/master/gdbgui/static/css/gdbgui.css>`__: css stylesheet
 
 
 Contributing
