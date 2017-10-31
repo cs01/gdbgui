@@ -81,6 +81,8 @@ GlobalEvents.init()
 Modal.init()
 FileOps.init()
 
+// make this visible in the console
+window.store = store
 
 // and finally, if user supplied an initial command, set it in the UI, and load the
 // inferior binary

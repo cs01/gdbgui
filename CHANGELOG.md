@@ -3,6 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.8.0.2
+* display bracket instead of `&lt;`
+
 ## 0.8.0.1
 * fix bug when restoring old settings
 
