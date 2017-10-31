@@ -14,7 +14,6 @@ const FileOps = {
         document.getElementById('refresh_cached_source_files').onclick = FileOps.refresh_cached_source_files
     },
     user_select_file_to_view: function(fullname, line){
-        store.set('source_code_state', constants.source_code_states.FETCHING_SOURCE)
         store.set('render_paused_frame_or_user_selection', 'user_selection')
         store.set('fullname_to_render',fullname)
         store.set('line_of_source_to_flash', line)
