@@ -175,7 +175,7 @@ How Does it Work?
 -----------------
 1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`_ manages gdb as a subprocess, and returns structured data to the frontend.
 2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`_ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
-3. The browser manages its ui with mostly vanilla JavaScript and some libraries.
+3. The browser manages its ui with JavaScript, React, and various libraries.
 
 The main components of gdbgui are
 
@@ -230,7 +230,7 @@ Users of gdbgui
 - `Arch Linux <https://www.archlinux.org/>`_
 - `BlackArch Linux <https://www.blackarch.org/>`_
 - `FreeBSD <https://www.freebsd.org/>`_
-- Create a PR and add your name, school, or project here
+- Create a PR and add your company, name, school, project, etc. here
 
 Contact
 -------
