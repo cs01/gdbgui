@@ -55,8 +55,12 @@ Split(['#middle', '#bottom'], {
 })
 
 GdbApi.init()
+GlobalEvents.init()
+Modal.init()
+FileOps.init()  // this should be initialized before components that use store key 'source_code_state'
 
-void(React)  // ReactDOM secretly depends on React; avoid "'React' is defined but never used  no-unused-vars"
+void(React)  // ReactDOM secretly depends on React; avoid "'React' is defined but never used  no-unused-vars" error
+             //
 // top section
 ReactDOM.render(<StatusBar/>, document.getElementById('status'))
 ReactDOM.render(<SourceCodeHeading/>, document.getElementById('source_code_heading'))
@@ -65,7 +69,7 @@ ShutdownGdbgui.init()
 SourceFileAutocomplete.init()
 
 // middle left
-ReactDOM.render(<MiddleLeft />, document.getElementById('middle_left'))
+ReactDOM.render(<MiddleLeft />, document.getElementById('middle_left'))  // uses store key 'source_code_state'
 
 // middle right
 ReactDOM.render(<RightSidebar signals={initial_data.signals} debug={debug} />, document.getElementById('middle_right'))
@@ -77,9 +81,6 @@ GdbCommandInput.init()
 // full page/javascript objects
 ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))
 ReactDOM.render(<Settings />, document.getElementById('settings_container'))
-GlobalEvents.init()
-Modal.init()
-FileOps.init()
 
 // make this visible in the console
 window.store = store

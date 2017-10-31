@@ -3,8 +3,11 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.8.0.3
+* modify component initialization order so that store updates are better sequenced
+
 ## 0.8.0.2
-* display bracket instead of `&lt;`
+* display bracket instead of `&lt;` when exploring gdb variables
 
 ## 0.8.0.1
 * fix bug when restoring old settings
