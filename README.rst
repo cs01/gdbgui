@@ -229,7 +229,7 @@ Users of gdbgui
 
 - `Arch Linux <https://www.archlinux.org//>`_
 - `BlackArch Linux <https://www.blackarch.org/>`_
-- `Free BSD <https://www.freebsd.org//>`_
+- `FreeBSD <https://www.freebsd.org//>`_
 - Create a PR and add your name, school, or project here
 
 Contact
