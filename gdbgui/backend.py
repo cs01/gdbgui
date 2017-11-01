@@ -334,6 +334,7 @@ def _shutdown():
 
     return jsonify({})
 
+
 @app.route('/get_last_modified_unix_sec')
 def get_last_modified_unix_sec():
     """Get last modified unix time for a given file"""

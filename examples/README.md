@@ -6,7 +6,7 @@
 ## Clone
 To get started, first clone this repository:
 ```
-	git clone https://github.com/cs01/gdbgui.git
+git clone https://github.com/cs01/gdbgui.git
 ```
 
 ## Install Dependencies
