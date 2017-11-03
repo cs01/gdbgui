@@ -1,0 +1,106 @@
+//- this page makes an ajax request to tell the server to shutdown, and tells the user that
+//- also display any other info/links/ads the user might find useful
+
+doctype html
+html
+    head
+        title gdbgui - gdb in a browser
+        base(target='_blank')
+
+        //- css
+        link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
+        link(href='static/vendor/css/animate.css', rel='stylesheet')
+
+        //- javascript
+        script(type="text/javascript" src='static/vendor/js/jquery.min.js')
+
+    style.
+        body{
+            background-color: white;
+        }
+        hr{
+            width: 90%;
+        }
+        .square {
+            height: 200px;
+            width: 200px;
+            display: inline-block;
+            margin: 10px;
+            transition: background-color .4s;
+            font-size: 1.1em;
+            padding: 20px;
+            border-style: solid;
+            border-color: #ccc;
+            border-width: 1px;
+            background-color: white;
+            vertical-align: top;
+            border-radius: 10px;
+        }
+
+        .square:hover {
+            background-color: #dff7ff;
+        }
+        a:hover{
+            text-decoration: none;
+        }
+        ul{
+            list-style-type: none;
+            padding-left: 2px;
+        }
+
+    body(style='position: fixed; width: 100%; height: 100%;')
+
+        div.container-fluid
+            p
+            //- immediately make the ajax call to shut the gdbgui server down
+            if debug == 'false'
+                //- do the actual shutdown
+                h3 gdbgui has been shut down
+                script.
+                    (function(){
+                        $.ajax({
+                            url: "/_shutdown",
+                            cache: false,
+                            method: 'GET',
+                            success: null,
+                            error: null,
+                        })
+                    })()
+                .row
+                    hr
+
+            .row
+                .col-md-4
+                .col-md-4
+                    span gdbgui has been a ton of fun to create. It's also taken quite a bit of my time and focus.
+                        =' '
+                    p
+                    p Payments are greatly appreciated and help in the addition of new features.
+                    p
+                    strong Commercial users are strongly encouraged to donate.
+                    p
+                    a(href='https://paypal.me/grassfedcode/20')
+                        img(src='/static/images/paypal.svg')
+                    .input-group
+                        span.input-group-addon(style='height: 60px; font-size: 2em;') $
+                        input#donation_amount.form-control(type='text', value=20, style='height: 60px; font-size: 2em;', onkeypress='keyup_donate(event)')
+                        .btn.btn-success.input-group-addon(onclick='donate()', style='height: 60px; font-size=2em; font-weight: bolder;') Donate
+
+    script.
+        function donate(){
+            let el = document.getElementById('donation_amount')
+            , donation = parseInt(el.value)
+            , DEFAULT_DONATION = '20'
+            if(isNaN(parseFloat(donation)) || !isFinite(donation)){
+                donation = DEFAULT_DONATION
+            }else{
+                donation = donation.toString()
+            }
+            window.open('https://paypal.me/grassfedcode/' + donation)
+        }
+
+        function keyup_donate(e){
+            if(e.keyCode === 13){
+                donate()
+            }
+        }

@@ -1,13 +1,12 @@
 /* gdbgui-specific stuff */
-.default#code_container { background-color: white; }
-
-/* text color */
-.default .loc { color: black; }
+.default {
+    background-color: white;
+    color: black;
+}
 
 /* when hovering, set background color of entire row */
 .default .paused_on_line {
     background-color: #bbefff;
-    border-color: #7878ff !important;
 }
 
 .default .assembly { color: black; }

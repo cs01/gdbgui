@@ -4,6 +4,8 @@ body{
     color: grey;
     border-color: grey;
     overflow: hidden;
+    padding: 0px;
+    height: 100%;
 }
 pre{
     overflow: visible !important;
@@ -14,6 +16,9 @@ td{
 
 
 /* styling for generic classes */
+.inline{
+    display: inline;
+}
 .bold{
     font-weight: bold;
 }
@@ -26,7 +31,7 @@ td{
 .monospace{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
 }
-.memory_address{
+.memadr, .memadr_react{  /* todo - migrate everything to react, then rename memadr_react to memadr  */
     color: #489ce4;
     text-decoration: none;
 }
@@ -95,22 +100,27 @@ td{
 }
 div.breakpoint{
     border: solid;
+    cursor: pointer;
     /* need top and bottom border so when hovering and showing border on row, there is no "jumping" */
     border-width: 0px;
-    border-top-width: 5px;
+    border-top-width: 1px;
     border-right-width: 1px;
     border-bottom-width: 1px;
     border-color: #f5f5f5; /* make border color the same as the background color */
+}
+.breakpoint td{
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
 }
 .breakpoint:hover{
     background-color: #f5f5f5;
 }
 .breakpoint_trashcan, .right_help_icon_show_on_hover{
-    float: right;
     margin-right: 5px;
     display: none !important;
 }
-div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .right_help_icon_show_on_hover{
+div.breakpoint:hover div.breakpoint_trashcan,
+.varLI:hover .right_help_icon_show_on_hover{
     display: inline !important;
 }
 .line_num{
@@ -145,15 +155,19 @@ div.breakpoint:hover a span.breakpoint_trashcan, .variable:hover .right_help_ico
     background: #ffd6d7 !important;
 }
 td.assembly{
-    padding-bottom: 6px;
+    padding-bottom: 0px;
+    padding-top: 0px;
     white-space: nowrap;
 }
 #code_table{
     font-family: monospace;
     border-collapse: separate;
+    font-size: 0.9em;
 }
 .srccode td{
     padding-left: 3px;
+    padding-bottom: 0px;
+    padding-top: 0px;
     border-style: solid;
     border-top-width: 1px;
     border-right-width: 1px;
@@ -173,7 +187,7 @@ td.line_num{
 }
 /* wsp == whitespace. Needed to preserve leading whitespace.
     this span wraps syntax-highlighted source code */
-span.wsp{
+.wsp{
     white-space: pre;
 }
 
@@ -187,11 +201,7 @@ span.wsp{
     height: 18px
 }
 .paused_on_line {
-    border-style: solid;
-    border-top-width: 1px;
-    border-bottom-width: 1px;
-    border-left-width: 0px;
-    border-right-width: 1px;
+    border-width: 0px;
 }
 .dropdown-btn {
         vertical-align: top;
@@ -239,7 +249,7 @@ span.wsp{
 }
 
 
-#settings_container{
+#settings_content{
     width: 100%;
     height: 100%;
     position: fixed;
@@ -264,6 +274,29 @@ span.wsp{
     margin-right: auto;
 }
 
+#hovervar{
+    background: white;
+    width: 350px;
+    height: 200px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: none;
+    overflow: auto;
+    padding: 10px;
+    border: solid 1px #989898;
+    border-radius: 4px;
+    /* http://www.cssmatic.com/box-shadow */
+    -webkit-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+    -moz-box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+    box-shadow: 9px 10px 31px 0px rgba(0,0,0,0.75);
+}
+
+.otpt{ /* output (shortened to keep dom as small as possible */
+    min-height: 1em;
+    margin: 2px;
+    white-space: pre;
+}
 
 #gdb_mi_output{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
@@ -274,10 +307,26 @@ span.wsp{
 }
 
 /* styling for "Expressions" component */
-#expressions li, #locals li{
+#expressions li, #locals li, #hovervar li{
     list-style: none;
 }
-ul.variable{
+#expressions, #locals, #hovervar{
+    white-space: nowrap;
+    font-family: monospace;
+    font-size: 0.9em;
+    overflow: auto;
+    margin: 0;
+    padding: 0;
+}
+
+.varLI .btn-radix{
+    display: none!important;
+}
+.varLI:hover .btn-radix{
+    display: inline !important;
+}
+
+ul.varUL{
         padding-left: 0;
         padding-top: 0;
         border: 0;
@@ -325,16 +374,3 @@ ul.variable{
         to { transform: scale(1) rotate(360deg);}
 }
 
-/* splitjs classes for splitting the body of the webpage (https://github.com/nathancahill/Split.js) */
-.gutter-horizontal {
-    cursor: col-resize;
-}
-.gutter-vertical {
-    cursor: row-resize;
-}
-/* splitjs is so unopinionated, it doesn't work without specific css classes (float: left) when splitting into two side-by-side
- panes ("horizonal" */
-.split.split-horizontal, .gutter.gutter-horizontal {
-    height: 100%;
-    float: left;
-}

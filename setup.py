@@ -27,7 +27,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version='0.7.6.2',
+    version='0.8.0.3',
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
@@ -48,11 +48,11 @@ setup(
     zip_safe=False,
     cmdclass={'test': TestCommand},
     install_requires=[
-        'Flask>=0.12',  # to run server
+        'Flask>=0.12.2',  # to run server
         'pygdbmi>=0.7.3.3',  # to parse gdb output
         'pypugjs>=4.2.0',  # to use .pug instead of .html
-        'Flask-SocketIO>=2.8.3',  # for websockets
-        'gevent>=1.2.1',  # for websockets (preferred)
+        'Flask-SocketIO>=2.9.0',  # for websockets
+        'gevent>=1.2.2',  # for websockets (preferred)
         'eventlet>=0.20.1',  # for websockets (backup to gevent)
         'Pygments>=2.2.0',  # for syntax highlighting
     ],

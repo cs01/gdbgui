@@ -1,13 +1,12 @@
 /* gdbgui-specific stuff*/
-.monokai#code_container { background-color: #333; }
-
-/* text color */
-.monokai .loc { color: white; }
+.monokai {
+    background-color: #333;
+    color: grey;
+}
 
 /* when hovering, set background color of entire row */
 .monokai .paused_on_line {
     background-color: #444;
-    border-color: #868686 !important;
 }
 
 .monokai .assembly { color: #d8d8d8; }

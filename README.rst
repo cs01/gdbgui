@@ -1,4 +1,4 @@
-A browser-based frontend/gui for GDB
+A browser-based frontend for GDB
 ====================================
 
 .. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png
@@ -7,70 +7,16 @@ A browser-based frontend/gui for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pyPI-0.7.6.2-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.8.0.3-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
+A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
 
-A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints,
-view stack traces, and more in C, C++, Go, and Rust! Simply run
-``gdbgui`` from the terminal and a new tab will open in your browser. `Screenshots <https://github.com/cs01/gdbgui#screenshots>`_ are below.
+If you are using gdbgui in a commercial setting, `consider donating to the project <https://paypal.me/grassfedcode/20>`_.
 
-Install
--------
-
-
-**Linux**
-
-::
-
-    sudo pip install gdbgui --upgrade
-
-**macOS**
-
-::
-
-    sudo pip install gdbgui --upgrade --user
-
-Follow `these instructions <https://gcc.gnu.org/onlinedocs/gnat_ugn/Codesigning-the-Debugger.html>`__  to codesign gdb if you get an error such as ``please check gdb is codesigned - see taskgated(8)``
-
-**Windows**
-
-Tested with `cygwin <https://cygwin.com/install.html>`_.
-
-::
-
-    pip install gdbgui --upgrade
-
-
-
-
-virtualenv users do not need the ``sudo`` prefix.
-
-If you get ``fatal error: Python.h: No such file or directory``, install ```python-dev``. If using apt-get, ``sudo apt-get install python3-dev`` for python3, or ``sudo apt-get install python-dev`` for python2.
-
-
-**Alternatively, you can clone and run directly**
-
-::
-
-    git clone https://github.com/cs01/gdbgui
-    cd gdbgui
-    pip install -r requirements.txt
-    gdbgui/backend.py
-
-Run
----
-
-::
-
-    gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
-              [--hide_gdbgui_upgrades] [--debug] [-n]
-              [cmd [cmd ...]]
-
-A new tab in your browser will open with gdbgui in it.
 
 Features
 --------
@@ -79,13 +25,17 @@ Features
 - View stack, threads
 - Switch frame on stack, switch between threads
 - Intuitively explore local variables when paused
+- Hover over variables in source code to view contents
 - Evaluate arbitrary expressions and plot their values over time
+- Explore an interactive tree view of your data structures
+- Jump back into the program's state to continue debug unexpected faults (i.e. SEGFAULT)
 - Inspect memory in hex/character form
 - View all registers
-- Dropdown of all files used to compile binary, with autocomplete functionality
+- Dropdown of files used to compile binary, with autocomplete functionality
 - Source code explorer with ability to jump to line
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
-- Notifications when new updates are available
+- Assembly is displayed if source code cannot be found
+- Notifications when new gdbgui updates are available
 
 Why gdbgui?
 -----------
@@ -93,8 +43,91 @@ Why gdbgui?
 - Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be.
 - Design influenced by the amazing Chrome debugger
 - Full gdb command line utility built-in
-- Written in widely used languages (Python and JavaScript)
+- The only gdb frontend built with Python and JavaScript
 - Open source and free
+- Useful to both beginners and experienced developers
+
+Compatibility
+-------------
+
+Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
+
+Operating systems: Ubuntu 14.04+, macOS, Windows (in cygwin)
+
+Browsers: Tested with Chrome, Firefox. Should work with any modern, standards-compliant browser.
+
+gdb: 7.7+
+
+Languages: C, C++, golang, rust (any language supported by gdb itself)
+
+Install
+-------
+``pip install gdbgui --upgrade``
+
+See `INSTALLATION <https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md>`_ for detailed instructions.
+
+Run
+---
+
+Running Locally
+~~~~~~~~~~~~~~~~
+::
+
+    gdbgui
+
+A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. ``http://localhost:5000``).
+
+For a list of ``gdbgui`` arguments, see the ``Arguments`` section below or type ``gdbgui --help``.
+
+Running Remotely
+~~~~~~~~~~~~~~~~
+Because gdbgui is a server, it naturally allows you to debug programs running on other computers.
+
+- ``ssh`` into the computer with the program that needs to be debugged.
+- run ``gdbgui -r`` on the remote machine (this will serve publicly so beware of security here)
+- on your local machine, open your browser and access the remote machine's ip and port
+- debug the remote computer in your local browser
+
+Step-By-Step Instructions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+After opening the webpage in a supported browser:
+
+- Type the path to the executable in the input at the top (next to "Load the Binary and Args"). The executable should already exist and have been compiled with the ``-g`` flag.
+- Click ``Load the Binary and Args``. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically (this can be changed in settings).
+- The line of source code corresponding to ``main`` will display if the program was compiled with debug symbols (i.e. ``-g``).
+- Click the ``Run`` button, which is on the top right and looks like a circular arrow.
+- Step through the program by clicking the ``Next``, ``Step``, ``Continue``, etc. as desired. These are also on the top right.
+
+Arguments
+~~~~~~~~~
+Positional arguments:
+  ``command``: (Optional) The quote-enclosed executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg value -flag1 -flag2"`` (note the quotes around the executable and arguments!). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
+
+Flags (all are optional):
+  -h, --help            show this help message and exit
+  -p PORT, --port PORT  The port on which gdbgui will be hosted. Defaults to
+                        5000
+  --host HOST           The host ip address on which gdbgui serve. Defaults to
+                        127.0.0.1
+  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser
+                        from opening. This allows remote access to gdbgui and
+                        is useful when running on a remote machine that you
+                        want to view/debug from your local browser, or let
+                        someone else debug your application remotely.
+  -g GDB, --gdb GDB     Path to gdb or lldb executable. Defaults to gdb. lldb
+                        support is experimental.
+  --lldb                Use lldb commands (experimental)
+  -v, --version         Print version
+  --hide_gdbgui_upgrades
+                        Hide messages regarding newer version of gdbgui.
+                        Defaults to False.
+  --debug               The debug flag of this Flask application. Pass this
+                        flag when debugging gdbgui itself to automatically
+                        reload the server when changes are detected
+  -n, --no_browser      By default, the browser will open with gdb gui. Pass
+                        this flag so the browser does not open.
+  -x GDB_CMD_FILE, --gdb_cmd_file GDB_CMD_FILE
+                        Execute GDB commands from file.
 
 Examples
 --------
@@ -102,45 +135,9 @@ Example code and makefiles for C, C++, go, and rust, that build and launch gdb.
 
 See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
 
-Arguments
-~~~~~~~~~
-Positional arguments:
-  ``command``: (Optional) The executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg -flag1 -flag2"`` (note the quotes around the executable and arguments). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
-
-Flags (all are optional):
-  -h, --help            show this help message and exit
-  -p PORT, --port PORT  The port on which gdbgui will be hosted
-  --host HOST           The host ip address on which gdbgui serve.
-  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser from opening.
-                        This allows remote access to gdbgui and is useful when running on a
-                        remote machine that you want to view/debug from your local
-                        browser, or let someone else debug your application
-                        remotely.
-  -g GDB, --gdb GDB     Path to gdb executable or lldb-mi executable. Defaults is 'gdb'. lldb
-                        support is experimental and not fully functional at this time.
-  -v, --version         Print gdbgui version
-  --debug               The debug flag of gdbgui. Pass this
-                        flag when debugging gdbgui itself to automatically
-                        reload the server when changes are detected.
-  -n, --no_browser          By default, the browser will open with gdb gui. Pass
-                        this flag so the browser does not open.
-
-Compatibility
--------------
-
-Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
-
-Operating systems: Ubuntu 14.04+, OSX
-
-Browsers: Chrome
-
-Gdb: 7.7.1 - 8
-
-Rust users: gdb v7.12.x cannot display register values due to a `gdb bug <https://sourceware.org/bugzilla/show_bug.cgi?id=21451>`_
-
 Settings
 --------
-gdbgui settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for the url and port.
+``gdbgui`` settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for a given url and port.
 
 Keyboard Shortcuts
 ------------------
@@ -154,150 +151,86 @@ The following keyboard shortcuts are available when the focus is not in an input
 - Next Instruction: m
 - Step Instruction: ,
 
+Debugging Faults
+----------------
+If your program exits unexpectedly from something like a SEGFAULT, ``gdbgui`` displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.
 
-Contributing
-------------
-Help the gdbgui project grow by spreading the word.
+.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
+  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEGV.png
 
-.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/static/images/twitter.png
-  :target: https://twitter.com/intent/tweet?text=check+out+%23gdbgui%2C+a+modern+browser-based+frontend+to+gdb+https%3A%2F%2Fgithub.com%2Fcs01%2Fgdbgui
+Screenshots
+-----------
+.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
+  :target: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
 
-Creating and voting on issues in github will help me prioritize what to work on.
-
-Documentation, spelling fixes, bug fixes, features, etc. are of course welcome too. To get started with development, set up a new virtual environment, then
-run
-
-::
-
-    git clone https://github.com/cs01/gdbgui
-    cd gdbgui
-    pip install -r requirements.txt
-    pip install -r dev_requirements.txt
-    gdbgui/backend.py --debug
-
-If you are modifying gdbgui.js, make sure you have the developer console open so the browser doesn't cache the file and miss your changes. When ``--debug`` is passed, there is a new component at the bottom of the right sidebar that displays the raw gdb mi output to help you debug.
-
-
-Testing
-~~~~~~~
-
-``make test`` runs unit tests and verifies README.rst is properly formatted.
-``gdbgui/tests/test_app.py``. Add new tests there as necessary.
-
+See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_ for more.
 
 License
 -------
 GNU GPLv3
 
-pyPI and this github page are the only official sources of gdbgui.
+PyPI and this github page are the only official sources of gdbgui.
 
 How Does it Work?
 -----------------
-1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`__ manages gdb as a subprocess, and returns key/value pairs (dictionaries).
-2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`__ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A thread is spawned constantly read and forward output from gdb to the browser.
-3. The `pypugjs <https://github.com/matannoam/pypugjs>`__ template engine is used to reduce html LOC
-4. The browser manages its ui and state with the plain JavaScript library `stator <https://github.com/cs01/stator>`__
-
-``gdbgui`` was designed to be easily hackable and extendable. There is
-no build system necessary to run or develop this app.
+1. The `pygdbmi library <https://github.com/cs01/pygdbmi>`_ manages gdb as a subprocess, and returns structured data to the frontend.
+2. The `Flask-SocketIO <https://flask-socketio.readthedocs.io/en/latest/>`_ server (Flask+websockets) serves the webpage and provides realtime interactivity.  http/websocket endpoints are available for the browser. Each websocket connection (browser tab) runs a pygdbmi-managed instance of gdb. A separate coroutine/thread continuously parses and forwards gdb's output to the browser.
+3. The browser manages its ui with JavaScript, React, and various libraries.
 
 The main components of gdbgui are
 
-1. ``backend.py``: The backend consists of a single Python file, which
+1. `backend.py <https://github.com/cs01/gdbgui/blob/master/gdbgui/backend.py>`__: The backend consists of a single Python file, which
    makes use of `pygdbmi <https://github.com/cs01/pygdbmi>`__ to
    interact with a gdb subprocess, and
    `Flask <http://flask.pocoo.org/>`__ to set up url routing, websockets,
    and http responses.
 
-2. ``gdbgui.pug``: HTML file that defines the frontend
+2. `gdbgui.pug <https://github.com/cs01/gdbgui/blob/master/gdbgui/templates/gdbgui.pug>`__: HTML file that defines the frontend
 
-3. ``gdbgui.js``: The majority of the application is contained in this file. It dynamically updates the page, and maintains gdb state. It sends AJAX requests and uses websockets to interact with gdb through the server, then gets the response and updates the DOM as necessary.
+3. `gdbgui.js <https://github.com/cs01/gdbgui/blob/master/gdbgui/src/js/gdbgui.js>`__: Communicate with gdb via websockets and dynamically update the page.
 
-4. ``gdbgui.css``: css stylesheet
-
-
-Screenshots
------------
-Enter the binary and args just as you'd call them on the command line. Binary is restored when gdbgui is opened at a later time.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png
-
-Intuitive control of your program. From left to right: Run, Continue, Next, Step, Return, Next Instruction, Step Instruction, send interrupt signal (SIGINT) to inferior process.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png
-
-Stack/Threads
--------------------------
-View all threads, the full stack on the active thread, the current frame on inactive threads. Switch between frames on the stack, or threads by pointing and clicking.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png
-
-Source Code
------------
-View source, assembly, add breakpoints. All symbols used to compile the target are listed in a dropdown above the source code viewer, and have autocompletion capabilities.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source.png
-
-With assembly. Note the bold line is the current instruction that gdb is stopped on.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/source_with_assembly.png
+4. `gdbgui.css <https://github.com/cs01/gdbgui/blob/master/gdbgui/static/css/gdbgui.css>`__: css stylesheet
 
 
-Variables and Expressions
--------------------------
+Contributing
+------------
 
-All local variables are automatically displayed, and are clickable to explore their fields.
+See `CONTRIBUTING <https://github.com/cs01/gdbgui/blob/master/CONTRIBUTING.md>`_
 
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/locals.png
+Authors
+-------
+``gdbgui`` would not be possible without the work of several amazing open source libraries
 
-Arbitrary expressions can be evaluated as well.
+JavaScript
 
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png
+- React
+- splitjs: https://github.com/nathancahill/Split.js
+- awesomplete: https://github.com/LeaVerou/awesomplete
+- vis.js: http://visjs.org/
+- moment.js
+- lodash
+- bootstrap
+- jquery
 
-Expressions record their previous values, and can be displayed in an x/y plot.
+Python
 
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/plots.png
+- flask: http://flask.pocoo.org/
+- socket.io: https://socket.io/
+- flask-socket-io: https://flask-socketio.readthedocs.io/en/latest/
+- pypugjs: https://github.com/matannoam/pypugjs
+- Pygments: http://pygments.org/
+- gevent: http://www.gevent.org/
+- pygdbmi: https://github.com/cs01/pygdbmi
 
+and `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_. Thank you!
 
+Users of gdbgui
+--------------------------------
 
-Memory Viewer
--------------
-All hex addresses are automatically converted to clickable links to explore memory. Length of memory is configurable. In this case 16 bytes are displayed per row.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/memory.png
-
-
-Registers
----------
-View all registers. If a register was updated it is highlighted in yellow.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/registers.png
-
-
-gdb console
------------
-Read gdb output, and write to the gdb subprocess as desired. Don't let any gdb commandline skills you've developed go to waste.
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/console.png
-
-
-gdbgui at launch:
-
-.. image:: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
-  :target: https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png
-
-
+- `Arch Linux <https://www.archlinux.org/>`_
+- `BlackArch Linux <https://www.blackarch.org/>`_
+- `FreeBSD <https://www.freebsd.org/>`_
+- Create a PR and add your company, name, school, project, etc. here
 
 Contact
 -------

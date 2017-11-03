@@ -1,16 +1,30 @@
 # Examples
 
-	git clone https://github.com/cs01/gdbgui.git
-	cd gdbgui/examples
-	make [c | cpp | go | rust | cpython]
+## Overview
+`gdbgui` can debug executables generated from various languages. This folder contains example source code and makefiles to build and automatically launch `gdbgui`.
 
-Running `make` in the above commands will
+## Clone
+To get started, first clone this repository:
+```
+git clone https://github.com/cs01/gdbgui.git
+```
+
+## Install Dependencies
+If you already installed `gdbgui` with `pip`, you have all dependencies installed. If not, you need to install them manually:
+```bash
+pip install -r gdbgui/requirements.txt  # run as sudo if this fails
+```
+
+## Build Executables and Debug with gdbgui
+Enter the directory with the language of your choice in `gdbgui/examples/*` (`c`, `cpp`, `rust`, `golang`, `fortran`), then type `make` and hit the `tab` to see the make targets.
+
+For example, in `gdbgui/examples/c`, running `make hello` will:
 
 * build the binary (assuming you have the right compilers and libraries installed)
 * open a new tab in your browser
-* load the inferior binary
-* insert a breakpoint at main (Rust and Go users, see note)
+* load the executable for the make target you just built
+* insert a breakpoint at main (Rust and Go users may see machine code displayed rather than source code. This is a `gdb` limitation.)
+* **Note: Although the program has loaded, you still must click the run icon to actually begin running the program.**
 
-Note: go and rust programs will show an error trying to load file "main" because gdb does not know how to determine source files from function names for go/rust. Choose a file from the dropdown, then add a breakpoint and hit run. It will then hit the "main" breakpoint, so you must press the continue button to hit your breakpoint. To avoid this, turn off the `Auto add breakpoint to main` option in Settings.
-
-Note: Although the program has loaded, you still must click the run icon to actually begin running the program.
+## Contributing
+If you have another example you think would be useful to demonstrate debugger features, please submit a pull request. No `gdbgui` knowledge is required to add example code :).
