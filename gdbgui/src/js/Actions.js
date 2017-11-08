@@ -44,8 +44,31 @@ const Actions = {
      */
     refresh_state_for_gdb_pause: function(){
         GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds())
-    }
+    },
+    execute_console_command: function(command){
+        if(store.get('refresh_state_after_sending_console_command')){
+            GdbApi.run_command_and_refresh_state(command)
+        }else{
+            GdbApi.run_gdb_command(command)
+        }
+    },
+    clear_console: function() {
+        store.set('gdb_console_entries', [])
+    },
+    add_console_entries: function(entries, type) {
+        if(!_.isArray(entries)){
+            entries = [entries]
+        }
 
+        const typed_entries = entries.map(entry => {
+            return {type: type, value: entry}
+        })
+
+        const previous_entries = store.get('gdb_console_entries')
+        const new_entries = previous_entries.concat(typed_entries)
+
+        store.set('gdb_console_entries', new_entries)
+    }
 }
 
 export default Actions

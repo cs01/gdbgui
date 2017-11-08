@@ -27,11 +27,10 @@ import SourceFileAutocomplete from './SourceFileAutocomplete.js';
 import FileOps from './FileOps.js';
 import Settings from './Settings.jsx';
 import Modal from './Modal.js';
-import GdbCommandInput from './GdbCommandInput.js';
 import HoverVar from './HoverVar.jsx';
 import ShutdownGdbgui from './ShutdownGdbgui.js';
 import RightSidebar from './RightSidebar.jsx';
-import GdbConsoleComponent from './GdbConsole.js';
+import GdbConsoleContainer from './GdbConsoleContainer.jsx';
 
 store.options.debug = debug
 store.initialize(initial_store_data)
@@ -75,8 +74,7 @@ ReactDOM.render(<MiddleLeft />, document.getElementById('middle_left'))  // uses
 ReactDOM.render(<RightSidebar signals={initial_data.signals} debug={debug} />, document.getElementById('middle_right'))
 
 // bottom
-GdbConsoleComponent.init()
-GdbCommandInput.init()
+ReactDOM.render(<GdbConsoleContainer />, document.getElementById('bottom_content'))
 
 // full page/javascript objects
 ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))

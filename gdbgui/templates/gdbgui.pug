@@ -94,18 +94,8 @@ html
             #bottom_content.split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
                 //- position of this split pane is relative so that other divs can be absolute and use it as an anchor
 
-                //- gdb console output
-                div#console(style='font-size: 0.9em; border-bottom: 0; border-bottom-left-radius: 0; border-bottom-right-radius: 0; height: 100%;')
-
-                //- gdb console input
-                table.gdb_command_input(style='width: 100%; height: 30px; position: absolute; bottom: 0px; left: 0px; ')
-                    tr
-                        td(style='width: 30px; vertical-align: middle;')
-                            span(style='margin-top: 10px') (#{interpreter})
-                        td(style='width: 100%; ')
-                            input.form-control.dropdown-input#gdb_command_input(type="text", autocomplete="on", data-list="#gdb_command_reference", placeholder='enter #{interpreter} command. To interrupt inferior, send SIGINT.', )
-                         td(style='width: 15px; vertical-align: middle; padding-right: 10px')
-                            span.glyphicon.glyphicon-ban-circle.clear_console.pointer(title='clear console', )
+                //- gdb console 
+                div#console_container
 
 
         //- modal window, hidden by default, used to show various modal dialogs

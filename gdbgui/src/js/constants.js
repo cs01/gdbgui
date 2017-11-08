@@ -1,14 +1,24 @@
 let constants = {
     'ENTER_BUTTON_NUM': 13,
+    'TAB_BUTTON_NUM': 9,
     'LEFT_BUTTON_NUM': 37,
     'UP_BUTTON_NUM': 38,
     'RIGHT_BUTTON_NUM': 39,
     'DOWN_BUTTON_NUM': 40,
+    'Y_BUTTON_NUM': 89,
+    'N_BUTTON_NUM': 78,
     'COMMA_BUTTON_NUM': 188,
     'DATE_FORMAT': 'dddd, MMMM Do YYYY, h:mm:ss a',
     'ANIMATED_REFRESH_ICON': "<span class='glyphicon glyphicon-refresh glyphicon-refresh-animate'></span>",
     'IGNORE_ERRORS_TOKEN_STR': '1',
     'DISASSEMBLY_FOR_MISSING_FILE_STR': '2',
+
+    console_entry_type: {
+        SENT_COMMAND: 'SENT_COMMAND',
+        STD_ERR: 'STD_ERR',
+        STD_OUT: 'STD_OUT',
+        BACKTRACE_LINK: 'BACKTRACE_LINK'
+    },
 
     'source_code_states': {
         ASSM_AND_SOURCE_CACHED: 'ASSM_AND_SOURCE_CACHED',

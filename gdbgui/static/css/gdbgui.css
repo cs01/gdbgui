@@ -228,22 +228,48 @@ td.line_num{
     z-index: 1000;
     background: #f1f1f1;
 }
+#console_container{
+    height: 100%;
+}
 #console{
     background-color: #292929;
     color: #d6d6d6 !important;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
     width: 100%;
     overflow: auto;
+    font-size: 0.9em; 
+    border-bottom: 0; 
+    border-bottom-left-radius: 0; 
+    border-bottom-right-radius: 0; 
+    height: 100%;
 }
-#gdb_command_input, .gdb_command_input{
+#gdb_command_input, #gdb_command_input .gdb_command_input{
+    height: 30px;
     border-width: 0;
-    padding: 10px;
     background-color: #3c3c3c !important;
     color: #f9f9f9 !important;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
-
-#gdb_command_input:focus {
+#gdb_command_input{
+    width: 100%;
+    height: 30px;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+#gdb_command_input tr td:nth-child(1) {
+    width: 30px;
+    vertical-align: middle;
+}
+#gdb_command_input tr td:nth-child(2) {
+    width: 100%;
+}
+#gdb_command_input tr td:nth-child(3) {
+    width: 15px;
+    vertical-align: middle;
+    padding-right: 10px;
+}
+#gdb_command_input .gdb_command_input:focus{
     outline-color: none;
     box-shadow: none;
 }
