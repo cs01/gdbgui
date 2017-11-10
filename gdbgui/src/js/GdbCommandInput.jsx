@@ -4,8 +4,10 @@ import {store} from './store.js';
 import constants from './constants.js'
 
 class GdbCommandInput extends React.Component {
-    componentDidUpdate() {
-        this.command_input_element.focus()
+    componentDidUpdate(prevProps) {
+        if(prevProps.current_command_input !== this.props.current_command_input){
+            this.command_input_element.focus()
+        }
     }
     
     on_command_input_key_down = (event) => {
