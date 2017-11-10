@@ -30,7 +30,7 @@ class CommandHistory {
 
     add_command_reset_index(command){
         this.add_command(command)
-        this.command_index = 0
+        this.not_history_entry = true
     }
 
     previous(){
