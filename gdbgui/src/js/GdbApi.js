@@ -7,7 +7,6 @@ import Registers from './Registers.jsx';
 import Memory from './Memory.jsx';
 import Modal from './Modal.js';
 import Actions from './Actions.js';
-import GdbConsoleComponent from './GdbConsole.js';
 import GdbVariable from './GdbVariable.jsx';
 import constants from './constants.js';
 import process_gdb_response from './process_gdb_response.js';
@@ -30,8 +29,6 @@ if(debug){
  */
 const GdbApi = {
     init: function(){
-        $("body").on("click", ".gdb_cmd", GdbApi.click_gdb_cmd_button)
-        $('body').on('click', '.backtrace', GdbApi.backtrace)
         $('#run_button').click(GdbApi.click_run_button)
         $('#continue_button').click(GdbApi.click_continue_button)
         $('#next_button').click(GdbApi.click_next_button)
@@ -114,6 +111,10 @@ const GdbApi = {
         Actions.inferior_program_running()
         GdbApi.run_gdb_command('-exec-interrupt')
     },
+    send_autocomplete_command: function(command){
+        Actions.inferior_program_running()
+        GdbApi.run_gdb_command('complete ' + command)
+    },
     click_gdb_cmd_button: function(e){
         if (e.currentTarget.dataset.cmd !== undefined){
             // run single command
@@ -156,8 +157,8 @@ const GdbApi = {
                 let text = `It's been over ${WAIT_TIME_SEC} seconds. Is an inferior program loaded and running?`
                 store.set('waiting_for_response', false)
                 store.set('status', {text: text, error: false, warning: true})
-                GdbConsoleComponent.add(text, true)
-                GdbConsoleComponent.scroll_to_bottom()
+
+                Actions.add_console_entries(text, constants.console_entry_type.STD_ERR)
             },
             WAIT_TIME_SEC * 1000)
     },
@@ -180,7 +181,7 @@ const GdbApi = {
         // add the send command to the console to show commands that are
         // automatically run by gdb
         if(store.get('show_all_sent_commands_in_console')){
-            GdbConsoleComponent.add_sent_commands(cmds)
+            Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND)
         }
 
         GdbApi.waiting_for_response()

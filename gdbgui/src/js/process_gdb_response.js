@@ -14,7 +14,7 @@ import StatusBar from './StatusBar.jsx';
 import Memory from './Memory.jsx';
 import GdbApi from './GdbApi.js';
 import Locals from './Locals.jsx';
-import GdbConsoleComponent from './GdbConsole.js';
+//import GdbConsoleComponent from './GdbConsole.js';
 import GdbVariable from './GdbVariable.jsx';
 import Modal from './Modal.js';
 import Actions from './Actions.js';
@@ -30,6 +30,28 @@ const process_gdb_response = function(response_array){
      */
     , ignore = function(response){
         return response.token === constants.IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
+    }
+
+    /*
+        if this is an autocomplete response then we don't want the normal flow to run.  Auto
+        complete only prints out the options to the console if tab is pressed for a second time
+        with no other change to the input field from the first press
+    */
+    if (response_array.length > 0 && response_array[0].type === 'log' &&
+        response_array[0].payload && response_array[0].payload.lastIndexOf('complete ', 0) === 0) {
+        GdbMiOutput.add_mi_output(response_array[0])
+
+        let responses = [];
+        for (let i=1; i<response_array.length-1; ++i) {
+            GdbMiOutput.add_mi_output(response_array[i])
+            responses.push(response_array[i].payload.replace(/\\n/g, ""))
+        }
+
+        GdbMiOutput.add_mi_output(response_array[response_array.length-1])
+
+        store.set('gdb_autocomplete_options', responses)
+
+        return;
     }
 
     for (let r of response_array){
@@ -108,7 +130,8 @@ const process_gdb_response = function(response_array){
                         let gdb_version_array = store.get('gdb_version_array')
                         // rust cannot view registers with gdb 7.12.x
                         if(gdb_version_array[0] == 7 && gdb_version_array[1] == 12){
-                            GdbConsoleComponent.add(`Warning: Due to a bug in gdb version ${store.get('gdb_version')}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`, true)
+                            
+                            Actions.add_console_entries(`Warning: Due to a bug in gdb version ${store.get('gdb_version')}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`, constants.console_entry_type.STD_ERR)
                             store.set('can_fetch_register_values', false)
                         }
                     }else if (source_file_paths.some(p => p.endsWith('.go'))){
@@ -163,7 +186,8 @@ const process_gdb_response = function(response_array){
             }
 
         } else if (r.type === 'console'){
-            GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
+            Actions.add_console_entries(r.payload, r.stream === 'stderr' ? 
+                constants.console_entry_type.STD_ERR : constants.console_entry_type.STD_OUT)
             if(store.get('gdb_version') === undefined){
                 // parse gdb version from string such as
                 // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
@@ -178,7 +202,8 @@ const process_gdb_response = function(response_array){
             }
         }else if (r.type === 'output' || r.type === 'target'){
             // output of program
-            GdbConsoleComponent.add(r.payload, r.stream === 'stderr')
+            Actions.add_console_entries(r.payload, r.stream === 'stderr' ? 
+                constants.console_entry_type.STD_ERR : constants.console_entry_type.STD_OUT)
         } else if (r.type === 'notify'){
             if(r.message === "thread-group-started"){
                 store.set('inferior_pid', parseInt(r.payload.pid))
@@ -197,11 +222,11 @@ const process_gdb_response = function(response_array){
                 Actions.inferior_program_paused(r.payload.frame)
 
             }else if (r.payload.reason === 'signal-received'){
-                GdbConsoleComponent.add('gdbgui noticed a signal was recieved. ' +
+                Actions.add_console_entries('gdbgui noticed a signal was recieved. ' +
                     'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
-                    'occurred by clicking the below button.')
-                GdbConsoleComponent.add_no_escape(`<a style="font-family: arial; margin-left: 10px;" class='btn btn-success backtrace'>Re-Enter Program (backtrace)</a>`)
+                    'occurred by clicking the below button.', constants.console_entry_type.STD_OUT)
 
+                Actions.add_console_entries('Re-Enter Program (backtrace)', constants.console_entry_type.BACKTRACE_LINK);
             }else{
                 console.log('TODO handle new reason for stopping. Notify developer of this.')
                 console.log(r)
@@ -217,11 +242,6 @@ const process_gdb_response = function(response_array){
         }else{
             StatusBar.render_from_gdb_mi_response(last_response)
         }
-    }
-
-    if(response_array.length > 0){
-        // scroll to the bottom
-        GdbConsoleComponent.scroll_to_bottom()
     }
 }
 

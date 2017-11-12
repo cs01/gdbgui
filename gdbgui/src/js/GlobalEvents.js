@@ -3,7 +3,6 @@
  */
 
 import constants from './constants.js';
-import GdbCommandInput from './GdbCommandInput.js';
 import GdbApi from './GdbApi.js';
 
 const GlobalEvents = {
@@ -17,7 +16,6 @@ const GlobalEvents = {
         $('body').on('keydown', GlobalEvents.body_keydown)
         $('[data-toggle="tooltip"]').tooltip()
 
-        window.addEventListener("beforeunload", GdbCommandInput.save_sent_commands)
         window.onbeforeunload = () => ('text here makes dialog appear when exiting. Set function to back to null for nomal behavior.')
     },
     /**

@@ -10,7 +10,8 @@ import GdbApi from './GdbApi.js';
 import constants from './constants.js'
 import MemoryLink from './MemoryLink.jsx';
 import ReactTable from './ReactTable.jsx';
-import GdbConsoleComponent from './GdbConsole.js';
+import Actions from './Actions'
+//import GdbConsoleComponent from './GdbConsole.js';
 import React from 'react';
 
 class Memory extends React.Component {
@@ -175,7 +176,7 @@ class Memory extends React.Component {
                 let orig_end_addr = end_addr
                 end_addr = start_addr + Memory.MAX_ADDRESS_DELTA_BYTES
                 store.set('end_addr', '0x' + end_addr.toString(16))
-                GdbConsoleComponent.add(`Cannot fetch ${orig_end_addr - start_addr} bytes. Changed end address to ${store.get('end_addr')} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`, true)
+                Actions.add_console_entries(`Cannot fetch ${orig_end_addr - start_addr} bytes. Changed end address to ${store.get('end_addr')} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`, constants.console_entry_type.STD_ERR)
             }
 
             let cur_addr = start_addr
