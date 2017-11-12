@@ -299,7 +299,11 @@ const initial_store_data = {
     status: {'text': '', 'error': false, 'warn': false},
     waiting_for_response: false,
 
-    gdb_mi_output: []
+    gdb_mi_output: [],
+
+    gdb_autocomplete_options: [],
+
+    gdb_console_entries: []
 }
 
 const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output']
