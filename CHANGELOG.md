@@ -3,6 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+* Add autocomplete functionality (@bobthekingofegypt, issue #129)
+
+
 ## 0.8.0.3
 * modify component initialization order so that store updates are better sequenced
 

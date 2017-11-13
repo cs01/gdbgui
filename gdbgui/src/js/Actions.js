@@ -65,6 +65,10 @@ const Actions = {
         })
 
         const previous_entries = store.get('gdb_console_entries')
+        const MAX_NUM_ENTRIES = 10000
+        if(previous_entries.length > MAX_NUM_ENTRIES){
+            previous_entries.splice(previous_entries.length - MAX_NUM_ENTRIES, MAX_NUM_ENTRIES)
+        }
         const new_entries = previous_entries.concat(typed_entries)
 
         store.set('gdb_console_entries', new_entries)

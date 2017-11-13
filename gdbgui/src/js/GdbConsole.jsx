@@ -1,5 +1,8 @@
+// component to display output from gdb, as well as gdbgui diagnostic messages
+//
 import React from 'react';
 
+import GdbApi from './GdbApi.js'
 import constants from './constants.js'
 
 const pre_escape = (string) => {
@@ -16,7 +19,7 @@ class GdbConsole extends React.Component {
     }
     backtrace_button_clicked = (event) => {
         event.preventDefault()
-        this.props.backtrace_button_clicked()
+        GdbApi.backtrace()
     }
 
     render_entries(console_entries){
@@ -29,20 +32,36 @@ class GdbConsole extends React.Component {
                     return <p key={index} className='otpt stderr'>{escaped_value}</p>
                 case constants.console_entry_type.SENT_COMMAND:
                     return (
-                        <p 
-                            key={index} 
+                        <p
+                            key={index}
                             className='otpt sent_command pointer'
                             onClick={() => this.props.on_sent_command_clicked(entry.value)}
                         >
                             {escaped_value}
                         </p>
                     )
+                case constants.console_entry_type.AUTOCOMPLETE_OPTION:
+                    return (
+                        <p
+                            key={index}
+                            className='otpt autocmplt pointer'
+                            onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}
+                        >
+                            <span>
+                                {escaped_value}
+                            </span>
+                            <span> </span>
+                            <span className='label label-primary' onClick={() =>GdbApi.run_gdb_command(`help ${entry.value}`)}>
+                                help
+                            </span>
+                        </p>
+                    )
                 case constants.console_entry_type.BACKTRACE_LINK:
                     return (
-                        <div 
-                            key={index} 
+                        <div
+                            key={index}
                         >
-                            <a 
+                            <a
                                 onClick={this.backtrace_button_clicked}
                                 style={{fontFamily: 'arial', marginLeft: '10px'}}
                                 className='btn btn-success backtrace'
@@ -60,7 +79,7 @@ class GdbConsole extends React.Component {
         return (
             <div id="console">
                 {this.render_entries(console_entries)}
-                <div 
+                <div
                     ref={(el) => { this.console_end = el }}
                 >
                 </div>
