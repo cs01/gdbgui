@@ -3,42 +3,34 @@ import React from 'react';
 import {store} from './store.js';
 import constants from './constants.js'
 
+
 class GdbCommandInput extends React.Component {
     componentDidUpdate(prevProps) {
         if(prevProps.current_command_input !== this.props.current_command_input){
+            // command input changed, so put focus on the input
             this.command_input_element.focus()
         }
     }
-    
-    on_command_input_key_down = (event) => {
-        const {display_confirmation_prompt} = this.props
-        if(display_confirmation_prompt){
-            event.preventDefault()
-            switch (event.keyCode) {
-                case constants.Y_BUTTON_NUM:
-                    this.props.confirmation_prompt_response(true)
-                    break
-                case constants.N_BUTTON_NUM:
-                    this.props.confirmation_prompt_response(false)
-                    break
-            }
-            return;
-        }
 
+    on_command_input_key_down = (event) => {
         switch (event.keyCode){
-            case constants.UP_BUTTON_NUM:
-                this.props.request_previous_command()
+            case constants.UP_BUTTON_NUM: {
+                this.props.get_previous_command_from_history()
                 break
-            case constants.DOWN_BUTTON_NUM:
-                this.props.request_next_command()
+            }
+            case constants.DOWN_BUTTON_NUM: {
+                this.props.get_next_command_from_history()
                 break
-            case constants.TAB_BUTTON_NUM:
+            }
+            case constants.TAB_BUTTON_NUM: {
                 event.preventDefault()
-                this.props.send_autocomplete_command()
+                this.props.send_autocomplete_command(event.target.value)
                 break
-            case constants.ENTER_BUTTON_NUM:
+            }
+            case constants.ENTER_BUTTON_NUM: {
                 this.props.run_command()
                 break
+            }
         }
     }
 
@@ -46,16 +38,11 @@ class GdbCommandInput extends React.Component {
         const {
             on_current_command_input_change,
             current_command_input,
-            display_confirmation_prompt, 
-            autocomplete_options_count,
             clear_console
         } = this.props
         const interpreter = store.get('interpreter')
-        const message = `enter ${interpreter} command. To interrupt inferior, send SIGINT.` 
+        const message = `enter ${interpreter} command. To interrupt inferior, send SIGINT.`
         let input_value = current_command_input
-        if(display_confirmation_prompt){
-            input_value = `Display all ${autocomplete_options_count} possibilities (y or n)?`
-        }
 
         return (
             <div id='gdb_command_input'>
@@ -64,7 +51,7 @@ class GdbCommandInput extends React.Component {
                         <tr>
                             <td>({interpreter})</td>
                             <td>
-                                <input 
+                                <input
                                     ref={(el) => { this.command_input_element = el }}
                                     onKeyDown={this.on_command_input_key_down}
                                     onChange={(event) => on_current_command_input_change(event.target.value)}

@@ -111,8 +111,8 @@ class Settings extends React.Component {
             <tbody>
             {Settings.get_checkbox_row('auto_add_breakpoint_to_main', 'Auto add breakpoint to main')}
             {Settings.get_checkbox_row('pretty_print', 'Pretty print dynamic variables (shows human readable values rather than internal methods)')}
-            {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Refresh store after sending command from the console widget')}
-            {Settings.get_checkbox_row('show_all_sent_commands_in_console', 'Show all sent commands in console')}
+            {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Auto-refresh all components when a command is sent from the console')}
+            {Settings.get_checkbox_row('show_all_sent_commands_in_console', 'Show all sent commands in console, including those sent automatically by gdbgui')}
             {Settings.get_checkbox_row('highlight_source_code', 'Syntax highlighting (for large files, turn off for better performance)')}
 
             <tr><td>

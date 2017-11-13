@@ -150,15 +150,22 @@ const GdbApi = {
      */
     waiting_for_response: function(){
         store.set('waiting_for_response', true)
-        const WAIT_TIME_SEC = 3
+        const WAIT_TIME_SEC = 15
         clearTimeout(GdbApi._waiting_for_response_timeout)
         GdbApi._waiting_for_response_timeout = setTimeout(
             () => {
-                let text = `It's been over ${WAIT_TIME_SEC} seconds. Is an inferior program loaded and running?`
+                let text = `No gdb response received after ${WAIT_TIME_SEC} seconds. This usually indicates an error. `
                 store.set('waiting_for_response', false)
                 store.set('status', {text: text, error: false, warning: true})
 
                 Actions.add_console_entries(text, constants.console_entry_type.STD_ERR)
+                Actions.add_console_entries('Possible reasons include:',
+                    constants.console_entry_type.STD_ERR)
+                Actions.add_console_entries('1) an inferior program was not loaded; 2) gdb has exited unexpectedly; 3) an unexpected error occurred'                ,
+                    constants.console_entry_type.STD_ERR)
+                Actions.add_console_entries(`If an operation that takes longer than ${WAIT_TIME_SEC} seconds was run, this message can be ignored.`,
+                    constants.console_entry_type.STD_ERR)
+
             },
             WAIT_TIME_SEC * 1000)
     },
@@ -192,10 +199,10 @@ const GdbApi = {
      * @param user_cmd (str or array): command or commands to run before refreshing store
      */
     run_command_and_refresh_state: function(user_cmd){
-        if(!user_cmd){
-            console.error('missing required argument')
-            return
-        }
+        // if(!user_cmd){
+        //     console.error('missing required argument')
+        //     return
+        // }
         let cmds = []
         if(_.isArray(user_cmd)){
             cmds = cmds.concat(user_cmd)
@@ -245,7 +252,8 @@ const GdbApi = {
         cmds.push(GdbApi.get_break_list_cmd())
 
         // List the frames currently on the stack.
-        cmds.push('-stack-list-frames')
+        // avoid the "no registers" error
+        cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + '-stack-list-frames')
         return cmds
     },
     refresh_breakpoints: function(){

@@ -210,6 +210,10 @@ function _check_type_match(a, b, key){
 
 function _value_changed(a, b){
     if(_.isObject(a)){
+        // since objects can be updated by reference, we don't
+        // know if the value changed or not since the reference
+        // is still the same. Err on the side of caution assume
+        // objects always change
         return true
     }else{
         return !_.isEqual(a, b)
@@ -306,7 +310,7 @@ const initial_store_data = {
     gdb_console_entries: []
 }
 
-const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output']
+const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output', 'gdb_console_entries']
 
 // restore saved localStorage data
 for(let key in initial_store_data){

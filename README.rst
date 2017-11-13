@@ -35,6 +35,7 @@ Features
 - Source code explorer with ability to jump to line
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
 - Assembly is displayed if source code cannot be found
+- Fully functional console with autocomplete functionality to fallback to if necessary
 - Notifications when new gdbgui updates are available
 
 Why gdbgui?

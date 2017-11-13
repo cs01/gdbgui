@@ -28,29 +28,38 @@ const process_gdb_response = function(response_array){
      * @param response: gdb mi response object
      * @return (bool): true if response should be ignored
      */
-    , ignore = function(response){
+    , ignore = (response) => {
         return response.token === constants.IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
     }
-
-    /*
-        if this is an autocomplete response then we don't want the normal flow to run.  Auto
-        complete only prints out the options to the console if tab is pressed for a second time
-        with no other change to the input field from the first press
-    */
-    if (response_array.length > 0 && response_array[0].type === 'log' &&
-        response_array[0].payload && response_array[0].payload.lastIndexOf('complete ', 0) === 0) {
-        GdbMiOutput.add_mi_output(response_array[0])
-
-        let responses = [];
-        for (let i=1; i<response_array.length-1; ++i) {
-            GdbMiOutput.add_mi_output(response_array[i])
-            responses.push(response_array[i].payload.replace(/\\n/g, ""))
+    , is_autocomplete_response = (response_array) => {
+        let num_responses = response_array.length
+        if (num_responses < 2) {
+            return false
         }
 
-        GdbMiOutput.add_mi_output(response_array[response_array.length-1])
-
-        store.set('gdb_autocomplete_options', responses)
-
+        let first_element = response_array[0]
+        , last_element = response_array[num_responses - 1]
+        if (first_element.type === 'log' &&
+                first_element.payload &&
+                first_element.payload.startsWith('complete ') &&
+                last_element.message === 'done' &&
+                last_element.stream === 'stdout' &&
+                last_element.type === 'result'){
+            // don't do this unless other checks are true to avoid a potentially expensive slice (copy) of the array
+            let gdb_completion_output = response_array.slice(1, num_responses - 1)
+            return gdb_completion_output.every(c =>
+                    c.type === 'console' &&
+                    c.stream === 'stdout' &&
+                    c.message === null)
+        }else{
+            return false
+        }
+    }
+    // if this is an autocomplete response, we will process it here and not
+    if (is_autocomplete_response(response_array)) {
+        let gdb_completion_output = response_array.slice(1, response_array.length - 1)
+        , options = gdb_completion_output.map(o => o.payload.replace(/\\n/g, ""))
+        store.set('gdb_autocomplete_options', options)
         return;
     }
 
@@ -130,7 +139,7 @@ const process_gdb_response = function(response_array){
                         let gdb_version_array = store.get('gdb_version_array')
                         // rust cannot view registers with gdb 7.12.x
                         if(gdb_version_array[0] == 7 && gdb_version_array[1] == 12){
-                            
+
                             Actions.add_console_entries(`Warning: Due to a bug in gdb version ${store.get('gdb_version')}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`, constants.console_entry_type.STD_ERR)
                             store.set('can_fetch_register_values', false)
                         }
@@ -186,7 +195,7 @@ const process_gdb_response = function(response_array){
             }
 
         } else if (r.type === 'console'){
-            Actions.add_console_entries(r.payload, r.stream === 'stderr' ? 
+            Actions.add_console_entries(r.payload, r.stream === 'stderr' ?
                 constants.console_entry_type.STD_ERR : constants.console_entry_type.STD_OUT)
             if(store.get('gdb_version') === undefined){
                 // parse gdb version from string such as
@@ -202,7 +211,7 @@ const process_gdb_response = function(response_array){
             }
         }else if (r.type === 'output' || r.type === 'target'){
             // output of program
-            Actions.add_console_entries(r.payload, r.stream === 'stderr' ? 
+            Actions.add_console_entries(r.payload, r.stream === 'stderr' ?
                 constants.console_entry_type.STD_ERR : constants.console_entry_type.STD_OUT)
         } else if (r.type === 'notify'){
             if(r.message === "thread-group-started"){
