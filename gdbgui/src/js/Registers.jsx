@@ -42,10 +42,10 @@ class Registers extends React.Component {
             if(store.get('register_names').length === 0){
                 // only fetch register names when we don't have them
                 // assumption is that the names don't change over time
-                cmds.push('-data-list-register-names')
+                cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + '-data-list-register-names')
             }
             // update all registers values
-            cmds.push('-data-list-register-values x')
+            cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + '-data-list-register-values x')
         }else{
             Registers.clear_cached_values()
         }

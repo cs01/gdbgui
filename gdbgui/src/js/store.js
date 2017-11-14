@@ -77,7 +77,7 @@ const store = {
         if(store.options.debug) {
             // this is only meaningful when the store data is immutable
             // and updates aren't just references to the existing object
-            if(KEYS_TO_NOT_LOG_CHANGES.indexOf(key) === -1){
+            if(KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE.indexOf(key) === -1){
                 console.log(key, oldval, ' -> ', value)
             }
         }
@@ -310,7 +310,10 @@ const initial_store_data = {
     gdb_console_entries: []
 }
 
-const KEYS_TO_NOT_LOG_CHANGES = ['gdb_mi_output', 'gdb_console_entries']
+const KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE = [
+    'gdb_mi_output',
+    'gdb_console_entries'
+]
 
 // restore saved localStorage data
 for(let key in initial_store_data){

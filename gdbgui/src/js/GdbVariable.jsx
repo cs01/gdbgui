@@ -80,7 +80,7 @@ let VarCreator = {
             // * means evaluate it at the current frame
             let var_create_cmd = `-var-create - * ${expression}`
             if(expr_type === 'hover'){
-                var_create_cmd = constants.IGNORE_ERRORS_TOKEN_STR + var_create_cmd
+                var_create_cmd = constants.CREATE_VAR_STR + var_create_cmd
             }
             cmds.push(var_create_cmd)
 
@@ -106,7 +106,6 @@ let VarCreator = {
      * @param r (object): gdb mi object
      */
     created_variable(r){
-        VarCreator._is_fetching = false
         let expr = VarCreator.expr_being_created
         if(expr){
             // example payload:
@@ -125,6 +124,13 @@ let VarCreator = {
         }else{
             console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
         }
+        VarCreator._fetch_complete()
+    },
+    fetch_failed(){
+        VarCreator._fetch_complete()
+    },
+    _fetch_complete(){
+        VarCreator._is_fetching = false
         VarCreator._clear_state()
         VarCreator._fetch_next_in_queue()
     },
@@ -300,6 +306,9 @@ class GdbVariable extends React.Component {
     static gdb_created_root_variable(r){
         VarCreator.created_variable(r)
     }
+    static gdb_variable_fetch_failed(r){
+        VarCreator.fetch_failed(r)
+    }
     /**
      * Got data regarding children of a gdb variable. It could be an immediate child, or grandchild, etc.
      * This method stores this child array data to the appropriate locally stored
@@ -398,7 +407,7 @@ class GdbVariable extends React.Component {
             new_obj.values = [parseInt(new_obj.value, 16)]
             new_obj._radix = 16
         }else if (!window.isNaN(parseFloat(new_obj.value))){
-            new_obj.values = [new_obj.value]
+            new_obj.values = [parseFloat(new_obj.value)]
             if(new_obj.is_int){
                 new_obj._radix = 10
             }else{
@@ -412,7 +421,8 @@ class GdbVariable extends React.Component {
         return new_obj
     }
     static _update_numeric_properties(obj){
-        obj.is_numeric = !window.isNaN(parseFloat(obj.value))
+        obj._float_value = parseFloat(obj.value)
+        obj.is_numeric = !window.isNaN(obj._float_value)
         obj.can_plot = obj.is_numeric && obj.expr_type === 'expr'
         obj.is_int = obj.is_numeric ? parseFloat(obj.value) % 1 === 0 : false
     }
@@ -574,7 +584,7 @@ class GdbVariable extends React.Component {
                 GdbVariable._update_numeric_properties(obj)
                 GdbVariable._update_radix_values(obj)
                 if(obj.can_plot){
-                    obj.values.push(obj._int_value_decimal)
+                    obj.values.push(obj._float_value)
                 }
                 store.set('expressions', expressions)
             }else{

@@ -6,6 +6,7 @@ import {store} from './store.js';
 import React from 'react';
 import FileOps from './FileOps.js';
 import Breakpoints from './Breakpoints.jsx';
+import Memory from './Memory.jsx';
 import MemoryLink from './MemoryLink.jsx';
 import constants from './constants.js';
 
@@ -126,8 +127,8 @@ class SourceCode extends React.Component {
      * example return value: mov $0x400684,%edi(00) main+8 0x0000000000400585
      */
     static _get_assm_content(key, assm, paused_addr){
-        let op = assm.opcodes ? `(${assm.opcodes})` : ''
-        , instruction = assm.inst
+        let op = assm.opcodes ? <span className='instrContent'>{`(${assm.opcodes})`}</span> : ''
+        , instruction = Memory.make_addrs_into_links_react(assm.inst)
         , func_name = assm['func-name']
         , offset = assm.offset
         , addr = assm.address
@@ -135,7 +136,10 @@ class SourceCode extends React.Component {
         , cls = on_current_instruction ? 'current_assembly_command' : ''
         , asterisk = on_current_instruction ? <span className='glyphicon glyphicon-chevron-right' style={{width: '10px', display: 'inline-block'}}/> : <span style={{width: '10px', display: 'inline-block'}}> </span>
         return(<span key={key} style={{'whiteSpace': "nowrap"}} className={cls}>
-                    {asterisk} {op} {instruction} {func_name}+{offset} <MemoryLink addr={addr} />
+                    {asterisk} <MemoryLink addr={addr} style={{paddingRight: '5px'}}/>
+                    {op}
+                    <span className='instrContent'>{instruction}</span>
+                    {func_name ? <span>{func_name}+{offset}</span> : ''}
                 </span>)
     }
 

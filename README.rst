@@ -161,10 +161,12 @@ If your program exits unexpectedly from something like a SEGFAULT, ``gdbgui`` di
 
 Screenshots
 -----------
-.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
-  :target: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/expressions.png
 
 See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_ for more.
+
+.. image:: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/gdbgui2.png
+  :target: https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/gdbgui2.png
+
 
 License
 -------

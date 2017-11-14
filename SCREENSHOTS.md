@@ -1,5 +1,7 @@
 # Screenshots
 
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui2.png)
+
 Enter the binary and args just as you'd call them on the command line.
 Binary is restored when gdbgui is opened at a later time.
 

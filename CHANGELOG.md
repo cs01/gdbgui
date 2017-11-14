@@ -4,6 +4,9 @@
 Changes that are in master but have not yet been pushed to PyPI.
 
 * Add autocomplete functionality (@bobthekingofegypt, issue #129)
+* Rearranged and improved alignment of assembly
+* Fixed bug when fetching variable fails
+* Plot floating point values instead of casting to int
 
 
 ## 0.8.0.3
