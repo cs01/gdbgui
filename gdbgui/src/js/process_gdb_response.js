@@ -14,7 +14,6 @@ import StatusBar from './StatusBar.jsx';
 import Memory from './Memory.jsx';
 import GdbApi from './GdbApi.js';
 import Locals from './Locals.jsx';
-//import GdbConsoleComponent from './GdbConsole.js';
 import GdbVariable from './GdbVariable.jsx';
 import Modal from './Modal.js';
 import Actions from './Actions.js';
@@ -28,8 +27,14 @@ const process_gdb_response = function(response_array){
      * @param response: gdb mi response object
      * @return (bool): true if response should be ignored
      */
-    , ignore = (response) => {
-        return response.token === constants.IGNORE_ERRORS_TOKEN_INT && response.message === 'error'
+    , is_error = (response) => {
+        return response.message === 'error'
+    }
+    , ignore_error = (response) => {
+        return response.token === constants.IGNORE_ERRORS_TOKEN_INT || response.token === constants.CREATE_VAR_INT
+    }
+    , is_creating_var = (response) => {
+        return response.token === constants.CREATE_VAR_INT
     }
     , is_autocomplete_response = (response_array) => {
         let num_responses = response_array.length
@@ -67,8 +72,11 @@ const process_gdb_response = function(response_array){
         // gdb mi output
         GdbMiOutput.add_mi_output(r)
 
-        if(r.message === 'error'){
-            if (r.token === constants.IGNORE_ERRORS_TOKEN_INT){
+        if(is_error(r)){
+            if (is_creating_var(r)){
+                GdbVariable.gdb_variable_fetch_failed()
+                continue
+            }else if (ignore_error(r)){
                 continue
             }else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT){
                 FileOps.fetch_disassembly_for_missing_file_failed()
@@ -246,7 +254,7 @@ const process_gdb_response = function(response_array){
     // render response of last element of array
     if(update_status){
         let last_response = _.last(response_array)
-        if(ignore(last_response)){
+        if(ignore_error(last_response)){
             store.set('status', {text: '', error: false, warning: false})
         }else{
             StatusBar.render_from_gdb_mi_response(last_response)

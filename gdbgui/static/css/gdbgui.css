@@ -159,6 +159,11 @@ td.assembly{
     padding-top: 0px;
     white-space: nowrap;
 }
+/* instruction content */
+.instrContent{
+    min-width: 250px;
+    display:inline-block;
+}
 #code_table{
     font-family: monospace;
     border-collapse: separate;

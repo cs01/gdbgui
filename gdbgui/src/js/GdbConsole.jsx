@@ -77,7 +77,7 @@ class GdbConsole extends React.Component {
         const {console_entries} = this.props
 
         return (
-            <div id="console">
+            <div id="console" ref={(el)=>this.console = el}>
                 {this.render_entries(console_entries)}
                 <div
                     ref={(el) => { this.console_end = el }}

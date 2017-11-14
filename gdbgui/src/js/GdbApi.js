@@ -224,10 +224,10 @@ const GdbApi = {
     _get_refresh_state_for_pause_cmds: function(){
         let cmds = [
             // get info on current thread
-            '-thread-info',
+            constants.IGNORE_ERRORS_TOKEN_STR + '-thread-info',
             // print the name, type and value for simple data types,
             // and the name and type for arrays, structures and unions.
-            '-stack-list-variables --simple-values',
+            constants.IGNORE_ERRORS_TOKEN_STR + '-stack-list-variables --simple-values',
             // flush inferior process' output (if any)
             // by default, it only flushes when the program terminates
             // so this additional call is needed
@@ -235,7 +235,7 @@ const GdbApi = {
         ]
         if(store.get('interpreter') === 'gdb'){
             // update all user-defined variables in gdb
-            cmds.push('-var-update --all-values *')
+            cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + '-var-update --all-values *')
         }else if(store.get('interpreter') === 'lldb'){
             // the * arg doesn't work, so loop over all
             // names and push commands for each
