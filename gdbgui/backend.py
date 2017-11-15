@@ -430,7 +430,7 @@ def main():
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
     
-    parser.add_argument('--user-and-password', help='Specify the HTTP Basic auth username and password', nargs=2)
+    parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline')
     
     args = parser.parse_args()
 
@@ -442,8 +442,14 @@ def main():
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
-    if args.user_and_password:
-        app.config["auth_user_password"] = args.user_and_password
+    if args.auth_file:
+        if os.path.isfile(args.auth_file):
+            with open(args.auth_file, 'r') as authFile:
+                data = authFile.read()
+                app.config["auth_user_password"] = data.split("\n")
+        else:
+            print("Auth file for HTTP Basic auth not found!")
+            return
         
     verify_gdb_exists()
     if args.remote:
