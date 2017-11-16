@@ -86,10 +86,20 @@ yellow.
 
 ## gdb console
 
-Read gdb output, and write to the gdb subprocess as desired. Don't let
-any gdb commandline skills you've developed go to waste.
+* Prints gdb output
+* Allows you to write directly to the underlying gdb subprocess as if you were using it in the terminal
+* Tab completion works, and displays a button to view help on gdb commands
+* Can be used to ease into learning gdb
+* Can be used as a fallback for commands that don't have a UI widget
+* History can be accessed using up/down arrows
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/console.png)
+
+## authentiation
+Authentication can be enabled when serving on a publicly accessible IP address. See `gdbgui --help` for instructions on how to enable authentication.
+
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/authentication.png)
+
 
 ## gdbgui at launch
 

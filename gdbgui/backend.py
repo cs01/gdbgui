@@ -24,6 +24,7 @@ import platform
 import pygdbmi
 import socket
 import re
+from getpass import getpass
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
 from flask import Flask, request, Response, render_template, jsonify, redirect
@@ -275,13 +276,18 @@ def get_extra_files():
 
 
 def credentials_are_valid(username, password):
-    return username == app.config['gdbgui_auth_user_credentials'][0] and password == app.config['gdbgui_auth_user_credentials'][1]
+    user_credentials = app.config.get('gdbgui_auth_user_credentials')
+    if user_credentials is None:
+        return False
+    elif len(user_credentials) < 2:
+        return False
+    return user_credentials[0] == username and user_credentials[1] == password
 
 
 def authenticate(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if 'gdbgui_auth_user_credentials' in app.config:
+        if app.config.get('gdbgui_auth_user_credentials') is not None:
             auth = request.authorization
             if not auth or not auth.username or not auth.password or not credentials_are_valid(auth.username, auth.password):
                 return Response('You must log in to continue.', 401, {'WWW-Authenticate': 'Basic realm="gdbgui_login"'})
@@ -413,6 +419,39 @@ def read_file():
         return client_error({'message': 'File not found: %s' % path})
 
 
+def get_user_input_from_stdin(prompt):
+    """Wrapper for Python 2/3 compatibility"""
+    text = ''
+    while not text:
+        try:
+            text = raw_input(prompt)
+        except NameError:
+            text = input(prompt)
+    return text
+
+
+def get_gdbgui_auth_user_credentials(auth_file, auth):
+    if auth_file:
+        if os.path.isfile(auth_file):
+            with open(auth_file, 'r') as authFile:
+                data = authFile.read()
+                split_file_contents = data.split("\n")
+                if len(split_file_contents) < 2:
+                    print('Auth file "%s" requires username on first line and password on second line' % auth_file)
+                    exit(1)
+                return split_file_contents
+        else:
+            print('Auth file "%s" for HTTP Basic auth not found' % auth_file)
+            exit(1)
+    elif auth:
+        username = get_user_input_from_stdin('Enter username: ')
+        password = None
+        while not password:
+            password = getpass()
+        return [username, password]
+    return None
+
+
 def main():
     """Entry point from command line"""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -433,7 +472,12 @@ def main():
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
     parser.add_argument('--args', nargs='+', help='(Optional) The binary and arguments to run in gdb. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"')
-    parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline. NOTE: gdbgui does not use https.')
+    parser.add_argument('--auth', action='store_true', help='(Optional) Require authentication before accessing gdbgui in the browser. '
+        'Prompt will be displayed in terminal asking for username and password before running server. '
+        'NOTE: gdbgui does not use https.')
+    parser.add_argument('--auth-file', help='(Optional) Require authentication before accessing gdbgui in the browser. '
+        'Specify a file that contains the HTTP Basic auth username and password separate by newline. '
+        'NOTE: gdbgui does not use https.')
 
     args = parser.parse_args()
 
@@ -444,7 +488,6 @@ def main():
     if len(args.cmd) and len(args.args):
         print('Cannot specify command and args. Must specify one or the other.')
         exit(1)
-    print(args.args)
     if args.cmd:
         cmd = args.cmd
     else:
@@ -453,22 +496,14 @@ def main():
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
-    if args.auth_file:
-        if os.path.isfile(args.auth_file):
-            with open(args.auth_file, 'r') as authFile:
-                data = authFile.read()
-                app.config["gdbgui_auth_user_credentials"] = data.split("\n")
-                if len(app.config["gdbgui_auth_user_credentials"]) < 2:
-                    print('Auth file "%s" requires username on first line and password on second line' % args.auth_file)
-                    exit(1)
-        else:
-            print('Auth file "%s" for HTTP Basic auth not found' % args.auth_file)
-            exit(2)
+    app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.auth)
 
     verify_gdb_exists()
     if args.remote:
         args.host = '0.0.0.0'
         args.no_browser = True
+        if app.config['gdbgui_auth_user_credentials'] is None:
+            print('Warning: authentication is recommended when serving on a publicly accessible IP address. See gdbgui --help.')
 
     setup_backend(serve=True,
         host=args.host,
