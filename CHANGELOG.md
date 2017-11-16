@@ -3,7 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
-* Optional authentication
+* Add optional authentication (@nickamon, issue #132)
+* Support the `--args` flag (issue #126)
+* Ensure code is correct and adheres to recommended Python style when running tests/building (flake8)
 
 ## 0.8.1.0
 * Add autocomplete functionality (@bobthekingofegypt, issue #129)
