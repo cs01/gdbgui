@@ -26,7 +26,8 @@ import socket
 import re
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
-from flask import Flask, request, render_template, jsonify, redirect
+from flask import Flask, request, Response, render_template, jsonify, redirect
+from functools import wraps
 from flask_socketio import SocketIO, emit
 from pygdbmi.gdbcontroller import GdbController
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
@@ -272,8 +273,21 @@ def get_extra_files():
                             extra_files.append(filepath)
     return extra_files
 
+def valid_credentials(username, password):
+    return username == app.config['auth_user_password'][0] and password == app.config['auth_user_password'][1]
+
+def authenticate(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if 'auth_user_password' in app.config:
+            auth = request.authorization
+            if not auth or not auth.username or not auth.password or not valid_credentials(auth.username, auth.password):
+                return Response('Login!', 401, {'WWW-Authenticate': 'Basic realm="Login!"'})
+        return f(*args, **kwargs)
+    return wrapper
 
 @app.route('/')
+@authenticate
 def gdbgui():
     """Render the main gdbgui interface"""
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
@@ -415,6 +429,9 @@ def main():
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
+    
+    parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline')
+    
     args = parser.parse_args()
 
     if args.version:
@@ -425,6 +442,15 @@ def main():
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
+    if args.auth_file:
+        if os.path.isfile(args.auth_file):
+            with open(args.auth_file, 'r') as authFile:
+                data = authFile.read()
+                app.config["auth_user_password"] = data.split("\n")
+        else:
+            print("Auth file for HTTP Basic auth not found!")
+            return
+        
     verify_gdb_exists()
     if args.remote:
         args.host = '0.0.0.0'
