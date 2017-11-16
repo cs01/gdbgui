@@ -243,7 +243,7 @@ def read_and_forward_gdb_output():
                     dbprint('thread to read gdb vars is exiting since gdb controller object was not found')
                     break
 
-            except Exception as e:
+            except Exception:
                 dbprint(traceback.format_exc())
 
 
@@ -273,18 +273,21 @@ def get_extra_files():
                             extra_files.append(filepath)
     return extra_files
 
-def valid_credentials(username, password):
-    return username == app.config['auth_user_password'][0] and password == app.config['auth_user_password'][1]
+
+def credentials_are_valid(username, password):
+    return username == app.config['gdbgui_auth_user_credentials'][0] and password == app.config['gdbgui_auth_user_credentials'][1]
+
 
 def authenticate(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
-        if 'auth_user_password' in app.config:
+        if 'gdbgui_auth_user_credentials' in app.config:
             auth = request.authorization
-            if not auth or not auth.username or not auth.password or not valid_credentials(auth.username, auth.password):
-                return Response('Login!', 401, {'WWW-Authenticate': 'Basic realm="Login!"'})
+            if not auth or not auth.username or not auth.password or not credentials_are_valid(auth.username, auth.password):
+                return Response('You must log in to continue.', 401, {'WWW-Authenticate': 'Basic realm="gdbgui_login"'})
         return f(*args, **kwargs)
     return wrapper
+
 
 @app.route('/')
 @authenticate
@@ -429,9 +432,9 @@ def main():
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
-    
-    parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline')
-    
+
+    parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline. NOTE: gdbgui does not use https.')
+
     args = parser.parse_args()
 
     if args.version:
@@ -446,16 +449,25 @@ def main():
         if os.path.isfile(args.auth_file):
             with open(args.auth_file, 'r') as authFile:
                 data = authFile.read()
-                app.config["auth_user_password"] = data.split("\n")
+                app.config["gdbgui_auth_user_credentials"] = data.split("\n")
+                if len(app.config["gdbgui_auth_user_credentials"]) < 2:
+                    print('Auth file "%s" requires username on first line and password on second line' % args.auth_file)
+                    exit(1)
         else:
-            print("Auth file for HTTP Basic auth not found!")
-            return
-        
+            print('Auth file "%s" for HTTP Basic auth not found' % args.auth_file)
+            exit(2)
+
     verify_gdb_exists()
     if args.remote:
         args.host = '0.0.0.0'
         args.no_browser = True
-    setup_backend(serve=True, host=args.host, port=int(args.port), debug=bool(args.debug), open_browser=(not args.no_browser), LLDB=(args.lldb or 'lldb-mi' in args.gdb.lower()))
+
+    setup_backend(serve=True,
+        host=args.host,
+        port=int(args.port),
+        debug=bool(args.debug),
+        open_browser=(not args.no_browser),
+        LLDB=(args.lldb or 'lldb-mi' in args.gdb.lower()))
 
 
 if __name__ == '__main__':

@@ -3,6 +3,8 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+* Optional authentication
+
 ## 0.8.1.0
 * Add autocomplete functionality (@bobthekingofegypt, issue #129)
 * Rearranged and improved alignment of assembly
