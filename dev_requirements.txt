@@ -1,1 +1,2 @@
 collective.checkdocs==0.2
+flake8==3.5.0

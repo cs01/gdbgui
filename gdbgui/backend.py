@@ -432,7 +432,7 @@ def main():
         'Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected', action='store_true')
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
-
+    parser.add_argument('--args', nargs='+', help='(Optional) The binary and arguments to run in gdb. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"')
     parser.add_argument('--auth-file', help='Specify a file that contains the HTTP Basic auth username and password separate by newline. NOTE: gdbgui does not use https.')
 
     args = parser.parse_args()
@@ -441,7 +441,15 @@ def main():
         print(__version__)
         return
 
-    app.config['initial_binary_and_args'] = ' '.join(args.cmd)
+    if len(args.cmd) and len(args.args):
+        print('Cannot specify command and args. Must specify one or the other.')
+        exit(1)
+    print(args.args)
+    if args.cmd:
+        cmd = args.cmd
+    else:
+        cmd = args.args
+    app.config['initial_binary_and_args'] = ' '.join(cmd or [])
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
