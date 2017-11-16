@@ -37,6 +37,7 @@ Features
 - Assembly is displayed if source code cannot be found
 - Fully functional console with autocomplete functionality to fallback to if necessary
 - Notifications when new gdbgui updates are available
+- Optional password protection when serving from a publicly accessible machine
 
 Why gdbgui?
 -----------
