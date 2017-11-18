@@ -485,7 +485,7 @@ def main():
         print(__version__)
         return
 
-    if len(args.cmd) and len(args.args):
+    if args.cmd and args.args:
         print('Cannot specify command and args. Must specify one or the other.')
         exit(1)
     if args.cmd:

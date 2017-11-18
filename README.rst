@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.8.1.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.8.2.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -102,6 +102,12 @@ After opening the webpage in a supported browser:
 
 Arguments
 ~~~~~~~~~
+usage: gdbgui [-h] [-p PORT] [--host HOST] [-r] [-g GDB] [--lldb] [-v]
+              [--hide_gdbgui_upgrades] [--debug] [-n] [-x GDB_CMD_FILE]
+              [--args ARGS [ARGS ...]] [--auth] [--auth-file AUTH_FILE]
+              [cmd [cmd ...]]
+
+
 Positional arguments:
   ``command``: (Optional) The quote-enclosed executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg value -flag1 -flag2"`` (note the quotes around the executable and arguments!). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
 
@@ -131,11 +137,25 @@ Flags (all are optional):
   -x GDB_CMD_FILE, --gdb_cmd_file GDB_CMD_FILE
                         Execute GDB commands from file.
 
+  --args ARGS [ARGS ...]
+                        (Optional) The binary and arguments to run in gdb.
+                        Example: gdbgui --args "./mybinary myarg -flag1
+                        -flag2"
+
+  --auth                (Optional) Require authentication before accessing
+                        gdbgui in the browser. Prompt will be displayed in
+                        terminal asking for username and password before
+                        running server. NOTE: gdbgui does not use https.
+  --auth-file AUTH_FILE
+                        (Optional) Require authentication before accessing
+                        gdbgui in the browser. Specify a file that contains
+                        the HTTP Basic auth username and password separate by
+                        newline. NOTE: gdbgui does not use https.
+
+
 Examples
 --------
-Example code and makefiles for C, C++, go, and rust, that build and launch gdb.
-
-See the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
+Example invocations of gdbgui, code and makefiles for C, C++, go, and rust, that build and launch gdb are available in the `examples folder <https://github.com/cs01/gdbgui/tree/master/examples>`_.
 
 Settings
 --------

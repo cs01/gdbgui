@@ -139,9 +139,13 @@ const GdbApi = {
         }
     },
     select_frame: function(framenum){
+        // TODO this command is deprecated (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Stack-Manipulation.html)
+        // This command in deprecated in favor of passing the ‘--frame’ option to every command.
         GdbApi.run_command_and_refresh_state(`-stack-select-frame ${framenum}`)
     },
     select_thread_id: function(thread_id){
+        // TODO this command is deprecated (http://www.sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI-Thread-Commands.html)
+        // This command is deprecated in favor of explicitly using the ‘--thread’ option to each command.
         GdbApi.run_command_and_refresh_state(`-thread-select ${thread_id}`)
     },
     /**
@@ -215,6 +219,7 @@ const GdbApi = {
     backtrace: function(){
         let cmds = ['backtrace']
         cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds())
+        store.set('inferior_program', constants.inferior_states.paused)
         GdbApi.run_gdb_command(cmds)
     },
     /**
@@ -224,6 +229,8 @@ const GdbApi = {
     _get_refresh_state_for_pause_cmds: function(){
         let cmds = [
             // get info on current thread
+            // TODO run -thread-list-ids to store list of thread id's and know
+            // which thread is the current thread
             constants.IGNORE_ERRORS_TOKEN_STR + '-thread-info',
             // print the name, type and value for simple data types,
             // and the name and type for arrays, structures and unions.
