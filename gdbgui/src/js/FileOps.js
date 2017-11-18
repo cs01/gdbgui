@@ -39,7 +39,6 @@ const FileOps = {
             return
         }
 
-        // TODO state of inferior after backtrace remains running, so source isn't displayed. Need to fix this.
         if(store.get('inferior_program') === constants.inferior_states.running){
             return
         }
