@@ -5,33 +5,17 @@ import Actions from './Actions.js';
 class Modal extends React.Component {
     render(){
         return (
-            <div className={(this.props.show_modal ? '' : 'hidden')}
-                style={{display: 'block',
-                position: 'fixed',
-                overflow: 'hidden',
-                top: '0',
-                right: '0',
-                bottom: '0',
-                left: '0',
-                zIndex: '1050',
-                boxSizing: 'border-box',
-                overflowX: 'auto',
-                overflowY: 'auto',
-                backgroundColor: 'rgba(0,0,0,0.4)'
-            }}
-            >
-                <div style={{padding: '20px',
-                    marginTop: '10px',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
-                    background: 'white',
-                    margin: 'auto',
-                    border: '1px solid #888',
-                    borderRadius: '4px',
-                    width: '500px',
-                    boxShadow: '0 5px 15px rgba(0,0,0,.5)'
-                }}>
+            <div className={(this.props.show_modal ? 'fullscreen_modal' : 'hidden')}
+                ref={(el) => this.fullscreen_node = el}
 
+                onClick={(e)=>{
+                    if(e.target === this.fullscreen_node){
+                        Actions.toggle_modal_visibility()
+                    }
+                }
+                }
+            >
+                <div className='modal_content' onClick={(e)=>e.preventDefault()}>
                     <div>
                         <button type="button" className='close' onClick={Actions.toggle_modal_visibility}>×</button>
                     </div>
@@ -54,3 +38,4 @@ class Modal extends React.Component {
 }
 
 export default Modal
+

@@ -1,8 +1,10 @@
 
-import {store} from './store.js';
-import GdbApi from './GdbApi.js';
-import constants from './constants.js';
-import Modal from './GdbguiModal.jsx';
+import {store} from './store.js'
+import GdbApi from './GdbApi.js'
+import constants from './constants.js'
+import Actions from './Actions.js'
+import React from 'react';  // needed for jsx
+void(React)
 
 const FileOps = {
     warning_shown_for_old_binary: false,
@@ -131,11 +133,20 @@ const FileOps = {
         if(store.get('inferior_binary_path')){
             if((src_last_modified_unix_sec > store.get('inferior_binary_path_last_modified_unix_sec'))
                     && FileOps.warning_shown_for_old_binary === false){
-                Modal.render('Warning', `A source file was modified <bold>after</bold> the binary was compiled. Recompile the binary, then try again. Otherwise the source code may not
-                    match the binary.
-                    <p>
-                    <p>Source file: ${fullname}, modified ${moment(src_last_modified_unix_sec * 1000).format(constants.DATE_FORMAT)}
-                    <p>Binary: ${store.get('inferior_binary_path')}, modified ${moment(store.get('inferior_binary_path_last_modified_unix_sec') * 1000).format(constants.DATE_FORMAT)}`)
+                Actions.show_modal('Warning', (
+                    <div>
+                        This source file was modified <span className='bold'>after</span> the binary was compiled. Recompile the binary, then try again. Otherwise the source code may not
+                        match the binary.
+                        <p/>
+                        <p>
+                            {`Source file: ${fullname}, modified ${moment(src_last_modified_unix_sec * 1000).format(constants.DATE_FORMAT)}`}
+                        </p>
+                        <p>
+                            {`Binary: ${store.get('inferior_binary_path')}, modified ${moment(store.get('inferior_binary_path_last_modified_unix_sec') * 1000).format(constants.DATE_FORMAT)}`})
+                        </p>
+                    </div>
+                    )
+                )
                 FileOps.warning_shown_for_old_binary = true
             }
         }

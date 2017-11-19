@@ -2,13 +2,15 @@
  * An object to manage the websocket connection to the python server that manages gdb,
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
-import {store} from './store.js';
-import Registers from './Registers.jsx';
-import Memory from './Memory.jsx';
-import Actions from './Actions.js';
-import GdbVariable from './GdbVariable.jsx';
-import constants from './constants.js';
-import process_gdb_response from './process_gdb_response.js';
+import {store} from './store.js'
+import Registers from './Registers.jsx'
+import Memory from './Memory.jsx'
+import Actions from './Actions.js'
+import GdbVariable from './GdbVariable.jsx'
+import constants from './constants.js'
+import process_gdb_response from './process_gdb_response.js'
+import React from 'react'
+void(React) // needed when using JSX, but not marked as used
 
 /* global debug */
 
@@ -66,7 +68,7 @@ const GdbApi = {
             window.onbeforeunload = () => null
 
             // show modal
-            Actions.show_modal('', 'The gdbgui server has shutdown. This tab will no longer function as expected.')
+            Actions.show_modal('', <span>The gdbgui server has shutdown. This tab will no longer function as expected.</span>)
             debug_print('disconnected')
         });
     },
