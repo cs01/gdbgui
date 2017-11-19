@@ -5,7 +5,6 @@
 import {store} from './store.js';
 import Registers from './Registers.jsx';
 import Memory from './Memory.jsx';
-import Modal from './Modal.js';
 import Actions from './Actions.js';
 import GdbVariable from './GdbVariable.jsx';
 import constants from './constants.js';
@@ -67,7 +66,7 @@ const GdbApi = {
             window.onbeforeunload = () => null
 
             // show modal
-            Modal.render('The gdbgui server has shutdown. This tab will no longer function as expected.')
+            Actions.show_modal('', 'The gdbgui server has shutdown. This tab will no longer function as expected.')
             debug_print('disconnected')
         });
     },

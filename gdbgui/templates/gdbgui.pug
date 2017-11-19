@@ -97,23 +97,9 @@ html
                 //- gdb console
                 div#console_container
 
+        //- todo move everything into this id
+        #gdbgui
 
-        //- modal window, hidden by default, used to show various modal dialogs
-        #gdb_modal.modal.fade(role='dialog')
-            .modal-dialog
-                .modal-content(style='padding: 20px;')
-                    #modal_header
-                        button.close(type='button', data-dismiss='modal') ×
-
-                    h4#modal_title Modal Header
-
-                    #modal_body(style='margin-top: 20px;')
-
-                    #modal_footer(style='margin-top: 20px;')
-                        button.btn.btn-success(type='button', data-dismiss='modal') Close
-
-        #hovervar_container
-        #settings_container
 
     script.
         initial_data = JSON.parse('!{initial_data}')

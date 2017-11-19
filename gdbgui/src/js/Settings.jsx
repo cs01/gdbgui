@@ -1,5 +1,5 @@
 import {store} from './store.js';
-import Modal from './Modal.js';
+import Actions from './Actions.js';
 import React from 'react';
 
 /**
@@ -44,7 +44,7 @@ class Settings extends React.Component {
                     store.set('latest_gdbgui_version', _.trim(data))
 
                     if(Settings.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
-                        Modal.render(`Update Available`, Settings.get_upgrade_text())
+                        Actions.show_modal(`Update Available`, Settings.get_upgrade_text())
                     }
                 },
                 error: (data) => {

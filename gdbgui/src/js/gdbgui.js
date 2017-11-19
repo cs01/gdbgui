@@ -26,7 +26,7 @@ import SourceCodeHeading from './SourceCodeHeading.jsx';
 import SourceFileAutocomplete from './SourceFileAutocomplete.js';
 import FileOps from './FileOps.js';
 import Settings from './Settings.jsx';
-import Modal from './Modal.js';
+import Modal from './GdbguiModal.jsx';
 import HoverVar from './HoverVar.jsx';
 import ShutdownGdbgui from './ShutdownGdbgui.js';
 import RightSidebar from './RightSidebar.jsx';
@@ -55,11 +55,8 @@ Split(['#middle', '#bottom'], {
 
 GdbApi.init()
 GlobalEvents.init()
-Modal.init()
 FileOps.init()  // this should be initialized before components that use store key 'source_code_state'
 
-void(React)  // ReactDOM secretly depends on React; avoid "'React' is defined but never used  no-unused-vars" error
-             //
 // top section
 ReactDOM.render(<StatusBar/>, document.getElementById('status'))
 ReactDOM.render(<SourceCodeHeading/>, document.getElementById('source_code_heading'))
@@ -73,12 +70,29 @@ ReactDOM.render(<MiddleLeft />, document.getElementById('middle_left'))  // uses
 // middle right
 ReactDOM.render(<RightSidebar signals={initial_data.signals} debug={debug} />, document.getElementById('middle_right'))
 
+
 // bottom
 ReactDOM.render(<GdbConsoleContainer />, document.getElementById('bottom_content'))
 
-// full page/javascript objects
-ReactDOM.render(<HoverVar />, document.getElementById('hovervar_container'))
-ReactDOM.render(<Settings />, document.getElementById('settings_container'))
+class Gdbgui extends React.Component {
+    constructor(){
+        super()
+        this.state = store._store
+        store.subscribe(()=>{this.setState(store._store)})
+    }
+    render(){
+        return (
+            <div>
+                <Modal header={store.get('modal_header')} body={store.get('modal_body')} show_modal={store.get('show_modal')} />
+                <HoverVar />
+                <Settings />
+            </div>
+        )
+    }
+}
+
+ReactDOM.render(<Gdbgui />, document.getElementById('gdbgui'))
+
 
 // make this visible in the console
 window.store = store

@@ -15,7 +15,7 @@ import Memory from './Memory.jsx';
 import GdbApi from './GdbApi.js';
 import Locals from './Locals.jsx';
 import GdbVariable from './GdbVariable.jsx';
-import Modal from './Modal.js';
+import Modal from './GdbguiModal.jsx';
 import Actions from './Actions.js';
 import SourceCode from './SourceCode.jsx';
 

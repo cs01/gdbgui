@@ -2,7 +2,7 @@
 import {store} from './store.js';
 import GdbApi from './GdbApi.js';
 import constants from './constants.js';
-import Modal from './Modal.js';
+import Modal from './GdbguiModal.jsx';
 
 const FileOps = {
     warning_shown_for_old_binary: false,

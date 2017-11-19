@@ -239,6 +239,10 @@ const initial_store_data = {
     can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
     show_settings: false,
 
+    show_modal: false,
+    modal_header: null,
+    modal_body: null,
+
     // preferences
     // syntax highlighting
     themes: initial_data.themes,

@@ -72,7 +72,16 @@ const Actions = {
         }
 
         store.set('gdb_console_entries', new_entries)
+    },
+    toggle_modal_visibility(){
+        store.set('show_modal', !store.get('show_modal'))
+    },
+    show_modal(header, body){
+        store.set('modal_header', header)
+        store.set('modal_body', body)
+        store.set('show_modal', true)
     }
+
 }
 
 export default Actions
