@@ -12,8 +12,6 @@ const FileOps = {
     disassembly_addr_being_fetched: null,
     init: function(){
         store.subscribe(FileOps._store_change_callback)
-        document.getElementById('fetch_assembly_cur_line').onclick = FileOps.fetch_assembly_cur_line
-        document.getElementById('refresh_cached_source_files').onclick = FileOps.refresh_cached_source_files
     },
     user_select_file_to_view: function(fullname, line){
         store.set('render_paused_frame_or_user_selection', 'user_selection')

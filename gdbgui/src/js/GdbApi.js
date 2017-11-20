@@ -30,15 +30,6 @@ if(debug){
  */
 const GdbApi = {
     init: function(){
-        $('#run_button').click(GdbApi.click_run_button)
-        $('#continue_button').click(GdbApi.click_continue_button)
-        $('#next_button').click(GdbApi.click_next_button)
-        $('#step_button').click(GdbApi.click_step_button)
-        $('#return_button').click(GdbApi.click_return_button)
-        $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
-        $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
-        $('#send_interrupt_button').click(GdbApi.click_send_interrupt_button)
-
         const TIMEOUT_MIN = 5
         /* global io */
         GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
@@ -313,6 +304,19 @@ const GdbApi = {
         }else if (store.get('language') === 'rust'){
             return ''  // TODO?
         }
+    },
+    get_load_binary_and_arguments_cmds(binary, args){
+        // tell gdb which arguments to use when calling the binary, before loading the binary
+        let cmds = [
+                `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
+            ]
+        // add breakpoint if we don't already have one
+        if(store.get('auto_add_breakpoint_to_main')){
+            cmds.push('-break-insert main')
+        }
+        cmds.push(GdbApi.get_break_list_cmd())
+        return cmds
     },
     _recieve_last_modified_unix_sec(data){
         if(data.path === store.get('inferior_binary_path')){

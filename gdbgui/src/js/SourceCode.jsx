@@ -9,6 +9,7 @@ import Breakpoints from './Breakpoints.jsx';
 import Memory from './Memory.jsx';
 import MemoryLink from './MemoryLink.jsx';
 import constants from './constants.js';
+import Actions from './Actions.js';
 
 class SourceCode extends React.Component {
     static el_code_container = null  // todo: no jquery
@@ -30,12 +31,6 @@ class SourceCode extends React.Component {
 
     constructor() {
         super()
-
-        document.getElementById('jump_to_line').onkeyup = (e)=>{
-            if (e.keyCode === constants.ENTER_BUTTON_NUM){
-                SourceCode.set_line_state(e.currentTarget.value)
-            }
-        }
 
         // bind methods
         this.get_body_assembly_only = this.get_body_assembly_only.bind(this)
@@ -308,91 +303,8 @@ class SourceCode extends React.Component {
     static view_file(fullname, line){
         store.set('render_paused_frame_or_user_selection', 'user_selection')
         store.set('fullname_to_render', fullname)
-        SourceCode.set_line_state(line)
+        Actions.set_line_state(line)
     }
-
-    static set_line_state(line){
-        store.set('line_of_source_to_flash', parseInt(line))
-        store.set('make_current_line_visible', true)
-    }
-
 }
-
-// =======================================================
-// TODO ressurect these for more efficiency when large files are being rendered
-// =======================================================
-// re-render breakpoints on whichever file is loaded
-// let render_breakpoints = function(){
-//     console.warn("TODO: render_breakpoints")
-    // document.querySelectorAll('.line_num.breakpoint').forEach(el => el.classList.remove('breakpoint'))
-    // document.querySelectorAll('.line_num.disabled_breakpoint').forEach(el => el.classList.remove('disabled_breakpoint'))
-    // if(_.isString(state.get('rendered_source_file_fullname'))){
-
-    //     let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(state.get('rendered_source_file_fullname'))
-    //     , disabled_breakpoint_lines = Breakpoint.get_disabled_breakpoint_lines_for_file(state.get('rendered_source_file_fullname'))
-
-    //     for(let bkpt_line of bkpt_lines){
-    //         let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
-    //         if(js_line){
-    //             $(js_line).addClass('breakpoint')
-    //         }
-    //     }
-
-    //     for(let bkpt_line of disabled_breakpoint_lines){
-    //         let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
-    //         if(js_line){
-    //             $(js_line).addClass('disabled_breakpoint')
-    //         }
-    //     }
-    // }
-// }
-
-// let highlight_paused_line = function(){
-//     console.warn("TODO: highlight_paused_line")
-
-    // remove_line_highlights()
-
-    // let fullname = state.get('rendered_source_file_fullname')
-    // , line_num = state.get('current_line_of_source_code')
-    // , addr = state.get('current_assembly_address')
-    // , inferior_program_is_paused_in_this_file = _.isObject(state.get('paused_on_frame')) && state.get('paused_on_frame').fullname === fullname
-    // , paused_on_current_line = (inferior_program_is_paused_in_this_file && parseInt(state.get('paused_on_frame').line) === parseInt(line_num))
-
-    // // make background blue if gdb is paused on a line in this file
-    // if(inferior_program_is_paused_in_this_file){
-    //     let jq_line = $(`.loc[data-line=${state.get('paused_on_frame').line}]`)
-    //     if(jq_line.length === 1){
-    //         jq_line.offset()  // needed so DOM registers change and re-draws animation
-    //         jq_line.addClass('paused_on_line')
-    //         if(paused_on_current_line){
-    //             jq_line.attr('id', 'scroll_to_line')
-    //         }
-    //     }
-    // }
-
-    // // make this line flash ONLY if it's NOT the line we're paused on
-    // if(line_num && !paused_on_current_line){
-    //     let jq_line = $(`.loc[data-line=${line_num}]`)
-    //     if(jq_line.length === 1){
-    //         // https://css-tricks.com/restart-css-animation/
-    //         jq_line.offset()  // needed so DOM registers change and re-draws animation
-    //         jq_line.addClass('flash')
-    //         jq_line.attr('id', 'scroll_to_line')
-    //     }
-    // }
-
-    // if(addr){
-    //     // find element with assembly class and data-addr as the desired address, and
-    //     // current_assembly_command class
-    //     let jq_assembly = $(`.assembly[data-addr=${addr}]`)
-    //     if(jq_assembly.length === 1){
-    //         jq_assembly.addClass('current_assembly_command')
-    //     }
-    // }
-// }
-
-// let highlight_current_instruction = function(){
-//     console.warn("TODO: highlight_current_instruction")
-// }
 
 export default SourceCode

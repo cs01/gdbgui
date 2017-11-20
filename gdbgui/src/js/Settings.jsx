@@ -29,9 +29,6 @@ class Settings extends React.Component {
         this.state = this._get_applicable_global_state()
         store.subscribe(this._store_change_callback.bind(this))
 
-        // TODO use onClick when gdbgui_settings_button is moved into React
-        document.getElementById('gdbgui_settings_button').onclick = ()=>Settings.toggle_key('show_settings')
-
         // Fetch the latest version only if using in normal mode. If debugging, we tend to
         // refresh quite a bit, which might make too many requests to github and cause them
         // to block our ip? Either way it just seems weird to make so many ajax requests.

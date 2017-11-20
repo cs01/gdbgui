@@ -24,7 +24,7 @@ struct mystruct_t {
   union {
     int unionint;
     double uniondouble;
-  }
+  };
 };
 
 
