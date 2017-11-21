@@ -2,6 +2,7 @@ import React from 'react';
 import {store} from './store.js';
 import constants from './constants.js';
 import Actions from './Actions.js';
+import Util from './Util.js';
 
 /**
  * The BinaryLoader component allows the user to select their binary
@@ -85,49 +86,15 @@ class BinaryLoader extends React.Component {
      * @return     {Object}  { the binary (string) and arguments (array) parsed from user input }
      */
     _parse_binary_and_args_from_user_input(user_input){
-        let add_char_to_identifier = (char) => {
-            if(parsing_binary){
-                binary += char
-            }else{
-                cur_arg += char
-            }
-        }
-
-        let binary = ''
+        let list_of_params = Util.string_to_array_safe_quotes(user_input)
+        , binary = ''
         , args = []
-        , in_quotes = false
-        , parsing_binary = true
-        , cur_arg = ''
-
-        for(let i=0; i < user_input.length; i++){
-            let char = user_input[i]
-            if(char === '"'){
-                add_char_to_identifier(char)
-                in_quotes = !in_quotes
-            }else if (char !== ' ' ||
-                     (char === ' ' && in_quotes)){
-                // a space in quotes, use it
-                add_char_to_identifier(char)
-
-            }else if (char === ' '){
-                // got a space outside of quotes
-                if(parsing_binary){
-                    // stop parsing the binary and try to parse quotes
-                    parsing_binary = false
-                    cur_arg = ''
-                    args = []
-                }else if (cur_arg !== ''){
-                    // save this argument and re-initialize to try and parse more
-                    args.push(cur_arg)
-                    cur_arg = ''
-                }else{
-                    // a consecutive space. do nothing.
-                }
-            }
-        }
-
-        if(cur_arg !== ''){
-            args.push(cur_arg)
+        , len = list_of_params.length
+        if(len === 1){
+            binary = list_of_params[0]
+        }else if(len > 1){
+            binary = list_of_params[0]
+            args = list_of_params.slice(1, len)
         }
         return {binary: binary, args: args}
     }
@@ -141,8 +108,7 @@ class BinaryLoader extends React.Component {
 
         this._add_user_input_to_history(user_input)
 
-        let binary, args
-        ({binary, args} = this._parse_binary_and_args_from_user_input(user_input))
+        const {binary, args} = this._parse_binary_and_args_from_user_input(user_input)
         Actions.set_gdb_binary_and_arguments(binary, args)
     }
 }

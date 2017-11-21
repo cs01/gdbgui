@@ -3,6 +3,11 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+* Compress responses from server (massive bandwidth improvement)
+* Move everything into a single root React component
+* Turn modals into components
+* Parse executable+args with spaces (issue #116)
+
 ## 0.8.2.0
 * Add optional authentication (@nickamon, issue #132)
 * Support the `--args` flag (issue #126)

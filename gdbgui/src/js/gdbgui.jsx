@@ -42,7 +42,7 @@ class Gdbgui extends React.Component {
     render(){
         return (
 
-            <div className='fillcontainer'>
+            <div className='splitjs_container'>
 
                 <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
@@ -57,7 +57,7 @@ class Gdbgui extends React.Component {
                 </div>
 
 
-                <div id="bottom" style={{paddingBottom: '90px', width: '100%'}} className="split split-horizontal">
+                <div id="bottom" className="split split-horizontal" style={{paddingBottom: '90px', width: '100%'}} >
                   <div id="bottom_content"
                         className="split content"
                         style={{paddingBottom: '30px' /* for height of input */}}>
