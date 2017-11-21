@@ -55,6 +55,7 @@ setup(
         'gevent>=1.2.2',  # for websockets (preferred)
         'eventlet>=0.21.0',  # for websockets (backup to gevent)
         'Pygments>=2.2.0',  # for syntax highlighting
+        'Flask-Compress>=1.4.0',  # to compress flask responses
     ],
     classifiers=[
         'Intended Audience :: Developers',
