@@ -8,7 +8,7 @@ import SourceCode from './SourceCode.jsx';
 
 class MiddleLeft extends React.Component {
     render(){
-        return <div id='code_container' className='gdb_content_div' style={{overflow: 'auto', height: '100%'}}>
+        return <div id='code_container' style={{overflow: 'auto', height: '100%'}}>
                     <SourceCode />
                 </div>
     }

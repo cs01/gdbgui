@@ -56,7 +56,81 @@ class SourceCode extends React.Component {
         }
         return applicable_state
     }
+    render(){
+        return(<div className={this.state.current_theme} style={{height: '100%'}}>
+                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>
+                    <tbody id='code_body'>
+                        {this.get_body()}
+                    </tbody>
+                </table>
+            </div>)
+    }
 
+    componentDidUpdate(){
+        let source_is_displayed = (this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
+            this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED)
+        if (source_is_displayed)
+        {
+            if (this.state.make_current_line_visible){
+                SourceCode.make_current_line_visible()
+                store.set('make_current_line_visible', false)
+            }
+            store.set('fullname_rendered', this.state.fullname_to_render)
+        }
+
+        if (this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
+            store.set('has_unrendered_assembly', false)
+        }
+    }
+    get_body(){
+        const states = constants.source_code_states
+        switch(this.state.source_code_state){
+            case (states.ASSM_AND_SOURCE_CACHED):{
+                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
+                if(!obj){
+                    console.error("expected to find source file")
+                    return this.get_body_empty()
+                }
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
+            }
+            case (states.SOURCE_CACHED):{
+                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
+                if(!obj){
+                    console.error("expected to find source file")
+                    return this.get_body_empty()
+                }
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
+            }
+            case states.FETCHING_SOURCE:{
+                return(<tr><td>fetching source, please wait</td></tr>)
+            }
+            case states.ASSM_CACHED:{
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                , assm_array = this.state.disassembly_for_missing_file
+                return this.get_body_assembly_only(assm_array, paused_addr)
+            }
+            case states.FETCHING_ASSM:{
+                return(<tr><td>fetching assembly, please wait</td></tr>)
+            }
+            case states.ASSM_UNAVAILABLE:{
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return (<tr><td>cannot access address {paused_addr}</td></tr>)
+            }
+            case states.FILE_MISSING:{
+                return (<tr><td>file not found: {this.state.fullname_to_render}</td></tr>)
+            }
+            case states.NONE_AVAILABLE:{
+                return this.get_body_empty()
+            }
+            default:{
+                console.error('developer error: unhandled state')
+                return this.get_body_empty()
+            }
+        }
+    }
     click_gutter(line_num){
         Breakpoints.add_or_remove_breakpoint(this.state.fullname_to_render, line_num)
     }
@@ -196,81 +270,6 @@ class SourceCode extends React.Component {
 
     get_body_empty(){
         return(<tr><td>no source code or assembly to display</td></tr>)
-    }
-
-    get_body(){
-        const states = constants.source_code_states
-        switch(this.state.source_code_state){
-            case (states.ASSM_AND_SOURCE_CACHED):{
-                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
-                if(!obj){
-                    console.error("expected to find source file")
-                    return this.get_body_empty()
-                }
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
-            }
-            case (states.SOURCE_CACHED):{
-                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
-                if(!obj){
-                    console.error("expected to find source file")
-                    return this.get_body_empty()
-                }
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
-            }
-            case states.FETCHING_SOURCE:{
-                return(<tr><td>fetching source, please wait</td></tr>)
-            }
-            case states.ASSM_CACHED:{
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                , assm_array = this.state.disassembly_for_missing_file
-                return this.get_body_assembly_only(assm_array, paused_addr)
-            }
-            case states.FETCHING_ASSM:{
-                return(<tr><td>fetching assembly, please wait</td></tr>)
-            }
-            case states.ASSM_UNAVAILABLE:{
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return (<tr><td>cannot access address {paused_addr}</td></tr>)
-            }
-            case states.FILE_MISSING:{
-                return (<tr><td>file not found: {this.state.fullname_to_render}</td></tr>)
-            }
-            case states.NONE_AVAILABLE:{
-                return this.get_body_empty()
-            }
-            default:{
-                console.error('developer error: unhandled state')
-                return this.get_body_empty()
-            }
-        }
-    }
-    render(){
-        return(<div className={this.state.current_theme} style={{height: '100%'}}>
-                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>
-                    <tbody id='code_body'>
-                        {this.get_body()}
-                    </tbody>
-                </table>
-            </div>)
-    }
-
-    componentDidUpdate(){
-        if (this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
-            this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED)
-        {
-            if (this.state.make_current_line_visible){
-                SourceCode.make_current_line_visible()
-                store.set('make_current_line_visible', false)
-            }
-            store.set('fullname_rendered', this.state.fullname_to_render)
-        }
-
-        if (this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
-            this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
-            store.set('has_unrendered_assembly', false)
-        }
     }
     static make_current_line_visible(){
         SourceCode.scroll_to_jq_selector($("#scroll_to_line"))

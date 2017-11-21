@@ -52,7 +52,7 @@ class RightSidebar extends React.Component {
             mi_output = <Collapser title='gdb mi output' content={<GdbMiOutput id='gdb_mi_output' />} />
         }
 
-        return (<div>
+        return (<div className='content'>
             <Collapser title='threads' content={
                 <div>
                     <InferiorProgramInfo signals={this.props.signals} />

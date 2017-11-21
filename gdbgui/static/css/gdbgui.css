@@ -72,10 +72,6 @@ td{
 .pointer{
     cursor: pointer;
 }
-.gdb_content_div{
-    /*flex-direction: column;*/
-    background-color: white;
-}
 .sent_command{
     color: #00d8ff;
 }
