@@ -101,6 +101,17 @@ const menu =
 
 
 class TopBar extends React.Component {
+    constructor(){
+      super()
+      this.state = {assembly_flavor: 'att'}  // att or intel
+    }
+    toggle_assembly_flavor(){
+      const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att'
+      this.setState({'assembly_flavor': flavor})
+      GdbApi.set_assembly_flavor(flavor)
+      Actions.clear_cached_assembly()
+      FileOps.fetch_assembly_cur_line()
+    }
     render(){
         return(
             <div id="top" style={{background: '#f5f6f7', marginBottom: 5}}>
@@ -127,13 +138,19 @@ class TopBar extends React.Component {
                         className="form-control dropdown-input"
                     />
                     <div role="group" style={{height: 25}} className="btn-group btn-group">
+                      <button
+                            onClick={this.toggle_assembly_flavor.bind(this)}
+                            type="button"
+                            title={'Toggle between assembly flavors. The options are att or intel.'}
+                            className="btn btn-default btn-xs"><span>{this.state.assembly_flavor}</span>
+                      </button>
                       <button onClick={FileOps.fetch_assembly_cur_line} type="button" title="fetch disassembly" className="btn btn-default btn-xs"><span>fetch disassembly</span>
                       </button>
                       <button
                             onClick={FileOps.refresh_cached_source_files}
                             type="button"
                             title="fetch disassembly"
-                            className="btn btn-default btn-xs"><span>reload file/hide disassembly</span>
+                            className="btn btn-default btn-xs"><span>reload/hide disassembly</span>
                       </button>
                     </div>
                     <div style={{marginRight: 5, marginLeft: 5, marginTop: 5, whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em'}} className="lighttext">

@@ -89,7 +89,7 @@ const GdbApi = {
         // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running.
         // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
         GdbApi.run_gdb_command('-exec-return')
-        Actions.inferior_program_running()
+        Actions.inferior_program_paused()
     },
     click_next_instruction_button: function(){
         Actions.inferior_program_running()
@@ -317,6 +317,9 @@ const GdbApi = {
         }
         cmds.push(GdbApi.get_break_list_cmd())
         return cmds
+    },
+    set_assembly_flavor(flavor){
+        GdbApi.run_gdb_command('set disassembly-flavor ' + flavor)
     },
     _recieve_last_modified_unix_sec(data){
         if(data.path === store.get('inferior_binary_path')){

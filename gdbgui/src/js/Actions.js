@@ -104,6 +104,14 @@ const Actions = {
         store.set('line_of_source_to_flash', parseInt(line))
         store.set('make_current_line_visible', true)
     },
+    clear_cached_assembly(){
+        store.set('disassembly_for_missing_file', [])
+        let cached_source_files = store.get('cached_source_files')
+        for(let file of cached_source_files){
+            file.assembly = {}
+        }
+        store.set('cached_source_files', cached_source_files)
+    }
 
 }
 
