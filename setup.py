@@ -27,7 +27,7 @@ class TestCommand (Command):
 
 setup(
     name='gdbgui',
-    version='0.8.2.0',
+    version='0.9.0.0',
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description=('browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust'),
@@ -55,6 +55,7 @@ setup(
         'gevent>=1.2.2',  # for websockets (preferred)
         'eventlet>=0.21.0',  # for websockets (backup to gevent)
         'Pygments>=2.2.0',  # for syntax highlighting
+        'Flask-Compress>=1.4.0',  # to compress flask responses
     ],
     classifiers=[
         'Intended Audience :: Developers',

@@ -1,0 +1,168 @@
+import React from 'react';
+import StatusBar from './StatusBar.jsx';
+import BinaryLoader from './BinaryLoader.jsx';
+import Settings from './Settings.jsx';
+import SourceCodeHeading from './SourceCodeHeading.jsx';
+import SourceFileAutocomplete from './SourceFileAutocomplete.jsx';
+import FileOps from './FileOps.js';
+import GdbApi from './GdbApi.js';
+import Actions from './Actions.js';
+import constants from './constants.js';
+
+let onkeyup_jump_to_line = (e)=>{
+    if (e.keyCode === constants.ENTER_BUTTON_NUM){
+        Actions.set_line_state(e.currentTarget.value)
+    }
+}
+
+let btn_class = 'btn btn-default btn-sm'
+
+const controls =
+        <div role="group" style={{marginBottom: 6, height: 25, width: 220}} className="btn-group btn-group">
+          <button id="run_button"
+                onClick={GdbApi.click_run_button}
+                type="button"
+                title="Start inferior program from the beginning (keyboard shortcut: r)"
+                className={btn_class}><span className="glyphicon glyphicon-repeat" />
+          </button>
+          <button id="continue_button"
+                onClick={GdbApi.click_continue_button}
+                type="button"
+                title="Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)"
+                className={btn_class}><span className="glyphicon glyphicon-play" />
+          </button>
+          <button id="next_button"
+                onClick={GdbApi.click_next_button}
+                type="button"
+                title="Step over next function call (keyboard shortcut: n or right arrow)"
+                className={btn_class}><span className="glyphicon glyphicon-step-forward" />
+          </button>
+          <button id="step_button"
+                onClick={GdbApi.click_step_button}
+                type="button"
+                title="Step into next function call (keyboard shortcut: s or down arrow)"
+                className={btn_class}><span className="glyphicon glyphicon-arrow-down" />
+          </button>
+          <button id="return_button"
+                onClick={GdbApi.click_return_button}
+                type="button"
+                title="Step out of current function (keyboard shortcut: u or up arrow)"
+                className={btn_class}><span className="glyphicon glyphicon-arrow-up" />
+          </button>
+          <div role="group" className="btn-group btn-group-xs">
+            <button id="next_instruction_button"
+                onClick={GdbApi.click_next_instruction_button}
+                type="button" title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)"
+                className="btn btn-default">NI
+            </button>
+            <button id="step_instruction_button"
+                onClick={GdbApi.click_step_instruction_button}
+                type="button"
+                title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)"
+                className="btn btn-default">SI
+            </button>
+          </div>
+        </div>
+
+
+let click_shutdown_button = function(){
+    // no need to show confirmation before leaving, because we're about to prompt the user
+    window.onbeforeunload = () => null
+    // prompt user
+    if (window.confirm('This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?') === true) {
+        // user wants to shutdown, redirect them to the shutdown page
+        window.location = '/shutdown'
+    } else {
+        // re-add confirmation before leaving page (when user actually leaves at a later time)
+        window.onbeforeunload = () => 'some text'
+    }
+}
+
+const menu =
+    <ul style={{height: 25, padding: 0}} className="nav navbar-nav navbar-right">
+      <li id="menudropdown" className="dropdown"><a href="#" data-toggle="dropdown" role="button" style={{height: 25, padding: 0, paddingRight: 20}} className="dropdown-toggle"><span className="glyphicon glyphicon-menu-hamburger"> </span></a>
+        <ul className="dropdown-menu">
+          <li><a onClick={()=>Settings.toggle_key('show_settings')} title="settings" className="pointer">Settings</a>
+          </li>
+          <li><a title="donate" href="/donate" className="pointer">Donate</a>
+          </li>
+          <li><a href="https://github.com/cs01/gdbgui" className="pointer">Homepage / github</a>
+          </li>
+          <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">gdbgui Chat Room</a>
+          </li>
+          <li><a title="Help" href="https://github.com/cs01/gdbgui/blob/master/HELP.md" className="pointer">Help</a>
+          </li>
+          <li role="separator" className="divider" />
+          <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>Shutdown</a>
+          </li>
+        </ul>
+      </li>
+    </ul>
+
+
+class TopBar extends React.Component {
+    constructor(){
+      super()
+      this.state = {assembly_flavor: 'att'}  // att or intel
+    }
+    toggle_assembly_flavor(){
+      const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att'
+      this.setState({'assembly_flavor': flavor})
+      GdbApi.set_assembly_flavor(flavor)
+      Actions.clear_cached_assembly()
+      FileOps.fetch_assembly_cur_line()
+    }
+    render(){
+        return(
+            <div id="top" style={{background: '#f5f6f7', marginBottom: 5}}>
+                <div className="flexrow">
+
+                    <BinaryLoader initial_user_input={this.props.initial_user_input} />
+                    <div id="status" style={{flex: '1 0 0', overflowX: 'auto', whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em', paddingLeft: 5}}>
+                        <StatusBar />
+                    </div>
+
+                    {controls}
+                    {menu}
+                </div>
+
+                <div style={{width: '100%'}}>
+                    <SourceFileAutocomplete />
+                </div>
+
+                <div style={{marginTop: 3}} className="flexrow">
+                    <input onChange={onkeyup_jump_to_line}
+                        autoComplete="on"
+                        title="Enter line number, then press enter"
+                        placeholder="jump to line" style={{width: 150, height: 25, marginLeft: 10}}
+                        className="form-control dropdown-input"
+                    />
+                    <div role="group" style={{height: 25}} className="btn-group btn-group">
+                      <button
+                            onClick={this.toggle_assembly_flavor.bind(this)}
+                            type="button"
+                            title={'Toggle between assembly flavors. The options are att or intel.'}
+                            className="btn btn-default btn-xs"><span>{this.state.assembly_flavor}</span>
+                      </button>
+                      <button onClick={FileOps.fetch_assembly_cur_line} type="button" title="fetch disassembly" className="btn btn-default btn-xs"><span>fetch disassembly</span>
+                      </button>
+                      <button
+                            onClick={FileOps.refresh_cached_source_files}
+                            type="button"
+                            title="fetch disassembly"
+                            className="btn btn-default btn-xs"><span>reload/hide disassembly</span>
+                      </button>
+                    </div>
+                    <div style={{marginRight: 5, marginLeft: 5, marginTop: 5, whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em'}} className="lighttext">
+                        <SourceCodeHeading />
+                    </div>
+                </div>
+            </div>
+        )
+    }
+}
+
+export default TopBar
+
+
+

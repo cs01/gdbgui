@@ -1,5 +1,5 @@
 import {store} from './store.js';
-import Modal from './Modal.js';
+import Actions from './Actions.js';
 import React from 'react';
 
 /**
@@ -29,8 +29,6 @@ class Settings extends React.Component {
         this.state = this._get_applicable_global_state()
         store.subscribe(this._store_change_callback.bind(this))
 
-        document.getElementById('gdbgui_settings_button').onclick = ()=>Settings.toggle_key('show_settings')
-
         // Fetch the latest version only if using in normal mode. If debugging, we tend to
         // refresh quite a bit, which might make too many requests to github and cause them
         // to block our ip? Either way it just seems weird to make so many ajax requests.
@@ -44,7 +42,7 @@ class Settings extends React.Component {
                     store.set('latest_gdbgui_version', _.trim(data))
 
                     if(Settings.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
-                        Modal.render(`Update Available`, Settings.get_upgrade_text())
+                        Actions.show_modal(`Update Available`, Settings.get_upgrade_text())
                     }
                 },
                 error: (data) => {
@@ -109,11 +107,11 @@ class Settings extends React.Component {
         return(
         <table className='table table-condensed'>
             <tbody>
-            {Settings.get_checkbox_row('auto_add_breakpoint_to_main', 'Auto add breakpoint to main')}
-            {Settings.get_checkbox_row('pretty_print', 'Pretty print dynamic variables (shows human readable values rather than internal methods)')}
-            {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Auto-refresh all components when a command is sent from the console')}
-            {Settings.get_checkbox_row('show_all_sent_commands_in_console', 'Show all sent commands in console, including those sent automatically by gdbgui')}
-            {Settings.get_checkbox_row('highlight_source_code', 'Syntax highlighting (for large files, turn off for better performance)')}
+            {Settings.get_checkbox_row('auto_add_breakpoint_to_main', 'Add breakpoint to main after loading executable')}
+            {Settings.get_checkbox_row('pretty_print', 'Pretty print dynamic variables (requires restart)')}
+            {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Refresh all components when a command is sent from the console')}
+            {Settings.get_checkbox_row('show_all_sent_commands_in_console', 'Print all sent commands in console, including those sent automatically by gdbgui')}
+            {Settings.get_checkbox_row('highlight_source_code', 'Add syntax highlighting to source files (turn off for better performance)')}
 
             <tr><td>
                 Theme: <select value={store.get('current_theme')} onChange={
@@ -145,7 +143,15 @@ class Settings extends React.Component {
 
     render(){
         return(
-            <div id='settings_content' className={(store.get('show_settings') ? 'fullscreen' : 'hidden')}>
+            <div className={(store.get('show_settings') ? 'fullscreen_modal' : 'hidden')}
+                ref={(el) => this.settings_node = el}
+                onClick={(e)=>{
+                    if(e.target === this.settings_node){
+                        Settings.toggle_key('show_settings')
+                    }
+                }
+                }
+            >
                 <div id='gdb_settings_modal'>
                     <button className='close' onClick={()=>Settings.toggle_key('show_settings')}>×</button>
                     <h4>Settings</h4>

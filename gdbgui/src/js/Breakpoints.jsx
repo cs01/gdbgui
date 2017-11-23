@@ -1,7 +1,7 @@
 import React from 'react';
 import {store} from './store.js';
 import GdbApi from './GdbApi.js';
-import SourceCode from './SourceCode.jsx';
+import Actions from './Actions.js';
 import Util from './Util.js';
 import FileOps from './FileOps.js';
 
@@ -81,7 +81,7 @@ class Breakpoint extends React.Component {
 
         }
 
-        return  <div className='breakpoint' onClick={()=>SourceCode.view_file(b.fullname_to_display, b.line)}>
+        return  <div className='breakpoint' onClick={()=>Actions.view_file(b.fullname_to_display, b.line)}>
             <div>
                 <table style={{'width': '100%', 'fontSize': '0.9em', 'borderWidth': '1px', 'borderColor': 'black'}} className='lighttext table-condensed'>
                 <tbody>

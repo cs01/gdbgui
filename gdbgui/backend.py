@@ -30,6 +30,7 @@ from distutils.spawn import find_executable
 from flask import Flask, request, Response, render_template, jsonify, redirect
 from functools import wraps
 from flask_socketio import SocketIO, emit
+from flask_compress import Compress
 from pygdbmi.gdbcontroller import GdbController
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 PARENTDIR = os.path.dirname(BASE_PATH)
@@ -62,6 +63,8 @@ for n in dir(signal):
 
 # Create flask application and add some configuration keys to be used in various callbacks
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+Compress(app)  # add gzip compression to Flask. see https://github.com/libwilliam/flask-compress
+
 # templates are written in pug, so add that capability to flask
 app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
 app.config['initial_binary_and_args'] = []

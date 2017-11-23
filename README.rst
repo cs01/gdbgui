@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.8.2.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.9.0.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -115,45 +115,20 @@ Positional arguments:
   ``command``: (Optional) The quote-enclosed executable and arguments to run in gdb. This is a way to script the intial loading of the inferior program you wish to debug. For example ``gdbgui "./mybinary -myarg value -flag1 -flag2"`` (note the quotes around the executable and arguments!). Executables and arguments can also be input through the browser interface after launching (no quotes required there).
 
 Flags (all are optional):
-  -h, --help            show this help message and exit
-  -p PORT, --port PORT  The port on which gdbgui will be hosted. Defaults to
-                        5000
-  --host HOST           The host ip address on which gdbgui serve. Defaults to
-                        127.0.0.1
-  -r, --remote          Shortcut to sets host to 0.0.0.0 and suppress browser
-                        from opening. This allows remote access to gdbgui and
-                        is useful when running on a remote machine that you
-                        want to view/debug from your local browser, or let
-                        someone else debug your application remotely.
-  -g GDB, --gdb GDB     Path to gdb or lldb executable. Defaults to gdb. lldb
-                        support is experimental.
-  --lldb                Use lldb commands (experimental)
-  -v, --version         Print version
-  --hide_gdbgui_upgrades
-                        Hide messages regarding newer version of gdbgui.
-                        Defaults to False.
-  --debug               The debug flag of this Flask application. Pass this
-                        flag when debugging gdbgui itself to automatically
-                        reload the server when changes are detected
-  -n, --no_browser      By default, the browser will open with gdb gui. Pass
-                        this flag so the browser does not open.
-  -x GDB_CMD_FILE, --gdb_cmd_file GDB_CMD_FILE
-                        Execute GDB commands from file.
-
-  --args ARGS [ARGS ...]
-                        (Optional) The binary and arguments to run in gdb.
-                        Example: gdbgui --args "./mybinary myarg -flag1
-                        -flag2"
-
-  --auth                (Optional) Require authentication before accessing
-                        gdbgui in the browser. Prompt will be displayed in
-                        terminal asking for username and password before
-                        running server. NOTE: gdbgui does not use https.
-  --auth-file AUTH_FILE
-                        (Optional) Require authentication before accessing
-                        gdbgui in the browser. Specify a file that contains
-                        the HTTP Basic auth username and password separate by
-                        newline. NOTE: gdbgui does not use https.
+  -h, --help               show this help message and exit
+  -p PORT, --port PORT     The port on which gdbgui will be hosted. Defaults to 5000
+  --host HOST              The host ip address on which gdbgui serve. Defaults to 127.0.0.1
+  -r, --remote             Shortcut to sets host to 0.0.0.0 and suppress browser from opening. This allows remote access to gdbgui and is useful when running on a remote machine that you want to view/debug from your local browser, or let someone else debug your application remotely.
+  -g GDB, --gdb GDB        Path to gdb or lldb executable. Defaults to gdb. lldb support is experimental.
+  --lldb                   Use lldb commands (experimental)
+  -v, --version            Print version
+  --hide_gdbgui_upgrades   Hide messages regarding newer version of gdbgui. Defaults to False.
+  --debug                  The debug flag of this Flask application. Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected
+  -n, --no_browser         By default, the browser will open with gdb gui. Pass this flag so the browser does not open
+  -x GDB_CMD_FILE          GDB_CMD_FILE Execute GDB commands from file
+  --args ARGS              The binary and arguments to run in gdb. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"
+  --auth                   Require authentication before accessing gdbgui in the browser. Prompt will be displayed in terminal asking for username and password before running server. NOTE: gdbgui does not use https
+  --auth-file AUTH_FILE    Require authentication before accessing gdbgui in the browser. Specify a file that contains the HTTP Basic auth username and password separate by newline. NOTE: gdbgui does not use https.
 
 
 Examples

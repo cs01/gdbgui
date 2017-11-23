@@ -78,7 +78,7 @@ const CommandHistory = {
         CH.index = 0
     },
 }
-let CH = CommandHistory
+const CH = CommandHistory
 
 
 // component that combines the gdb console output component and input component

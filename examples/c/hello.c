@@ -24,8 +24,9 @@ struct mystruct_t {
   union {
     int unionint;
     double uniondouble;
-  }
+  };
 };
+
 
 int main(void) {
   printf("Hello World\n");
