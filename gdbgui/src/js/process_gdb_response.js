@@ -15,9 +15,8 @@ import Memory from './Memory.jsx';
 import GdbApi from './GdbApi.js';
 import Locals from './Locals.jsx';
 import GdbVariable from './GdbVariable.jsx';
-import Modal from './Modal.js';
+import Modal from './GdbguiModal.jsx';
 import Actions from './Actions.js';
-import SourceCode from './SourceCode.jsx';
 
 const process_gdb_response = function(response_array){
     // update status with error or with last response
@@ -104,7 +103,7 @@ const process_gdb_response = function(response_array){
                 // trying to render the file of the newly created breakpoint.
                 if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
                     // a normal breakpoint or child breakpoint
-                    SourceCode.view_file(bkpt.fullname_to_display, parseInt(bkpt.line))
+                    Actions.view_file(bkpt.fullname_to_display, parseInt(bkpt.line))
                 }
 
                 // refresh all breakpoints
@@ -156,15 +155,17 @@ const process_gdb_response = function(response_array){
                     }
                     store.set('language', language)
                 }else{
-                    store.set('source_file_paths', ['Executable was compiled without debug symbols. Source file paths are unknown.'])
+                    store.set('source_file_paths', ['Either no executable is loaded or the executable was compiled without debug symbols.'])
 
                     if (store.get('inferior_binary_path')){
                         Modal.render('Warning',
-                         `This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
-                         <p>
-                         <p>
-                         Read more: <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>`,
-                         '')
+                        <div>
+                             This binary was not compiled with debug symbols. Recompile with the -g flag for a better debugging experience.
+                             <p/>
+                             <p/>
+                             Read more: <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">http://www.delorie.com/gnu/docs/gdb/gdb_17.html</a>
+                         </div>
+                        )
                     }
                 }
 

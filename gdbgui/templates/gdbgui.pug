@@ -1,6 +1,9 @@
 doctype html
-html
+html(lang='en')
     head
+        meta(charset='utf-8')
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+
         title gdbgui - gdb in a browser
 
         base(target='_blank')
@@ -9,116 +12,20 @@ html
         link(href='static/css/splitjs-gdbgui.css?_=#{version}', rel='stylesheet')
         link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
         link(href='static/vendor/css/gdbgui_awesomeplete.css', rel='stylesheet')
+
+        //- add css for all syntax highlighting themes
         - for theme in themes
             link(href='static/vendor/css/pygments/#{theme}.css', rel='stylesheet')
 
     body
-        #top(style='background: #f5f6f7; margin-bottom: 5px;')
-            //- binary selection
-            div.flexrow
-                form(role=form, style='margin-bottom: 1px; flex: 2 0 0;')
-                    div.input-group.input-group-sm
-                        span.input-group-btn
-                            //- button.btn.btn-primary#attach(type="button") Attach
-                            button.btn.btn-primary#set_target_app(type="button", title='Loads the binary and any arguments present in the input to the right') Load Binary
-
-                        input.form-control#binary(type="text", placeholder="/path/to/target/executable -and -flags", list='past_binaries', style="font-family: courier")
-                    datalist#past_binaries
-
-                span#status(style="flex: 1 0 0; overflow-x: auto; white-space: nowrap; font-family: monospace; font-size: 0.7em; padding-left: 5px;") GDB is waiting to run a command
-
-                .btn-group.btn-group(role="group", style='margin-bottom: 6px; height: 25px; width: 220px;')
-                    button.btn.btn-default.btn-sm#run_button(type='button', title='Start inferior program from the beginning (keyboard shortcut: r)')
-                        span.glyphicon.glyphicon-repeat
-                    button.btn.btn-default.btn-sm#continue_button(type='button', title='Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)')
-                        span.glyphicon.glyphicon-play
-                    button.btn.btn-default.btn-sm#next_button(type='button', title="Step over next function call (keyboard shortcut: n or right arrow)")
-                        span.glyphicon.glyphicon-step-forward
-                    button.btn.btn-default.btn-sm#step_button(type='button', title="Step into next function call (keyboard shortcut: s or down arrow)")
-                        span.glyphicon.glyphicon-arrow-down
-                    button.btn.btn-default.btn-sm#return_button(type='button', title='Step out of current function (keyboard shortcut: u or up arrow)')
-                        span.glyphicon.glyphicon-arrow-up
-
-                    div(class='btn-group btn-group-xs', role='group')
-                        button#next_instruction_button(class='btn btn-default', type='button', title='Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)')
-                            | NI
-                        button#step_instruction_button(class='btn btn-default', type='button', title='Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)')
-                            | SI
-
-                ul.nav.navbar-nav.navbar-right(style='height: 25px; padding: 0;')
-                    li.dropdown#menudropdown
-                        a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', style='height: 25px; padding: 0; padding-right: 20px')
-                            span.glyphicon.glyphicon-menu-hamburger
-                                =' '
-                        ul.dropdown-menu
-                            li
-                                a#gdbgui_settings_button.pointer(title='settings') Settings
-                            li
-                                a.pointer(title='donate', href='/donate') Donate
-                            li
-                                a.pointer(href='https://github.com/cs01/gdbgui') Homepage / github
-                            li
-                                a.pointer(href='https://gitter.im/gdbgui/Lobby') gdbgui Chat Room
-                            li
-                                a.pointer(title='Help', href='https://github.com/cs01/gdbgui/blob/master/HELP.md') Help
-                            li.divider(role='separator')
-                            li
-                                a#shutdown_gdbgui.pointer(title='shutdown') Shutdown
-
-            div.flexrow
-                //- displays source file path input, and dropdown
-                input#source_file_input.form-control.dropdown-input(autocomplete='off', placeholder='Enter source file path to view, or load binary then populate and select from dropdown', style='width: 100%;')
-
-                button#source_file_dropdown_button.dropdown-btn(type="button")
-                    span.caret
-
-            div.flexrow(style="margin-top: 3px;")
-                //- input to jump to a line in the source code
-                input#jump_to_line.form-control.dropdown-input(autocomplete='on', title='jump to line', placeholder='jump to line', title='Enter line number, then press enter', style="width: 150px; height: 25px; margin-left: 10")
-
-                .btn-group.btn-group(role="group", style='height: 25px; ')
-                    button.btn.btn-default.btn-xs#fetch_assembly_cur_line(type='button', title='fetch disassembly')
-                        span fetch disassembly
-                    button.btn.btn-default.btn-xs#refresh_cached_source_files(type='button', title='fetch disassembly')
-                        span reload file/hide disassembly
-                span#source_code_heading.lighttext(style="margin-right: 5px; margin-left: 5px; margin-top: 5px; white-space: nowrap; font-family: monospace; font-size: 0.7em;")
-
-        #middle
-            #middle_left(style='height: 100%; float: left;')
-            #middle_right.content(style='height: 100%; float: left; overflow-y: auto; overflow-x: visible;')
-
-
-
-
-        #bottom.split.split-horizontal(style='padding-bottom: 90px; width: 100%;')
-            #bottom_content.split.content(style='width:100%; height: 100%; position: relative; padding-bottom: 30px;')
-                //- position of this split pane is relative so that other divs can be absolute and use it as an anchor
-
-                //- gdb console
-                div#console_container
-
-
-        //- modal window, hidden by default, used to show various modal dialogs
-        #gdb_modal.modal.fade(role='dialog')
-            .modal-dialog
-                .modal-content(style='padding: 20px;')
-                    #modal_header
-                        button.close(type='button', data-dismiss='modal') ×
-
-                    h4#modal_title Modal Header
-
-                    #modal_body(style='margin-top: 20px;')
-
-                    #modal_footer(style='margin-top: 20px;')
-                        button.btn.btn-success(type='button', data-dismiss='modal') Close
-
-        #hovervar_container
-        #settings_container
+        //- the id for the main app. This is mounted in gdbgui.js.
+        #gdbgui.splitjs_container
 
     script.
         initial_data = JSON.parse('!{initial_data}')
         debug = JSON.parse('!{debug}')
 
+    //- TODO add some of these as package.json dependencies
     script(type="text/javascript" src='static/vendor/js/jquery.min.js')
     script(type="text/javascript" src='static/vendor/js/jquery.flot-0.8.3.min.js')
     script(type="text/javascript" src='static/vendor/js/bootstrap.min.js')
@@ -128,4 +35,6 @@ html
     script(type="text/javascript" src='static/vendor/js/awesomeplete.min.js')
     script(type="text/javascript" src='static/vendor/js/socket.io-2.0.3.min.js')
     script(type="text/javascript" src='static/vendor/js/splitjs.min-1.2.0.js')
-    script(type="text/javascript" src='static/js/index.js?_=#{version}')
+
+    //- the full transpiled gdbgui app
+    script(type="text/javascript" src='static/js/build.js?_=#{version}')

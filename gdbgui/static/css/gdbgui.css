@@ -72,10 +72,6 @@ td{
 .pointer{
     cursor: pointer;
 }
-.gdb_content_div{
-    /*flex-direction: column;*/
-    background-color: white;
-}
 .sent_command{
     color: #00d8ff;
 }
@@ -278,9 +274,8 @@ td.line_num{
     outline-color: none;
     box-shadow: none;
 }
-
-
-#settings_content{
+.fullscreen_modal{
+    padding: 10px;
     width: 100%;
     height: 100%;
     position: fixed;
@@ -295,7 +290,6 @@ td.line_num{
 }
 #gdb_settings_modal{
     width: 800px;
-    margin: 50px;
     padding: 40px;
     z-index: 120;
     background: white;
@@ -303,6 +297,18 @@ td.line_num{
     overflow: auto;
     margin-left: auto;
     margin-right: auto;
+}
+.modal_content{
+    padding: 20px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background: white;
+    margin: auto;
+    border: 1px solid #888;
+    border-radius: 4px;
+    width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
 }
 
 #hovervar{

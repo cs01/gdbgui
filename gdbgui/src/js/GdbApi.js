@@ -2,14 +2,15 @@
  * An object to manage the websocket connection to the python server that manages gdb,
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
-import {store} from './store.js';
-import Registers from './Registers.jsx';
-import Memory from './Memory.jsx';
-import Modal from './Modal.js';
-import Actions from './Actions.js';
-import GdbVariable from './GdbVariable.jsx';
-import constants from './constants.js';
-import process_gdb_response from './process_gdb_response.js';
+import {store} from './store.js'
+import Registers from './Registers.jsx'
+import Memory from './Memory.jsx'
+import Actions from './Actions.js'
+import GdbVariable from './GdbVariable.jsx'
+import constants from './constants.js'
+import process_gdb_response from './process_gdb_response.js'
+import React from 'react'
+void(React) // needed when using JSX, but not marked as used
 
 /* global debug */
 
@@ -29,15 +30,6 @@ if(debug){
  */
 const GdbApi = {
     init: function(){
-        $('#run_button').click(GdbApi.click_run_button)
-        $('#continue_button').click(GdbApi.click_continue_button)
-        $('#next_button').click(GdbApi.click_next_button)
-        $('#step_button').click(GdbApi.click_step_button)
-        $('#return_button').click(GdbApi.click_return_button)
-        $('#next_instruction_button').click(GdbApi.click_next_instruction_button)
-        $('#step_instruction_button').click(GdbApi.click_step_instruction_button)
-        $('#send_interrupt_button').click(GdbApi.click_send_interrupt_button)
-
         const TIMEOUT_MIN = 5
         /* global io */
         GdbApi.socket = io.connect(`http://${document.domain}:${location.port}/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
@@ -67,7 +59,7 @@ const GdbApi = {
             window.onbeforeunload = () => null
 
             // show modal
-            Modal.render('The gdbgui server has shutdown. This tab will no longer function as expected.')
+            Actions.show_modal('', <span>The gdbgui server has shutdown. This tab will no longer function as expected.</span>)
             debug_print('disconnected')
         });
     },
@@ -97,7 +89,7 @@ const GdbApi = {
         // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running.
         // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
         GdbApi.run_gdb_command('-exec-return')
-        Actions.inferior_program_running()
+        Actions.inferior_program_paused()
     },
     click_next_instruction_button: function(){
         Actions.inferior_program_running()
@@ -312,6 +304,22 @@ const GdbApi = {
         }else if (store.get('language') === 'rust'){
             return ''  // TODO?
         }
+    },
+    get_load_binary_and_arguments_cmds(binary, args){
+        // tell gdb which arguments to use when calling the binary, before loading the binary
+        let cmds = [
+                `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
+                `-file-exec-and-symbols ${binary}`,  // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
+            ]
+        // add breakpoint if we don't already have one
+        if(store.get('auto_add_breakpoint_to_main')){
+            cmds.push('-break-insert main')
+        }
+        cmds.push(GdbApi.get_break_list_cmd())
+        return cmds
+    },
+    set_assembly_flavor(flavor){
+        GdbApi.run_gdb_command('set disassembly-flavor ' + flavor)
     },
     _recieve_last_modified_unix_sec(data){
         if(data.path === store.get('inferior_binary_path')){

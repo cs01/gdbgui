@@ -72,7 +72,47 @@ const Actions = {
         }
 
         store.set('gdb_console_entries', new_entries)
+    },
+    toggle_modal_visibility(){
+        store.set('show_modal', !store.get('show_modal'))
+    },
+    show_modal(header, body){
+        store.set('modal_header', header)
+        store.set('modal_body', body)
+        store.set('show_modal', true)
+    },
+    set_gdb_binary_and_arguments(binary, args){
+        // remove list of source files associated with the loaded binary since we're loading a new one
+        store.set('source_file_paths', [])
+        store.set('language', 'c_family')
+        store.set('inferior_binary_path', binary)
+        Actions.inferior_program_exited()
+        let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args)
+        GdbApi.run_gdb_command(cmds)
+        GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
+    },
+    fetch_source_files(){
+        store.set('source_file_paths', [`${constants.ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
+        GdbApi.run_gdb_command('-file-list-exec-source-files')
+    },
+    view_file(fullname, line){
+        store.set('render_paused_frame_or_user_selection', 'user_selection')
+        store.set('fullname_to_render', fullname)
+        Actions.set_line_state(line)
+    },
+    set_line_state(line){
+        store.set('line_of_source_to_flash', parseInt(line))
+        store.set('make_current_line_visible', true)
+    },
+    clear_cached_assembly(){
+        store.set('disassembly_for_missing_file', [])
+        let cached_source_files = store.get('cached_source_files')
+        for(let file of cached_source_files){
+            file.assembly = {}
+        }
+        store.set('cached_source_files', cached_source_files)
     }
+
 }
 
 export default Actions

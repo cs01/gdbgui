@@ -88,7 +88,39 @@ const Util = {
             }
         }
         return text
+    },
+    string_to_array_safe_quotes(str){
+        let output = []
+        , cur_str = ''
+        , in_quotes = false
+
+        for(let i=0; i < str.length; i++){
+            let char = str[i]
+
+            if (char === '"'){
+                in_quotes = !in_quotes
+
+            }else if (char !== ' ' ||
+                     (char === ' ' && in_quotes)){
+                cur_str += char
+
+            }else if (char === ' '){
+                // got a space outside of quotes
+                if (cur_str === ''){
+                    // a consecutive space. do nothing.
+                }else{
+                    // save this argument, and reset cur_str
+                    output.push(cur_str)
+                    cur_str = ''
+                }
+            }
+        }
+        if(cur_str !== ''){
+            output.push(cur_str)
+        }
+        return output
     }
+
 }
 
 export default Util;

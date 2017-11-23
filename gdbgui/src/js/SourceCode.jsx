@@ -9,6 +9,7 @@ import Breakpoints from './Breakpoints.jsx';
 import Memory from './Memory.jsx';
 import MemoryLink from './MemoryLink.jsx';
 import constants from './constants.js';
+import Actions from './Actions.js';
 
 class SourceCode extends React.Component {
     static el_code_container = null  // todo: no jquery
@@ -30,12 +31,6 @@ class SourceCode extends React.Component {
 
     constructor() {
         super()
-
-        document.getElementById('jump_to_line').onkeyup = (e)=>{
-            if (e.keyCode === constants.ENTER_BUTTON_NUM){
-                SourceCode.set_line_state(e.currentTarget.value)
-            }
-        }
 
         // bind methods
         this.get_body_assembly_only = this.get_body_assembly_only.bind(this)
@@ -61,7 +56,81 @@ class SourceCode extends React.Component {
         }
         return applicable_state
     }
+    render(){
+        return(<div className={this.state.current_theme} style={{height: '100%'}}>
+                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>
+                    <tbody id='code_body'>
+                        {this.get_body()}
+                    </tbody>
+                </table>
+            </div>)
+    }
 
+    componentDidUpdate(){
+        let source_is_displayed = (this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
+            this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED)
+        if (source_is_displayed)
+        {
+            if (this.state.make_current_line_visible){
+                SourceCode.make_current_line_visible()
+                store.set('make_current_line_visible', false)
+            }
+            store.set('fullname_rendered', this.state.fullname_to_render)
+        }
+
+        if (this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+            this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
+            store.set('has_unrendered_assembly', false)
+        }
+    }
+    get_body(){
+        const states = constants.source_code_states
+        switch(this.state.source_code_state){
+            case (states.ASSM_AND_SOURCE_CACHED):{
+                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
+                if(!obj){
+                    console.error("expected to find source file")
+                    return this.get_body_empty()
+                }
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
+            }
+            case (states.SOURCE_CACHED):{
+                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
+                if(!obj){
+                    console.error("expected to find source file")
+                    return this.get_body_empty()
+                }
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
+            }
+            case states.FETCHING_SOURCE:{
+                return(<tr><td>fetching source, please wait</td></tr>)
+            }
+            case states.ASSM_CACHED:{
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                , assm_array = this.state.disassembly_for_missing_file
+                return this.get_body_assembly_only(assm_array, paused_addr)
+            }
+            case states.FETCHING_ASSM:{
+                return(<tr><td>fetching assembly, please wait</td></tr>)
+            }
+            case states.ASSM_UNAVAILABLE:{
+                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
+                return (<tr><td>cannot access address {paused_addr}</td></tr>)
+            }
+            case states.FILE_MISSING:{
+                return (<tr><td>file not found: {this.state.fullname_to_render}</td></tr>)
+            }
+            case states.NONE_AVAILABLE:{
+                return this.get_body_empty()
+            }
+            default:{
+                console.error('developer error: unhandled state')
+                return this.get_body_empty()
+            }
+        }
+    }
     click_gutter(line_num){
         Breakpoints.add_or_remove_breakpoint(this.state.fullname_to_render, line_num)
     }
@@ -202,81 +271,6 @@ class SourceCode extends React.Component {
     get_body_empty(){
         return(<tr><td>no source code or assembly to display</td></tr>)
     }
-
-    get_body(){
-        const states = constants.source_code_states
-        switch(this.state.source_code_state){
-            case (states.ASSM_AND_SOURCE_CACHED):{
-                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
-                if(!obj){
-                    console.error("expected to find source file")
-                    return this.get_body_empty()
-                }
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
-            }
-            case (states.SOURCE_CACHED):{
-                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
-                if(!obj){
-                    console.error("expected to find source file")
-                    return this.get_body_empty()
-                }
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
-            }
-            case states.FETCHING_SOURCE:{
-                return(<tr><td>fetching source, please wait</td></tr>)
-            }
-            case states.ASSM_CACHED:{
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                , assm_array = this.state.disassembly_for_missing_file
-                return this.get_body_assembly_only(assm_array, paused_addr)
-            }
-            case states.FETCHING_ASSM:{
-                return(<tr><td>fetching assembly, please wait</td></tr>)
-            }
-            case states.ASSM_UNAVAILABLE:{
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return (<tr><td>cannot access address {paused_addr}</td></tr>)
-            }
-            case states.FILE_MISSING:{
-                return (<tr><td>file not found: {this.state.fullname_to_render}</td></tr>)
-            }
-            case states.NONE_AVAILABLE:{
-                return this.get_body_empty()
-            }
-            default:{
-                console.error('developer error: unhandled state')
-                return this.get_body_empty()
-            }
-        }
-    }
-    render(){
-        return(<div className={this.state.current_theme} style={{height: '100%'}}>
-                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>
-                    <tbody id='code_body'>
-                        {this.get_body()}
-                    </tbody>
-                </table>
-            </div>)
-    }
-
-    componentDidUpdate(){
-        if (this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
-            this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED)
-        {
-            if (this.state.make_current_line_visible){
-                SourceCode.make_current_line_visible()
-                store.set('make_current_line_visible', false)
-            }
-            store.set('fullname_rendered', this.state.fullname_to_render)
-        }
-
-        if (this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
-            this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
-            store.set('has_unrendered_assembly', false)
-        }
-    }
     static make_current_line_visible(){
         SourceCode.scroll_to_jq_selector($("#scroll_to_line"))
     }
@@ -308,91 +302,8 @@ class SourceCode extends React.Component {
     static view_file(fullname, line){
         store.set('render_paused_frame_or_user_selection', 'user_selection')
         store.set('fullname_to_render', fullname)
-        SourceCode.set_line_state(line)
+        Actions.set_line_state(line)
     }
-
-    static set_line_state(line){
-        store.set('line_of_source_to_flash', parseInt(line))
-        store.set('make_current_line_visible', true)
-    }
-
 }
-
-// =======================================================
-// TODO ressurect these for more efficiency when large files are being rendered
-// =======================================================
-// re-render breakpoints on whichever file is loaded
-// let render_breakpoints = function(){
-//     console.warn("TODO: render_breakpoints")
-    // document.querySelectorAll('.line_num.breakpoint').forEach(el => el.classList.remove('breakpoint'))
-    // document.querySelectorAll('.line_num.disabled_breakpoint').forEach(el => el.classList.remove('disabled_breakpoint'))
-    // if(_.isString(state.get('rendered_source_file_fullname'))){
-
-    //     let bkpt_lines = Breakpoint.get_breakpoint_lines_for_file(state.get('rendered_source_file_fullname'))
-    //     , disabled_breakpoint_lines = Breakpoint.get_disabled_breakpoint_lines_for_file(state.get('rendered_source_file_fullname'))
-
-    //     for(let bkpt_line of bkpt_lines){
-    //         let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
-    //         if(js_line){
-    //             $(js_line).addClass('breakpoint')
-    //         }
-    //     }
-
-    //     for(let bkpt_line of disabled_breakpoint_lines){
-    //         let js_line = $(`td.line_num[data-line=${bkpt_line}]`)[0]
-    //         if(js_line){
-    //             $(js_line).addClass('disabled_breakpoint')
-    //         }
-    //     }
-    // }
-// }
-
-// let highlight_paused_line = function(){
-//     console.warn("TODO: highlight_paused_line")
-
-    // remove_line_highlights()
-
-    // let fullname = state.get('rendered_source_file_fullname')
-    // , line_num = state.get('current_line_of_source_code')
-    // , addr = state.get('current_assembly_address')
-    // , inferior_program_is_paused_in_this_file = _.isObject(state.get('paused_on_frame')) && state.get('paused_on_frame').fullname === fullname
-    // , paused_on_current_line = (inferior_program_is_paused_in_this_file && parseInt(state.get('paused_on_frame').line) === parseInt(line_num))
-
-    // // make background blue if gdb is paused on a line in this file
-    // if(inferior_program_is_paused_in_this_file){
-    //     let jq_line = $(`.loc[data-line=${state.get('paused_on_frame').line}]`)
-    //     if(jq_line.length === 1){
-    //         jq_line.offset()  // needed so DOM registers change and re-draws animation
-    //         jq_line.addClass('paused_on_line')
-    //         if(paused_on_current_line){
-    //             jq_line.attr('id', 'scroll_to_line')
-    //         }
-    //     }
-    // }
-
-    // // make this line flash ONLY if it's NOT the line we're paused on
-    // if(line_num && !paused_on_current_line){
-    //     let jq_line = $(`.loc[data-line=${line_num}]`)
-    //     if(jq_line.length === 1){
-    //         // https://css-tricks.com/restart-css-animation/
-    //         jq_line.offset()  // needed so DOM registers change and re-draws animation
-    //         jq_line.addClass('flash')
-    //         jq_line.attr('id', 'scroll_to_line')
-    //     }
-    // }
-
-    // if(addr){
-    //     // find element with assembly class and data-addr as the desired address, and
-    //     // current_assembly_command class
-    //     let jq_assembly = $(`.assembly[data-addr=${addr}]`)
-    //     if(jq_assembly.length === 1){
-    //         jq_assembly.addClass('current_assembly_command')
-    //     }
-    // }
-// }
-
-// let highlight_current_instruction = function(){
-//     console.warn("TODO: highlight_current_instruction")
-// }
 
 export default SourceCode

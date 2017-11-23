@@ -1,7 +1,7 @@
 /* splitjs is so unopinionated, it doesn't work without specific css classes (float: left) when splitting into two side-by-side
  panes ("horizonal" */
 /* splitjs classes for splitting the body of the webpage (https://github.com/nathancahill/Split.js) */
-html, body {  /* for splitjs, it's important that html also has these properties, not just body */
+html, body, .splitjs_container {  /* for splitjs, it's important that html also has these properties, not just body */
 height: 100%;
 padding: 0;
 margin: 0;
@@ -26,6 +26,7 @@ background-color: #fff;
 overflow: auto;
 float: left;
 height: 100%;
+width: 100%;
 }
 
 .gutter{

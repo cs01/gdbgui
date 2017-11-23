@@ -3,6 +3,15 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.9.0.0
+* Compress responses from server (massive bandwidth improvement)
+* Add button to toggle assembly flavors (issue #110)
+* Parse executable+args with spaces (issue #116)
+* Turn modals into components
+* Move everything into a single root React component
+* Refresh state when clicking "return" button
+* Add javascript unit tests
+
 ## 0.8.2.0
 * Add optional authentication (@nickamon, issue #132)
 * Support the `--args` flag (issue #126)

@@ -1,4 +1,4 @@
-import SourceCode from './SourceCode.jsx';
+import Actions from './Actions.js';
 import React from 'react';
 
 
@@ -15,7 +15,7 @@ class FileLink extends React.Component {
             sep = ':'
         }
         if(this.props.fullname){
-            onclick = ()=>SourceCode.view_file(this.props.fullname, line)
+            onclick = ()=>Actions.view_file(this.props.fullname, line)
             cls = 'pointer'
         }
         return (<span onClick={onclick} className={cls} title={`click to view ${this.props.fullname}`}>
