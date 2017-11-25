@@ -5,32 +5,67 @@ import Actions from './Actions.js';
 import Util from './Util.js';
 import FileOps from './FileOps.js';
 
+const BreakpointSourceLineCache = {
+    _cache: {},
+    get_line: function(fullname, linenum){
+        if(BreakpointSourceLineCache._cache['fullname'] !== undefined &&
+            _.isString(BreakpointSourceLineCache._cache['fullname'][linenum])){
+            return BreakpointSourceLineCache._cache['fullname'][linenum]
+        }
+        return null
+    },
+    add_line: function(fullname, linenum, escaped_text){
+        if(!_.isObject(BreakpointSourceLineCache._cache['fullname'])){
+            BreakpointSourceLineCache._cache['fullname'] = {}
+        }
+        BreakpointSourceLineCache._cache['fullname'][linenum] = escaped_text
+    }
+}
 
 class Breakpoint extends React.Component {
-    render(){
-        let b = this.props.bkpt
-        // return <span key={this.props.bkpt.number}>{this.props.bkpt.number}</span>
-        const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40
-        let checked = b.enabled === 'y' ? 'checked' : ''
-        , source_line = '(file not cached)'
-
+    get_source_line(fullname, linenum){
         // if we have the source file cached, we can display the line of text
-        let source_file_obj = FileOps.get_source_file_obj_from_cache(b.fullname_to_display)
-        if(source_file_obj && source_file_obj.source_code && source_file_obj.source_code.length >= (b.line - 1)){
-            let syntax_highlighted_line = FileOps.get_source_file_obj_from_cache(b.fullname_to_display).source_code[b.line - 1]
+        const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40
+        let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        , escaped_line = null
+
+        if(BreakpointSourceLineCache.get_line(fullname, linenum)){
+            escaped_line = BreakpointSourceLineCache.get_line(fullname, linenum)
+
+        } else if(source_file_obj && source_file_obj.source_code && source_file_obj.source_code.length >= (linenum - 1)){
+            let syntax_highlighted_line = FileOps.get_source_file_obj_from_cache(fullname).source_code[linenum - 1]
             , line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
 
             if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){
                 line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + '...'
             }
-            let escaped_line = line.replace(/>/g, "&gt;").replace(/</g, "&lt;")
+            escaped_line = line.replace(/>/g, "&gt;").replace(/</g, "&lt;")
 
-            source_line = <span className='monospace' style={{'whiteSpace': 'nowrap', 'fontSize': '0.9em'}}>
+            BreakpointSourceLineCache.add_line(fullname, linenum, escaped_line)
+
+        }
+
+        if(escaped_line){
+            return <span className='monospace' style={{'whiteSpace': 'nowrap', 'fontSize': '0.9em'}}>
                                 {escaped_line || <br/>}
                          </span>
         }
+        return '(file not cached)'
+    }
+    get_delete_jsx(bkpt_num_to_delete){
+        return <div style={{'width': '10px', display: 'inline'}}
+            className='pointer breakpoint_trashcan'
+            onClick={()=>Breakpoints.delete_breakpoint(bkpt_num_to_delete)}
+            title={`Delete breakpoint ${bkpt_num_to_delete}`}>
+            <span className='glyphicon glyphicon-trash'> </span>
+        </div>
+    }
+    render(){
+        let b = this.props.bkpt
+        , checked = b.enabled === 'y' ? 'checked' : ''
+        , source_line = this.get_source_line(b.fullname_to_display, b.line)
 
-        let delete_jsx, info_glyph, function_jsx, location_jsx, bkpt_num_to_delete
+        let info_glyph, function_jsx, location_jsx, bkpt_num_to_delete
         if(b.is_child_breakpoint){
             bkpt_num_to_delete = b.parent_breakpoint_number
             info_glyph = <span className='glyphicon glyphicon-th-list' title='Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted.'></span>
@@ -42,13 +77,7 @@ class Breakpoint extends React.Component {
             info_glyph = ''
         }
 
-        delete_jsx =
-            <div style={{'width': '10px', display: 'inline'}}
-                className='pointer breakpoint_trashcan'
-                onClick={()=>Breakpoints.delete_breakpoint(bkpt_num_to_delete)}
-                title={`Delete breakpoint ${bkpt_num_to_delete}`}>
-                <span className='glyphicon glyphicon-trash'> </span>
-            </div>
+        const delete_jsx = this.get_delete_jsx(bkpt_num_to_delete)
 
         if(b.is_parent_breakpoint){
             function_jsx =
