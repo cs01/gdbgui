@@ -1,5 +1,5 @@
 import {store} from './store.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import SourceCode from './SourceCode.jsx';
 import Locals from './Locals.jsx';
 import Memory from './Memory.jsx';
@@ -111,6 +111,13 @@ const Actions = {
             file.assembly = {}
         }
         store.set('cached_source_files', cached_source_files)
+    },
+    update_max_lines_of_code_to_fetch(new_value){
+        if(new_value <= 0){
+            new_value = constants.default_max_lines_of_code_to_fetch
+        }
+        store.set('max_lines_of_code_to_fetch', new_value)
+        localStorage.setItem('max_lines_of_code_to_fetch', JSON.stringify(new_value))
     }
 
 }

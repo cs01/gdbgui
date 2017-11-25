@@ -3,7 +3,7 @@
  */
 
 import constants from './constants.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 
 const GlobalEvents = {
     init: function(){

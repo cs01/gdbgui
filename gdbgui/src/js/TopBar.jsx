@@ -5,7 +5,7 @@ import Settings from './Settings.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';
 import SourceFileAutocomplete from './SourceFileAutocomplete.jsx';
 import FileOps from './FileOps.jsx';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import Actions from './Actions.js';
 import constants from './constants.js';
 
@@ -131,7 +131,7 @@ class TopBar extends React.Component {
                 </div>
 
                 <div style={{marginTop: 3}} className="flexrow">
-                    <input onChange={onkeyup_jump_to_line}
+                    <input onKeyUp={onkeyup_jump_to_line}
                         autoComplete="on"
                         title="Enter line number, then press enter"
                         placeholder="jump to line" style={{width: 150, height: 25, marginLeft: 10}}

@@ -111,9 +111,7 @@ class Settings extends React.Component {
             />
             <button onClick={()=>{
                     let new_value = parseInt(this.max_source_file_lines_input.value)
-                    if(new_value > 0){
-                        store.set('max_lines_of_code_to_fetch', new_value)
-                    }
+                    Actions.update_max_lines_of_code_to_fetch(new_value)
                 }
             }>save</button>
         </td></tr>

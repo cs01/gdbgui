@@ -12,7 +12,7 @@ import Threads from './Threads.jsx';
 import FileOps from './FileOps.jsx';
 import StatusBar from './StatusBar.jsx';
 import Memory from './Memory.jsx';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import Locals from './Locals.jsx';
 import GdbVariable from './GdbVariable.jsx';
 import Modal from './GdbguiModal.jsx';

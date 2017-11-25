@@ -11,7 +11,7 @@
  /* global initial_data */
 
 import {store, initial_store_data} from './store.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import ReactDOM from 'react-dom';
 import React from 'react';
 import TopBar from './TopBar.jsx';

@@ -8,7 +8,7 @@ import {store} from './store.js';
 import constants from './constants.js';
 import ReactTable from './ReactTable.jsx';
 import Memory from './Memory.jsx';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 
 class Registers extends React.Component {
     store_keys = [
