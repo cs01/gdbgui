@@ -49,9 +49,6 @@ Why gdbgui?
 - Open source and free
 - Useful to both beginners and experienced developers
 
-.. image:: https://app.codesponsor.io/embed/EBm7mLVxxevCUXinA4iouHa3/cs01/gdbgui.svg
-    :target: https://app.codesponsor.io/link/EBm7mLVxxevCUXinA4iouHa3/cs01/gdbgui
-
 Compatibility
 -------------
 

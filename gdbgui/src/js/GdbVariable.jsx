@@ -8,7 +8,7 @@ import React from 'react';
 import Memory from './Memory.jsx';
 import constants from './constants.js';
 import {store} from './store.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 
 
 /**

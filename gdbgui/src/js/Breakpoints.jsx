@@ -1,6 +1,6 @@
 import React from 'react';
 import {store} from './store.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import Actions from './Actions.js';
 import Util from './Util.js';
 import FileOps from './FileOps.jsx';
@@ -26,14 +26,13 @@ class Breakpoint extends React.Component {
     get_source_line(fullname, linenum){
         // if we have the source file cached, we can display the line of text
         const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40
-        let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
-        , escaped_line = null
+        let escaped_line = null
 
         if(BreakpointSourceLineCache.get_line(fullname, linenum)){
             escaped_line = BreakpointSourceLineCache.get_line(fullname, linenum)
 
-        } else if(source_file_obj && source_file_obj.source_code && source_file_obj.source_code.length >= (linenum - 1)){
-            let syntax_highlighted_line = FileOps.get_source_file_obj_from_cache(fullname).source_code[linenum - 1]
+        } else if(FileOps.line_is_cached(fullname, linenum)){
+            let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum)
             , line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
 
             if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){

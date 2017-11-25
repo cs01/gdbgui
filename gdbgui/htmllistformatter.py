@@ -4,8 +4,6 @@ from pygments.formatters import HtmlFormatter
 class HtmlListFormatter(HtmlFormatter):
     """A custom pygments class to format html. Returns a list of source code.
     Each element of the list corresponds to a line of (marked up) source code.
-    The standard HtmlFormatter that this sets the value of a string, which is not
-    what is required on the frontend.
     """
 
     def get_marked_up_list(self, tokensource):

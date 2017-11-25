@@ -2,7 +2,7 @@
 //
 import React from 'react';
 
-import GdbApi from './GdbApi.js'
+import GdbApi from './GdbApi.jsx'
 import constants from './constants.js'
 
 const pre_escape = (string) => {

@@ -6,7 +6,7 @@
  */
 
 import {store} from './store.js';
-import GdbApi from './GdbApi.js';
+import GdbApi from './GdbApi.jsx';
 import constants from './constants.js'
 import MemoryLink from './MemoryLink.jsx';
 import ReactTable from './ReactTable.jsx';
