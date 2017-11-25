@@ -17,7 +17,7 @@ import React from 'react';
 import TopBar from './TopBar.jsx';
 import GlobalEvents from './GlobalEvents.js';
 import MiddleLeft from './MiddleLeft.jsx';
-import FileOps from './FileOps.js';
+import FileOps from './FileOps.jsx';
 import Settings from './Settings.jsx';
 import Modal from './GdbguiModal.jsx';
 import HoverVar from './HoverVar.jsx';

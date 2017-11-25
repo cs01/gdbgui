@@ -33,7 +33,8 @@ const FileOps = {
             'interpreter',
             'fullname_to_render',
             'line_of_source_to_flash',
-            'cached_source_files'], keys).length === 0)
+            'cached_source_files',
+            'max_lines_of_code_to_fetch'], keys).length === 0)
         {
             // FileOps is not affected by this key
             return
@@ -43,22 +44,28 @@ const FileOps = {
             return
         }
 
-        const states = constants.source_code_states
         let paused_frame_or_user_selection = store.get('render_paused_frame_or_user_selection')
         , rendering_user_selection = paused_frame_or_user_selection === 'user_selection'
         , fullname = null
         , is_paused = false
         , paused_addr = null
         , paused_frame_fullname = null
+        , paused_frame = store.get('paused_on_frame')
 
-        let paused_frame = store.get('paused_on_frame')
         if(paused_frame){
             paused_frame_fullname = paused_frame.fullname
         }
 
+        let paused_on_line = parseInt(store.get('line_of_source_to_flash'))
+        if(!paused_on_line){
+            paused_on_line = 1
+        }
+
+        let start_line = Math.max(Math.floor(paused_on_line - store.get('max_lines_of_code_to_fetch') / 2), 1)
+        , end_line = Math.ceil(start_line + store.get('max_lines_of_code_to_fetch'))
+
         if (rendering_user_selection){
             fullname = store.get('fullname_to_render')
-            is_missing = FileOps.is_missing_file(fullname)
             is_paused = false
             paused_addr = null
         }else {  // paused_frame_or_user_selection === 'paused_frame'){
@@ -67,21 +74,26 @@ const FileOps = {
             fullname = paused_frame_fullname
         }
 
-        let is_missing = FileOps.is_missing_file(fullname)
-        , source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        let assembly_is_cached = FileOps.assembly_is_cached(fullname)
+        , file_is_missing = FileOps.is_missing_file(fullname)
 
-        if(fullname && source_file_obj && Object.keys(source_file_obj.assembly).length){
-            // we have file and assembly cached
-            store.set('source_code_state', states.ASSM_AND_SOURCE_CACHED)
+        FileOps.update_source_code_state(fullname, start_line, paused_on_line, end_line, assembly_is_cached, file_is_missing, is_paused, paused_addr)
+    },
+    update_source_code_state(fullname, start_line, paused_on_line, end_line, assembly_is_cached, file_is_missing, is_paused, paused_addr){
+        const states = constants.source_code_states
+        , line_is_cached = FileOps.line_is_cached(fullname, paused_on_line)
 
-        }else if(fullname && source_file_obj){
-            // we have file cached
-            store.set('source_code_state', states.SOURCE_CACHED)
+        if(fullname && line_is_cached){
+            // we have file cached. We may have assembly cached too.
+            store.set('source_code_state', assembly_is_cached ? states.ASSM_AND_SOURCE_CACHED: states.SOURCE_CACHED)
+            store.set('source_linenum_to_display_start', start_line)
+            store.set('source_linenum_to_display_end', Math.min(end_line, FileOps.get_num_lines_in_file(fullname)))
 
-        }else if (fullname && !is_missing ){
-            // we don't have file cached, try to get it
+        }else if (fullname && !file_is_missing ){
+            // we don't have file cached, and it is not known to be missing on the file system, so try to get it
             store.set('source_code_state', states.FETCHING_SOURCE)
-            FileOps.fetch_file(fullname)
+
+            FileOps.fetch_file(fullname, start_line, end_line)
 
         } else if (is_paused && paused_addr && store.get('disassembly_for_missing_file').some(obj => parseInt(obj.address, 16) === parseInt(paused_addr, 16))){
             store.set('source_code_state', states.ASSM_CACHED)
@@ -96,11 +108,57 @@ const FileOps = {
                 FileOps.fetch_disassembly_for_missing_file(paused_addr)
             }
 
-        } else if (is_missing){
+        } else if (file_is_missing){
             store.set('source_code_state', states.FILE_MISSING)
         }else{
             store.set('source_code_state', states.NONE_AVAILABLE)
         }
+    },
+    get_num_lines_in_file: function(fullname, source_file_obj){
+        if(!source_file_obj){
+            source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        }
+        if(!source_file_obj){
+            console.error('Developer error: expected to find file object for ' + fullname)
+            return
+        }
+        if(!source_file_obj.num_lines_in_file){
+            console.error('Developer error: expected key "num_lines_in_file"')
+            return Infinity
+        }
+        return source_file_obj.num_lines_in_file
+    },
+    lines_are_cached: function(fullname, start_line, end_line){
+        let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        , linenum = start_line
+        if(!source_file_obj){
+            return false
+        }
+
+        const num_lines_in_file = FileOps.get_num_lines_in_file(fullname, source_file_obj)
+        if(start_line > num_lines_in_file){
+            return false
+        }
+
+        let safe_end_line = Math.min(end_line, num_lines_in_file)
+
+        while(linenum <= safe_end_line){
+            if(!FileOps.line_is_cached(fullname, linenum, source_file_obj)){
+                return false
+            }
+            linenum++
+        }
+        return true
+    },
+    line_is_cached: function(fullname, linenum, source_file_obj){
+        if(!source_file_obj){
+            source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        }
+        return source_file_obj && source_file_obj.source_code_obj && source_file_obj.source_code_obj[linenum] !== undefined
+    },
+    assembly_is_cached: function(fullname){
+        let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        return source_file_obj && source_file_obj.assembly && source_file_obj.assembly.length
     },
     get_source_file_obj_from_cache: function(fullname){
         let cached_files = store.get('cached_source_files')
@@ -111,18 +169,29 @@ const FileOps = {
         }
         return null
     },
-    add_source_file_to_cache: function(fullname, source_code, assembly, last_modified_unix_sec, exists=true){
-        let new_source_file = {'fullname': fullname,
-                                'source_code': source_code,
-                                'assembly': assembly,
-                                'last_modified_unix_sec': last_modified_unix_sec,
-                                'exists': exists,
-                            }
-        , cached_source_files = store.get('cached_source_files')
-        cached_source_files.push(new_source_file)
-        store.set('cached_source_files', cached_source_files)
-        FileOps.warning_shown_for_old_binary = false
-        FileOps.show_modal_if_file_modified_after_binary(fullname, new_source_file.last_modified_unix_sec)
+    add_source_file_to_cache: function(fullname, source_code_obj, last_modified_unix_sec, num_lines_in_file){
+
+        let cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname)
+        if(cached_file_obj === null){
+            // nothing cached in the front end, add a new entry
+            let new_source_file = {'fullname': fullname,
+                                    'source_code_obj': source_code_obj,
+                                    'assembly': {},
+                                    'last_modified_unix_sec': last_modified_unix_sec,
+                                    'num_lines_in_file': num_lines_in_file,
+                                    'exists': true,
+                                }
+            , cached_source_files = store.get('cached_source_files')
+
+            cached_source_files.push(new_source_file)
+            store.set('cached_source_files', cached_source_files)
+            FileOps.warning_shown_for_old_binary = false
+            FileOps.show_modal_if_file_modified_after_binary(fullname, new_source_file.last_modified_unix_sec)
+        }else{
+            // mutate existing source code object by adding keys (lines) of the new source code object
+            Object.assign(cached_file_obj.source_code_obj, source_code_obj)
+            store.set('cached_source_files', store.get('cached_source_files'))
+        }
     },
     /**
      * Show modal warning if user is trying to show a file that was modified after the binary was compiled
@@ -163,10 +232,7 @@ const FileOps = {
     clear_cached_source_files: function(){
         store.set('cached_source_files', [])
     },
-    is_cached: function(fullname){
-        return store.get('cached_source_files').some(f => f.fullname === fullname)
-    },
-    fetch_file: function(fullname){
+    fetch_file: function(fullname, start_line, end_line){
         if(FileOps.is_missing_file(fullname)){
             // file doesn't exist and we already know about it
             // don't keep trying to fetch disassembly
@@ -191,13 +257,31 @@ const FileOps = {
             FileOps.add_file_being_fetched(fullname)
         }
 
+        const data = {
+            start_line: start_line,
+            end_line: end_line,
+            path: fullname,
+            highlight: store.get('highlight_source_code'),
+        }
+
         $.ajax({
             url: "/read_file",
             cache: false,
             type: 'GET',
-            data: {path: fullname, highlight: store.get('highlight_source_code')},
+            data: data,
             success: function(response){
-                FileOps.add_source_file_to_cache(fullname, response.source_code, {}, response.last_modified_unix_sec)
+                response.source_code
+                let source_code_obj = {}
+                let linenum = response.start_line
+                for(let line of response.source_code_array){
+                    source_code_obj[linenum] = line
+                    linenum++
+                }
+
+                FileOps.add_source_file_to_cache(fullname,
+                                                source_code_obj,
+                                                response.last_modified_unix_sec,
+                                                response.num_lines_in_file)
             },
             error: function(response){
                 if (response.responseJSON && response.responseJSON.message){
@@ -335,11 +419,11 @@ const FileOps = {
 
                 let max_assm_line = Math.max(Object.keys(cached_file.assembly))
 
-                if(max_assm_line > cached_file.source_code.length){
-                    cached_file.source_code[max_assm_line] = ''
+                if(max_assm_line > cached_file.source_code_array.length){
+                    cached_file.source_code_array[max_assm_line] = ''
                     for(let i = 0; i < max_assm_line; i++){
-                        if(!cached_file.source_code[i]){
-                            cached_file.source_code[i] = ''
+                        if(!cached_file.source_code_array[i]){
+                            cached_file.source_code_array[i] = ''
                         }
                     }
                 }

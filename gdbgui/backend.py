@@ -381,6 +381,9 @@ def get_last_modified_unix_sec():
 def read_file():
     """Read a file and return its contents as an array"""
     path = request.args.get('path')
+    start_line = int(request.args.get('start_line'))
+    end_line = int(request.args.get('end_line'))
+
     try:
         highlight = json.loads(request.args.get('highlight', 'true'))
     except Exception as e:
@@ -411,10 +414,13 @@ def read_file():
                 highlighted = False
                 source_code = code.split('\n')  # turn long string into a list
 
-            return jsonify({'source_code': source_code,
+            return jsonify({'source_code_array': source_code[(start_line - 1):(end_line)],
                             'path': path,
                             'last_modified_unix_sec': last_modified,
-                            'highlighted': highlighted})
+                            'highlighted': highlighted,
+                            'start_line': start_line,
+                            'end_line': end_line,
+                            'num_lines_in_file': len(source_code)})
         except Exception as e:
             return client_error({'message': '%s' % e})
 
