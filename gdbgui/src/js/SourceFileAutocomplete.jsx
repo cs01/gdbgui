@@ -2,7 +2,7 @@ import {store} from './store.js';
 import constants from './constants.js';
 import Actions from './Actions.js';
 import Util from './Util.js';
-import FileOps from './FileOps.js';
+import FileOps from './FileOps.jsx';
 import React from 'react';
 
 /**

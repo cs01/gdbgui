@@ -3,6 +3,8 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+* Lazily load files (issue #131)
+
 ## 0.9.0.0
 * Compress responses from server (massive bandwidth improvement)
 * Add button to toggle assembly flavors (issue #110)

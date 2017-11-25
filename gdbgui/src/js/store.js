@@ -248,7 +248,7 @@ const initial_store_data = {
     themes: initial_data.themes,
     current_theme: localStorage.getItem('theme') || initial_data.themes[0],
     highlight_source_code: true,  // get saved boolean to highlight source code
-
+    max_lines_of_code_to_fetch: 1000,
     auto_add_breakpoint_to_main: true,
 
     pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
@@ -281,6 +281,9 @@ const initial_store_data = {
     missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
     source_code_state: constants.source_code_states.NONE_AVAILABLE,
     render_paused_frame_or_user_selection: 'paused_frame',  // 'paused_frame' or 'user_selection'
+
+    source_linenum_to_display_start: 0,
+    source_linenum_to_display_end: 0,
 
     // binary selection
     inferior_binary_path: null,

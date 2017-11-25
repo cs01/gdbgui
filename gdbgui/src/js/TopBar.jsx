@@ -4,7 +4,7 @@ import BinaryLoader from './BinaryLoader.jsx';
 import Settings from './Settings.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';
 import SourceFileAutocomplete from './SourceFileAutocomplete.jsx';
-import FileOps from './FileOps.js';
+import FileOps from './FileOps.jsx';
 import GdbApi from './GdbApi.js';
 import Actions from './Actions.js';
 import constants from './constants.js';

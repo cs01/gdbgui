@@ -29,6 +29,7 @@ class Settings extends React.Component {
         this.state = this._get_applicable_global_state()
         store.subscribe(this._store_change_callback.bind(this))
 
+        this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(this)
         // Fetch the latest version only if using in normal mode. If debugging, we tend to
         // refresh quite a bit, which might make too many requests to github and cause them
         // to block our ip? Either way it just seems weird to make so many ajax requests.
@@ -52,8 +53,6 @@ class Settings extends React.Component {
             })
         }
 
-        this.state = store._store
-        store.subscribe(this._store_change_callback.bind(this))
     }
     _store_change_callback(keys){
         if(_.intersection(this.store_keys, keys).length){
@@ -103,11 +102,29 @@ class Settings extends React.Component {
                 </div>
             </td></tr>)
     }
+    get_update_max_lines_of_code_to_fetch(){
+        return <tr><td>
+            Maximum number of source file lines to display:
+            <input style={{width: '100px', marginLeft: '10px'}}
+                defaultValue={store.get('max_lines_of_code_to_fetch')}
+                ref={(el)=>this.max_source_file_lines_input = el}
+            />
+            <button onClick={()=>{
+                    let new_value = parseInt(this.max_source_file_lines_input.value)
+                    if(new_value > 0){
+                        store.set('max_lines_of_code_to_fetch', new_value)
+                    }
+                }
+            }>save</button>
+        </td></tr>
+    }
     get_table(){
         return(
         <table className='table table-condensed'>
             <tbody>
+
             {Settings.get_checkbox_row('auto_add_breakpoint_to_main', 'Add breakpoint to main after loading executable')}
+            {this.get_update_max_lines_of_code_to_fetch()}
             {Settings.get_checkbox_row('pretty_print', 'Pretty print dynamic variables (requires restart)')}
             {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Refresh all components when a command is sent from the console')}
             {Settings.get_checkbox_row('show_all_sent_commands_in_console', 'Print all sent commands in console, including those sent automatically by gdbgui')}

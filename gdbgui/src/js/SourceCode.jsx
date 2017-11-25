@@ -4,7 +4,7 @@
 
 import {store} from './store.js';
 import React from 'react';
-import FileOps from './FileOps.js';
+import FileOps from './FileOps.jsx';
 import Breakpoints from './Breakpoints.jsx';
 import Memory from './Memory.jsx';
 import MemoryLink from './MemoryLink.jsx';
@@ -26,7 +26,10 @@ class SourceCode extends React.Component {
         'render_paused_frame_or_user_selection',
         'current_theme',
         'inferior_binary_path',
-        'has_unrendered_assembly'
+        'has_unrendered_assembly',
+        'source_linenum_to_display_start',
+        'source_linenum_to_display_end',
+        'max_lines_of_code_to_fetch'
     ]
 
     constructor() {
@@ -37,7 +40,7 @@ class SourceCode extends React.Component {
         this._get_source_line = this._get_source_line.bind(this)
         this._get_assm_row = this._get_assm_row.bind(this)
         this.click_gutter = this.click_gutter.bind(this)
-        this.is_paused_on_this_line = this.is_paused_on_this_line.bind(this)
+        this.is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line.bind(this)
         this._store_change_callback = this._store_change_callback.bind(this)
 
         this.state = this._get_applicable_global_state()
@@ -83,18 +86,11 @@ class SourceCode extends React.Component {
             store.set('has_unrendered_assembly', false)
         }
     }
+
     get_body(){
         const states = constants.source_code_states
         switch(this.state.source_code_state){
-            case (states.ASSM_AND_SOURCE_CACHED):{
-                let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
-                if(!obj){
-                    console.error("expected to find source file")
-                    return this.get_body_empty()
-                }
-                let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
-            }
+            case (states.ASSM_AND_SOURCE_CACHED): // fallthrough
             case (states.SOURCE_CACHED):{
                 let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
                 if(!obj){
@@ -102,7 +98,9 @@ class SourceCode extends React.Component {
                     return this.get_body_empty()
                 }
                 let paused_addr = this.state.paused_on_frame ? this.state.paused_on_frame.addr : null
-                return this.get_body_source_and_assm(obj.source_code, obj.assembly, paused_addr)
+                , start_linenum = store.get('source_linenum_to_display_start')
+                , end_linenum = store.get('source_linenum_to_display_end')
+                return this.get_body_source_and_assm(obj.fullname, obj.source_code_obj, obj.assembly, paused_addr, start_linenum, end_linenum, obj.num_lines_in_file)
             }
             case states.FETCHING_SOURCE:{
                 return(<tr><td>fetching source, please wait</td></tr>)
@@ -137,7 +135,7 @@ class SourceCode extends React.Component {
 
     _get_source_line(   source,
                         line_should_flash,
-                        is_paused_on_this_line,
+                        is_gdb_paused_on_this_line,
                         line_num_being_rendered,
                         has_bkpt,
                         has_disabled_bkpt,
@@ -146,14 +144,14 @@ class SourceCode extends React.Component {
 
         let row_class = ['srccode']
 
-        if(is_paused_on_this_line){
+        if(is_gdb_paused_on_this_line){
             row_class.push('paused_on_line')
         }else if(line_should_flash){
             row_class.push('flash')
         }
 
         let id = ''
-        if(is_paused_on_this_line && this.state.render_paused_frame_or_user_selection === 'paused_frame' ||
+        if(is_gdb_paused_on_this_line && this.state.render_paused_frame_or_user_selection === 'paused_frame' ||
             line_should_flash){
             id = 'scroll_to_line'
         }
@@ -178,9 +176,7 @@ class SourceCode extends React.Component {
         return (
             <tr id={id} key={line_num_being_rendered} className={`${row_class.join(' ')}`}>
 
-                <td style={{'verticalAlign': 'top', width: '30px'}} className={'line_num ' + gutter_cls} onClick={()=>{this.click_gutter(line_num_being_rendered)}}>
-                    <div>{line_num_being_rendered}</div>
-                </td>
+                {this.get_linenum_td(line_num_being_rendered, gutter_cls)}
 
                 <td style={{'verticalAlign': 'top'}} className="loc">
                     <span className='wsp' dangerouslySetInnerHTML={{__html: source}}></span>
@@ -190,6 +186,11 @@ class SourceCode extends React.Component {
                     {assembly_content}
                 </td>
             </tr>)
+    }
+    get_linenum_td(linenum, gutter_cls=''){
+    return <td style={{'verticalAlign': 'top', width: '30px'}} className={'line_num ' + gutter_cls} onClick={()=>{this.click_gutter(linenum)}}>
+            <div>{linenum}</div>
+        </td>
     }
 
     /**
@@ -222,38 +223,94 @@ class SourceCode extends React.Component {
         )
     }
 
-    is_paused_on_this_line(line_num_being_rendered, gdb_paused_on_line){
+    is_gdb_paused_on_this_line(line_num_being_rendered, line_gdb_is_paused_on){
         if(this.state.paused_on_frame){
-            return (line_num_being_rendered === gdb_paused_on_line &&
+            return (line_num_being_rendered === line_gdb_is_paused_on &&
                     this.state.paused_on_frame.fullname === this.state.fullname_to_render)
         }else{
             return false
         }
     }
+    get_view_more_tr(fullname, linenum){
+        return <tr key={linenum} className='srccode'>
+                    {this.get_linenum_td(linenum)}
+                    <td onClick={()=>{Actions.view_file(fullname, linenum)}}
+                        style={{fontStyle: 'italic'}}
+                        className='pointer'
+                    >
+                        view more
+                    </td>
+                </tr>
+    }
+    get_line_nums_to_render(source_code_obj, start_linenum, line_to_flash, end_linenum){
+        let start_linenum_to_render = start_linenum
+        let end_linenum_to_render = end_linenum
+        let linenum = line_to_flash
 
-    get_body_source_and_assm(source_code, assembly, paused_addr){
+        // go backwards from center until missing element is found
+        while(linenum >= start_linenum && (linenum - start_linenum) <= this.state.max_lines_of_code_to_fetch){
+            if(source_code_obj.hasOwnProperty(linenum)){
+                start_linenum_to_render = linenum
+            }else{
+                break
+            }
+            linenum--
+        }
+
+        // go forwards from center until missing element is found
+        while(linenum <= end_linenum && (end_linenum - linenum) <= this.state.max_lines_of_code_to_fetch){
+            if(source_code_obj.hasOwnProperty(linenum)){
+                end_linenum_to_render = linenum
+            }else{
+                break
+            }
+            linenum++
+        }
+        return {start_linenum_to_render, end_linenum_to_render}
+
+    }
+    get_body_source_and_assm(fullname, source_code_obj, assembly, paused_addr, start_linenum, end_linenum, num_lines_in_file){
         let body = []
 
         let bkpt_lines = Breakpoints.get_breakpoint_lines_for_file(this.state.fullname_to_render)
         , disabled_breakpoint_lines = Breakpoints.get_disabled_breakpoint_lines_for_file(this.state.fullname_to_render)
+        , line_gdb_is_paused_on = this.state.paused_on_frame ? parseInt(this.state.paused_on_frame.line) : 0
 
-        let gdb_paused_on_line = this.state.paused_on_frame ? parseInt(this.state.paused_on_frame.line) : 0
-        for (let i = 0; i < source_code.length; i++){
 
-            let line_num_being_rendered = i + 1
-            , has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1
+        const line_of_source_to_flash = this.state.line_of_source_to_flash
+        const {start_linenum_to_render,
+            end_linenum_to_render} = this.get_line_nums_to_render(source_code_obj, start_linenum, line_of_source_to_flash, end_linenum)
+
+        let line_num_being_rendered = start_linenum_to_render
+        while(line_num_being_rendered <= end_linenum_to_render){
+            let cur_line_of_code = source_code_obj[line_num_being_rendered]
+            let has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1
             , has_disabled_bkpt = disabled_breakpoint_lines.indexOf(line_num_being_rendered) !== -1
-            , is_paused_on_this_line = this.is_paused_on_this_line(line_num_being_rendered, gdb_paused_on_line)
+            , is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line(line_num_being_rendered, line_gdb_is_paused_on)
             , assembly_for_line = assembly[line_num_being_rendered]
 
-            body.push(this._get_source_line(source_code[i],
-                this.state.line_of_source_to_flash === line_num_being_rendered,
-                is_paused_on_this_line,
+            body.push(this._get_source_line(cur_line_of_code,
+                line_of_source_to_flash === line_num_being_rendered,
+                is_gdb_paused_on_this_line,
                 line_num_being_rendered,
                 has_bkpt,
                 has_disabled_bkpt,
                 assembly_for_line,
                 paused_addr))
+            line_num_being_rendered++
+        }
+
+        // add "view more" buttons if necessary
+        if(start_linenum_to_render < start_linenum){
+            body.unshift(this.get_view_more_tr(fullname, start_linenum_to_render -1))
+        }else if(start_linenum !== 1){
+            body.unshift(this.get_view_more_tr(fullname, start_linenum -1))
+        }
+
+        if(end_linenum_to_render > end_linenum){
+            body.push(this.get_view_more_tr(fullname, end_linenum_to_render + 1))
+        }else if(end_linenum < num_lines_in_file){
+            body.push(this.get_view_more_tr(fullname, line_num_being_rendered))
         }
         return body
     }
