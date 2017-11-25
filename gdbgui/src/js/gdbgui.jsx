@@ -26,14 +26,10 @@ import GdbConsoleContainer from './GdbConsoleContainer.jsx';
 
 store.options.debug = debug
 store.initialize(initial_store_data)
+// make this visible in the console
+window.store = store
 
-
-class Gdbgui extends React.Component {
-    constructor(){
-        super()
-        this.state = store._store
-        store.subscribe(()=>{this.setState(store._store)})
-    }
+class Gdbgui extends React.PureComponent {
     componentWillMount(){
         GdbApi.init()
         GlobalEvents.init()
@@ -65,9 +61,7 @@ class Gdbgui extends React.Component {
                   </div>
                 </div>
 
-                <Modal  header={store.get('modal_header')}
-                        body={store.get('modal_body')}
-                        show_modal={store.get('show_modal')} />
+                <Modal />
                 <HoverVar />
                 <Settings />
             </div>
@@ -93,7 +87,3 @@ class Gdbgui extends React.Component {
 }
 
 ReactDOM.render(<Gdbgui />, document.getElementById('gdbgui'))
-
-
-// make this visible in the console
-window.store = store
