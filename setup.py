@@ -24,7 +24,8 @@ REQUIRED = [
     'Flask-Compress>=1.4.0',  # to compress flask responses
 ]
 
-README = io.open('README.rst', 'r', encoding="utf-8").read()
+README = io.open(os.path.join(CURDIR, 'README.rst'), 'r', encoding="utf-8").read()
+VERSION = io.open(os.path.join(CURDIR, 'gdbgui/VERSION.txt'), 'r', encoding="utf-8").read().strip()
 
 
 class TestCommand (Command):
@@ -79,7 +80,7 @@ class UploadCommand(Command):
 
 setup(
     name='gdbgui',
-    version='0.9.0.1',
+    version=VERSION,
     author='Chad Smith',
     author_email='grassfedcode@gmail.com',
     description='browser-based gdb frontend using Flask and JavaScript to visually debug C, C++, Go, or Rust',
@@ -106,7 +107,7 @@ setup(
     classifiers=[
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
-        'License :: OSI Approved :: GNU GPLv3',
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
@@ -115,6 +116,5 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: Implementation :: PyPy'
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
 )

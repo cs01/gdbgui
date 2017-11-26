@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.9.0.1-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.9.1.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -36,6 +36,7 @@ Features
 - Show assembly next to source code, highlighting current instruction. Can also step through instructions.
 - Assembly is displayed if source code cannot be found
 - Fully functional console with autocomplete functionality to fallback to if necessary
+- Lazy load files that so extremely large files (1 Million+ LOC) load and render as fast as small files
 - Notifications when new gdbgui updates are available
 - Optional password protection when serving from a publicly accessible machine
 

@@ -3,8 +3,12 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.9.1.0
 * Lazily load files (issue #131)
 * Update setup.py to build wheels
+
+## 0.9.0.1
+* Reupload to fix setup.cfg PyPI bug
 
 ## 0.9.0.0
 * Compress responses from server (massive bandwidth improvement)
