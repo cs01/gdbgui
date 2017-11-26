@@ -8,7 +8,9 @@ test:
 	python setup.py checkdocs
 
 publish: test
-	python setup.py sdist upload
+	python setup.py upload
 
 testpublish: test
-	python setup.py sdist upload -r pypitest
+	rm -rf dist
+	python setup.py sdist bdist_wheel --universal
+	twine upload dist/* -r pypitest
