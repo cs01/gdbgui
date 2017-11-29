@@ -31,7 +31,6 @@ if(debug){
 const GdbApi = {
     init: function(){
         const TIMEOUT_MIN = 5
-	console.log("setting socket "+document);
 
         /* global io */
        GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
