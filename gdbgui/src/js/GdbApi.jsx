@@ -319,6 +319,18 @@ const GdbApi = {
         cmds.push(GdbApi.get_break_list_cmd())
         return cmds
     },
+    get_attach_process_cmds(processid){
+        // tell gdb which arguments to use when calling the binary, before loading the binary
+        let cmds = [
+                `-target-attach ${processid}`
+            ]
+        // add breakpoint if we don't already have one
+        if(store.get('auto_add_breakpoint_to_main')){
+            cmds.push('-break-insert main')
+        }
+        cmds.push(GdbApi.get_break_list_cmd())
+        return cmds
+    },
     set_assembly_flavor(flavor){
         GdbApi.run_gdb_command('set disassembly-flavor ' + flavor)
     },
