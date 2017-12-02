@@ -28313,7 +28313,8 @@ var BinaryLoader = function (_React$Component) {
         _this.state = {
             past_binaries: [],
             user_input: props.initial_user_input,
-            set_target_app: props.initial_user_input !== '' // if user supplied initial binary, load it immediately
+            set_target_app: props.initial_user_input !== '', // if user supplied initial binary, load it immediately
+            load_binary: true
         };
 
         try {
@@ -28329,6 +28330,29 @@ var BinaryLoader = function (_React$Component) {
     }
 
     _createClass(BinaryLoader, [{
+        key: 'set_button_as_load_binary',
+        value: function set_button_as_load_binary() {
+            this.setState({ load_binary: true });
+            document.getElementById("loadbutton").innerHTML = "Load Button";
+            document.getElementById("binary").placeholder = "/path/to/target/executable -and -flags";
+        }
+    }, {
+        key: 'set_button_as_attach_process',
+        value: function set_button_as_attach_process() {
+            this.setState({ load_binary: false });
+            document.getElementById("loadbutton").innerHTML = "Attach Process";
+            document.getElementById("binary").placeholder = "Process id";
+        }
+    }, {
+        key: 'click_action_of_button',
+        value: function click_action_of_button() {
+            if (this.state.load_binary) {
+                this.click_set_target_app();
+            } else {
+                this.click_set_target_attach();
+            }
+        }
+    }, {
         key: 'render',
         value: function render() {
             return _react2.default.createElement(
@@ -28342,11 +28366,12 @@ var BinaryLoader = function (_React$Component) {
                         { className: 'input-group-btn' },
                         _react2.default.createElement(
                             'button',
-                            {
+                            { id: 'loadbutton',
                                 type: 'button',
+                                onClick: this.click_action_of_button.bind(this),
                                 title: 'Loads the binary and any arguments present in the input to the right',
                                 className: 'btn btn-primary' },
-                            'Load Binary'
+                            'Load Button'
                         ),
                         _react2.default.createElement(
                             'button',
@@ -28364,12 +28389,12 @@ var BinaryLoader = function (_React$Component) {
                             { 'class': 'dropdown-menu', role: 'menu' },
                             _react2.default.createElement(
                                 'li',
-                                { onClick: this.click_set_target_app.bind(this) },
+                                { onClick: this.set_button_as_load_binary.bind(this) },
                                 'Load Binary'
                             ),
                             _react2.default.createElement(
                                 'li',
-                                { onClick: this.click_set_target_attach.bind(this) },
+                                { onClick: this.set_button_as_attach_process.bind(this) },
                                 'Attach Process/threads'
                             )
                         )
