@@ -55,7 +55,7 @@ class BinaryLoader extends React.Component {
                         type="button"
                         onClick={this.click_action_of_button.bind(this)}
                         title="Loads the binary and any arguments present in the input to the right"
-                        className="btn btn-primary">Load Button</button>
+                        className="btn btn-primary">Load Binary</button>
                         <button type = "button" class = "btn btn-primary dropdown-toggle" 
                         data-toggle = "dropdown">
                             <span class = "caret"></span>
