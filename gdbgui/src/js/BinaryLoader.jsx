@@ -16,7 +16,7 @@ class BinaryLoader extends React.Component {
             past_binaries: [],
             user_input: props.initial_user_input,
             set_target_app: props.initial_user_input !== '',  // if user supplied initial binary, load it immediately
-            load_binary: true
+            desired_load_type: "binary" // this can be "binary" or "process"
         }
 
         try{
@@ -30,19 +30,19 @@ class BinaryLoader extends React.Component {
         }
     }
     set_button_as_load_binary(){
-        this.setState({load_binary: true})
+        this.setState({desired_load_type: "binary"})
         document.getElementById("loadbutton").innerHTML = "Load Button";
         document.getElementById("binary").placeholder = "/path/to/target/executable -and -flags";
     }
     set_button_as_attach_process(){
-        this.setState({load_binary: false})
+        this.setState({desired_load_type: "process"})
         document.getElementById("loadbutton").innerHTML = "Attach Process";
         document.getElementById("binary").placeholder = "Process id";
     }
     click_action_of_button() {
-        if(this.state.load_binary){
+        if(this.state.desired_load_type == "binary"){
             this.click_set_target_app()
-        } else {
+        } else if(this.state.desired_load_type == "process"){
             this.click_set_target_attach()
         }
     }
@@ -51,22 +51,29 @@ class BinaryLoader extends React.Component {
                 <form style={{marginBottom: 1, flex: '2 0 0'}}>
                   <div className="input-group input-group-sm">
                     <span className="input-group-btn">
-                      <button id="loadbutton"
-                        type="button"
-                        onClick={this.click_action_of_button.bind(this)}
-                        title="Loads the binary and any arguments present in the input to the right"
-                        className="btn btn-primary">Load Binary</button>
-                        <button type = "button" class = "btn btn-primary dropdown-toggle" 
+                        <button type = "button" className = "btn btn-primary dropdown-toggle" 
                         data-toggle = "dropdown">
                             <span class = "caret"></span>
                             <span class = "sr-only">Toggle Dropdown</span>
                         </button>
                         <ul class = "dropdown-menu" role = "menu">
-                            <li onClick={this.set_button_as_load_binary.bind(this)}>
-                                Load Binary</li>
-                            <li onClick={this.set_button_as_attach_process.bind(this)}>
-                                Attach Process/threads</li>
+                            <li> 
+                                <button type="button" 
+                                     onClick={this.set_button_as_load_binary.bind(this)}
+                                     className="btn btn-options">Load Binary
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" 
+                                     onClick={this.set_button_as_attach_process.bind(this)}
+                                     className="btn btn-options">Attach Process
+                                </button>
+                            </li>
                         </ul>
+                      <button id="loadbutton" type="button"
+                        onClick={this.click_action_of_button.bind(this)}
+                        title="Loads the binary and any arguments present in the input to the right"
+                        className="btn btn-primary">Load Binary</button>
                     </span>
                     <input id="binary"
                         type="text"
