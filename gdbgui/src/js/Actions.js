@@ -91,6 +91,16 @@ const Actions = {
         GdbApi.run_gdb_command(cmds)
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
     },
+    set_gdb_processid(processid){
+        // remove list of source files associated with the loaded binary since we're loading a new one
+        store.set('source_file_paths', [])
+        store.set('language', 'c_family')
+        //store.set('inferior_binary_path', processid)
+        Actions.inferior_program_exited()
+        let cmds = GdbApi.get_attach_process_cmds(processid)
+        GdbApi.run_gdb_command(cmds)
+        GdbApi.get_inferior_binary_last_modified_unix_sec(processid)
+    },
     fetch_source_files(){
         store.set('source_file_paths', [`${constants.ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
         GdbApi.run_gdb_command('-file-list-exec-source-files')

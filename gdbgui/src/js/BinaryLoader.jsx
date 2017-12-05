@@ -15,7 +15,8 @@ class BinaryLoader extends React.Component {
         this.state = {
             past_binaries: [],
             user_input: props.initial_user_input,
-            set_target_app: props.initial_user_input !== ''  // if user supplied initial binary, load it immediately
+            set_target_app: props.initial_user_input !== '',  // if user supplied initial binary, load it immediately
+            desired_load_type: "binary" // this can be "binary" or "process"
         }
 
         try{
@@ -28,15 +29,50 @@ class BinaryLoader extends React.Component {
             this.state.past_binaries = []
         }
     }
+    set_button_as_load_binary(){
+        this.setState({desired_load_type: "binary"})
+        document.getElementById("loadbutton").innerHTML = "Load Button";
+        document.getElementById("binary").placeholder = "/path/to/target/executable -and -flags";
+    }
+    set_button_as_attach_process(){
+        this.setState({desired_load_type: "process"})
+        document.getElementById("loadbutton").innerHTML = "Attach Process";
+        document.getElementById("binary").placeholder = "Process id";
+    }
+    click_action_of_button() {
+        if(this.state.desired_load_type == "binary"){
+            this.click_set_target_app()
+        } else if(this.state.desired_load_type == "process"){
+            this.click_set_target_attach()
+        }
+    }
     render(){
         return(
                 <form style={{marginBottom: 1, flex: '2 0 0'}}>
                   <div className="input-group input-group-sm">
                     <span className="input-group-btn">
-                      <button
-                        type="button"
+                        <button type = "button" className = "btn btn-primary dropdown-toggle" 
+                        data-toggle = "dropdown">
+                            <span class = "caret"></span>
+                            <span class = "sr-only">Toggle Dropdown</span>
+                        </button>
+                        <ul class = "dropdown-menu" role = "menu">
+                            <li> 
+                                <button type="button" 
+                                     onClick={this.set_button_as_load_binary.bind(this)}
+                                     className="btn btn-options">Load Binary
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" 
+                                     onClick={this.set_button_as_attach_process.bind(this)}
+                                     className="btn btn-options">Attach Process
+                                </button>
+                            </li>
+                        </ul>
+                      <button id="loadbutton" type="button"
+                        onClick={this.click_action_of_button.bind(this)}
                         title="Loads the binary and any arguments present in the input to the right"
-                        onClick={this.click_set_target_app.bind(this)}
                         className="btn btn-primary">Load Binary</button>
                     </span>
                     <input id="binary"
@@ -72,6 +108,9 @@ class BinaryLoader extends React.Component {
     click_set_target_app(){
         this.set_target_app()
     }
+    click_set_target_attach(){
+        this.set_target_attach()
+    }
     // save to list of binaries used that autopopulates the input dropdown
     _add_user_input_to_history(binary_and_args){
         _.remove(this.state.past_binaries, i => i === binary_and_args)
@@ -98,6 +137,19 @@ class BinaryLoader extends React.Component {
         }
         return {binary: binary, args: args}
     }
+    /**
+     * parse tokens with awareness of double quotes
+     *
+     * @param      {string}  user_input raw input from user
+     * @return     {string}  { the process id}
+     */
+    _parse_processid_from_user_input(user_input){
+        let list_of_params = Util.string_to_array_safe_quotes(user_input)
+        , processid = ''
+        processid = list_of_params[0]
+        //perform string check to ensure only numbers are present
+        return processid
+    }
     set_target_app(){
         let user_input = _.trim(this.state.user_input)
 
@@ -110,6 +162,20 @@ class BinaryLoader extends React.Component {
 
         const {binary, args} = this._parse_binary_and_args_from_user_input(user_input)
         Actions.set_gdb_binary_and_arguments(binary, args)
+    }
+    set_target_attach(){
+        let user_input = _.trim(this.state.user_input)
+
+        if (_.trim(user_input) === ''){
+            store.set('status', {text: 'Enter a process ID', error: true})
+            return
+        }
+
+        this._add_user_input_to_history(user_input)
+
+        const processid = this. _parse_processid_from_user_input(user_input)
+        // here the binary will 
+        Actions.set_gdb_processid(processid)
     }
 }
 
