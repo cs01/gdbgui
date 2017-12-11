@@ -162,7 +162,7 @@ def client_connected():
 
     # give each client their own gdb instance
     if request.sid not in _gdb_state['gdb_controllers'].keys():
-        dbprint('new sid', request.sid)
+        print('new sid %s' % request.sid)
         if app.config['LLDB'] is True:
             gdb_args = DEFAULT_LLDB_ARGS
         else:
@@ -176,6 +176,9 @@ def client_connected():
 
         if app.config['gdb_cmd_file']:
             gdb_args.append('-x=%s' % app.config['gdb_cmd_file'])
+
+        if app.config['pid']:
+            gdb_args.append('-p=%s' % app.config['pid'])
 
         _gdb_state['gdb_controllers'][request.sid] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
 
@@ -498,6 +501,7 @@ def main():
     parser.add_argument('--auth-file', help='(Optional) Require authentication before accessing gdbgui in the browser. '
         'Specify a file that contains the HTTP Basic auth username and password separate by newline. '
         'NOTE: gdbgui does not use https.')
+    parser.add_argument('--pid', help='PID to attach to')
 
     args = parser.parse_args()
 
@@ -512,6 +516,8 @@ def main():
         cmd = args.cmd
     else:
         cmd = args.args
+
+    app.config['pid'] = args.pid
     app.config['initial_binary_and_args'] = ' '.join(cmd or [])
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
