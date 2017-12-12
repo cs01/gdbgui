@@ -76,6 +76,8 @@ app.config['LLDB'] = False  # assume false, okay to change later
 
 socketio = SocketIO()
 _gdb_state = {
+              # In PID mode, the main gdb controller will be given to all request.sids
+              'main_gdb_controller': None,
               # each key of gdb_controllers is websocket client id (each tab in browser gets its own id),
               # and value is pygdbmi.GdbController instance
               'gdb_controllers': {},
@@ -143,10 +145,10 @@ def verify_gdb_exists():
 
 def dbprint(*args):
     """print only if app.debug is truthy"""
-    if app and app.debug:
-        CYELLOW2 = '\33[93m'
-        NORMAL = '\033[0m'
-        print(CYELLOW2 + 'DEBUG: ' + ' '.join(args) + NORMAL)
+    
+    CYELLOW2 = '\33[93m'
+    NORMAL = '\033[0m'
+    print(CYELLOW2 + 'DEBUG: ' + ' '.join(args) + NORMAL)
 
 
 def colorize(text):
@@ -177,10 +179,16 @@ def client_connected():
         if app.config['gdb_cmd_file']:
             gdb_args.append('-x=%s' % app.config['gdb_cmd_file'])
 
+        # In PID mode, we will spawn a single gdb process only. 
         if app.config['pid']:
             gdb_args.append('-p=%s' % app.config['pid'])
-
-        _gdb_state['gdb_controllers'][request.sid] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
+            # If there is no main gdb instance, spawn one. 
+            if _gdb_state['main_gdb_controller'] is None: 
+                _gdb_state['main_gdb_controller'] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
+            # Assign that to the incoming request. 
+            _gdb_state['gdb_controllers'][request.sid] = _gdb_state['main_gdb_controller']
+        else: 
+            _gdb_state['gdb_controllers'][request.sid] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
 
     # tell the client browser tab which gdb pid is a dedicated to it
     emit('gdb_pid', _gdb_state['gdb_controllers'][request.sid].gdb_process.pid)
@@ -199,10 +207,12 @@ def run_gdb_command(message):
     Responds only if an error occurs when trying to write the command to
     gdb
     """
+
     if _gdb_state['gdb_controllers'].get(request.sid) is not None:
         try:
             # the command (string) or commands (list) to run
             cmd = message['cmd']
+            dbprint('Running command %s' % cmd)
             _gdb_state['gdb_controllers'].get(request.sid).write(cmd, read_response=False)
 
         except Exception as e:
@@ -218,11 +228,24 @@ def run_gdb_command(message):
 def client_disconnected():
     """if client disconnects, kill the gdb process connected to the browser tab"""
     dbprint('Client websocket disconnected, id %s' % (request.sid))
-    if request.sid in _gdb_state['gdb_controllers'].keys():
-        dbprint('Exiting gdb subprocess pid %s' % _gdb_state['gdb_controllers'][request.sid].gdb_process.pid)
-        _gdb_state['gdb_controllers'][request.sid].exit()
-        _gdb_state['gdb_controllers'].pop(request.sid)
 
+    if app.config['pid'] is None:
+
+        if request.sid in _gdb_state['gdb_controllers'].keys():
+            dbprint('Exiting gdb subprocess pid %s' % _gdb_state['gdb_controllers'][request.sid].gdb_process.pid)
+            _gdb_state['gdb_controllers'][request.sid].exit()
+            _gdb_state['gdb_controllers'].pop(request.sid)
+
+    else: 
+
+        if request.sid in _gdb_state['gdb_controllers'].keys():
+            dbprint('Popping request.sid %s' % request.sid)
+            _gdb_state['gdb_controllers'].pop(request.sid)
+
+        if len(_gdb_state['gdb_controllers']) == 0:
+            dbprint('Exiting gdb subprocess pid %s' % _gdb_state['main_gdb_controller'].gdb_process.pid)
+            _gdb_state['main_gdb_controller'].exit()
+            _gdb_state['main_gdb_controller'] = None
 
 @socketio.on('Client disconnected')
 def test_disconnect():
@@ -235,24 +258,40 @@ def read_and_forward_gdb_output():
 
     while True:
         socketio.sleep(0.05)
-        for client_id, gdb in _gdb_state['gdb_controllers'].items():
-            try:
-                if gdb is not None:
-                    response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
-                    if response:
-                        dbprint('emiting message to websocket client id ' + client_id)
-                        socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
+        if app.config['pid'] is None:    
+            for client_id, gdb in _gdb_state['gdb_controllers'].items():
+                try:
+                    if gdb is not None:
+                        response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
+                        if response:
+                            dbprint('emiting message to websocket client id ' + client_id)
+                            socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
+                        else:
+                            # there was no queued response from gdb, not a problem
+                            pass
                     else:
-                        # there was no queued response from gdb, not a problem
-                        pass
-                else:
-                    # gdb process was likely killed by user. Stop trying to read from it
-                    dbprint('thread to read gdb vars is exiting since gdb controller object was not found')
-                    break
+                        # gdb process was likely killed by user. Stop trying to read from it
+                        dbprint('thread to read gdb vars is exiting since gdb controller object was not found')
+                        break
 
+                except Exception:
+                    dbprint(traceback.format_exc())
+        else: 
+            gdb = _gdb_state['main_gdb_controller']
+
+            try:
+                if gdb is not None: 
+                    response = gdb.get_gdb_response(timeout_sec = 0, raise_error_on_timeout=False)
+                else:
+                    dbprint('gdb object not found. reader thread is exiting')
+                    break 
             except Exception:
                 dbprint(traceback.format_exc())
 
+            if response:
+                for client_id in _gdb_state['gdb_controllers'].keys():
+                    dbprint('emitting message to client id' + client_id)
+                    socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
 
 def server_error(obj):
     return jsonify(obj), 500
@@ -314,7 +353,8 @@ def gdbgui():
             'initial_binary_and_args': app.config['initial_binary_and_args'],
             'show_gdbgui_upgrades': app.config['show_gdbgui_upgrades'],
             'themes': THEMES,
-            'signals': SIGNAL_NAME_TO_NUM
+            'signals': SIGNAL_NAME_TO_NUM,
+            'pid': app.config['pid']
         }
 
     return render_template('gdbgui.pug',

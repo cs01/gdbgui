@@ -55,7 +55,7 @@ class RightSidebar extends React.Component {
         return (<div className='content'>
             <Collapser title='threads' content={
                 <div>
-                    <InferiorProgramInfo signals={this.props.signals} />
+                    <InferiorProgramInfo signals={this.props.signals} pid={this.props.pid} />
                     <Threads/>
                 </div>}/>
 

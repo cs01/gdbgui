@@ -32,7 +32,7 @@ const GdbApi = {
     init: function(){
         const TIMEOUT_MIN = 5
         /* global io */
-       GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
+        GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
 
 
         GdbApi.socket.on('connect', function(){
@@ -215,6 +215,12 @@ const GdbApi = {
         store.set('inferior_program', constants.inferior_states.paused)
         GdbApi.run_gdb_command(cmds)
     },
+    /**
+    * Refresh the frontend
+    */ 
+    refresh: function(){
+        GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds)
+    }
     /**
      * Get array of commands to send to gdb that refreshes everything in the
      * frontend
