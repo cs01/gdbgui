@@ -289,8 +289,10 @@ def read_and_forward_gdb_output():
                 dbprint(traceback.format_exc())
 
             if response:
+                print(response)
                 for client_id in _gdb_state['gdb_controllers'].keys():
                     dbprint('emitting message to client id' + client_id)
+
                     socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
 
 def server_error(obj):

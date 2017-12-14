@@ -87,7 +87,7 @@ class Gdbgui extends React.PureComponent {
         })
 
         if (initial_data.pid){
-            store.set('inferior_pid', initial_data.pid)
+            store.set('inferior_pid', parseInt(initial_data.pid))
             GdbApi.refresh()
             console.log("I was called :D")
         }
