@@ -26,8 +26,11 @@ import GdbConsoleContainer from './GdbConsoleContainer.jsx';
 
 store.options.debug = debug
 store.initialize(initial_store_data)
+// console.log(initial_data.pid)
 // make this visible in the console
+window.initial_data = initial_data 
 window.store = store
+// console.log(store.get('inferior_pid'))
 
 class Gdbgui extends React.PureComponent {
     componentWillMount(){
@@ -48,7 +51,7 @@ class Gdbgui extends React.PureComponent {
                     </div>
 
                     <div id='middle_right' className='content' style={{overflowX: 'visible'}}>
-                        <RightSidebar signals={initial_data.signals} debug={debug} />
+                        <RightSidebar signals={initial_data.signals} debug={debug} pid={initial_data.pid} />
                     </div>
                 </div>
 
@@ -82,6 +85,12 @@ class Gdbgui extends React.PureComponent {
             direction: 'vertical',  // vertical makes a top and bottom pane, and a divider running horizontally
             sizes: [70, 30],
         })
+
+        if (initial_data.pid){
+            store.set('inferior_pid', parseInt(initial_data.pid))
+            GdbApi.refresh()
+            console.log("I was called :D")
+        }
     }
 
 }

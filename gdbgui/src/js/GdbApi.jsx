@@ -32,7 +32,7 @@ const GdbApi = {
     init: function(){
         const TIMEOUT_MIN = 5
         /* global io */
-       GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
+        GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
 
 
         GdbApi.socket.on('connect', function(){
@@ -216,14 +216,22 @@ const GdbApi = {
         GdbApi.run_gdb_command(cmds)
     },
     /**
+    * Refresh the frontend
+    */ 
+    refresh: function(){
+        GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds)
+    }
+    /**
      * Get array of commands to send to gdb that refreshes everything in the
      * frontend
      */
     _get_refresh_state_for_pause_cmds: function(){
         let cmds = [
+            // constants.IGNORE_ERRORS_TOKEN_STR + '-thread-id',
             // get info on current thread
             // TODO run -thread-list-ids to store list of thread id's and know
             // which thread is the current thread
+            constants.IGNORE_ERRORS_TOKEN_STR + '-thread-list-ids',
             constants.IGNORE_ERRORS_TOKEN_STR + '-thread-info',
             // print the name, type and value for simple data types,
             // and the name and type for arrays, structures and unions.
