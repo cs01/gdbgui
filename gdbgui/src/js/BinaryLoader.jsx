@@ -96,7 +96,8 @@ class BinaryLoader extends React.Component {
             binary = list_of_params[0]
             args = list_of_params.slice(1, len)
         }
-        return {binary: binary, args: args}
+        let args_in_quotes = args.map(a => '"' + a + '"')
+        return {binary: binary, args: args_in_quotes.join(' ')}
     }
     set_target_app(){
         let user_input = _.trim(this.state.user_input)
