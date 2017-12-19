@@ -7,7 +7,6 @@
 import io
 import os
 import sys
-from shutil import rmtree
 from setuptools import find_packages, setup, Command
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
@@ -15,13 +14,12 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 EXCLUDE_FROM_PACKAGES = []
 REQUIRED = [
     'Flask>=0.12.2',  # to run server
-    'pygdbmi>=0.8.0.0',  # to parse gdb output
-    'pypugjs>=4.2.2',  # to use .pug instead of .html
-    'Flask-SocketIO>=2.9.2',  # for websockets
-    'gevent>=1.2.2',  # for websockets (preferred)
-    'eventlet>=0.21.0',  # for websockets (backup to gevent)
-    'Pygments>=2.2.0',  # for syntax highlighting
     'Flask-Compress>=1.4.0',  # to compress flask responses
+    'Flask-SocketIO>=2.9.3',  # for websockets
+    'gevent>=1.2.2',  # for websockets (preferred)
+    'pypugjs>=4.2.2',  # to use .pug instead of .html
+    'pygdbmi>=0.8.0.0',  # to parse gdb output
+    'Pygments>=2.2.0',  # for syntax highlighting
 ]
 
 README = io.open(os.path.join(CURDIR, 'README.rst'), 'r', encoding="utf-8").read()
@@ -43,39 +41,6 @@ class TestCommand (Command):
         # raised
         from gdbgui.tests import test_app
         sys.exit(test_app.main())
-
-
-class UploadCommand(Command):
-    """Support setup.py upload."""
-
-    description = 'Build and publish the package.'
-    user_options = []
-
-    @staticmethod
-    def status(s):
-        """Prints things in bold."""
-        print('\033[1m{0}\033[0m'.format(s))
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        try:
-            self.status('Removing previous builds…')
-            rmtree(os.path.join(CURDIR, 'dist'))
-        except OSError:
-            pass
-
-        self.status('Building Source and Wheel (universal) distribution…')
-        os.system('{0} setup.py sdist bdist_wheel --universal'.format(sys.executable))
-
-        self.status('Uploading the package to PyPi via Twine…')
-        os.system('twine upload dist/*')
-
-        sys.exit()
 
 
 setup(
@@ -101,7 +66,6 @@ setup(
     zip_safe=False,
     cmdclass={
         'test': TestCommand,
-        'upload': UploadCommand
     },
     install_requires=REQUIRED,
     classifiers=[

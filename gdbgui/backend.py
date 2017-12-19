@@ -1,16 +1,8 @@
 #!/usr/bin/env python
 
 """
-A Flask server that manages a gdb subprocess, and
-returns structured gdb output to the client
-
-Examples:
-
-gdbgui
-gdbgui "/path/to/program"
-gdbgui "/path/to/program -arg myarg -myflag"
-gdbgui --help
-
+A server that provides a graphical user interface to the gnu debugger (gdb).
+https://github.com/cs01/gdbgui
 """
 
 import os
@@ -32,9 +24,17 @@ from functools import wraps
 from flask_socketio import SocketIO, emit
 from flask_compress import Compress
 from pygdbmi.gdbcontroller import GdbController
-BASE_PATH = os.path.dirname(os.path.realpath(__file__))
-PARENTDIR = os.path.dirname(BASE_PATH)
-sys.path.append(PARENTDIR)
+
+pyinstaller_env_var_base_dir = '_MEIPASS'
+pyinstaller_base_dir = getattr(sys, '_MEIPASS', None)
+using_pyinstaller = pyinstaller_base_dir is not None
+if using_pyinstaller:
+    BASE_PATH = pyinstaller_base_dir
+else:
+    BASE_PATH = os.path.dirname(os.path.realpath(__file__))
+    PARENTDIR = os.path.dirname(BASE_PATH)
+    sys.path.append(PARENTDIR)
+
 from gdbgui import htmllistformatter  # noqa
 from gdbgui import __version__  # noqa
 
@@ -48,12 +48,11 @@ DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
 DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
 
 STARTUP_WITH_SHELL_OFF = False
-match = re.match('darwin-(\d+)\..*', platform.platform().lower())
-if match is not None and int(match.groups()[0]) >= 16:
+darwin_match = re.match('darwin-(\d+)\..*', platform.platform().lower())
+if darwin_match is not None and int(darwin_match.groups()[0]) >= 16:
     # if mac OS version is 16 (sierra) or higher, need to set shell off due to
     # os's security requirements
     STARTUP_WITH_SHELL_OFF = True
-
 
 # create dictionary of signal names
 SIGNAL_NAME_TO_NUM = {}
@@ -90,16 +89,8 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
-    if debug:
-        # gevent works on linux kernels < v3.9, eventlet does not, so gevent is preferred.
-        # However, in debug mode gevent monkey patches (removes) python modules used by pygdbmi,
-        # so it cannot be used if debug is on
-        # https://github.com/miguelgrinberg/Flask-SocketIO/issues/413 is resolved
-        async_mode = 'eventlet'
-    else:
-
-        async_mode = 'gevent'
-    socketio.server_options['async_mode'] = async_mode
+    async_mode = 'gevent'
+    socketio.server_options['async_mode'] = 'gevent'
     try:
         socketio.init_app(app)
     except Exception:

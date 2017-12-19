@@ -1,3 +1,5 @@
 dist
 *egg*
 node_modules
+build
+executable
