@@ -2,7 +2,6 @@ Flask==0.12.2
 pygdbmi==0.8.0.0
 pypugjs==4.2.2
 Flask-SocketIO==2.9.3
-eventlet==0.21.0
 Pygments==2.2.0
 gevent==1.2.2
 Flask-Compress==1.4.0
