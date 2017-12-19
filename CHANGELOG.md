@@ -3,6 +3,10 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.9.1.1
+* Fix bug when passing arguments to gdb
+* Require latest version of pygdbmi for faster parsing of large gdb output
+
 ## 0.9.1.0
 * Lazily load files (issue #131)
 * Update setup.py to build wheels

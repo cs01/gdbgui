@@ -28,7 +28,7 @@ struct mystruct_t {
 };
 
 
-int main(void) {
+int main(int argc, char *argv) {
   printf("Hello World\n");
 
   int retval = 1;
