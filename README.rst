@@ -13,42 +13,18 @@ A browser-based frontend for GDB
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
+.. image:: https://img.shields.io/badge/homepage-gdbgui.com-blue.svg
+  :target: https://gdbgui.com
+
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser. See `SCREENSHOTS.md <https://github.com/cs01/gdbgui/blob/master/SCREENSHOTS.md>`_, or check out the `YouTube channel <https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A>`_ or `Help page <https://github.com/cs01/gdbgui/blob/master/HELP.md>`_ for demos and tutorials.
 
-If you are using gdbgui in a commercial setting, `consider donating to the project <https://paypal.me/grassfedcode/20>`_.
-
+Homepage
+--------
+`gdbgui.com <https://gdbgui.com>`_
 
 Features
 --------
-- Debug a different program in each tab (new gdb instance is spawned for each tab)
-- Set/remove breakpoints
-- View stack, threads
-- Switch frame on stack, switch between threads
-- Intuitively explore local variables when paused
-- Hover over variables in source code to view contents
-- Evaluate arbitrary expressions and plot their values over time
-- Explore an interactive tree view of your data structures
-- Jump back into the program's state to continue debug unexpected faults (i.e. SEGFAULT)
-- Inspect memory in hex/character form
-- View all registers
-- Dropdown of files used to compile binary, with autocomplete functionality
-- Source code explorer with ability to jump to line
-- Show assembly next to source code, highlighting current instruction. Can also step through instructions.
-- Assembly is displayed if source code cannot be found
-- Fully functional console with autocomplete functionality to fallback to if necessary
-- Lazy load files that so extremely large files (1 Million+ LOC) load and render as fast as small files
-- Notifications when new gdbgui updates are available
-- Optional password protection when serving from a publicly accessible machine
-
-Why gdbgui?
------------
-- Actively developed to be compatible with current gdb releases
-- Does only one thing: debugs programs. No integrated build system, no project settings, nothing to make things more complicated than they need to be.
-- Design influenced by the amazing Chrome debugger
-- Full gdb command line utility built-in
-- The only gdb frontend built with Python and JavaScript
-- Open source and free
-- Useful to both beginners and experienced developers
+Refer to `gdbgui's homepage <https://gdbgui.com>`_
 
 Compatibility
 -------------
@@ -65,6 +41,8 @@ Languages: C, C++, golang, rust (any language supported by gdb itself)
 
 Install
 -------
+Use a bundled executable available at `gdbgui.com <https://gdbgui.com/downloads.html>`_ (Linux only), or
+
 ``pip install gdbgui --upgrade``
 
 See `INSTALLATION <https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md>`_ for detailed instructions.
