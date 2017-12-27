@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.9.1.1-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.9.2.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -33,7 +33,7 @@ Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
 
 Operating systems: Ubuntu 14.04+, macOS, Windows (in cygwin)
 
-Browsers: Tested with Chrome, Firefox. Should work with any modern, standards-compliant browser.
+Browsers: Tested with Chrome, Firefox. Should work with any modern, standards-compliant browser. JavaScript and cookies must be enabled.
 
 gdb: 7.7+
 
@@ -41,7 +41,7 @@ Languages: C, C++, golang, rust (any language supported by gdb itself)
 
 Install
 -------
-Use a bundled executable available at `gdbgui.com <https://gdbgui.com/downloads.html>`_ (Linux only), or
+Use a bundled executable available at `gdbgui.com/downloads.html <https://gdbgui.com/downloads.html>`_ (Linux only), or
 
 ``pip install gdbgui --upgrade``
 

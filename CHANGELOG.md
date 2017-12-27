@@ -3,6 +3,10 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.9.2.0
+* Add signals component and allow signals to be sent to gdb (issue ##141)
+* Fix bug when jumping to line of source file
+
 ## 0.9.1.1
 * Fix bug when passing arguments to gdb
 * Require latest version of pygdbmi for faster parsing of large gdb output
