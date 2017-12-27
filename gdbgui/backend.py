@@ -89,8 +89,12 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
     url = '%s:%s' % (host, port)
     url_with_prefix = 'http://' + url
 
-    async_mode = 'gevent'
-    socketio.server_options['async_mode'] = 'gevent'
+    if debug:
+        async_mode = 'eventlet'
+    else:
+        async_mode = 'gevent'
+    socketio.server_options['async_mode'] = async_mode
+
     try:
         socketio.init_app(app)
     except Exception:

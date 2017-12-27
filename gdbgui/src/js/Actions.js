@@ -96,11 +96,11 @@ const Actions = {
         GdbApi.run_gdb_command('-file-list-exec-source-files')
     },
     view_file(fullname, line){
-        store.set('render_paused_frame_or_user_selection', 'user_selection')
         store.set('fullname_to_render', fullname)
         Actions.set_line_state(line)
     },
     set_line_state(line){
+        store.set('render_paused_frame_or_user_selection', 'user_selection')
         store.set('line_of_source_to_flash', parseInt(line))
         store.set('make_current_line_visible', true)
     },

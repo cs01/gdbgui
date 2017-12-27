@@ -151,9 +151,14 @@ class SourceCode extends React.Component {
         }
 
         let id = ''
-        if(is_gdb_paused_on_this_line && this.state.render_paused_frame_or_user_selection === 'paused_frame' ||
-            line_should_flash){
-            id = 'scroll_to_line'
+        if(this.state.render_paused_frame_or_user_selection === 'paused_frame'){
+            if(is_gdb_paused_on_this_line){
+                id = 'scroll_to_line'
+            }
+        }else if (this.state.render_paused_frame_or_user_selection === 'user_selection'){
+            if(line_should_flash){
+                id = 'scroll_to_line'
+            }
         }
 
         let gutter_cls = ''
@@ -368,11 +373,6 @@ class SourceCode extends React.Component {
         }else{
             // nothing to scroll to
         }
-    }
-    static view_file(fullname, line){
-        store.set('render_paused_frame_or_user_selection', 'user_selection')
-        store.set('fullname_to_render', fullname)
-        Actions.set_line_state(line)
     }
 }
 

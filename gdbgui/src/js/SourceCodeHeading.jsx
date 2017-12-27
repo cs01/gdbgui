@@ -7,6 +7,7 @@ class SourceCodeHeading extends React.Component {
         'fullname_to_render',
         'paused_on_frame',
         'line_of_source_to_flash',
+        'render_paused_frame_or_user_selection',
     ]
     constructor() {
         super()
@@ -27,7 +28,12 @@ class SourceCodeHeading extends React.Component {
         return applicable_state
     }
     render(){
-        let line = this.state.paused_on_frame ? this.state.paused_on_frame.line : this.state.line_of_source_to_flash
+        let line
+        if(this.state.render_paused_frame_or_user_selection === 'paused_frame' && this.state.paused_on_frame){
+            line = this.state.paused_on_frame.line
+        }else{
+            line = this.state.line_of_source_to_flash
+        }
         return(<FileLink
             fullname={this.state.fullname_to_render}
             file={this.state.fullname_to_render}
