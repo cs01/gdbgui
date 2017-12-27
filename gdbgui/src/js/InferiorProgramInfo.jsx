@@ -87,7 +87,7 @@ class InferiorProgramInfo extends React.Component {
                 <br/>
                 <div className="dropdown btn-group">
 
-                    <button className="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown">{this.state.selected_inferior_signal}
+                    <button className="btn btn-default btn-xs dropdown-toggle" type="button" data-toggle="dropdown">{this.state.selected_gdb_signal}
                         <span className="caret" style={{marginLeft: '5px'}}> </span>
                     </button>
                     <ul className="dropdown-menu" style={{maxHeight: '300px', overflow: 'auto'}}>
