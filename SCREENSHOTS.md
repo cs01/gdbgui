@@ -12,6 +12,9 @@ Next, Step, Return, Next Instruction, Step Instruction.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png)
 
+If using an Intel CPU and running Linux, gdbgui also works in conjunction with [rr](http://rr-project.org/) to let you debug in reverse in the [pro version](http://gdbgui.com).
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/reverse_debugging.png)
+
 ## Stack/Threads
 
 View all threads, the full stack on the active thread, the current frame
@@ -100,6 +103,11 @@ Authentication can be enabled when serving on a publicly accessible IP address. 
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/authentication.png)
 
+
+## Dashboard
+A dashboard is available to let you look at all gdb instances managed by gdbgui. You can kill them, or attach to them. More than one person can attach to a managed gdb subprocess and participate in the debugging session simultaneously. i.e. if one person steps forward, all connected users see the program step forward in real time.
+
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/dashboard.png)
 
 ## gdbgui at launch
 
