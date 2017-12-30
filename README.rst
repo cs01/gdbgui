@@ -50,6 +50,8 @@ See `INSTALLATION <https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md>`_
 Run
 ---
 
+Nota : The browser must accept cookies on the ip/port that gdbgui is served on.
+
 Running Locally
 ~~~~~~~~~~~~~~~~
 ::
