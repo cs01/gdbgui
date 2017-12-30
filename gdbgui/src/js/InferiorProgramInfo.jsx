@@ -1,3 +1,5 @@
+import Actions from './Actions.js'
+import constants from './constants.js'
 import React from 'react'
 import {store} from './store.js'
 
@@ -38,13 +40,13 @@ class InferiorProgramInfo extends React.Component {
             type: 'GET',
             data: {signal_name: signal_name, pid: pid},
             success: function(response){
-                store.set('status', {text: response.message, error: false, warning: false})
+                Actions.add_console_entries(response.message, constants.console_entry_type.GDBGUI_OUTPUT)
             },
             error: function(response){
                 if (response.responseJSON && response.responseJSON.message){
-                    store.set('status', {'text': _.escape(response.responseJSON.message), 'error': true})
+                    Actions.add_console_entries(_.escape(response.responseJSON.message), constants.console_entry_type.STD_ERR)
                 }else{
-                    store.set('status', {'text': `${response.statusText} (${response.status} error)`, 'error': true})
+                    Actions.add_console_entries(`${response.statusText} (${response.status} error)`, constants.console_entry_type.STD_ERR)
                 }
                 console.error(response)
             },

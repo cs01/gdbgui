@@ -3,6 +3,11 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+* Only display assembly flavor is assembly is displayed
+* Add new output type to console (gdbgui output)
+* Add dashboard link and dropdown for gdb server/pid attach
+* Handle invalid signal choice better
+
 ## 0.9.2.0
 * Add signals component and allow signals to be sent to gdb (issue ##141)
 * Fix bug when jumping to line of source file

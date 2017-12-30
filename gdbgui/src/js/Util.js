@@ -69,26 +69,6 @@ const Util = {
         }
         return [fullname, parseInt(line)]
     },
-    /**
-     * @param mi_obj: gdb mi obj from pygdbmi
-     * @return array of error messages and frame information (if any)
-     */
-    get_err_text_from_mi_err_response: function(mi_obj){
-        const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
-        let text = []
-        for(let k of interesting_keys){
-            if (mi_obj.payload[k]) {text.push(mi_obj.payload[k])}
-        }
-
-        if (mi_obj.payload.frame){
-            for(let i of ['file', 'func', 'line', 'addr']){
-                if (i in mi_obj.payload.frame){
-                    text.push(`${i}: ${mi_obj.payload.frame[i]}`)
-                }
-            }
-        }
-        return text
-    },
     string_to_array_safe_quotes(str){
         let output = []
         , cur_str = ''

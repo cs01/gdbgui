@@ -307,7 +307,6 @@ const initial_store_data = {
     expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
     root_gdb_tree_var: null,  // draw tree for this variable
 
-    status: {'text': '', 'error': false, 'warn': false},
     waiting_for_response: false,
 
     gdb_mi_output: [],

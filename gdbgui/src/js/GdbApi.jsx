@@ -46,12 +46,12 @@ const GdbApi = {
         });
 
         GdbApi.socket.on('error_running_gdb_command', function(data) {
-            store.set('status', {text: `Error occurred on server when running gdb command: ${data.message}`, error: true, warning: false})
+            Actions.add_console_entries(`Error occurred on server when running gdb command: ${data.message}`, constants.console_entry_type.STD_ERR)
         });
 
         GdbApi.socket.on('gdb_pid', function(gdb_pid) {
             store.set('gdb_pid', gdb_pid)
-            store.set('status', {text: `${store.get('interpreter')} process ${gdb_pid} is running for this tab`, error: false, warning: false})
+            Actions.add_console_entries(`${store.get('interpreter')} process ${gdb_pid} is running for this tab`, constants.console_entry_type.GDBGUI_OUTPUT)
         });
 
         GdbApi.socket.on('disconnect', function(){
@@ -153,15 +153,14 @@ const GdbApi = {
             () => {
                 let text = `No gdb response received after ${WAIT_TIME_SEC} seconds. This usually indicates an error. `
                 store.set('waiting_for_response', false)
-                store.set('status', {text: text, error: false, warning: true})
 
-                Actions.add_console_entries(text, constants.console_entry_type.STD_ERR)
+                Actions.add_console_entries(text, constants.console_entry_type.GDBGUI_OUTPUT)
                 Actions.add_console_entries('Possible reasons include:',
-                    constants.console_entry_type.STD_ERR)
+                    constants.console_entry_type.GDBGUI_OUTPUT)
                 Actions.add_console_entries('1) an inferior program was not loaded; 2) gdb has exited unexpectedly; 3) an unexpected error occurred'                ,
-                    constants.console_entry_type.STD_ERR)
+                    constants.console_entry_type.GDBGUI_OUTPUT)
                 Actions.add_console_entries(`If an operation that takes longer than ${WAIT_TIME_SEC} seconds was run, this message can be ignored.`,
-                    constants.console_entry_type.STD_ERR)
+                    constants.console_entry_type.GDBGUI_OUTPUT)
 
             },
             WAIT_TIME_SEC * 1000)

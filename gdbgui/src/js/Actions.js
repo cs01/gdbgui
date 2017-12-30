@@ -4,6 +4,7 @@ import SourceCode from './SourceCode.jsx';
 import Locals from './Locals.jsx';
 import Memory from './Memory.jsx';
 import constants from './constants.js';
+import React from 'react'; void(React)  // using jsx implicity uses React
 
 const Actions = {
     clear_program_state: function(){
@@ -73,6 +74,37 @@ const Actions = {
 
         store.set('gdb_console_entries', new_entries)
     },
+    add_gdb_response_to_console(mi_obj){
+        if(!mi_obj){
+            return
+        }
+        // Update status
+        let entries = [],
+            error = false
+        if (mi_obj.message){
+            if(mi_obj.message === 'error'){
+                error = true
+            }else{
+                entries.push(mi_obj.message)
+            }
+        }
+        if (mi_obj.payload){
+            const interesting_keys = ['msg', 'reason', 'signal-name', 'signal-meaning']
+            for(let k of interesting_keys){
+                if (mi_obj.payload[k]) {entries.push(mi_obj.payload[k])}
+            }
+
+            if (mi_obj.payload.frame){
+                for(let i of ['file', 'func', 'line', 'addr']){
+                    if (i in mi_obj.payload.frame){
+                        entries.push(`${i}: ${mi_obj.payload.frame[i]}`)
+                    }
+                }
+            }
+        }
+        let type = error ? constants.console_entry_type.STD_ERR : constants.console_entry_type.STD_OUT
+        Actions.add_console_entries(entries, type)
+    },
     toggle_modal_visibility(){
         store.set('show_modal', !store.get('show_modal'))
     },
@@ -118,6 +150,14 @@ const Actions = {
         }
         store.set('max_lines_of_code_to_fetch', new_value)
         localStorage.setItem('max_lines_of_code_to_fetch', JSON.stringify(new_value))
+    },
+    show_upgrade_modal(){
+        const body = <div>
+            <span>This feature is only available in gdbgui pro.</span>
+            <p />
+            <a onClick={()=>window.open('http://gdbgui.com')} className='btn btn-primary'>Upgrade now</a>
+        </div>
+        Actions.show_modal('upgrade to pro for this feature', body)
     }
 
 }

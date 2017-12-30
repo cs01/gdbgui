@@ -30,6 +30,8 @@ class GdbConsole extends React.Component {
                     return <p key={index} className='otpt'>{escaped_value}</p>
                 case constants.console_entry_type.STD_ERR:
                     return <p key={index} className='otpt stderr'>{escaped_value}</p>
+                case constants.console_entry_type.GDBGUI_OUTPUT:
+                    return <p key={index} className='gdbguiConsoleOutput' title='gdbgui output'>{escaped_value}</p>
                 case constants.console_entry_type.SENT_COMMAND:
                     return (
                         <p
