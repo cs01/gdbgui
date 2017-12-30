@@ -329,6 +329,14 @@ def send_signal_to_pid():
     return jsonify({'message': 'sent signal %s (%s) to process id %s' % (signal_name, signal_num, str(pid))})
 
 
+@app.route('/dashboard')
+def dashboard():
+    """display a dashboard with a list of all running gdb processes
+    and ability to kill them, or open a new tab to work with that
+    GdbController instance"""
+    return render_template('dashboard.pug')
+
+
 @app.route('/shutdown')
 def shutdown_webview():
     return render_template('donate.pug', debug=json.dumps(app.debug))
@@ -479,6 +487,7 @@ def main():
                         'to gdbgui and is useful when running on a remote machine that you want to view/debug from your local '
                         'browser, or let someone else debug your application remotely.', action='store_true', )
     parser.add_argument('-g', '--gdb', help='Path to gdb or lldb executable. Defaults to %s. lldb support is experimental.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
+    parser.add_argument('--rr', action='store_true', help='Use `rr replay` instead of gdb. See http://rr-project.org/.')
     parser.add_argument('--lldb', help='Use lldb commands (experimental)', action='store_true')
     parser.add_argument('-v', '--version', help='Print version', action='store_true')
     parser.add_argument('--hide_gdbgui_upgrades', help='Hide messages regarding newer version of gdbgui. Defaults to False.', action='store_true')
@@ -493,6 +502,17 @@ def main():
     parser.add_argument('--auth-file', help='(Optional) Require authentication before accessing gdbgui in the browser. '
         'Specify a file that contains the HTTP Basic auth username and password separate by newline. '
         'NOTE: gdbgui does not use https.')
+
+    parser.add_argument('--key', default=None, help='SSL private key. '
+        'Generate with:'
+        'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
+        # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
+
+    parser.add_argument('--cert', default=None, help='SSL certificate. '
+        'Generate with:'
+        'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
+        # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
+
 
     args = parser.parse_args()
 
@@ -519,6 +539,13 @@ def main():
         args.no_browser = True
         if app.config['gdbgui_auth_user_credentials'] is None:
             print('Warning: authentication is recommended when serving on a publicly accessible IP address. See gdbgui --help.')
+
+    if args.rr is True:
+        print('The rr flag can only be used in the pro version of gdbgui. Upgrade now at http://gdbgui.com.')
+        exit(1)
+    elif args.key or args.cert:
+        print('Secure connection with SSL is only available in the pro version of gdbgui. Upgrade now at http://gdbgui.com.')
+        exit(1)
 
     setup_backend(serve=True,
         host=args.host,
