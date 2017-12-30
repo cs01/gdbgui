@@ -84,9 +84,11 @@ const menu =
         <ul className="dropdown-menu">
           <li><a onClick={()=>Settings.toggle_key('show_settings')} title="settings" className="pointer">Settings</a>
           </li>
-          <li><a title="donate" href="/donate" className="pointer">Donate</a>
+          <li><a title="dashboard" className="pointer" href='/dashboard'>Dashboard</a>
           </li>
-          <li><a href="https://github.com/cs01/gdbgui" className="pointer">Homepage / github</a>
+          <li><a href="http://gdbgui.com" className="pointer">gdbgui.com</a>
+          </li>
+          <li><a href="https://github.com/cs01/gdbgui" className="pointer">github</a>
           </li>
           <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">gdbgui Chat Room</a>
           </li>

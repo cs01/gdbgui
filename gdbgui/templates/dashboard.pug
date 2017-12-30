@@ -1,0 +1,32 @@
+doctype html
+html
+    head
+        title gdbgui - dashboard
+        base(target='_blank')
+
+        //- css
+        link(href='static/vendor/css/bootstrap.min.css', rel='stylesheet')
+
+        //- javascript
+        script(type="text/javascript" src='static/vendor/js/jquery.min.js')
+
+    style.
+        html{
+            background: linear-gradient(165deg,#6e60cc 0%,#484389 100%);
+        }
+
+    body(style='position: fixed; width: 100%; height: 100%;')
+
+
+        div.container-fluid
+            h1 This feature is only available in the pro version of gdbgui.
+            a.btn.btn-xl.btn-primary(href='http://gdbgui.com') Upgrade Now
+
+            p
+
+            h2 Below is a sample image of the dashboard
+
+            hr
+
+            a(href='http://gdbgui.com')
+                img(src='https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/dashboard.png')
