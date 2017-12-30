@@ -492,7 +492,7 @@ def main():
                         'to gdbgui and is useful when running on a remote machine that you want to view/debug from your local '
                         'browser, or let someone else debug your application remotely.', action='store_true', )
     parser.add_argument('-g', '--gdb', help='Path to gdb or lldb executable. Defaults to %s. lldb support is experimental.' % DEFAULT_GDB_EXECUTABLE, default=DEFAULT_GDB_EXECUTABLE)
-    parser.add_argument('--rr', action='store_true', help='Use `rr replay` instead of gdb. See http://rr-project.org/.')
+    parser.add_argument('--rr', action='store_true', help='Use `rr replay` instead of gdb. Replays last recording by default. Replay arbitrary recording by passing recorded directory as an argument. i.e. gdbgui /recorded/dir --rr. See http://rr-project.org/.')
     parser.add_argument('--lldb', help='Use lldb commands (experimental)', action='store_true')
     parser.add_argument('-v', '--version', help='Print version', action='store_true')
     parser.add_argument('--hide_gdbgui_upgrades', help='Hide messages regarding newer version of gdbgui. Defaults to False.', action='store_true')

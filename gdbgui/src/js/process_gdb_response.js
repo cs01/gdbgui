@@ -223,25 +223,31 @@ const process_gdb_response = function(response_array){
 
         }
 
-        if (r.message && r.message === 'stopped' && r.payload && r.payload.reason){
-            if(r.payload.reason.includes('exited')){
-                Actions.inferior_program_exited()
+        if (r.message && r.message === 'stopped'){
 
-            }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
-                if (r.payload['new-thread-id']){
-                    Threads.set_thread_id(r.payload['new-thread-id'])
+            if(r.payload && r.payload.reason){
+                if(r.payload.reason.includes('exited')){
+                    Actions.inferior_program_exited()
+
+                }else if (r.payload.reason.includes('breakpoint-hit') || r.payload.reason.includes('end-stepping-range')){
+                    if (r.payload['new-thread-id']){
+                        Threads.set_thread_id(r.payload['new-thread-id'])
+                    }
+                    Actions.inferior_program_paused(r.payload.frame)
+
+                }else if (r.payload.reason === 'signal-received'){
+                    Actions.add_console_entries('gdbgui noticed a signal was recieved. ' +
+                        'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
+                        'occurred by clicking the below button.', constants.console_entry_type.STD_OUT)
+
+                    Actions.add_console_entries('Re-Enter Program (backtrace)', constants.console_entry_type.BACKTRACE_LINK);
+                    Actions.inferior_program_paused(r.payload.frame)
+                }else{
+                    console.log('TODO handle new reason for stopping. Notify developer of this.')
+                    console.log(r)
                 }
-                Actions.inferior_program_paused(r.payload.frame)
-
-            }else if (r.payload.reason === 'signal-received'){
-                Actions.add_console_entries('gdbgui noticed a signal was recieved. ' +
-                    'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ' +
-                    'occurred by clicking the below button.', constants.console_entry_type.STD_OUT)
-
-                Actions.add_console_entries('Re-Enter Program (backtrace)', constants.console_entry_type.BACKTRACE_LINK);
             }else{
-                console.log('TODO handle new reason for stopping. Notify developer of this.')
-                console.log(r)
+                Actions.inferior_program_paused(r.payload.frame)
             }
         }
     }

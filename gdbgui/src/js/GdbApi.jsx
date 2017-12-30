@@ -147,17 +147,17 @@ const GdbApi = {
      */
     waiting_for_response: function(){
         store.set('waiting_for_response', true)
-        const WAIT_TIME_SEC = 15
+        const WAIT_TIME_SEC = 10
         clearTimeout(GdbApi._waiting_for_response_timeout)
         GdbApi._waiting_for_response_timeout = setTimeout(
             () => {
-                let text = `No gdb response received after ${WAIT_TIME_SEC} seconds. This usually indicates an error. `
+                let text = `No gdb response received after ${WAIT_TIME_SEC} seconds. This usually indicates an error.`
                 store.set('waiting_for_response', false)
 
                 Actions.add_console_entries(text, constants.console_entry_type.GDBGUI_OUTPUT)
                 Actions.add_console_entries('Possible reasons include:',
                     constants.console_entry_type.GDBGUI_OUTPUT)
-                Actions.add_console_entries('1) an inferior program was not loaded; 2) gdb has exited unexpectedly; 3) an unexpected error occurred'                ,
+                Actions.add_console_entries('1) an inferior program was not loaded; 2) gdb or the inferior process need to be interrupted with the SIGNINT signal; 3) gdb has exited unexpectedly; 4) an unexpected error occurred'                ,
                     constants.console_entry_type.GDBGUI_OUTPUT)
                 Actions.add_console_entries(`If an operation that takes longer than ${WAIT_TIME_SEC} seconds was run, this message can be ignored.`,
                     constants.console_entry_type.GDBGUI_OUTPUT)
