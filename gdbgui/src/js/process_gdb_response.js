@@ -10,7 +10,6 @@ import Breakpoints from './Breakpoints.jsx';
 import constants from './constants.js';
 import Threads from './Threads.jsx';
 import FileOps from './FileOps.jsx';
-import StatusBar from './StatusBar.jsx';
 import Memory from './Memory.jsx';
 import GdbApi from './GdbApi.jsx';
 import Locals from './Locals.jsx';
@@ -19,14 +18,12 @@ import Modal from './GdbguiModal.jsx';
 import Actions from './Actions.js';
 
 const process_gdb_response = function(response_array){
-    // update status with error or with last response
-    let update_status = true
     /**
      * Determines if response is an error and client does not want to be notified of errors for this particular response.
      * @param response: gdb mi response object
      * @return (bool): true if response should be ignored
      */
-    , is_error = (response) => {
+    let is_error = (response) => {
         return response.message === 'error'
     }
     , ignore_error = (response) => {
@@ -193,10 +190,7 @@ const process_gdb_response = function(response_array){
             }
         } else if (r.type === 'result' && r.message === 'error'){
             // render it in the status bar, and don't render the last response in the array as it does by default
-            if(update_status){
-                StatusBar.render_from_gdb_mi_response(r)
-                update_status = false
-            }
+            Actions.add_gdb_response_to_console(r)
 
             // we tried to load a binary, but gdb couldn't find it
             if(r.payload.msg === `${store.get('inferior_binary_path')}: No such file or directory.`){
@@ -249,16 +243,6 @@ const process_gdb_response = function(response_array){
                 console.log('TODO handle new reason for stopping. Notify developer of this.')
                 console.log(r)
             }
-        }
-    }
-
-    // render response of last element of array
-    if(update_status){
-        let last_response = _.last(response_array)
-        if(ignore_error(last_response)){
-            store.set('status', {text: '', error: false, warning: false})
-        }else{
-            StatusBar.render_from_gdb_mi_response(last_response)
         }
     }
 }

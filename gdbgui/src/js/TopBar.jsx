@@ -1,5 +1,6 @@
 import React from 'react';
-import StatusBar from './StatusBar.jsx';
+
+import {store} from './store.js';
 import BinaryLoader from './BinaryLoader.jsx';
 import Settings from './Settings.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';
@@ -103,10 +104,51 @@ const menu =
 
 
 class TopBar extends React.Component {
+    store_keys = ['source_code_state', 'waiting_for_response']
     constructor(){
       super()
-      this.state = {assembly_flavor: 'att'}  // att or intel
+      this.state = this._get_applicable_global_state()
+      this.state['assembly_flavor'] = 'att'  // att or intel
+      this.state['show_spinner'] = false  // att or intel
+      store.subscribe(this._store_change_callback.bind(this))
+      store.subscribe(this._set_spinner_timeout.bind(this))
+      store.subscribe(this._clear_spinner_timeout.bind(this))
+
+      this.spinner_timeout = null
+      this.spinner_timeout_msec = 5000
     }
+
+    _store_change_callback(keys){
+        if(_.intersection(this.store_keys, keys).length){
+            this.setState(this._get_applicable_global_state())
+        }
+        if(keys.indexOf('waiting_for_response') !== -1){
+          this._clear_spinner_timeout()
+          this.setState({'show_spinner': false})
+          if(this.state.waiting_for_response === true){
+            // false to true
+            this._set_spinner_timeout()
+          }
+        }
+    }
+    _set_spinner_timeout(){
+      this.spinner_timeout = setTimeout(()=>{
+        if(this.state.waiting_for_response){
+          this.setState({'show_spinner': true})
+        }
+      }, this.spinner_timeout_msec)
+    }
+    _clear_spinner_timeout(){
+      clearTimeout(this.spinner_timeout)
+    }
+    _get_applicable_global_state(){
+        let applicable_state = {}
+        for (let k of this.store_keys){
+            applicable_state[k] = store._store[k]
+        }
+        return applicable_state
+    }
+
     toggle_assembly_flavor(){
       const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att'
       this.setState({'assembly_flavor': flavor})
@@ -115,15 +157,31 @@ class TopBar extends React.Component {
       FileOps.fetch_assembly_cur_line()
     }
     render(){
+        let toggle_assm_button = ''
+        if(this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+          this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
+          toggle_assm_button = <button
+                            onClick={this.toggle_assembly_flavor.bind(this)}
+                            type="button"
+                            title={'Toggle between assembly flavors. The options are att or intel.'}
+                            className={"btn btn-default btn-xs"}>
+                            <span title={`currently displaying ${this.state.assembly_flavor}. Click to toggle.`}>
+                              {this.state.assembly_flavor}
+                            </span>
+                      </button>
+        }
+
+        let spinner = <span className='' style={{height: '100%', margin: '5px', 'width': '14px'}}/>
+        if(this.state.show_spinner){
+          spinner = <span className='glyphicon glyphicon-refresh glyphicon-refresh-animate' style={{height: '100%', margin: '5px', 'width': '14px'}}/>
+        }
+
         return(
             <div id="top" style={{background: '#f5f6f7', marginBottom: 5}}>
                 <div className="flexrow">
 
                     <BinaryLoader initial_user_input={this.props.initial_user_input} />
-                    <div id="status" style={{flex: '1 0 0', overflowX: 'auto', whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em', paddingLeft: 5}}>
-                        <StatusBar />
-                    </div>
-
+                    {spinner}
                     {controls}
                     {menu}
                 </div>
@@ -140,21 +198,23 @@ class TopBar extends React.Component {
                         className="form-control dropdown-input"
                     />
                     <div role="group" style={{height: 25}} className="btn-group btn-group">
-                      <button
-                            onClick={this.toggle_assembly_flavor.bind(this)}
-                            type="button"
-                            title={'Toggle between assembly flavors. The options are att or intel.'}
-                            className="btn btn-default btn-xs"><span>{this.state.assembly_flavor}</span>
+
+                      <button onClick={FileOps.fetch_assembly_cur_line} type="button" title="fetch disassembly" className="btn btn-default btn-xs">
+                        <span>fetch disassembly</span>
                       </button>
-                      <button onClick={FileOps.fetch_assembly_cur_line} type="button" title="fetch disassembly" className="btn btn-default btn-xs"><span>fetch disassembly</span>
-                      </button>
+
                       <button
                             onClick={FileOps.refresh_cached_source_files}
                             type="button"
                             title="fetch disassembly"
-                            className="btn btn-default btn-xs"><span>reload/hide disassembly</span>
+                            className="btn btn-default btn-xs">
+                          <span>reload/hide disassembly</span>
                       </button>
+
+                      {toggle_assm_button}
+
                     </div>
+
                     <div style={{marginRight: 5, marginLeft: 5, marginTop: 5, whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em'}} className="lighttext">
                         <SourceCodeHeading />
                     </div>

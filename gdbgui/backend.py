@@ -55,10 +55,10 @@ if darwin_match is not None and int(darwin_match.groups()[0]) >= 16:
     STARTUP_WITH_SHELL_OFF = True
 
 # create dictionary of signal names
-SIGNAL_NAME_TO_NUM = {}
+SIGNAL_NAME_TO_OBJ = {}
 for n in dir(signal):
     if n.startswith('SIG') and '_' not in n:
-        SIGNAL_NAME_TO_NUM[n.upper()] = getattr(signal, n)
+        SIGNAL_NAME_TO_OBJ[n.upper()] = getattr(signal, n)
 
 # Create flask application and add some configuration keys to be used in various callbacks
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
@@ -306,7 +306,7 @@ def gdbgui():
             'initial_binary_and_args': app.config['initial_binary_and_args'],
             'show_gdbgui_upgrades': app.config['show_gdbgui_upgrades'],
             'themes': THEMES,
-            'signals': SIGNAL_NAME_TO_NUM
+            'signals': SIGNAL_NAME_TO_OBJ
         }
 
     return render_template('gdbgui.pug',
@@ -320,13 +320,18 @@ def gdbgui():
 @app.route('/send_signal_to_pid')
 def send_signal_to_pid():
     signal_name = request.args.get('signal_name', '')
-    signal_num = SIGNAL_NAME_TO_NUM.get(signal_name.upper())
+    signal_obj = SIGNAL_NAME_TO_OBJ.get(signal_name.upper())
     if signal is None:
         raise ValueError('no such signal %s' % signal_name)
 
-    pid = int(request.args.get('pid'))
-    os.kill(pid, signal_num)
-    return jsonify({'message': 'sent signal %s (%s) to process id %s' % (signal_name, signal_num, str(pid))})
+    pid_str = str(request.args.get('pid'))
+    try:
+        pid_int = int(pid_str)
+    except ValueError:
+        return jsonify({'message': 'The pid %s cannot be converted to an integer. Signal %s was not sent.' % (pid_str, signal_name)}), 400
+
+    os.kill(pid_int, signal_obj)
+    return jsonify({'message': 'sent signal %s (%s) to process id %s' % (signal_name, signal_obj.value, pid_str)})
 
 
 @app.route('/dashboard')
@@ -506,13 +511,12 @@ def main():
     parser.add_argument('--key', default=None, help='SSL private key. '
         'Generate with:'
         'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
-        # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
+    # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
     parser.add_argument('--cert', default=None, help='SSL certificate. '
         'Generate with:'
         'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
-        # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
-
+    # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
     args = parser.parse_args()
 

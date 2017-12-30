@@ -334,7 +334,12 @@ td.line_num{
     margin: 2px;
     white-space: pre;
 }
-
+.gdbguiConsoleOutput{
+    color: orange;
+    min-height: 1em;
+    margin: 2px;
+    white-space: pre;
+}
 #gdb_mi_output{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
     overflow: auto;

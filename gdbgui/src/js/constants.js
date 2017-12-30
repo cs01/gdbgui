@@ -18,7 +18,8 @@ let constants = {
         SENT_COMMAND: 'SENT_COMMAND',
         STD_ERR: 'STD_ERR',
         STD_OUT: 'STD_OUT',
-        BACKTRACE_LINK: 'BACKTRACE_LINK'
+        BACKTRACE_LINK: 'BACKTRACE_LINK',
+        GDBGUI_OUTPUT: 'GDBGUI_OUTPUT'
     },
 
     'source_code_states': {
