@@ -66,38 +66,5 @@ html
                             error: null,
                         })
                     })()
-                .row
-                    hr
-
-            .row
-                .col-md-4
-                .col-md-4
-                    p Payments are greatly appreciated and help in the addition of new features.
-                    p
-                    strong Commercial users are strongly encouraged to donate.
-                    p
-                    a(href='https://paypal.me/grassfedcode/20')
-                        img(src='/static/images/paypal.svg')
-                    .input-group
-                        span.input-group-addon(style='height: 60px; font-size: 2em;') $
-                        input#donation_amount.form-control(type='text', value=20, style='height: 60px; font-size: 2em;', onkeypress='keyup_donate(event)')
-                        .btn.btn-success.input-group-addon(onclick='donate()', style='height: 60px; font-size=2em; font-weight: bolder;') Donate
-
-    script.
-        function donate(){
-            let el = document.getElementById('donation_amount')
-            , donation = parseInt(el.value)
-            , DEFAULT_DONATION = '20'
-            if(isNaN(parseFloat(donation)) || !isFinite(donation)){
-                donation = DEFAULT_DONATION
-            }else{
-                donation = donation.toString()
-            }
-            window.open('https://paypal.me/grassfedcode/' + donation)
-        }
-
-        function keyup_donate(e){
-            if(e.keyCode === 13){
-                donate()
-            }
-        }
+            else
+                h3 gdbgui not shutting down because debug is true
