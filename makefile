@@ -18,5 +18,5 @@ publish: test clean
 	python setup.py sdist bdist_wheel --universal
 	twine upload dist/*
 
-executable:
+executable: test
 	 pyinstaller gdbgui.spec --distpath executable

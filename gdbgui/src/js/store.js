@@ -337,6 +337,7 @@ for(let key in initial_store_data){
         }
     }catch(err){
         console.log(err)
+        localStorage.removeItem(key)
     }
 }
 
