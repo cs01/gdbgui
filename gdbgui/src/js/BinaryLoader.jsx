@@ -45,7 +45,7 @@ class BinaryLoader extends React.Component {
 
                       <button
                         type="button"
-                        title="Loads the binary and any arguments present in the input to the right"
+                        title="Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes."
                         onClick={this.click_set_target_app.bind(this)}
                         className="btn btn-primary">Load Binary</button>
                     </div>

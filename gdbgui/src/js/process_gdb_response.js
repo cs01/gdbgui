@@ -98,7 +98,7 @@ const process_gdb_response = function(response_array){
                 // gdb will not return a path, but rather the function name. The function name is
                 // not a file, and therefore it cannot be displayed. Make sure the path is known before
                 // trying to render the file of the newly created breakpoint.
-                if(_.isString(bkpt.fullname_to_display) && bkpt.fullname_to_display.startsWith('/')){
+                if(_.isString(bkpt.fullname_to_display)){
                     // a normal breakpoint or child breakpoint
                     Actions.view_file(bkpt.fullname_to_display, parseInt(bkpt.line))
                 }

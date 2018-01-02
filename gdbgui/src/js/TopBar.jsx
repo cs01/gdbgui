@@ -108,7 +108,7 @@ class TopBar extends React.Component {
     constructor(){
       super()
       this.state = this._get_applicable_global_state()
-      this.state['assembly_flavor'] = 'att'  // att or intel
+      this.state['assembly_flavor'] = 'intel'  // default to intel (choices are 'att' or 'intel')
       this.state['show_spinner'] = false  // att or intel
       store.subscribe(this._store_change_callback.bind(this))
       store.subscribe(this._set_spinner_timeout.bind(this))
