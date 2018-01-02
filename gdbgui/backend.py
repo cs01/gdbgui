@@ -38,6 +38,7 @@ else:
 from gdbgui import htmllistformatter  # noqa
 from gdbgui import __version__  # noqa
 
+USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
 DEFAULT_HOST = '127.0.0.1'
@@ -139,13 +140,17 @@ def verify_gdb_exists():
 def dbprint(*args):
     """print only if app.debug is truthy"""
     if app and app.debug:
-        CYELLOW2 = '\33[93m'
-        NORMAL = '\033[0m'
-        print(CYELLOW2 + 'DEBUG: ' + ' '.join(args) + NORMAL)
+        if USING_WINDOWS:
+            print('DEBUG: ' + ' '.join(args))
+
+        else:
+            CYELLOW2 = '\33[93m'
+            NORMAL = '\033[0m'
+            print(CYELLOW2 + 'DEBUG: ' + ' '.join(args) + NORMAL)
 
 
 def colorize(text):
-    if IS_A_TTY:
+    if IS_A_TTY and not USING_WINDOWS:
         return '\033[1;32m' + text + '\x1b[0m'
     else:
         return text

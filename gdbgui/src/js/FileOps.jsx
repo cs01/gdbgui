@@ -260,11 +260,6 @@ const FileOps = {
         if(!_.isString(fullname)){
             console.warn(`trying to fetch filename that is not a string`, fullname)
             FileOps.add_missing_file(fullname)
-        }else if(!fullname.startsWith('/')){
-            // this can happen when an executable doesn't have debug symbols.
-            // don't try to fetch it because it will never exist.
-            FileOps.add_missing_file(fullname)
-            return
         }
 
         if(FileOps.is_file_being_fetched(fullname)){
@@ -357,7 +352,7 @@ const FileOps = {
     },
     get_fetch_disassembly_command: function(fullname, start_line){
         let mi_response_format = FileOps.get_dissasembly_format_num(store.get('gdb_version_array'))
-        if(_.isString(fullname) && fullname.startsWith('/')){
+        if(_.isString(fullname)){
             if(store.get('interpreter') === 'gdb'){
                 return `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
             }else{
