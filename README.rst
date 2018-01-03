@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.9.3.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.9.4.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -29,7 +29,7 @@ Refer to `gdbgui's homepage <https://gdbgui.com>`_
 Compatibility
 -------------
 
-Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
+Python versions: 2.7, 3.4, 3.5, 3.6, pypy
 
 Operating systems: Ubuntu 14.04+, macOS, Windows (in cygwin)
 

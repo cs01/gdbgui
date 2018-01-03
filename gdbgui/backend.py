@@ -130,7 +130,11 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
 
 def verify_gdb_exists():
     if find_executable(app.config['gdb_path']) is None:
-        pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Is gdb installed? try "sudo apt-get install gdb"' % app.config['gdb_path'])
+        pygdbmi.printcolor.print_red('gdb executable "%s" was not found. Verify the executable exists, or that it is a directory on your $PATH environment variable.' % app.config['gdb_path'])
+        if USING_WINDOWS:
+            print('Install gdb (package name "mingw32-gdb") using MinGW (https://sourceforge.net/projects/mingw/files/Installer/mingw-get-setup.exe/download), then ensure gdb is on your "Path" environement variable: Control Panel > System Properties > Environment Variables > System Variables > Path')
+        else:
+            print('try "sudo apt-get install gdb" for Linux or "brew install gdb"')
         sys.exit(1)
     elif 'lldb' in app.config['gdb_path'].lower() and 'lldb-mi' not in app.config['gdb_path'].lower():
         pygdbmi.printcolor.print_red('gdbgui cannot use the standard lldb executable. You must use an executable with "lldb-mi" in its name.')
