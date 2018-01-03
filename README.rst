@@ -7,7 +7,7 @@ A browser-based frontend for GDB
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master
   :target: https://travis-ci.org/cs01/gdbgui
 
-.. image:: https://img.shields.io/badge/pypi-0.9.3.0-blue.svg
+.. image:: https://img.shields.io/badge/pypi-0.9.4.0-blue.svg
   :target: https://pypi.python.org/pypi/gdbgui/
 
 .. image:: https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg
@@ -29,19 +29,19 @@ Refer to `gdbgui's homepage <https://gdbgui.com>`_
 Compatibility
 -------------
 
-Python versions: 2.7, 3.4, 3.5, 3.6, 3.6-dev, 3.7-dev, pypy
-
-Operating systems: Ubuntu 14.04+, macOS, Windows (in cygwin)
-
-Browsers: Tested with Chrome, Firefox. Should work with any modern, standards-compliant browser. JavaScript and cookies must be enabled.
+Operating systems: Ubuntu 14.04+, macOS, Windows
 
 gdb: 7.7+
 
 Languages: C, C++, golang, rust (any language supported by gdb itself)
 
+Browsers: Tested with Chrome, Firefox. Should work with any modern, standards-compliant browser. JavaScript and cookies must be enabled.
+
+If using the Python distribution rather than binary executable: 2.7, 3.4, 3.5, 3.6, pypy
+
 Install
 -------
-Use a bundled executable available at `gdbgui.com/downloads.html <https://gdbgui.com/downloads.html>`_ (Linux only), or
+Binary executables available at `gdbgui.com/downloads.html <https://gdbgui.com/downloads.html>`_ or, alternatively a Python package is available as well:
 
 ``pip install gdbgui --upgrade``
 
@@ -177,7 +177,7 @@ See `CONTRIBUTING <https://github.com/cs01/gdbgui/blob/master/CONTRIBUTING.md>`_
 
 Authors
 -------
-``gdbgui`` would not be possible without the work of several amazing open source libraries
+``gdbgui`` is primarily authored by Chad Smith, but would not be possible without `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_ and several amazing open source libraries.
 
 JavaScript
 
@@ -200,7 +200,6 @@ Python
 - gevent: http://www.gevent.org/
 - pygdbmi: https://github.com/cs01/pygdbmi
 
-and `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_. Thank you!
 
 Users of gdbgui
 --------------------------------

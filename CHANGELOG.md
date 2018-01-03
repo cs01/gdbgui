@@ -3,6 +3,9 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.9.4.0
+* Add native Windows support (no longer relies on Cygwin)
+
 ## 0.9.3.0
 * Only display assembly flavor is assembly is displayed
 * Add new output type to console (gdbgui output)
