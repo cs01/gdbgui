@@ -1,5 +1,5 @@
 Flask==0.12.2
-pygdbmi==0.8.0.0
+pygdbmi==0.8.1.0
 pypugjs==4.2.2
 Flask-SocketIO==2.9.3
 Pygments==2.2.0
