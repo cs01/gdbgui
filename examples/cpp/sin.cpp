@@ -1,7 +1,5 @@
 #include <math.h>       /* sin */
 
-#define PI 3.14159265
-
 int main ()
 {
   double angle = 0, result = 0;
