@@ -17,7 +17,6 @@ a = Analysis(['gdbgui/backend.py'],  # noqa
              hiddenimports=[
                'engineio.async_gevent',
                'engineio.async_threading',
-               'pypugjs.ext.jinja',
                ],
              hookspath=[],
              runtime_hooks=[],
