@@ -65,8 +65,6 @@ for n in dir(signal):
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 Compress(app)  # add gzip compression to Flask. see https://github.com/libwilliam/flask-compress
 
-# templates are written in pug, so add that capability to flask
-app.jinja_env.add_extension('pypugjs.ext.jinja.PyPugJSExtension')
 app.config['initial_binary_and_args'] = []
 app.config['gdb_path'] = DEFAULT_GDB_EXECUTABLE
 app.config['gdb_cmd_file'] = None
@@ -318,11 +316,11 @@ def gdbgui():
             'signals': SIGNAL_NAME_TO_OBJ
         }
 
-    return render_template('gdbgui.pug',
+    return render_template('gdbgui.html',
         version=__version__,
-        debug=json.dumps(app.debug),
+        debug=app.debug,
         interpreter=interpreter,
-        initial_data=json.dumps(initial_data),
+        initial_data=initial_data,
         themes=THEMES)
 
 
@@ -348,17 +346,17 @@ def dashboard():
     """display a dashboard with a list of all running gdb processes
     and ability to kill them, or open a new tab to work with that
     GdbController instance"""
-    return render_template('dashboard.pug')
+    return render_template('dashboard.html')
 
 
 @app.route('/shutdown')
 def shutdown_webview():
-    return render_template('donate.pug', debug=json.dumps(app.debug))
+    return render_template('donate.html', debug=app.debug)
 
 
 @app.route('/donate')
 def donate():
-    return render_template('donate.pug')
+    return render_template('donate.html')
 
 
 @app.route('/help')

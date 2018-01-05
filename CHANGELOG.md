@@ -3,6 +3,10 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+
+## 0.9.4.1
+* Remove `pypugjs` dependency
+
 ## 0.9.4.0
 * Add native Windows support (no longer relies on Cygwin)
 
