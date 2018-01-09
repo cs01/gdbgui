@@ -3,18 +3,6 @@
 ## Overview
 `gdbgui` can debug executables generated from various languages. This folder contains example source code and makefiles to build and automatically launch `gdbgui`.
 
-### Example Invocations of `gdbgui`
-
-```bash
-gdbgui ./myprogram myarg  # automatically set the inferior program to ./myprogram. pass the argument myarg, set a breakpoint at main
-gdbgui --args ./myprogram myarg  # alternate way to do the same thing as the first command
-gdbgui -r  # run on a server and host on 0.0.0.0. Accessible to the outside world as long as port 80 is not blocked
-gdbgui -r --auth # Same as previous but will prompt for a username and password
-gdbgui -g build/mygdb  # run when you don't want to use gdb on your $PATH
-gdbgui --port 8080  # run on port 8080 instead of the default port
-gdbgui -x gdbcmds.txt  # Execute GDB commands from a file when gdb starts
-```
-
 ## Clone
 To get started, first clone this repository:
 ```
@@ -37,6 +25,3 @@ For example, in `gdbgui/examples/c`, running `make hello` will:
 * load the executable for the make target you just built
 * insert a breakpoint at main (Rust and Go users may see machine code displayed rather than source code. This is a `gdb` limitation.)
 * **Note: Although the program has loaded, you still must click the run icon to actually begin running the program.**
-
-## Contributing
-If you have another example you think would be useful to demonstrate debugger features, please submit a pull request. No `gdbgui` knowledge is required to add example code :).

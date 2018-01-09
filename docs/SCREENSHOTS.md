@@ -1,5 +1,6 @@
 # Screenshots
 
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png)
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui2.png)
 
 Enter the binary and args just as you'd call them on the command line.
@@ -98,7 +99,7 @@ yellow.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/console.png)
 
-## authentiation
+## authentication
 Authentication can be enabled when serving on a publicly accessible IP address. See `gdbgui --help` for instructions on how to enable authentication.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/authentication.png)
