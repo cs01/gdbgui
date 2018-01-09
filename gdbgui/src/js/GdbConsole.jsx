@@ -66,14 +66,28 @@ class GdbConsole extends React.Component {
                             <a
                                 onClick={this.backtrace_button_clicked}
                                 style={{fontFamily: 'arial', marginLeft: '10px'}}
-                                className='btn btn-success backtrace'
+                                className='btn btn-success backtrace btn-xs'
                             >
                                 {escaped_value}
                             </a>
                         </div>
                     )
+                case constants.console_entry_type.UPGRADE_GDBGUI:
+                    return (
+                        <div style={{    color: 'orange',
+                            minHeight: '1em',
+                            margin: '2px',
+                            whiteSpace: 'pre',
+                            fontFamily: 'arial'}}>
+                            <span>Thank you for using gdbgui basic! Enter gdbgui license number to support the project and remove this message.  </span>
+                            <a className='btn btn-warning btn-xs'
+                                style={{color: 'black', fontWeight: 'bold'}}
+                                href='https://grassfedcode.onfastspring.com/gdbgui-premium'>upgrade now</a>
+                        </div>
+                    )
             }
         })
+
     }
     render(){
         const {console_entries} = this.props

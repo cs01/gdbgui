@@ -13,6 +13,11 @@ import Actions from './Actions.js';
 
 class SourceCode extends React.Component {
     static el_code_container = null  // todo: no jquery
+    static el_code_container_node = null
+    static code_container_node = null
+    static view_more_top_node = null
+    static view_more_bottom_node = null
+
     store_keys = [
         'fullname_to_render',
         'cached_source_files',
@@ -23,13 +28,13 @@ class SourceCode extends React.Component {
         'breakpoints',
         'source_code_state',
         'make_current_line_visible',
-        'render_paused_frame_or_user_selection',
+        'source_code_selection_state',
         'current_theme',
         'inferior_binary_path',
-        'has_unrendered_assembly',
         'source_linenum_to_display_start',
         'source_linenum_to_display_end',
-        'max_lines_of_code_to_fetch'
+        'max_lines_of_code_to_fetch',
+        'source_code_infinite_scrolling'
     ]
 
     constructor() {
@@ -60,8 +65,8 @@ class SourceCode extends React.Component {
         return applicable_state
     }
     render(){
-        return(<div className={this.state.current_theme} style={{height: '100%'}}>
-                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}}>
+        return(<div className={this.state.current_theme} style={{height: '100%'}} >
+                    <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}} >
                     <tbody id='code_body'>
                         {this.get_body()}
                     </tbody>
@@ -75,15 +80,12 @@ class SourceCode extends React.Component {
         if (source_is_displayed)
         {
             if (this.state.make_current_line_visible){
-                SourceCode.make_current_line_visible()
-                store.set('make_current_line_visible', false)
+                let success = SourceCode.make_current_line_visible()
+                if(success){
+                    store.set('make_current_line_visible', false)
+                }
             }
             store.set('fullname_rendered', this.state.fullname_to_render)
-        }
-
-        if (this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
-            this.state.source_code_state === constants.source_code_states.ASSM_CACHED){
-            store.set('has_unrendered_assembly', false)
         }
     }
 
@@ -151,11 +153,11 @@ class SourceCode extends React.Component {
         }
 
         let id = ''
-        if(this.state.render_paused_frame_or_user_selection === 'paused_frame'){
+        if(this.state.source_code_selection_state === constants.source_code_selection_states.PAUSED_FRAME){
             if(is_gdb_paused_on_this_line){
                 id = 'scroll_to_line'
             }
-        }else if (this.state.render_paused_frame_or_user_selection === 'user_selection'){
+        }else if (this.state.source_code_selection_state === constants.source_code_selection_states.USER_SELECTION){
             if(line_should_flash){
                 id = 'scroll_to_line'
             }
@@ -236,8 +238,8 @@ class SourceCode extends React.Component {
             return false
         }
     }
-    get_view_more_tr(fullname, linenum){
-        return <tr key={linenum} className='srccode'>
+    get_view_more_tr(fullname, linenum, node_key){
+        return <tr key={linenum} className='srccode' ref={(el)=>SourceCode[node_key] = el}>
                     <td></td>
                     <td onClick={()=>{Actions.view_file(fullname, linenum)}}
                         style={{fontStyle: 'italic', paddingLeft: '10px'}}
@@ -258,27 +260,27 @@ class SourceCode extends React.Component {
     get_line_nums_to_render(source_code_obj, start_linenum, line_to_flash, end_linenum){
         let start_linenum_to_render = start_linenum
         let end_linenum_to_render = end_linenum
-        let linenum = line_to_flash
+        let linenum = start_linenum
 
         // go backwards from center until missing element is found
-        while(linenum >= start_linenum && (linenum - start_linenum) <= this.state.max_lines_of_code_to_fetch){
+        // linenum >= start_linenum &&
+        while(linenum < end_linenum){
             if(source_code_obj.hasOwnProperty(linenum)){
                 start_linenum_to_render = linenum
-            }else{
                 break
+            }else{
+                linenum++
             }
-            linenum--
         }
 
-        // go forwards from center until missing element is found
-        linenum = line_to_flash
-        while(linenum <= end_linenum && (end_linenum - linenum) <= this.state.max_lines_of_code_to_fetch){
+        linenum = end_linenum
+        while(linenum > start_linenum){
             if(source_code_obj.hasOwnProperty(linenum)){
                 end_linenum_to_render = linenum
-            }else{
                 break
+            }else{
+                linenum--
             }
-            linenum++
         }
         return {start_linenum_to_render, end_linenum_to_render}
 
@@ -314,17 +316,21 @@ class SourceCode extends React.Component {
             line_num_being_rendered++
         }
 
+
+        SourceCode.view_more_top_node = null
+        SourceCode.view_more_bottom_node = null
+
         // add "view more" buttons if necessary
         if(start_linenum_to_render > start_linenum){
-            body.unshift(this.get_view_more_tr(fullname, start_linenum_to_render -1))
+            body.unshift(this.get_view_more_tr(fullname, start_linenum_to_render -1, 'view_more_top_node'))
         }else if(start_linenum !== 1){
-            body.unshift(this.get_view_more_tr(fullname, start_linenum -1))
+            body.unshift(this.get_view_more_tr(fullname, start_linenum -1, 'view_more_top_node'))
         }
 
         if(end_linenum_to_render < end_linenum){
-            body.push(this.get_view_more_tr(fullname, end_linenum_to_render + 1))
+            body.push(this.get_view_more_tr(fullname, end_linenum_to_render + 1, 'view_more_bottom_node'))
         }else if(end_linenum < num_lines_in_file){
-            body.push(this.get_view_more_tr(fullname, line_num_being_rendered))
+            body.push(this.get_view_more_tr(fullname, line_num_being_rendered, 'view_more_bottom_node'))
         }
 
         if(end_linenum_to_render === num_lines_in_file){
@@ -347,31 +353,45 @@ class SourceCode extends React.Component {
         return(<tr><td>no source code or assembly to display</td></tr>)
     }
     static make_current_line_visible(){
-        SourceCode.scroll_to_jq_selector($("#scroll_to_line"))
+        return SourceCode._make_jq_selector_visible($("#scroll_to_line"))
+    }
+    static is_source_line_visible(jq_selector){
+        if (jq_selector.length !== 1){  // make sure something is selected before trying to scroll to it
+            throw 'Unexpected jquery selector'
+        }
+
+        let top_of_container = SourceCode.el_code_container.position().top,
+            height_of_container = SourceCode.el_code_container.height(),
+            bottom_of_container = top_of_container + height_of_container,
+            top_of_line = jq_selector.position().top,
+            bottom_of_line = top_of_line+ jq_selector.height(),
+            top_of_table = jq_selector.closest('table').position().top,
+            is_visible = (top_of_line >= top_of_container) && (bottom_of_line <= bottom_of_container)
+
+        if (is_visible){
+            return {is_visible: true, top_of_line, top_of_table, height_of_container}
+        }else{
+            return {is_visible: false, top_of_line, top_of_table, height_of_container}
+        }
     }
     /**
      * Scroll to a jQuery selection in the source code table
      * Used to jump around to various lines
+     * returns true on success
      */
-    static scroll_to_jq_selector(jq_selector){
+    static _make_jq_selector_visible(jq_selector){
         if (jq_selector.length === 1){  // make sure something is selected before trying to scroll to it
-            let top_of_container = SourceCode.el_code_container.position().top,
-                height_of_container = SourceCode.el_code_container.height(),
-                bottom_of_container = top_of_container + height_of_container,
-                top_of_line = jq_selector.position().top,
-                bottom_of_line = top_of_line+ jq_selector.height(),
-                top_of_table = jq_selector.closest('table').position().top
+            const {is_visible, top_of_line, top_of_table, height_of_container} = SourceCode.is_source_line_visible(jq_selector)
 
-            if ((top_of_line >= top_of_container) && (bottom_of_line < (bottom_of_container))){
-                // do nothing, it's already in view
-            }else{
+            if (!is_visible){
                 // line is out of view, scroll so it's in the middle of the table
                 const time_to_scroll = 0
                 let scroll_top = top_of_line - (top_of_table + height_of_container/2)
                 SourceCode.el_code_container.animate({'scrollTop': scroll_top}, time_to_scroll)
             }
+            return true
         }else{
-            // nothing to scroll to
+            return false
         }
     }
 }

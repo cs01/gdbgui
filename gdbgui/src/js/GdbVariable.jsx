@@ -122,7 +122,9 @@ let VarCreator = {
             // automatically fetch first level of children for root variables
             GdbVariable.fetch_and_show_children_for_var(r.payload.name)
         }else{
-            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
+            // gdbgui did not expect a new variable to be created here
+            // it's likely this tab is viewing an instance of gdb that multiple users
+            // are interacting with
         }
         VarCreator._fetch_complete()
     },
@@ -342,7 +344,8 @@ class GdbVariable extends React.Component {
 
         let parent_name = ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children
         if(!parent_name){
-            console.error('developer error: gdb created child variable, but the parent variable is unknown')
+            // gdb created child variable, but the parent variable is unknown
+            // it's likely another tab interacting w/ the same gdb instance created this
         }
         ChildVarFetcher.fetch_complete()
 
@@ -357,17 +360,20 @@ class GdbVariable extends React.Component {
             parent_obj.children = children
             parent_obj.numchild = children.length
             store.set('expressions', expressions)
+
+            // if this field is an anonymous struct, the user will want to
+            // see this expanded by default
+            for(let child of parent_obj.children){
+                if (child.exp.includes('<anonymous')){
+                    GdbVariable.fetch_and_show_children_for_var(child.name)
+                }
+            }
+
         }else{
-            console.error('Developer error: gdb created a variable, but gdbgui did not expect it to.')
+            // gdbgui did not expect this.
+            // another browser tab interacting w/ the same gdb instance likely created this
         }
 
-        // if this field is an anonymous struct, the user will want to
-        // see this expanded by default
-        for(let child of parent_obj.children){
-            if (child.exp.includes('<anonymous')){
-                GdbVariable.fetch_and_show_children_for_var(child.name)
-            }
-        }
     }
     /**
      * gdb returns objects for its variables,, but before we save that
@@ -632,10 +638,18 @@ class GdbVariable extends React.Component {
         return undefined
     }
     static get_root_name_from_gdbvar_name(gdb_var_name){
-        return gdb_var_name.split('.')[0]
+        if(_.isString(gdb_var_name)){
+            return gdb_var_name.split('.')[0]
+        }else{
+            return ''
+        }
     }
     static get_child_names_from_gdbvar_name(gdb_var_name){
-        return gdb_var_name.split('.').slice(1, gdb_var_name.length)
+        if(_.isString(gdb_var_name)){
+            return gdb_var_name.split('.').slice(1, gdb_var_name.length)
+        }else{
+            return ''
+        }
     }
     /**
      * Get object from gdb variable name. gdb variable names are unique, and don't match

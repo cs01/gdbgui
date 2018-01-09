@@ -19,7 +19,14 @@ let constants = {
         STD_ERR: 'STD_ERR',
         STD_OUT: 'STD_OUT',
         BACKTRACE_LINK: 'BACKTRACE_LINK',
-        GDBGUI_OUTPUT: 'GDBGUI_OUTPUT'
+        GDBGUI_OUTPUT: 'GDBGUI_OUTPUT',
+        AUTOCOMPLETE_OPTION: 'AUTOCOMPLETE_OPTION',
+        UPGRADE_GDBGUI: 'UPGRADE_GDBGUI',
+    },
+
+    'source_code_selection_states': {
+        USER_SELECTION: 'USER_SELECTION',
+        PAUSED_FRAME: 'PAUSED_FRAME',
     },
 
     'source_code_states': {
@@ -32,6 +39,8 @@ let constants = {
         FILE_MISSING: 'FILE_MISSING',
         NONE_AVAILABLE: 'NONE_AVAILABLE',
     },
+
+
 
     'inferior_states': {
         'unknown': 'unknown',
