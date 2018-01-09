@@ -17,7 +17,7 @@ REQUIRED = [
     'Flask-Compress>=1.4.0',  # to compress flask responses
     'Flask-SocketIO>=2.9.3',  # for websockets
     'gevent>=1.2.2',  # for websockets (preferred)
-    'pygdbmi>=0.8.1.0',  # to parse gdb output
+    'pygdbmi>=0.8.2.0',  # to parse gdb output
     'Pygments>=2.2.0',  # for syntax highlighting
 ]
 

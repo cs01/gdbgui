@@ -19,7 +19,7 @@ let onkeyup_jump_to_line = (e)=>{
 let btn_class = 'btn btn-default btn-sm'
 
 const controls =
-        <div role="group" style={{marginBottom: 6, height: 25, width: 220}} className="btn-group btn-group">
+        <div role="group" style={{marginBottom: 6, height: 25, width: 250}} className="btn-group btn-group">
           <button id="run_button"
                 onClick={GdbApi.click_run_button}
                 type="button"
@@ -104,7 +104,7 @@ const menu =
 
 
 class TopBar extends React.Component {
-    store_keys = ['source_code_state', 'waiting_for_response']
+    store_keys = ['debug_in_reverse', 'source_code_state', 'waiting_for_response']
     constructor(){
       super()
       this.state = this._get_applicable_global_state()
@@ -182,6 +182,12 @@ class TopBar extends React.Component {
 
                     <BinaryLoader initial_user_input={this.props.initial_user_input} />
                     {spinner}
+                    <label title='when clicking buttons to the right, pass the `--reverse` flag to gdb in an attempt to debug in reverse. This is not always supported. rr is known to support reverse debugging.' style={{fontWeight: 'normal', fontSize: '0.9em', 'margin': '5px'}}>
+                      <input type='checkbox' checked={store.get('debug_in_reverse')} onChange={(e)=>{
+                        store.set('debug_in_reverse', e.target.checked)
+                      }}/>
+                      reverse
+                    </label>
                     {controls}
                     {menu}
                 </div>
