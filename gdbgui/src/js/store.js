@@ -239,6 +239,7 @@ const initial_store_data = {
     can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
     show_settings: false,
 
+    'debug_in_reverse': false,
     show_modal: false,
     modal_header: null,
     modal_body: null,
@@ -274,14 +275,14 @@ const initial_store_data = {
     line_of_source_to_flash: null,
     current_assembly_address: null,
     // rendered_source: {},
-    has_unrendered_assembly: false,  // set to true when new assembly has been fetched and is cached in browser, but not displayed in source code window
     make_current_line_visible: false,  // set to true when source code window should jump to current line
     cached_source_files: [],  // list with keys fullname, source_code
     disassembly_for_missing_file: [],  // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
     missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
     source_code_state: constants.source_code_states.NONE_AVAILABLE,
-    render_paused_frame_or_user_selection: 'paused_frame',  // 'paused_frame' or 'user_selection'
+    source_code_selection_state: constants.source_code_selection_states.PAUSED_FRAME,
 
+    source_code_infinite_scrolling: false,
     source_linenum_to_display_start: 0,
     source_linenum_to_display_end: 0,
 

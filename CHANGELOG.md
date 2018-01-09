@@ -3,6 +3,13 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
+## 0.10.0.0
+* Add support for rr (--rr flag)
+* Add dashboard to connect to/kill existing gdb processes
+* Add option to specify SSL key and certificate to enable https
+* Add option to connect to process
+* Add option to connect to gdbserver
+* Add infinite scrolling
 
 ## 0.9.4.1
 * Remove `pypugjs` dependency
