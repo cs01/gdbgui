@@ -32,7 +32,8 @@ const GdbApi = {
     init: function(){
         const TIMEOUT_MIN = 5
         /* global io */
-       GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000});
+        /* global initial_data */
+        GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000, query: `gdbpid=${initial_data.gdbpid}`});
 
 
         GdbApi.socket.on('connect', function(){
@@ -49,9 +50,19 @@ const GdbApi = {
             Actions.add_console_entries(`Error occurred on server when running gdb command: ${data.message}`, constants.console_entry_type.STD_ERR)
         });
 
-        GdbApi.socket.on('gdb_pid', function(gdb_pid) {
+        GdbApi.socket.on('gdb_pid', function(gdb_pid_obj) {
+            let gdb_pid = gdb_pid_obj.pid
+            , message = gdb_pid_obj.message
+            , error = gdb_pid_obj.error
+            , using_existing = gdb_pid_obj.using_existing
+
+            Actions.add_console_entries(message, error ? constants.console_entry_type.STD_ERR : constants.console_entry_type.GDBGUI_OUTPUT)
+
             store.set('gdb_pid', gdb_pid)
             Actions.add_console_entries(`${store.get('interpreter')} process ${gdb_pid} is running for this tab`, constants.console_entry_type.GDBGUI_OUTPUT)
+            if(using_existing){
+                Actions.refresh_state_for_gdb_pause()
+            }
         });
 
         GdbApi.socket.on('disconnect', function(){
@@ -74,15 +85,15 @@ const GdbApi = {
     },
     click_continue_button: function(){
         Actions.inferior_program_running()
-        GdbApi.run_gdb_command('-exec-continue')
+        GdbApi.run_gdb_command('-exec-continue' + (store.get('debug_in_reverse') ? ' --reverse' : ''))
     },
     click_next_button: function(){
         Actions.inferior_program_running()
-        GdbApi.run_gdb_command('-exec-next')
+        GdbApi.run_gdb_command('-exec-next' + (store.get('debug_in_reverse') ? ' --reverse' : ''))
     },
     click_step_button: function(){
         Actions.inferior_program_running()
-        GdbApi.run_gdb_command('-exec-step')
+        GdbApi.run_gdb_command('-exec-step' + (store.get('debug_in_reverse') ? ' --reverse' : ''))
     },
     click_return_button: function(){
         // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
@@ -94,11 +105,11 @@ const GdbApi = {
     },
     click_next_instruction_button: function(){
         Actions.inferior_program_running()
-        GdbApi.run_gdb_command('-exec-next-instruction')
+        GdbApi.run_gdb_command('-exec-next-instruction' + (store.get('debug_in_reverse') ? ' --reverse' : ''))
     },
     click_step_instruction_button: function(){
         Actions.inferior_program_running()
-        GdbApi.run_gdb_command('-exec-step-instruction')
+        GdbApi.run_gdb_command('-exec-step-instruction' + (store.get('debug_in_reverse') ? ' --reverse' : ''))
     },
     click_send_interrupt_button: function(){
         Actions.inferior_program_running()

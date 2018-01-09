@@ -1,4 +1,5 @@
 import React from 'react';
+import constants from './constants.js';
 import {store} from './store.js';
 import {FileLink} from './Links.jsx';
 
@@ -7,7 +8,7 @@ class SourceCodeHeading extends React.Component {
         'fullname_to_render',
         'paused_on_frame',
         'line_of_source_to_flash',
-        'render_paused_frame_or_user_selection',
+        'source_code_selection_state',
     ]
     constructor() {
         super()
@@ -29,7 +30,7 @@ class SourceCodeHeading extends React.Component {
     }
     render(){
         let line
-        if(this.state.render_paused_frame_or_user_selection === 'paused_frame' && this.state.paused_on_frame){
+        if(this.state.source_code_selection_state === constants.source_code_selection_states.PAUSED_FRAME && this.state.paused_on_frame){
             line = this.state.paused_on_frame.line
         }else{
             line = this.state.line_of_source_to_flash

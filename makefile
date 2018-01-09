@@ -19,4 +19,4 @@ publish: test clean
 	twine upload dist/*
 
 executable: test
-	 pyinstaller gdbgui.spec --distpath executable
+	pyinstaller gdbgui.spec --distpath executable --key a5s1fe65aw41f54sa64v6b4ds98fhea98rhg4etj4et78ku4yu87mn

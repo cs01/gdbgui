@@ -12,10 +12,9 @@ import webbrowser
 import traceback
 import json
 import sys
-import platform
 import pygdbmi
 import socket
-import re
+from werkzeug.security import pbkdf2_hex
 from getpass import getpass
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
@@ -23,7 +22,8 @@ from flask import Flask, request, Response, render_template, jsonify, redirect
 from functools import wraps
 from flask_socketio import SocketIO, emit
 from flask_compress import Compress
-from pygdbmi.gdbcontroller import GdbController
+from pygdbmi.gdbcontroller import NoGdbProcessError
+
 
 pyinstaller_env_var_base_dir = '_MEIPASS'
 pyinstaller_base_dir = getattr(sys, '_MEIPASS', None)
@@ -35,25 +35,18 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from gdbgui import htmllistformatter  # noqa
-from gdbgui import __version__  # noqa
+from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
+from gdbgui import htmllistformatter, __version__  # noqa
+from gdbgui.statemanager import StateManager  # noqa
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
+GDBGUI_PREF_DIR = os.path.join(os.path.expanduser('~'), '.gdbgui')
 STATIC_DIR = os.path.join(BASE_PATH, 'static')
 DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 5000
 IS_A_TTY = sys.stdout.isatty()
 DEFAULT_GDB_EXECUTABLE = 'gdb'
-DEFAULT_GDB_ARGS = ['-nx', '--interpreter=mi2']
-DEFAULT_LLDB_ARGS = ['--interpreter=mi2']
-
-STARTUP_WITH_SHELL_OFF = False
-darwin_match = re.match('darwin-(\d+)\..*', platform.platform().lower())
-if darwin_match is not None and int(darwin_match.groups()[0]) >= 16:
-    # if mac OS version is 16 (sierra) or higher, need to set shell off due to
-    # os's security requirements
-    STARTUP_WITH_SHELL_OFF = True
 
 # create dictionary of signal names
 SIGNAL_NAME_TO_OBJ = {}
@@ -73,27 +66,44 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['LLDB'] = False  # assume false, okay to change later
 
 socketio = SocketIO()
-_gdb_state = {
-              # each key of gdb_controllers is websocket client id (each tab in browser gets its own id),
-              # and value is pygdbmi.GdbController instance
-              'gdb_controllers': {},
-              # a socketio thread to continuously check for output from all gdb processes (cannot be set until server is running)
-              'gdb_reader_thread': None,
-              }
+_state = StateManager(app.config)
 
 
-def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False, open_browser=True, testing=False, LLDB=False):
+def setup_backend(serve=True,
+        host=DEFAULT_HOST,
+        port=DEFAULT_PORT,
+        debug=False,
+        open_browser=True,
+        testing=False,
+        private_key=None,
+        certificate=None,
+        LLDB=False):
     """Run the server of the gdb gui"""
     app.config['LLDB'] = LLDB
+
+    kwargs = {}
+    ssl_context = get_ssl_context(private_key, certificate)
+    if ssl_context:
+        # got valid ssl context
+        # force everything through https
+        SSLify(app)
+        # pass ssl_context to flask
+        kwargs['ssl_context'] = ssl_context
+
     url = '%s:%s' % (host, port)
-    url_with_prefix = 'http://' + url
+    if kwargs.get('ssl_context'):
+        protocol = 'https://'
+        url_with_prefix = 'https://' + url
+    else:
+        protocol = 'http://'
+        url_with_prefix = 'http://' + url
 
     if debug:
         async_mode = 'eventlet'
     else:
         async_mode = 'gevent'
-    socketio.server_options['async_mode'] = async_mode
 
+    socketio.server_options['async_mode'] = async_mode
     try:
         socketio.init_app(app)
     except Exception:
@@ -111,16 +121,21 @@ def setup_backend(serve=True, host=DEFAULT_HOST, port=DEFAULT_PORT, debug=False,
                 url = (host, port)
 
         if open_browser is True and debug is False:
-            text = 'Opening gdbgui in browser at http://%s:%d' % url
+            text = ('Opening gdbgui in browser at ' + protocol + '%s:%d') % url
             print(colorize(text))
             webbrowser.open(url_with_prefix)
         else:
-            print(colorize('View gdbgui at http://%s:%d' % url))
+            print(colorize('View gdbgui at %s%s:%d' % (protocol, url[0], url[1])))
 
         print('exit gdbgui by pressing CTRL+C')
 
         try:
-            socketio.run(app, debug=debug, port=int(port), host=host, extra_files=get_extra_files())
+            socketio.run(app,
+                debug=debug,
+                port=int(port),
+                host=host,
+                extra_files=get_extra_files(),
+                **kwargs)
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
             sys.stdout.write('gdbgui has exited\n')
@@ -162,31 +177,16 @@ def colorize(text):
 def client_connected():
     dbprint('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
 
-    # give each client their own gdb instance
-    if request.sid not in _gdb_state['gdb_controllers'].keys():
-        dbprint('new sid', request.sid)
-        if app.config['LLDB'] is True:
-            gdb_args = DEFAULT_LLDB_ARGS
-        else:
-            gdb_args = DEFAULT_GDB_ARGS
-
-        if STARTUP_WITH_SHELL_OFF:
-            # macOS Sierra (and later) may have issues with gdb. This should fix it, but there might be other issues
-            # as well. Please create an issue if you encounter one since I do not own a mac.
-            # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
-            gdb_args.append('--init-eval-command=set startup-with-shell off')
-
-        if app.config['gdb_cmd_file']:
-            gdb_args.append('-x=%s' % app.config['gdb_cmd_file'])
-
-        _gdb_state['gdb_controllers'][request.sid] = GdbController(gdb_path=app.config['gdb_path'], gdb_args=gdb_args)
+    # see if user wants to connect to existing gdbpid
+    desired_gdbpid = int(request.args.get('gdbpid', 0))
+    payload = _state.connect_client(request.sid, desired_gdbpid)
 
     # tell the client browser tab which gdb pid is a dedicated to it
-    emit('gdb_pid', _gdb_state['gdb_controllers'][request.sid].gdb_process.pid)
+    emit('gdb_pid', payload)
 
     # Make sure there is a reader thread reading. One thread reads all instances.
-    if _gdb_state['gdb_reader_thread'] is None:
-        _gdb_state['gdb_reader_thread'] = socketio.start_background_task(target=read_and_forward_gdb_output)
+    if _state.gdb_reader_thread is None:
+        _state.gdb_reader_thread = socketio.start_background_task(target=read_and_forward_gdb_output)
         dbprint('Created background thread to read gdb responses')
 
 
@@ -198,29 +198,62 @@ def run_gdb_command(message):
     Responds only if an error occurs when trying to write the command to
     gdb
     """
-    if _gdb_state['gdb_controllers'].get(request.sid) is not None:
+    controller = _state.get_controller_from_client_id(request.sid)
+    if controller is not None:
         try:
             # the command (string) or commands (list) to run
             cmd = message['cmd']
-            _gdb_state['gdb_controllers'].get(request.sid).write(cmd, read_response=False)
+            controller.write(cmd, read_response=False)
 
-        except Exception as e:
-            print(e)
+        except Exception:
             err = traceback.format_exc()
-            dbprint(traceback.format_exc())
+            dbprint(err)
             emit('error_running_gdb_command', {'message': err})
     else:
         emit('error_running_gdb_command', {'message': 'gdb is not running'})
 
 
+def send_msg_to_clients(client_ids, msg, error=False):
+    """Send message to all clients"""
+    if error:
+        stream = 'stderr'
+    else:
+        stream = 'stdout'
+
+    response = [{
+        'message': None,
+        'type': 'console',
+        'payload': msg,
+        'stream': stream}]
+
+    for client_id in client_ids:
+        dbprint('emiting message to websocket client id ' + client_id)
+        socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
+
+
+@app.route('/remove_gdb_controller')
+def remove_gdb_controller():
+    gdbpid = int(request.args.get('gdbpid'))
+
+    orphaned_client_ids = _state.remove_gdb_controller_by_pid(gdbpid)
+    num_removed = len(orphaned_client_ids)
+
+    send_msg_to_clients(orphaned_client_ids,
+        'The underlying gdb process has been killed. This tab will no longer function as expected.',
+        error=True)
+
+    msg = 'removed %d gdb controller(s) with pid %d' % (num_removed, gdbpid)
+    if num_removed:
+        return jsonify({'message': msg})
+    else:
+        return jsonify({'message': msg}), 500
+
+
 @socketio.on('disconnect', namespace='/gdb_listener')
 def client_disconnected():
-    """if client disconnects, kill the gdb process connected to the browser tab"""
+    """do nothing if client disconnects"""
+    _state.disconnect_client(request.sid)
     dbprint('Client websocket disconnected, id %s' % (request.sid))
-    if request.sid in _gdb_state['gdb_controllers'].keys():
-        dbprint('Exiting gdb subprocess pid %s' % _gdb_state['gdb_controllers'][request.sid].gdb_process.pid)
-        _gdb_state['gdb_controllers'][request.sid].exit()
-        _gdb_state['gdb_controllers'].pop(request.sid)
 
 
 @socketio.on('Client disconnected')
@@ -234,23 +267,31 @@ def read_and_forward_gdb_output():
 
     while True:
         socketio.sleep(0.05)
-        for client_id, gdb in _gdb_state['gdb_controllers'].items():
+        controllers_to_remove = []
+        for controller, client_ids in _state.controller_to_client_ids.items():
             try:
-                if gdb is not None:
-                    response = gdb.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
-                    if response:
+                try:
+                    response = controller.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
+                except NoGdbProcessError:
+                    response = None
+                    send_msg_to_clients(client_ids,
+                        'The underlying gdb process has been killed. This tab will no longer function as expected.',
+                        error=True)
+                    controllers_to_remove.append(controller)
+
+                if response:
+                    for client_id in client_ids:
                         dbprint('emiting message to websocket client id ' + client_id)
                         socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
-                    else:
-                        # there was no queued response from gdb, not a problem
-                        pass
                 else:
-                    # gdb process was likely killed by user. Stop trying to read from it
-                    dbprint('thread to read gdb vars is exiting since gdb controller object was not found')
-                    break
+                    # there was no queued response from gdb, not a problem
+                    pass
 
             except Exception:
                 dbprint(traceback.format_exc())
+
+        for controller in controllers_to_remove:
+            _state.remove_gdb_controller(controller)
 
 
 def server_error(obj):
@@ -305,6 +346,7 @@ def authenticate(f):
 def gdbgui():
     """Render the main gdbgui interface"""
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
+    gdbpid = request.args.get('gdbpid', 0)
 
     THEMES = ['default', 'monokai']
     initial_data = {
@@ -313,7 +355,9 @@ def gdbgui():
             'initial_binary_and_args': app.config['initial_binary_and_args'],
             'show_gdbgui_upgrades': app.config['show_gdbgui_upgrades'],
             'themes': THEMES,
-            'signals': SIGNAL_NAME_TO_OBJ
+            'signals': SIGNAL_NAME_TO_OBJ,
+            'gdbpid': gdbpid,
+            'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else ''
         }
 
     return render_template('gdbgui.html',
@@ -327,8 +371,9 @@ def gdbgui():
 @app.route('/send_signal_to_pid')
 def send_signal_to_pid():
     signal_name = request.args.get('signal_name', '')
+
     signal_obj = SIGNAL_NAME_TO_OBJ.get(signal_name.upper())
-    if signal is None:
+    if signal_obj is None:
         raise ValueError('no such signal %s' % signal_name)
 
     pid_str = str(request.args.get('pid'))
@@ -346,7 +391,7 @@ def dashboard():
     """display a dashboard with a list of all running gdb processes
     and ability to kill them, or open a new tab to work with that
     GdbController instance"""
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', processes=_state.get_dashboard_data())
 
 
 @app.route('/shutdown')
@@ -367,6 +412,12 @@ def help():
 @app.route('/_shutdown')
 def _shutdown():
     sys.stdout.write('\ngdbgui has exited\n')
+    try:
+        _state.exit_all_gdb_processes()
+    except Exception:
+        dbprint('failed to exit gdb subprocces')
+        dbprint(traceback.format_exc())
+
     pid = os.getpid()
     if app.debug:
         os.kill(pid, signal.SIGINT)
@@ -487,6 +538,22 @@ def get_gdbgui_auth_user_credentials(auth_file, auth):
     return None
 
 
+def init_prefs():
+    if not os.path.exists(GDBGUI_PREF_DIR):
+        os.makedirs(GDBGUI_PREF_DIR)
+    app.config['l'] = None
+    if os.path.exists(os.path.join(GDBGUI_PREF_DIR, 'license')):
+        with open(os.path.join(GDBGUI_PREF_DIR, 'license')) as f:
+            app.config['l'] = f.read().strip()
+
+
+def save_license(license):
+    with open(os.path.join(GDBGUI_PREF_DIR, 'license'), 'w') as f:
+        f.write(license)
+        app.config['l'] = license
+    print('saved license information')
+
+
 def main():
     """Entry point from command line"""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -508,12 +575,15 @@ def main():
     parser.add_argument('-n', '--no_browser', help='By default, the browser will open with gdb gui. Pass this flag so the browser does not open.', action='store_true')
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
     parser.add_argument('--args', nargs='+', help='(Optional) The binary and arguments to run in gdb. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"')
+
     parser.add_argument('--auth', action='store_true', help='(Optional) Require authentication before accessing gdbgui in the browser. '
-        'Prompt will be displayed in terminal asking for username and password before running server. '
-        'NOTE: gdbgui does not use https.')
+        'Prompt will be displayed in terminal asking for username and password before running server.')
+
     parser.add_argument('--auth-file', help='(Optional) Require authentication before accessing gdbgui in the browser. '
         'Specify a file that contains the HTTP Basic auth username and password separate by newline. '
-        'NOTE: gdbgui does not use https.')
+        'NOTE: https is enabled by provided an ssl and certificate')
+
+    parser.add_argument('--license', help='(Optional) Store gdbgui premium license key.')
 
     parser.add_argument('--key', default=None, help='SSL private key. '
         'Generate with:'
@@ -527,6 +597,8 @@ def main():
 
     args = parser.parse_args()
 
+    init_prefs()
+
     if args.version:
         print(__version__)
         return
@@ -538,11 +610,20 @@ def main():
         cmd = args.cmd
     else:
         cmd = args.args
-    app.config['initial_binary_and_args'] = ' '.join(cmd or [])
+
+    if cmd:
+        app.config['initial_binary_and_args'] = cmd
+    else:
+        app.config['initial_binary_and_args'] = []
+
+    app.config['rr'] = args.rr
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
     app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.auth)
+
+    if args.license:
+        save_license(args.license)
 
     verify_gdb_exists()
     if args.remote:
@@ -551,18 +632,13 @@ def main():
         if app.config['gdbgui_auth_user_credentials'] is None:
             print('Warning: authentication is recommended when serving on a publicly accessible IP address. See gdbgui --help.')
 
-    if args.rr is True:
-        print('The rr flag can only be used in the pro version of gdbgui. Upgrade now at http://gdbgui.com.')
-        exit(1)
-    elif args.key or args.cert:
-        print('Secure connection with SSL is only available in the pro version of gdbgui. Upgrade now at http://gdbgui.com.')
-        exit(1)
-
     setup_backend(serve=True,
         host=args.host,
         port=int(args.port),
         debug=bool(args.debug),
         open_browser=(not args.no_browser),
+        private_key=args.key,
+        certificate=args.cert,
         LLDB=(args.lldb or 'lldb-mi' in args.gdb.lower()))
 
 

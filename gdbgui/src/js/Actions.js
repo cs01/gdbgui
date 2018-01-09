@@ -23,11 +23,12 @@ const Actions = {
     },
     inferior_program_paused: function(frame={}){
         store.set('inferior_program', constants.inferior_states.paused)
-        store.set('render_paused_frame_or_user_selection', 'paused_frame')
+        store.set('source_code_selection_state', constants.source_code_selection_states.PAUSED_FRAME)
         store.set('paused_on_frame', frame)
         store.set('fullname_to_render', frame.fullname)
         store.set('line_of_source_to_flash', parseInt(frame.line))
         store.set('current_assembly_address', frame.addr)
+        store.set('source_code_infinite_scrolling', false)
         SourceCode.make_current_line_visible()
         Actions.refresh_state_for_gdb_pause()
     },
@@ -117,11 +118,37 @@ const Actions = {
         // remove list of source files associated with the loaded binary since we're loading a new one
         store.set('source_file_paths', [])
         store.set('language', 'c_family')
-        store.set('inferior_binary_path', binary)
+        store.set('inferior_binary_path', null)
         Actions.inferior_program_exited()
         let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args)
         GdbApi.run_gdb_command(cmds)
         GdbApi.get_inferior_binary_last_modified_unix_sec(binary)
+    },
+    connect_to_gdbserver(user_input){
+        // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+        store.set('source_file_paths', [])
+        store.set('language', 'c_family')
+        store.set('inferior_binary_path', null)
+        Actions.inferior_program_exited()
+        GdbApi.run_gdb_command([`-target-select remote ${user_input}`])
+    },
+    remote_connected(){
+
+        Actions.inferior_program_paused()
+        let cmds = []
+        if(store.get('auto_add_breakpoint_to_main')){
+            Actions.add_console_entries('Connected to remote target! Adding breakpoint to main, then continuing target execution.', constants.console_entry_type.GDBGUI_OUTPUT)
+            cmds.push('-break-insert main')
+            cmds.push('-exec-continue')
+            cmds.push(GdbApi.get_break_list_cmd())
+        }else{
+            Actions.add_console_entries('Connected to remote target! Add breakpoint(s), then press "continue" button (do not press "run").', constants.console_entry_type.GDBGUI_OUTPUT)
+        }
+        GdbApi.run_gdb_command(cmds)
+    },
+    attach_to_process(user_input){
+        // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+        GdbApi.run_gdb_command(`-target-attach ${user_input}`)
     },
     fetch_source_files(){
         store.set('source_file_paths', [`${constants.ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
@@ -129,10 +156,12 @@ const Actions = {
     },
     view_file(fullname, line){
         store.set('fullname_to_render', fullname)
+        store.set('source_code_infinite_scrolling', false)
         Actions.set_line_state(line)
     },
     set_line_state(line){
-        store.set('render_paused_frame_or_user_selection', 'user_selection')
+        store.set('source_code_infinite_scrolling', false)
+        store.set('source_code_selection_state', constants.source_code_selection_states.USER_SELECTION)
         store.set('line_of_source_to_flash', parseInt(line))
         store.set('make_current_line_visible', true)
     },

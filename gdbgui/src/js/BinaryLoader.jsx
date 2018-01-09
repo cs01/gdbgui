@@ -3,6 +3,12 @@ import constants from './constants.js';
 import Actions from './Actions.js';
 import Util from './Util.js';
 
+const TARGET_TYPES = {'file': 'file',
+                        'server': 'server',
+                        'process': 'process',
+                        'target_download': 'target_download',
+                    }
+
 /**
  * The BinaryLoader component allows the user to select their binary
  * and specify inputs
@@ -13,8 +19,9 @@ class BinaryLoader extends React.Component {
 
         this.state = {
             past_binaries: [],
-            user_input: props.initial_user_input,
-            set_target_app: props.initial_user_input !== '',  // if user supplied initial binary, load it immediately
+            user_input: props.initial_user_input.join(' '),
+            initial_set_target_app: props.initial_user_input.length,  // if user supplied initial binary, load it immediately
+            target_type: TARGET_TYPES.file
         }
         try{
             this.state.past_binaries = _.uniq(JSON.parse(localStorage.getItem('past_binaries')))
@@ -27,6 +34,31 @@ class BinaryLoader extends React.Component {
         }
     }
     render(){
+
+        let button_text
+        , title
+        , placeholder
+
+        if (this.state.target_type === TARGET_TYPES.file){
+            button_text = 'Load Binary'
+            title = "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes."
+            placeholder = "/path/to/target/executable -and -flags"
+
+        }else if (this.state.target_type === TARGET_TYPES.server){
+            // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+            // -target-select
+            button_text = 'Connect to gdbserver'
+            title = 'Connect GDB to the remote target.'
+            placeholder = 'examples: 127.0.0.1:9999 | /dev/ttya'
+
+        }else if (this.state.target_type === TARGET_TYPES.process){
+            // -target-attach
+            button_text = 'Attach to Process'
+            title = 'Attach to a process pid or a file file outside of GDB, or a thread group gid. If attaching to a thread group, the id previously returned by ‘-list-thread-groups --available’ must be used. Note: to do this, you usually need to run gdbgui as sudo.'
+            placeholder = "pid | gid | file"
+
+        }
+
         return(
                 <form style={{marginBottom: 1, flex: '2 0 0'}}>
                   <div className="input-group input-group-sm">
@@ -39,21 +71,22 @@ class BinaryLoader extends React.Component {
                         <span className="caret"></span>
                       </button>
                       <ul className="dropdown-menu">
-                        <li><a className='pointer' onClick={Actions.show_upgrade_modal}>connect to gdb server</a></li>
-                        <li><a className='pointer' onClick={Actions.show_upgrade_modal}>attach to process</a></li>
+                        <li><a className='pointer' onClick={()=>this.setState({target_type: TARGET_TYPES.file})}>Load Binary</a></li>
+                        <li><a className='pointer' onClick={()=>this.setState({target_type: TARGET_TYPES.server})}>Connect to gdbserver</a></li>
+                        <li><a className='pointer' onClick={()=>this.setState({target_type: TARGET_TYPES.process})}>Attach to Process</a></li>
                       </ul>
 
                       <button
                         type="button"
-                        title="Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes."
+                        title={title}
                         onClick={this.click_set_target_app.bind(this)}
-                        className="btn btn-primary">Load Binary</button>
+                        className="btn btn-primary">{button_text}</button>
+
                     </div>
 
-
-                    <input id="binary"
+                    <input
                         type="text"
-                        placeholder="/path/to/target/executable -and -flags"
+                        placeholder={placeholder}
                         list="past_binaries"
                         style={{fontFamily: 'courier'}}
                         className="form-control"
@@ -68,8 +101,8 @@ class BinaryLoader extends React.Component {
         )
     }
     componentDidMount(){
-        if(this.state.set_target_app){
-            this.setState({'set_target_app': false})
+        if(this.state.initial_set_target_app){
+            this.setState({'initial_set_target_app': false})
             this.set_target_app()
         }
     }
@@ -90,6 +123,17 @@ class BinaryLoader extends React.Component {
         this.state.past_binaries.unshift(binary_and_args) // add to beginning
         this.setState({past_binaries: this.state.past_binaries})
         localStorage.setItem('past_binaries', JSON.stringify(this.state.past_binaries) || [])
+
+        let num_gdbgui_sessions = localStorage.getItem('num_gdbgui_sessions')
+        if(isNaN(num_gdbgui_sessions)){
+            num_gdbgui_sessions = 0
+        }
+        if(num_gdbgui_sessions >= 30 && initial_data.p !== 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
+            Actions.add_console_entries('', constants.console_entry_type.UPGRADE_GDBGUI)
+            localStorage.setItem('num_gdbgui_sessions', 0)
+        }else{
+            localStorage.setItem('num_gdbgui_sessions', num_gdbgui_sessions + 1)
+        }
     }
     /**
      * parse tokens with awareness of double quotes
@@ -115,14 +159,24 @@ class BinaryLoader extends React.Component {
         let user_input = _.trim(this.state.user_input)
 
         if (_.trim(user_input) === ''){
-            Actions.add_console_entries('enter a binary path and arguments', constants.console_entry_type.GDBGUI_OUTPUT)
+            Actions.add_console_entries('input cannot be empty', constants.console_entry_type.GDBGUI_OUTPUT)
             return
         }
 
         this._add_user_input_to_history(user_input)
 
-        const {binary, args} = this._parse_binary_and_args_from_user_input(user_input)
-        Actions.set_gdb_binary_and_arguments(binary, args)
+
+        if (this.state.target_type === TARGET_TYPES.file){
+            const {binary, args} = this._parse_binary_and_args_from_user_input(user_input)
+            Actions.set_gdb_binary_and_arguments(binary, args)
+
+        }else if (this.state.target_type === TARGET_TYPES.server){
+            Actions.connect_to_gdbserver(user_input)
+
+        }else if (this.state.target_type === TARGET_TYPES.process){
+            Actions.attach_to_process(user_input)
+
+        }
     }
 }
 
