@@ -12,7 +12,7 @@ class MemoryLink extends React.Component {
                     onClick={()=>Memory.set_inputs_from_address(this.parsed_addr)}
                     title={`click to explore memory at ${this.parsed_addr}`}
                     style={this.props.style}>
-                {this.props.display_text || this.parsed_addr}
+                {this.parsed_addr}
             </span>)
     }
     static defaultProps = { style: {'fontFamily': 'monospace'} }

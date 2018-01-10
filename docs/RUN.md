@@ -63,4 +63,4 @@ The following keyboard shortcuts are available when the focus is not in an input
 
 If your program exits unexpectedly from something like a SEGFAULT, gdbgui displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.
 
-![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/SIGSEGV.png)
+![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/SIGSEV.png)

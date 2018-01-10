@@ -3,7 +3,11 @@
 ## dev
 Changes that are in master but have not yet been pushed to PyPI.
 
-## 0.10.0.0
+## 0.10.1.0
+* Display descriptions of registers
+* Do not try to fetch Registers when they cannot be read
+
+## 0.10.0.2
 * Add support for rr (--rr flag)
 * Add dashboard to connect to/kill existing gdb processes
 * Add option to specify SSL key and certificate to enable https

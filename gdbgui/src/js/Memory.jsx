@@ -221,9 +221,9 @@ class Memory extends React.Component {
         Memory.fetch_memory_from_state()
     }
 
-    static _make_addr_into_link_react(addr, name=addr){
+    static _make_addr_into_link_react(addr){
         void(React)
-        return (<MemoryLink display_text={name} addr={addr} />)
+        return (<MemoryLink addr={addr} />)
     }
 
     /**
