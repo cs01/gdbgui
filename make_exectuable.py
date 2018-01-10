@@ -1,4 +1,17 @@
-# -*- mode: python -*-
+#!/usr/bin/env python
+
+
+"""
+"""
+
+
+import subprocess
+from gdbgui import __version__
+
+
+def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
+
+    spec = """# -*- mode: python -*-
 
 # create executable with: pyinstaller backend.spec
 # run executable with: dist/gdbgui
@@ -34,9 +47,28 @@ exe = EXE(pyz,  # noqa
           a.binaries,
           a.zipfiles,
           a.datas,
-          name='gdbgui',
+          name="%s",
           debug=False,
           strip=False,
           upx=False,
           runtime_tmpdir=None,
           console=True)
+
+""" % binary_name
+
+    with open('gdbgui.spec', 'w') as f:
+        f.write(spec)
+
+
+def main():
+    binary_name = 'gdbgui_%s' % __version__
+    spec_path = 'gdbgui.spec'
+    write_spec_with_gdbgui_version_in_name(spec_path, binary_name)
+
+    subprocess.call(['pyinstaller', spec_path,
+        '--distpath', 'executable',
+        '--key', 'a5s1fe65aw41f54sa64v6b4ds98fhea98rhg4etj4et78ku4yu87mn'])
+
+
+if __name__ == '__main__':
+    main()
