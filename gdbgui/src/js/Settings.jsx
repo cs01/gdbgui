@@ -21,6 +21,7 @@ class Settings extends React.Component {
         'refresh_state_after_sending_console_command',
         'show_all_sent_commands_in_console',
         'highlight_source_code',
+        'project_home'
     ]
     constructor() {
         super()

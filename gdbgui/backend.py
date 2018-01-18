@@ -35,9 +35,9 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
+from SSLify import SSLify, get_ssl_context  # noqa
 from gdbgui import htmllistformatter, __version__  # noqa
-from gdbgui.statemanager import StateManager  # noqa
+from statemanager import StateManager  # noqa
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
@@ -357,7 +357,8 @@ def gdbgui():
             'themes': THEMES,
             'signals': SIGNAL_NAME_TO_OBJ,
             'gdbpid': gdbpid,
-            'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else ''
+            'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else '',
+            'project_home': app.config['project_home']
         }
 
     return render_template('gdbgui.html',
@@ -595,6 +596,8 @@ def main():
         'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
     # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
+    parser.add_argument('--project', help='Set the project home.')
+
     args = parser.parse_args()
 
     init_prefs()
@@ -621,6 +624,7 @@ def main():
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
     app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.auth)
+    app.config['project_home'] = args.project
 
     if args.license:
         save_license(args.license)

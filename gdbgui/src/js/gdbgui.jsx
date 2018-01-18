@@ -22,6 +22,7 @@ import Settings from './Settings.jsx';
 import Modal from './GdbguiModal.jsx';
 import HoverVar from './HoverVar.jsx';
 import RightSidebar from './RightSidebar.jsx';
+import ProjectView from './ProjectView.jsx';
 import GdbConsoleContainer from './GdbConsoleContainer.jsx';
 
 store.options.debug = debug
@@ -43,6 +44,11 @@ class Gdbgui extends React.PureComponent {
                 <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
                 <div id="middle">
+
+                    <div id='project_view' className='content'>
+                        <ProjectView />
+                    </div>
+
                     <div id='middle_left' className='content'>
                         <MiddleLeft />
                     </div>
@@ -69,11 +75,11 @@ class Gdbgui extends React.PureComponent {
     }
     componentDidMount(){
         // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
-        Split(['#middle_left', '#middle_right'], {
+        Split(['#project_view', '#middle_left', '#middle_right'], {
             gutterSize: 8,
             cursor: 'col-resize',
             direction: 'horizontal',  // horizontal makes a left/right pane, and a divider running vertically
-            sizes: [70, 30],
+            sizes: [20, 50, 30]
         })
 
         Split(['#middle', '#bottom'], {
