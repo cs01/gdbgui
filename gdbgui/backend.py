@@ -35,9 +35,9 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from SSLify import SSLify, get_ssl_context  # noqa
+from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
 from gdbgui import htmllistformatter, __version__  # noqa
-from statemanager import StateManager  # noqa
+from gdbgui.statemanager import StateManager  # noqa
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
