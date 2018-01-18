@@ -64,6 +64,7 @@ app.config['gdb_cmd_file'] = None
 app.config['show_gdbgui_upgrades'] = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['LLDB'] = False  # assume false, okay to change later
+app.config['project_home'] = None
 
 socketio = SocketIO()
 _state = StateManager(app.config)
