@@ -20,7 +20,25 @@ const ProjectViewApi = {
         $('#project_view>#content').jstree(true).search(text);
     },
     reveal : function() {
-        // TODO : show current file in project tree
+        let viewed_file = FileOps.get_viewed_file();
+        let $tree = $('#project_view>#content');
+        let jstree = $tree.jstree(true);
+        let node_to_select;
+        $(jstree.get_json($tree, {
+                flat: true,
+                no_state: true, no_li_attr: true, no_a_attr: true
+            }))
+            .each(function(index, value) {
+                let node_data = jstree.get_node(value).original;
+                if (node_data.filePath === viewed_file) {
+                    node_to_select = node_data.id;
+                    return false;
+                }
+            });
+        if (node_to_select != null) {
+            $tree.jstree("deselect_all")
+            $tree.jstree('select_node', node_to_select);
+        }
     }
 }
 
@@ -109,7 +127,8 @@ class ProjectView extends React.Component {
                 var relativePath = path.substring(project.home.length);
                 var parts = relativePath.match(/(\/[^\\/]+(\/+$)?)/g);
                 var childData = this.getNodeDataForPath(project_data, parts);
-                childData.fileIndex = pathKey;
+                childData.filePath = path;
+                childData.sourceFileIndex = pathKey;
             }
         }
         jsTree.settings.core.data = data;
@@ -212,16 +231,9 @@ class ProjectView extends React.Component {
         });
 
         jsTree.on("dblclick.project.jsTree", function (event) {
-            //var node = $(event.target).closest("li");
-            //alert("data = "+JSON.stringify(data));
-            //alert("node = "+node+"\nevent.target = "+event.target);
-            //var data = node.data("jstree");
-            //alert("data = "+JSON.stringify(data));
             var node_data = $(this).jstree().get_node(event.target).original;
-        //jsTree.on("select_node.jstree", function (e, data) {
-        //    var node_data = data.node.original;
-            if (node_data.fileIndex!=null) {
-                var file = store.get('source_file_paths')[node_data.fileIndex];
+            if (node_data.sourceFileIndex!=null) {
+                var file = store.get('source_file_paths')[node_data.sourceFileIndex];
                 if (file!=null)
                     FileOps.user_select_file_to_view(file, 1);
             }
