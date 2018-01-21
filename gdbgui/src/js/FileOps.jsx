@@ -128,6 +128,9 @@ const FileOps = {
         store.set('make_current_line_visible', true)
         store.set('source_code_infinite_scrolling', false)
     },
+    get_viewed_file: function(){
+        return store.get('fullname_to_render')
+    },
     _store_change_callback: function(keys){
         if(_.intersection(
             ['inferior_program',

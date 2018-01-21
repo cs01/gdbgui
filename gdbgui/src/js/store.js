@@ -314,7 +314,9 @@ const initial_store_data = {
 
     gdb_autocomplete_options: [],
 
-    gdb_console_entries: []
+    gdb_console_entries: [],
+    
+    project_home: initial_data.project_home
 }
 
 const KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE = [
