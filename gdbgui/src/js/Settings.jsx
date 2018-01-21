@@ -21,6 +21,7 @@ class Settings extends React.Component {
         'refresh_state_after_sending_console_command',
         'show_all_sent_commands_in_console',
         'highlight_source_code',
+        'project_home'
     ]
     constructor() {
         super()
@@ -68,6 +69,21 @@ class Settings extends React.Component {
     }
 
     static needs_to_update_gdbgui_version(){
+        // to actually check each value:
+
+        // let latest = store.get('latest_gdbgui_version').split('.')
+        // , cur = store.get('gdbgui_version').split('.')
+        // if(latest.length !== cur.length){
+        //     return true
+        // }
+        // for(let i in latest){
+        //     let latest_n = latest[i]
+        //     , actual_n = cur[i]
+        //     if(latest_n > actual_n){
+        //         return true
+        //     }
+        // }
+        // return false
         return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
     }
     static get_upgrade_text(){
@@ -150,7 +166,7 @@ class Settings extends React.Component {
             </td></tr>
 
             <tr><td>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>pyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
+            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>PyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
             </td></tr>
             </tbody>
         </table>)

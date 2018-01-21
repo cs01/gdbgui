@@ -151,7 +151,7 @@ const Actions = {
         GdbApi.run_gdb_command(`-target-attach ${user_input}`)
     },
     fetch_source_files(){
-        store.set('source_file_paths', [`${constants.ANIMATED_REFRESH_ICON} fetching source files for inferior program`])
+        store.set('source_file_paths', [])
         GdbApi.run_gdb_command('-file-list-exec-source-files')
     },
     view_file(fullname, line){

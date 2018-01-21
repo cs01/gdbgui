@@ -64,6 +64,7 @@ app.config['gdb_cmd_file'] = None
 app.config['show_gdbgui_upgrades'] = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['LLDB'] = False  # assume false, okay to change later
+app.config['project_home'] = None
 
 socketio = SocketIO()
 _state = StateManager(app.config)
@@ -348,7 +349,7 @@ def gdbgui():
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
     gdbpid = request.args.get('gdbpid', 0)
 
-    THEMES = ['default', 'monokai']
+    THEMES = ['monokai', 'light']
     initial_data = {
             'gdbgui_version': __version__,
             'interpreter': interpreter,
@@ -357,7 +358,8 @@ def gdbgui():
             'themes': THEMES,
             'signals': SIGNAL_NAME_TO_OBJ,
             'gdbpid': gdbpid,
-            'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else ''
+            'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else '',
+            'project_home': app.config['project_home']
         }
 
     return render_template('gdbgui.html',
@@ -595,6 +597,8 @@ def main():
         'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
     # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
+    parser.add_argument('--project', help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.')
+
     args = parser.parse_args()
 
     init_prefs()
@@ -621,6 +625,7 @@ def main():
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
     app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.auth)
+    app.config['project_home'] = args.project
 
     if args.license:
         save_license(args.license)

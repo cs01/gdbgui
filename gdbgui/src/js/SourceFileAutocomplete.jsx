@@ -11,6 +11,7 @@ import React from 'react';
  * which is really nice: https://leaverou.github.io/awesomplete/
  */
 
+const help_text = "Enter file path to view, press enter"
   /* global Awesomplete */
 class SourceFileAutocomplete extends React.Component {
     constructor(){
@@ -21,29 +22,29 @@ class SourceFileAutocomplete extends React.Component {
         if(_.intersection(['source_file_paths'], keys).length){
             if(!_.isEqual(this.awesomeplete_input._list, store.get('source_file_paths'))){
                 this.awesomeplete_input.list = store.get('source_file_paths')
-                this.awesomeplete_input.evaluate()
             }
         }
     }
     render(){
         return(
-                <div style={{width: '100%', flex: '1 0'}} className='flex'>
-                        <input id="source_file_input"
-                            autoComplete="off"
-                            placeholder="Enter source file path to view, or load binary then populate and select from dropdown"
-                            className="dropdown-input"
-                            onKeyUp={this.keyup_source_file_input.bind(this)}
-                            role='combobox'
-                            ref={(el)=>this.html_input = el}
-                            style={{'width': '100%'}}
-                        />
-                        <button id="source_file_dropdown_button"
-                            style={{float: 'right'}}
-                            type="button"
-                            className="dropdown-btn"
-                            onClick={this.onclick_dropdown.bind(this)}
-                        ><span className="caret" />
-                        </button>
+                <div style={{width: '100%', flex: '1 0', 'padding': '5px'}} className='flex'>
+                    <input id="source_file_input"
+                        autoComplete="off"
+                        placeholder={help_text}
+                        title={help_text}
+                        className="dropdown-input"
+                        onKeyUp={this.keyup_source_file_input.bind(this)}
+                        role='combobox'
+                        ref={(el)=>this.html_input = el}
+                        style={{'width': '100%'}}
+                    />
+                    <button id="source_file_dropdown_button"
+                        style={{float: 'right'}}
+                        type="button"
+                        className="dropdown-btn"
+                        onClick={this.onclick_dropdown.bind(this)}
+                    ><span className="caret" />
+                    </button>
                 </div>
         )
     }

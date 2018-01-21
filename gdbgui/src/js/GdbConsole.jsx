@@ -74,11 +74,13 @@ class GdbConsole extends React.Component {
                     )
                 case constants.console_entry_type.UPGRADE_GDBGUI:
                     return (
-                        <div style={{    color: 'orange',
-                            minHeight: '1em',
-                            margin: '2px',
-                            whiteSpace: 'pre',
-                            fontFamily: 'arial'}}>
+                        <div
+                            key={index}
+                            style={{    color: 'orange',
+                                minHeight: '1em',
+                                margin: '2px',
+                                whiteSpace: 'pre',
+                                fontFamily: 'arial'}}>
                             <span>Thank you for using gdbgui basic! Enter gdbgui license number to support the project and remove this message.  </span>
                             <a className='btn btn-warning btn-xs'
                                 style={{color: 'black', fontWeight: 'bold'}}
