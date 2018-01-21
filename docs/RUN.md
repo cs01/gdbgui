@@ -1,10 +1,12 @@
 ### Running Locally
 
-These are all valid ways to launch gdbgui. See more examples [here](examples.html).
+After install gdbgui, you can launch it like so:
 
 * `gdbgui`
-* `gdbgui ./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
-* `gdbgui --args ./mybinary -myarg value -flag1 -flag2` (note the quotes around the arguments)
+* `gdbgui "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
+* `gdbgui --args "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
+
+See more examples when launching [here](examples.html).
 
 A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).
 

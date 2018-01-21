@@ -314,7 +314,10 @@ const initial_store_data = {
 
     gdb_autocomplete_options: [],
 
-    gdb_console_entries: []
+    gdb_console_entries: [],
+
+    show_filesystem: false,
+    middle_panes_split_obj: {},
 }
 
 const KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE = [
