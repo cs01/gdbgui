@@ -13,7 +13,7 @@ Next, Step, Return, Next Instruction, Step Instruction.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png)
 
-If using an Intel CPU and running Linux, gdbgui also works in conjunction with [rr](http://rr-project.org/) to let you debug in reverse in the [pro version](http://gdbgui.com).
+If using an Intel CPU and running Linux, gdbgui also works in conjunction with [rr](http://rr-project.org/) to let you debug in reverse.
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/reverse_debugging.png)
 
 ## Stack/Threads

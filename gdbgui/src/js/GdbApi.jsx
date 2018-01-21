@@ -73,6 +73,7 @@ const GdbApi = {
             // show modal
             Actions.show_modal('', <span>The gdbgui server has shutdown. This tab will no longer function as expected.</span>)
             debug_print('disconnected')
+            window.location.reload(true);
         });
     },
     _waiting_for_response_timeout: null,

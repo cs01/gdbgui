@@ -22,15 +22,13 @@ import Settings from './Settings.jsx';
 import Modal from './GdbguiModal.jsx';
 import HoverVar from './HoverVar.jsx';
 import RightSidebar from './RightSidebar.jsx';
-import ProjectView from './ProjectView.jsx';
+import FoldersView from './FoldersView.jsx';
 import GdbConsoleContainer from './GdbConsoleContainer.jsx';
 
 store.options.debug = debug
 store.initialize(initial_store_data)
 // make this visible in the console
 window.store = store
-
-let hasProjectNature = store.get('project_home') != null;
 
 class Gdbgui extends React.PureComponent {
     componentWillMount(){
@@ -47,15 +45,15 @@ class Gdbgui extends React.PureComponent {
 
                 <div id="middle">
 
-                    <div id='project_view' className='content' >
-                        <ProjectView />
+                    <div id='folders_view' className='content' style={{backgroundColor: 'rgb(33, 37, 43)'}}>
+                        <FoldersView project_home={initial_data.project_home} />
                     </div>
 
-                    <div id='middle_left' className='content'>
+                    <div id='source_code_view' className='content'>
                         <MiddleLeft />
                     </div>
 
-                    <div id='middle_right' className='content' style={{overflowX: 'visible'}}>
+                    <div id='controls_sidebar' className='content' style={{overflowX: 'visible'}}>
                         <RightSidebar signals={initial_data.signals} debug={debug} />
                     </div>
                 </div>
@@ -64,7 +62,7 @@ class Gdbgui extends React.PureComponent {
                 <div id="bottom" className="split split-horizontal" style={{paddingBottom: '90px', width: '100%'}} >
                   <div id="bottom_content"
                         className="split content"
-                        style={{paddingBottom: '30px' /* for height of input */}}>
+                        style={{paddingBottom: '0px' /* for height of input */}}>
                       <GdbConsoleContainer />
                   </div>
                 </div>
@@ -78,23 +76,12 @@ class Gdbgui extends React.PureComponent {
     componentDidMount(){
         // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
 
-        let panes, panesSizes;
-
-        if (hasProjectNature) {
-            panes = ['#project_view', '#middle_left', '#middle_right'];
-            panesSizes = [20, 50, 30];
-        }
-        else {
-            $('#project_view').css('display', 'none');
-            panes = ['#middle_left', '#middle_right'];
-            panesSizes = [70, 30];
-        }
-
-        Split(panes, {
+        let middle_panes_split_obj = Split(['#folders_view', '#source_code_view', '#controls_sidebar'], {
             gutterSize: 8,
+            minSize: 100,
             cursor: 'col-resize',
             direction: 'horizontal',  // horizontal makes a left/right pane, and a divider running vertically
-            sizes: panesSizes
+            sizes: store.get('show_filesystem') ? [30, 40, 29] : [0, 70, 29]  // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
         })
 
         Split(['#middle', '#bottom'], {
@@ -103,6 +90,8 @@ class Gdbgui extends React.PureComponent {
             direction: 'vertical',  // vertical makes a top and bottom pane, and a divider running horizontally
             sizes: [70, 30],
         })
+
+        store.set('middle_panes_split_obj', middle_panes_split_obj)
     }
 
 }

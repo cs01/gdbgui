@@ -151,7 +151,7 @@ class Settings extends React.Component {
             </td></tr>
 
             <tr><td>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>pyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
+            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>PyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
             </td></tr>
             </tbody>
         </table>)

@@ -349,7 +349,7 @@ def gdbgui():
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
     gdbpid = request.args.get('gdbpid', 0)
 
-    THEMES = ['default', 'monokai']
+    THEMES = ['monokai', 'light']
     initial_data = {
             'gdbgui_version': __version__,
             'interpreter': interpreter,
@@ -597,7 +597,7 @@ def main():
         'openssl req -newkey rsa:2048 -nodes -keyout host.key -x509 -days 365 -out host.cert')
     # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
-    parser.add_argument('--project', help='Set the project home.')
+    parser.add_argument('--project', help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.')
 
     args = parser.parse_args()
 

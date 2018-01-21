@@ -2,6 +2,7 @@ import React from 'react';
 import constants from './constants.js';
 import {store} from './store.js';
 import {FileLink} from './Links.jsx';
+import FileOps from './FileOps.jsx';
 
 class SourceCodeHeading extends React.Component {
     store_keys = [
@@ -35,10 +36,17 @@ class SourceCodeHeading extends React.Component {
         }else{
             line = this.state.line_of_source_to_flash
         }
+
+        let num_lines = 0
+        if(this.state.fullname_to_render && FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)){
+            num_lines = FileOps.get_num_lines_in_file(this.state.fullname_to_render)
+        }
         return(<FileLink
             fullname={this.state.fullname_to_render}
             file={this.state.fullname_to_render}
-            line={line} />)
+            line={line}
+            num_lines={num_lines}
+            />)
     }
 }
 

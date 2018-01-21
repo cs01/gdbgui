@@ -124,7 +124,7 @@ class InferiorProgramInfo extends React.Component {
                                 id='step_instruction_button'
                                 style={{marginLeft: '5px'}}
                                 type='button'
-                                title={`Send signal to pid ${this.state.inferior_pid}`}
+                                title={`Send signal to pid ${this.state.inferior_pid}. Note: signal is sent to machine running the gdbgui, so if running gdbserver remotely this will not work.`}
                                 onClick={() => this.send_signal(this.state.selected_inferior_signal, this.state.inferior_pid)}
                             >
                                 send to inferior

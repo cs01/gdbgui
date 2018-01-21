@@ -109,9 +109,6 @@ class Registers extends React.Component {
                     , disp_dec_val = ''
                     , register_description = register_descriptions[name] || ''
 
-                if(name === 'ymm0h'){
-                    console.log(name)
-                }
                 if (obj){
                     hex_val_raw = obj['value']
 

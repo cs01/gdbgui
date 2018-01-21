@@ -19,7 +19,7 @@ class FileLink extends React.Component {
             cls = 'pointer'
         }
         return (<span onClick={onclick} className={cls} title={`click to view ${this.props.fullname}`}>
-                    {this.props.file}{sep}{line}
+                    {this.props.file}{sep}{line} {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ''}
                 </span>)
     }
 }

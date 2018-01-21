@@ -1,7 +1,11 @@
 # gdbgui release history
 
-## dev
-Changes that are in master but have not yet been pushed to PyPI.
+## 0.10.2.0
+* Add folders view, rearrange layout (@martin-der)
+* Add settings cog button
+* Add message when sending signal to inferior process (#156)
+* Change default theme to monokai, rename 'default' theme to 'light'
+* Minor bugfixes
 
 ## 0.10.1.0
 * Display descriptions of registers
