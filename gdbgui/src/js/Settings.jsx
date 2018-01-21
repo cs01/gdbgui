@@ -69,6 +69,21 @@ class Settings extends React.Component {
     }
 
     static needs_to_update_gdbgui_version(){
+        // to actually check each value:
+
+        // let latest = store.get('latest_gdbgui_version').split('.')
+        // , cur = store.get('gdbgui_version').split('.')
+        // if(latest.length !== cur.length){
+        //     return true
+        // }
+        // for(let i in latest){
+        //     let latest_n = latest[i]
+        //     , actual_n = cur[i]
+        //     if(latest_n > actual_n){
+        //         return true
+        //     }
+        // }
+        // return false
         return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
     }
     static get_upgrade_text(){

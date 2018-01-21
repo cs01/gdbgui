@@ -33,8 +33,9 @@ int main(int argc, char **argv) {
 
   int retval = 1;
 
-  struct mystruct_t s; /* sizeof(struct mystruct_t) bytes are allocated for s,
-                          but still contain garbage */
+  /* bytes are allocated for s,
+  but still contain garbage */
+  struct mystruct_t s;
   s.value = 100;
   s.string = "pass";
   s.substruct.dbl = 567.8;
