@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## 0.10.2.1
+* Add link for fix for macOS users
+* Update version of React to 16.2
+* Remove unused links
+
 ## 0.10.2.0
 * Add folders view, rearrange layout (@martin-der)
 * Add settings cog button

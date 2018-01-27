@@ -4,6 +4,7 @@
  * to update.
  */
 
+import React from 'react';
 import {store} from './store.js';
 import GdbMiOutput from './GdbMiOutput.jsx';
 import Breakpoints from './Breakpoints.jsx';
@@ -76,6 +77,18 @@ const process_gdb_response = function(response_array){
                 continue
             }else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT){
                 FileOps.fetch_disassembly_for_missing_file_failed()
+            }else if(r.payload && r.payload.msg &&
+              r.payload.msg.startsWith('Unable to find Mach task port')){
+              Actions.add_gdb_response_to_console(r)
+              Actions.add_console_entries(
+                <React.Fragment>
+                <span>Follow </span>
+                <a href='https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648'>these instructions
+                </a>
+                <span> to fix these error</span>
+              </React.Fragment>
+              , constants.console_entry_type.GDBGUI_OUTPUT_RAW)
+              continue
             }
         }
 
