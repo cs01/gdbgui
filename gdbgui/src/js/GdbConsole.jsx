@@ -24,15 +24,27 @@ class GdbConsole extends React.Component {
 
     render_entries(console_entries){
         return console_entries.map((entry, index) => {
-            const escaped_value = pre_escape(entry.value)
             switch (entry.type) {
-                case constants.console_entry_type.STD_OUT:
+                case constants.console_entry_type.STD_OUT:{
+
+                    let escaped_value = pre_escape(entry.value)
                     return <p key={index} className='otpt'>{escaped_value}</p>
-                case constants.console_entry_type.STD_ERR:
+                  }
+                case constants.console_entry_type.STD_ERR:{
+
+                    let escaped_value = pre_escape(entry.value)
                     return <p key={index} className='otpt stderr'>{escaped_value}</p>
-                case constants.console_entry_type.GDBGUI_OUTPUT:
+                  }
+                case constants.console_entry_type.GDBGUI_OUTPUT:{
+                    let escaped_value = pre_escape(entry.value)
                     return <p key={index} className='gdbguiConsoleOutput' title='gdbgui output'>{escaped_value}</p>
-                case constants.console_entry_type.SENT_COMMAND:
+                  }
+                case constants.console_entry_type.GDBGUI_OUTPUT_RAW:{
+                    return <p key={index} className='gdbguiConsoleOutput' title='gdbgui output'>{entry.value}</p>
+                  }
+                case constants.console_entry_type.SENT_COMMAND:{
+
+                    let escaped_value = pre_escape(entry.value)
                     return (
                         <p
                             key={index}
@@ -42,7 +54,9 @@ class GdbConsole extends React.Component {
                             {escaped_value}
                         </p>
                     )
-                case constants.console_entry_type.AUTOCOMPLETE_OPTION:
+                  }
+                case constants.console_entry_type.AUTOCOMPLETE_OPTION:{
+                    let escaped_value = pre_escape(entry.value)
                     return (
                         <p
                             key={index}
@@ -58,7 +72,9 @@ class GdbConsole extends React.Component {
                             </span>
                         </p>
                     )
-                case constants.console_entry_type.BACKTRACE_LINK:
+                }
+                case constants.console_entry_type.BACKTRACE_LINK:{
+                    let escaped_value = pre_escape(entry.value)
                     return (
                         <div
                             key={index}
@@ -72,7 +88,8 @@ class GdbConsole extends React.Component {
                             </a>
                         </div>
                     )
-                case constants.console_entry_type.UPGRADE_GDBGUI:
+                  }
+                case constants.console_entry_type.UPGRADE_GDBGUI:{
                     return (
                         <div
                             key={index}
@@ -87,6 +104,7 @@ class GdbConsole extends React.Component {
                                 href='https://grassfedcode.onfastspring.com/gdbgui-premium'>upgrade now</a>
                         </div>
                     )
+                }
             }
         })
 
@@ -107,4 +125,3 @@ class GdbConsole extends React.Component {
 }
 
 export default GdbConsole
-
