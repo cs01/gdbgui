@@ -79,6 +79,20 @@ td{
 .pointer{
     cursor: pointer;
 }
+.collapser:hover .rowresizer{
+  cursor: row-resize;
+  height: 10px;
+  width: 100%;
+  background-color: white;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-image: url('/static/vendor/images/splitjs/grips/horizontal.png');
+}
+.collapser .rowresizer{
+  height: 10px;
+  width: 100%;
+  background-color: white;
+}
 .sent_command{
     color: #00d8ff;
 }
@@ -422,4 +436,3 @@ ul.varUL{
         from { transform: scale(1) rotate(0deg);}
         to { transform: scale(1) rotate(360deg);}
 }
-

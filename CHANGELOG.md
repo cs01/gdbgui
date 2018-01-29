@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.10.3.0
+* Added resizer buttons to components on right pane
+
 ## 0.10.2.1
 * Add link for fix for macOS users
 * Update version of React to 16.2
