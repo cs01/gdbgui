@@ -53,7 +53,10 @@ class Gdbgui extends React.PureComponent {
                         <MiddleLeft />
                     </div>
 
-                    <div id='controls_sidebar' className='content' style={{overflowX: 'visible'}}>
+                    <div id='controls_sidebar'
+                      className='content'
+                      style={{overflowX: 'visible'}}
+                      >
                         <RightSidebar signals={initial_data.signals} debug={debug} />
                     </div>
                 </div>
