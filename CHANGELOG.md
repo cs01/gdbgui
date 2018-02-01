@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.11.0.0
+* Replace `--auth` cli option with `--user` and `--password`
+
 ## 0.10.3.0
 * Added resizer buttons to components on right pane
 

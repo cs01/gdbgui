@@ -15,7 +15,6 @@ import sys
 import pygdbmi
 import socket
 from werkzeug.security import pbkdf2_hex
-from getpass import getpass
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
 from flask import Flask, request, Response, render_template, jsonify, redirect
@@ -507,18 +506,10 @@ def read_file():
         return client_error({'message': 'File not found: %s' % path})
 
 
-def get_user_input_from_stdin(prompt):
-    """Wrapper for Python 2/3 compatibility"""
-    text = ''
-    while not text:
-        try:
-            text = raw_input(prompt)
-        except NameError:
-            text = input(prompt)
-    return text
-
-
-def get_gdbgui_auth_user_credentials(auth_file, auth):
+def get_gdbgui_auth_user_credentials(auth_file, user, password):
+    if auth_file and (user or password):
+        print('Cannot supply auth file and username/password')
+        exit(1)
     if auth_file:
         if os.path.isfile(auth_file):
             with open(auth_file, 'r') as authFile:
@@ -531,13 +522,10 @@ def get_gdbgui_auth_user_credentials(auth_file, auth):
         else:
             print('Auth file "%s" for HTTP Basic auth not found' % auth_file)
             exit(1)
-    elif auth:
-        username = get_user_input_from_stdin('Enter username: ')
-        password = None
-        while not password:
-            password = getpass()
-        return [username, password]
-    return None
+    elif user and password:
+        return [user, password]
+    else:
+        return None
 
 
 def init_prefs():
@@ -578,13 +566,12 @@ def main():
     parser.add_argument('-x', '--gdb_cmd_file', help='Execute GDB commands from file.')
     parser.add_argument('--args', nargs='+', help='(Optional) The binary and arguments to run in gdb. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"')
 
-    parser.add_argument('--auth', action='store_true', help='(Optional) Require authentication before accessing gdbgui in the browser. '
-        'Prompt will be displayed in terminal asking for username and password before running server.')
-
     parser.add_argument('--auth-file', help='(Optional) Require authentication before accessing gdbgui in the browser. '
         'Specify a file that contains the HTTP Basic auth username and password separate by newline. '
         'NOTE: https is enabled by provided an ssl and certificate')
 
+    parser.add_argument('--user', help='(Optional) Username when authenticating')
+    parser.add_argument('--password', help='(Optional) Password when authenticating')
     parser.add_argument('--license', help='(Optional) Store gdbgui premium license key.')
 
     parser.add_argument('--key', default=None, help='SSL private key. '
@@ -624,7 +611,7 @@ def main():
     app.config['gdb_path'] = args.gdb
     app.config['gdb_cmd_file'] = args.gdb_cmd_file
     app.config['show_gdbgui_upgrades'] = not args.hide_gdbgui_upgrades
-    app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.auth)
+    app.config['gdbgui_auth_user_credentials'] = get_gdbgui_auth_user_credentials(args.auth_file, args.user, args.password)
     app.config['project_home'] = args.project
 
     if args.license:
