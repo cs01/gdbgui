@@ -6,6 +6,7 @@ https://github.com/cs01/gdbgui
 """
 
 import os
+import binascii
 import argparse
 import signal
 import webbrowser
@@ -17,7 +18,7 @@ import socket
 from werkzeug.security import pbkdf2_hex
 from pygments.lexers import get_lexer_for_filename
 from distutils.spawn import find_executable
-from flask import Flask, request, Response, render_template, jsonify, redirect
+from flask import Flask, session, request, Response, render_template, jsonify, redirect, abort
 from functools import wraps
 from flask_socketio import SocketIO, emit
 from flask_compress import Compress
@@ -64,6 +65,64 @@ app.config['show_gdbgui_upgrades'] = True
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.config['LLDB'] = False  # assume false, okay to change later
 app.config['project_home'] = None
+app.secret_key = binascii.hexlify(os.urandom(24)).decode('utf-8')
+
+
+@app.before_request
+def csrf_protect_all_post_and_cross_origin_requests():
+    """returns None upon success"""
+    success = None
+
+    if is_cross_origin(request):
+        dbprint('Received cross origin request. Aborting')
+        abort(403)
+    if request.method in ['POST', 'PUT']:
+        token = session.get('csrf_token')
+        if token == request.form.get('csrf_token'):
+            return success
+        elif token == request.environ.get('HTTP_X_CSRFTOKEN'):
+            return success
+        else:
+            dbprint('Received invalid csrf token due. Aborting')
+            abort(403)
+
+
+def is_cross_origin(request):
+    """Compare headers HOST and ORIGIN. Remove protocol prefix from ORIGIN, then
+    compare. Return true if they are not equal
+    example HTTP_HOST: '127.0.0.1:5000'
+    example HTTP_ORIGIN: 'http://127.0.0.1:5000'
+    """
+    origin = request.environ.get('HTTP_ORIGIN')
+    host = request.environ.get('HTTP_HOST')
+    if origin is None:
+        # origin is sometimes omitted by the browser when origin and host are equal
+        return False
+    if origin.startswith('http://'):
+        origin = origin.replace('http://', '')
+    elif origin.startswith('https://'):
+        origin = origin.replace('https://', '')
+    return host != origin
+
+
+def csrf_protect(f):
+    """A decorator to add csrf protection by validing the X_CSRFTOKEN
+    field in request header"""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        token = session.get('csrf_token', None)
+        if token is None or token != request.environ.get('HTTP_X_CSRFTOKEN'):
+            dbprint('Received invalid csrf token. Aborting')
+            abort(403)
+        # call original request handler
+        return f(*args, **kwargs)
+    return wrapper
+
+
+def add_csrf_token_to_session():
+    if 'csrf_token' not in session:
+        session['csrf_token'] = binascii.hexlify(os.urandom(20)).decode('utf-8')
+
 
 socketio = SocketIO()
 _state = StateManager(app.config)
@@ -175,11 +234,25 @@ def colorize(text):
 
 @socketio.on('connect', namespace='/gdb_listener')
 def client_connected():
-    dbprint('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
+    if is_cross_origin(request):
+        dbprint('Received cross origin request. Aborting')
+        abort(403)
 
-    # see if user wants to connect to existing gdbpid
+    csrf_token = request.args.get('csrf_token')
+    if csrf_token is None:
+        dbprint('Recieved invalid csrf token')
+        emit('server_error', {'message': 'Recieved invalid csrf token'})
+        return
+    elif csrf_token != session.get('csrf_token'):
+        dbprint('Recieved invalid csrf token %s (expected %s)' % (csrf_token, str(session.get('csrf_token'))))
+        emit('server_error', {'message': 'Session expired. Please refresh this webpage.'})
+        return
+
+    # see if user wants to connect to existing gdb pid
     desired_gdbpid = int(request.args.get('gdbpid', 0))
+
     payload = _state.connect_client(request.sid, desired_gdbpid)
+    dbprint('Client websocket connected in async mode "%s", id %s' % (socketio.async_mode, request.sid))
 
     # tell the client browser tab which gdb pid is a dedicated to it
     emit('gdb_pid', payload)
@@ -231,9 +304,9 @@ def send_msg_to_clients(client_ids, msg, error=False):
         socketio.emit('gdb_response', response, namespace='/gdb_listener', room=client_id)
 
 
-@app.route('/remove_gdb_controller')
+@app.route('/remove_gdb_controller', methods=['POST'])
 def remove_gdb_controller():
-    gdbpid = int(request.args.get('gdbpid'))
+    gdbpid = int(request.form.get('gdbpid'))
 
     orphaned_client_ids = _state.remove_gdb_controller_by_pid(gdbpid)
     num_removed = len(orphaned_client_ids)
@@ -341,12 +414,14 @@ def authenticate(f):
     return wrapper
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 @authenticate
 def gdbgui():
     """Render the main gdbgui interface"""
     interpreter = 'lldb' if app.config['LLDB'] else 'gdb'
     gdbpid = request.args.get('gdbpid', 0)
+
+    add_csrf_token_to_session()
 
     THEMES = ['monokai', 'light']
     initial_data = {
@@ -358,7 +433,8 @@ def gdbgui():
             'signals': SIGNAL_NAME_TO_OBJ,
             'gdbpid': gdbpid,
             'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else '',
-            'project_home': app.config['project_home']
+            'project_home': app.config['project_home'],
+            'csrf_token': session['csrf_token'],
         }
 
     return render_template('gdbgui.html',
@@ -369,15 +445,15 @@ def gdbgui():
         themes=THEMES)
 
 
-@app.route('/send_signal_to_pid')
+@app.route('/send_signal_to_pid', methods=['POST'])
 def send_signal_to_pid():
-    signal_name = request.args.get('signal_name', '')
+    signal_name = request.form.get('signal_name', '')
 
     signal_obj = SIGNAL_NAME_TO_OBJ.get(signal_name.upper())
     if signal_obj is None:
         raise ValueError('no such signal %s' % signal_name)
 
-    pid_str = str(request.args.get('pid'))
+    pid_str = str(request.form.get('pid'))
     try:
         pid_int = int(pid_str)
     except ValueError:
@@ -387,22 +463,24 @@ def send_signal_to_pid():
     return jsonify({'message': 'sent signal %s (%s) to process id %s' % (signal_name, signal_obj.value, pid_str)})
 
 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET'])
+@authenticate
 def dashboard():
+    add_csrf_token_to_session()
+
     """display a dashboard with a list of all running gdb processes
     and ability to kill them, or open a new tab to work with that
     GdbController instance"""
-    return render_template('dashboard.html', processes=_state.get_dashboard_data())
+    return render_template('dashboard.html',
+        processes=_state.get_dashboard_data(),
+        csrf_token=session['csrf_token'])
 
 
-@app.route('/shutdown')
+@app.route('/shutdown', methods=['GET'])
+@authenticate
 def shutdown_webview():
-    return render_template('donate.html', debug=app.debug)
-
-
-@app.route('/donate')
-def donate():
-    return render_template('donate.html')
+    add_csrf_token_to_session()
+    return render_template('donate.html', debug=app.debug, csrf_token=session['csrf_token'])
 
 
 @app.route('/help')
@@ -410,7 +488,7 @@ def help():
     return redirect('https://github.com/cs01/gdbgui/blob/master/HELP.md')
 
 
-@app.route('/_shutdown')
+@app.route('/_shutdown', methods=['POST'])
 def _shutdown():
     sys.stdout.write('\ngdbgui has exited\n')
     try:
@@ -428,7 +506,8 @@ def _shutdown():
     return jsonify({})
 
 
-@app.route('/get_last_modified_unix_sec')
+@app.route('/get_last_modified_unix_sec', methods=['GET'])
+@csrf_protect
 def get_last_modified_unix_sec():
     """Get last modified unix time for a given file"""
     path = request.args.get('path')
@@ -444,7 +523,8 @@ def get_last_modified_unix_sec():
         return client_error({'message': 'File not found: %s' % path, 'path': path})
 
 
-@app.route('/read_file')
+@app.route('/read_file', methods=['GET'])
+@csrf_protect
 def read_file():
     """Read a file and return its contents as an array"""
     path = request.args.get('path')

@@ -33,7 +33,10 @@ const GdbApi = {
         const TIMEOUT_MIN = 5
         /* global io */
         /* global initial_data */
-        GdbApi.socket = io.connect(`/gdb_listener`, {timeout: TIMEOUT_MIN * 60 * 1000, query: `gdbpid=${initial_data.gdbpid}`});
+        GdbApi.socket = io.connect(`/gdb_listener`, {
+                timeout: TIMEOUT_MIN * 60 * 1000,
+                query: `csrf_token=${initial_data.csrf_token}&gdbpid=${initial_data.gdbpid}`
+        });
 
 
         GdbApi.socket.on('connect', function(){
@@ -48,6 +51,10 @@ const GdbApi = {
 
         GdbApi.socket.on('error_running_gdb_command', function(data) {
             Actions.add_console_entries(`Error occurred on server when running gdb command: ${data.message}`, constants.console_entry_type.STD_ERR)
+        });
+
+        GdbApi.socket.on('server_error', function(data) {
+            Actions.add_console_entries(`Server message: ${data.message}`, constants.console_entry_type.STD_ERR)
         });
 
         GdbApi.socket.on('gdb_pid', function(gdb_pid_obj) {
@@ -274,6 +281,9 @@ const GdbApi = {
     },
     get_inferior_binary_last_modified_unix_sec(path){
         $.ajax({
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("x-csrftoken", initial_data.csrf_token);
+            },
             url: "/get_last_modified_unix_sec",
             cache: false,
             method: 'GET',
