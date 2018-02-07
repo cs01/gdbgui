@@ -85,7 +85,7 @@ const process_gdb_response = function(response_array){
                 <span>Follow </span>
                 <a href='https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648'>these instructions
                 </a>
-                <span> to fix these error</span>
+                <span> to fix this error</span>
               </React.Fragment>
               , constants.console_entry_type.GDBGUI_OUTPUT_RAW)
               continue

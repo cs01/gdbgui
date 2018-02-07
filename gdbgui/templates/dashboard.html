@@ -47,8 +47,8 @@
         $.ajax({
             url: "/remove_gdb_controller",
             cache: false,
-            type: 'GET',
-            data: {gdbpid: gdbpid, signal_name: 'sigkill'},
+            type: 'POST',
+            data: {gdbpid: gdbpid, signal_name: 'sigkill', csrf_token: {{ csrf_token | tojson }} },
             success: function(response){
                 setTimeout(()=>window.location.reload(), 500)
             },

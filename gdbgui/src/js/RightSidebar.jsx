@@ -140,11 +140,11 @@ class RightSidebar extends React.Component {
         }
 
         return (
-            <div
-              className='content'
-              onMouseUp={onmouseup_in_parent_callback}
-              onMouseMove={onmousemove_in_parent_callback}
-            >
+          <div
+            className='content'
+            onMouseUp={onmouseup_in_parent_callback}
+            onMouseMove={onmousemove_in_parent_callback}
+          >
             <Collapser title='signals'
                 content={<InferiorProgramInfo
                 signals={this.props.signals} />}
