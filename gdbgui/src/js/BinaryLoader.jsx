@@ -112,7 +112,12 @@ class BinaryLoader extends React.Component {
         }
     }
     onchange_user_inpu(e){
-        this.setState({'user_input': e.target.value})
+        if(initial_data.using_windows){
+            // replace backslashes with forward slashes when using windows
+            this.setState({'user_input': e.target.value.replace(/\\/g, '/')})
+        }else{
+            this.setState({'user_input': e.target.value})
+        }
     }
     click_set_target_app(){
         this.set_target_app()

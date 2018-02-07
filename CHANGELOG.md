@@ -1,5 +1,9 @@
 # gdbgui release history
 
+## 0.11.1.0
+* Add csrf and cross origin protection
+* Convert backslashes to forward slashes when entering windows binary paths (#167)
+
 ## 0.11.0.0
 * Replace `--auth` cli option with `--user` and `--password`
 

@@ -435,6 +435,7 @@ def gdbgui():
             'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else '',
             'project_home': app.config['project_home'],
             'csrf_token': session['csrf_token'],
+            'using_windows': USING_WINDOWS,
         }
 
     return render_template('gdbgui.html',
