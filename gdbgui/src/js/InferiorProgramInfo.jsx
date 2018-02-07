@@ -35,23 +35,26 @@ class InferiorProgramInfo extends React.Component {
 
     send_signal(signal_name, pid){
         $.ajax({
-            url: "/send_signal_to_pid",
-            cache: false,
-            type: 'GET',
-            data: {signal_name: signal_name, pid: pid},
-            success: function(response){
-                Actions.add_console_entries(response.message, constants.console_entry_type.GDBGUI_OUTPUT)
-            },
-            error: function(response){
-                if (response.responseJSON && response.responseJSON.message){
-                    Actions.add_console_entries(_.escape(response.responseJSON.message), constants.console_entry_type.STD_ERR)
-                }else{
-                    Actions.add_console_entries(`${response.statusText} (${response.status} error)`, constants.console_entry_type.STD_ERR)
-                }
-                console.error(response)
-            },
-            complete: function(){
-            }
+          beforeSend: function(xhr) {
+              xhr.setRequestHeader("x-csrftoken", initial_data.csrf_token);  /* global initial_data */
+          },
+          url: "/send_signal_to_pid",
+          cache: false,
+          type: 'POST',
+          data: {signal_name: signal_name, pid: pid},
+          success: function(response){
+              Actions.add_console_entries(response.message, constants.console_entry_type.GDBGUI_OUTPUT)
+          },
+          error: function(response){
+              if (response.responseJSON && response.responseJSON.message){
+                  Actions.add_console_entries(_.escape(response.responseJSON.message), constants.console_entry_type.STD_ERR)
+              }else{
+                  Actions.add_console_entries(`${response.statusText} (${response.status} error)`, constants.console_entry_type.STD_ERR)
+              }
+              console.error(response)
+          },
+          complete: function(){
+          }
         })
     }
 

@@ -1,8 +1,8 @@
 ### Running Locally
 
-After install gdbgui, you can launch it like so:
+After downloading gdbgui, you can launch it like so:
 
-* `gdbgui`
+* `gdbgui` (or whatever the binary name is, i.e. `gdbgui_0.10.0.0`)
 * `gdbgui "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
 * `gdbgui --args "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
 
@@ -10,13 +10,12 @@ See more examples when launching [here](examples.html).
 
 A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).
 
-#### Step-by-step
-
-* Type the path to the executable in the input at the top (next to "Load the Binary and Args"). The executable should already exist and have been compiled with the `-g` flag.
-* Click Load the Binary and Args. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically (this can be changed in settings).
-* The line of source code corresponding to main will display if the program was compiled with debug symbols (i.e. -g).
+Now that gdbgui is open, you can interactively run a program with it.
+* Type the path to the executable in the input at the top (next to "Load Binary"). The executable should already exist and have been compiled with the `-g` flag.
+* Click `Load Binary`. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically. This can be changed in settings if you prefer not to do this.
+* The line of source code corresponding to main will display if the program was compiled with the `-g` flag debug symbols.
 * Click the Run button, which is on the top right and looks like a circular arrow.
-* Step through the program by clicking the Next, Step, Continue, etc. as desired. These are also on the top right.
+* Step through the program by clicking the Next, Step, Continue, icons as desired. These are also on the top right.
 
 For a list of gdbgui arguments, see the Arguments section below or type gdbgui --help.
 
