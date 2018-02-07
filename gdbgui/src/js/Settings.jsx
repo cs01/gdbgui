@@ -67,43 +67,6 @@ class Settings extends React.Component {
         }
         return applicable_state
     }
-
-    static needs_to_update_gdbgui_version(){
-        // to actually check each value:
-
-        // let latest = store.get('latest_gdbgui_version').split('.')
-        // , cur = store.get('gdbgui_version').split('.')
-        // if(latest.length !== cur.length){
-        //     return true
-        // }
-        // for(let i in latest){
-        //     let latest_n = latest[i]
-        //     , actual_n = cur[i]
-        //     if(latest_n > actual_n){
-        //         return true
-        //     }
-        // }
-        // return false
-        return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
-    }
-    static get_upgrade_text(){
-        if(Settings.needs_to_update_gdbgui_version()){
-            return(
-            <div>
-                gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
-                <p/><p/>
-                To upgrade, run<p/>
-                <span className='monospace bold'>[sudo] pip install gdbgui --upgrade</span><p/>
-                or see <a href='https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md'>installation instructions</a> for more detailed instructions.
-                <p/><p/>
-                <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
-            </div>
-            )
-        }else{
-            return <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
-        }
-    }
-
     static toggle_key(key){
         store.set(key, !store.get(key))
         localStorage.setItem(key, JSON.stringify(store.get(key)))
@@ -153,21 +116,6 @@ class Settings extends React.Component {
                 }>{store.get('themes').map(t => <option key={t} >{t}</option>)}</select>
             </td></tr>
 
-            <tr><td>
-                gdb version: {store.get('gdb_version')}
-            </td></tr>
-
-            <tr><td>
-                gdb pid for this tab: {store.get('gdb_pid')}
-            </td></tr>
-
-            <tr><td>
-                {Settings.get_upgrade_text()}
-            </td></tr>
-
-            <tr><td>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>PyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
-            </td></tr>
             </tbody>
         </table>)
     }

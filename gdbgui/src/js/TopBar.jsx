@@ -31,21 +31,117 @@ let click_shutdown_button = function(){
     }
 }
 
+let show_license = function(){
+  Actions.show_modal('gdbgui license',
+    <React.Fragment>
+      <a href='https://github.com/cs01/gdbgui/blob/master/LICENSE'>
+      GNU General Public License v3.0
+    </a>
+    <p>
+    Copyright © Chad Smith
+    </p>
+    <p>
+      This software can be used personally or commercially for free.
+    </p>
+    <p>
+      Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights.
+    </p>
+    <p>
+      If you wish to redistribute gdbgui as part of a closed source product, you can do so for a fee. Contact grassfedcode@gmail.com for details.
+    </p>
+
+
+    </React.Fragment>)
+}
+
+let About ={
+    show_about: function(){
+      Actions.show_modal('About gdbgui', <React.Fragment>
+          {About.get_upgrade_text()}
+
+          <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Report a bug</a>
+          <br/>
+          <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Request a feature</a>
+
+          <p>
+            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
+          </p>
+        <p/>
+        <p>Copyright © Chad Smith</p>
+      </React.Fragment>
+      )
+    },
+
+    needs_to_update_gdbgui_version: function(){
+        // to actually check each value:
+
+        // let latest = store.get('latest_gdbgui_version').split('.')
+        // , cur = store.get('gdbgui_version').split('.')
+        // if(latest.length !== cur.length){
+        //     return true
+        // }
+        // for(let i in latest){
+        //     let latest_n = latest[i]
+        //     , actual_n = cur[i]
+        //     if(latest_n > actual_n){
+        //         return true
+        //     }
+        // }
+        // return false
+        return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
+    },
+    get_upgrade_text: function(){
+        if(About.needs_to_update_gdbgui_version()){
+            return(
+            <div>
+                gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
+                <p/><p/>
+                To upgrade, visit <a href='https://gdbgui.com'>gdbgui.com</a>.
+                <p/><p/>
+                <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
+            </div>
+            )
+        }else{
+            return <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
+        }
+    }
+}
+
+let show_session_info = function(){
+  Actions.show_modal('session information', <React.Fragment>
+      <table>
+        <tbody>
+        <tr><td>
+          gdb version: {store.get('gdb_version')}
+        </td></tr>
+
+        <tr><td>
+          gdb pid for this tab: {store.get('gdb_pid')}
+        </td></tr>
+      </tbody>
+    </table>
+  </React.Fragment>)
+}
+
+
 const menu =
     <ul style={{height: 25, padding: 0, 'fontSize': '1.3em'}} className="nav navbar-nav navbar-right">
       <li id="menudropdown" className="dropdown"><a href="#" data-toggle="dropdown" role="button" style={{height: 25, padding: 0, paddingRight: 20}} className="dropdown-toggle"><span className="glyphicon glyphicon-menu-hamburger"> </span></a>
         <ul className="dropdown-menu">
-          <li><a title="dashboard" className="pointer" href='/dashboard'>Dashboard</a>
-          </li>
-          <li><a href="http://gdbgui.com" className="pointer">Homepage</a>
-          </li>
-          <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">Chat room</a>
-          </li>
-          <li><a href="https://github.com/cs01/gdbgui" className="pointer">github</a>
-          </li>
+          <li><a title="dashboard" className="pointer" href='/dashboard'>Dashboard</a></li>
+          <li><a onClick={show_session_info} className="pointer">Session Information</a></li>
+          <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>Shutdown gdbgui server</a></li>
+
           <li role="separator" className="divider" />
-          <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>Shutdown</a>
-          </li>
+          <li><a href='https://www.paypal.me/grassfedcode' className="pointer">Donate</a></li>
+          <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">Chat room</a></li>
+          <li><a href="https://github.com/cs01/gdbgui" className="pointer">GitHub</a></li>
+          <li><a href="http://gdbgui.com" className="pointer">Homepage</a></li>
+
+          <li role="separator" className="divider" />
+          <li><a onClick={show_license} className="pointer">License</a></li>
+          <li><a onClick={About.show_about} className="pointer">About gdbgui</a></li>
+
         </ul>
       </li>
     </ul>
@@ -265,6 +361,3 @@ class TopBar extends React.Component {
 }
 
 export default TopBar
-
-
-
