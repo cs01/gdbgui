@@ -5,7 +5,8 @@
 * Convert backslashes to forward slashes when entering windows binary paths (#167)
 * Fix safari ui issue (#164)
 * Update text on reload file button, and disable when no file is loaded (#165)
-* Cleanup menu
+* When disassembly can't be fetched in mode 4, fetch in mode 3 and assume gdb version is 7.6.0 (#166)
+* Cleanup menu, add license info, etc.
 
 ## 0.11.0.0
 * Replace `--auth` cli option with `--user` and `--password`

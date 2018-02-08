@@ -346,7 +346,7 @@ class TopBar extends React.Component {
                         {store.get('show_filesystem') ? 'hide filesystem' : 'show filesystem'}
                       </button>
 
-                      <button onClick={FileOps.fetch_assembly_cur_line} type="button" title="fetch disassembly" className="btn btn-default btn-xs">
+                      <button onClick={()=>FileOps.fetch_assembly_cur_line()} type="button" title="fetch disassembly" className="btn btn-default btn-xs">
                         <span>fetch disassembly</span>
                       </button>
 

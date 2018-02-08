@@ -77,6 +77,13 @@ const process_gdb_response = function(response_array){
                 continue
             }else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT){
                 FileOps.fetch_disassembly_for_missing_file_failed()
+            }else if (r.token === constants.INLINE_DISASSEMBLY_INT
+                        && r.payload
+                        && r.payload.msg.indexOf('Mode argument must be 0, 1, 2, or 3.') !== -1){
+                // we tried to fetch disassembly for a newer version of gdb, but it didn't work
+                // try again with mode 3, for older gdb api's
+                store.set('gdb_version', ['7', '6', '0'])
+                FileOps.fetch_assembly_cur_line(3)
             }else if(r.payload && r.payload.msg &&
               r.payload.msg.startsWith('Unable to find Mach task port')){
               Actions.add_gdb_response_to_console(r)

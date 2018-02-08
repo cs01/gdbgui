@@ -431,11 +431,10 @@ const FileOps = {
             return 4
         }
     },
-    get_fetch_disassembly_command: function(fullname, start_line){
-        let mi_response_format = FileOps.get_dissasembly_format_num(store.get('gdb_version_array'))
+    get_fetch_disassembly_command: function(fullname, start_line, mi_response_format){
         if(_.isString(fullname)){
             if(store.get('interpreter') === 'gdb'){
-                return `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
+                return constants.INLINE_DISASSEMBLY_STR + `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
             }else{
                 console.log('TODOLLDB - get mi command to disassemble')
                 return `disassemble --frame`
@@ -447,16 +446,22 @@ const FileOps = {
     /**
      * Fetch disassembly for current file/line.
      */
-    fetch_assembly_cur_line: function(){
+    fetch_assembly_cur_line: function(mi_response_format=null){
+        if(mi_response_format === null || !_.isNumber(mi_response_format)){
+          // try to determine response format based on our guess of the gdb version being used
+          mi_response_format = FileOps.get_dissasembly_format_num(store.get('gdb_version_array'))
+        }
+
         let fullname = store.get('fullname_to_render')
         , line = parseInt(store.get('line_of_source_to_flash'))
         if(!line){
             line = 1
         }
-        FileOps.fetch_disassembly(fullname, line)
+        FileOps.fetch_disassembly(fullname, line, mi_response_format)
     },
-    fetch_disassembly: function(fullname, start_line){
-        let cmd = FileOps.get_fetch_disassembly_command(fullname, start_line)
+    fetch_disassembly: function(fullname, start_line, mi_response_format){
+
+        let cmd = FileOps.get_fetch_disassembly_command(fullname, start_line, mi_response_format)
         if(cmd){
            GdbApi.run_gdb_command(cmd)
         }

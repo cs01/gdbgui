@@ -13,6 +13,7 @@ let constants = {
     'IGNORE_ERRORS_TOKEN_STR': '1',
     'DISASSEMBLY_FOR_MISSING_FILE_STR': '2',
     'CREATE_VAR_STR': '3',
+    'INLINE_DISASSEMBLY_STR': '4',
 
     console_entry_type: {
         SENT_COMMAND: 'SENT_COMMAND',
@@ -57,5 +58,6 @@ let constants = {
 constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR)
 constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(constants.DISASSEMBLY_FOR_MISSING_FILE_STR)
 constants['CREATE_VAR_INT'] = parseInt(constants.CREATE_VAR_STR)
+constants['INLINE_DISASSEMBLY_INT'] = parseInt(constants.INLINE_DISASSEMBLY_STR)
 
 export default Object.freeze(constants)

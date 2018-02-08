@@ -197,7 +197,7 @@ def setup_backend(serve=True,
                 **kwargs)
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('gdbgui has exited\n')
+            pass
 
 
 def verify_gdb_exists():
@@ -491,7 +491,6 @@ def help():
 
 @app.route('/_shutdown', methods=['POST'])
 def _shutdown():
-    sys.stdout.write('\ngdbgui has exited\n')
     try:
         _state.exit_all_gdb_processes()
     except Exception:
