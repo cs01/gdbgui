@@ -62,12 +62,14 @@ let About ={
           <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Report a bug</a>
           <br/>
           <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Request a feature</a>
+          <br/>
+          <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube Channel</a>
 
-          <p>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
-          </p>
         <p/>
-        <p>Copyright © Chad Smith</p>
+        A <a href='http://grassfedcode.com'>grassfedcode</a> project to make the easiest to use and most accessible gdb frontend.
+
+        <p/>
+        Copyright © Chad Smith
       </React.Fragment>
       )
     },
@@ -125,7 +127,7 @@ let show_session_info = function(){
 
 
 const menu =
-    <ul style={{height: 25, padding: 0, 'fontSize': '1.3em'}} className="nav navbar-nav navbar-right">
+    <ul style={{height: 25, padding: 0, paddingRight: '15px', 'fontSize': '1.3em'}} className="nav navbar-nav navbar-right">
       <li id="menudropdown" className="dropdown"><a href="#" data-toggle="dropdown" role="button" style={{height: 25, padding: 0, paddingRight: 20}} className="dropdown-toggle"><span className="glyphicon glyphicon-menu-hamburger"> </span></a>
         <ul className="dropdown-menu">
           <li><a title="dashboard" className="pointer" href='/dashboard'>Dashboard</a></li>
@@ -264,13 +266,29 @@ class TopBar extends React.Component {
                       </button>
         }
 
+        let reload_button_disabled = 'disabled'
+        if(this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+          this.state.source_code_state === constants.source_code_states.SOURCE_CACHED
+        ){
+          reload_button_disabled = ''
+        }
+        let reload_button = <button
+                              onClick={FileOps.refresh_cached_source_files}
+                              type="button"
+                              title="Erase file from local cache and re-fetch it"
+                              className={"btn btn-default btn-xs " + reload_button_disabled}
+                        >
+                            <span>reload file</span>
+                        </button>
+
+
         let spinner = <span className='' style={{height: '100%', margin: '5px', 'width': '14px'}}/>
         if(this.state.show_spinner){
           spinner = <span className='glyphicon glyphicon-refresh glyphicon-refresh-animate' style={{height: '100%', margin: '5px', 'width': '14px'}}/>
         }
 
         return(
-            <div id="top" style={{background: '#f5f6f7', marginBottom: 5}}>
+            <div id="top" style={{background: '#f5f6f7', position: 'absolute'}}>
                 <div className="flexrow">
 
                     <BinaryLoader initial_user_input={this.props.initial_user_input} />
@@ -332,14 +350,7 @@ class TopBar extends React.Component {
                         <span>fetch disassembly</span>
                       </button>
 
-                      <button
-                            onClick={FileOps.refresh_cached_source_files}
-                            type="button"
-                            title="Erase file from local cache and re-fetch it"
-                            className="btn btn-default btn-xs">
-                          <span>reload/hide disassembly</span>
-                      </button>
-
+                      {reload_button}
                       {toggle_assm_button}
 
                     </div>

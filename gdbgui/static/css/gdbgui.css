@@ -252,6 +252,7 @@ td.line_num{
 }
 #console_container{
     height: 100%;
+    position: relative;
 }
 #console{
     background-color: #292929;
@@ -263,7 +264,10 @@ td.line_num{
     border-bottom: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 30px;
 }
 #gdb_command_input, #gdb_command_input .gdb_command_input{
     height: 30px;

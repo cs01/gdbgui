@@ -3,6 +3,9 @@
 ## 0.11.1.0
 * Add csrf and cross origin protection
 * Convert backslashes to forward slashes when entering windows binary paths (#167)
+* Fix safari ui issue (#164)
+* Update text on reload file button, and disable when no file is loaded (#165)
+* Cleanup menu
 
 ## 0.11.0.0
 * Replace `--auth` cli option with `--user` and `--password`

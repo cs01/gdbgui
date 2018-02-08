@@ -43,7 +43,7 @@ class Gdbgui extends React.PureComponent {
 
                 <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-                <div id="middle">
+                <div id="middle" style={{paddingTop: '60px'}}>
 
                     <div id='folders_view' className='content' style={{backgroundColor: 'rgb(33, 37, 43)'}}>
                         <FoldersView project_home={initial_data.project_home} />
@@ -62,7 +62,7 @@ class Gdbgui extends React.PureComponent {
                 </div>
 
 
-                <div id="bottom" className="split split-horizontal" style={{paddingBottom: '90px', width: '100%'}} >
+                <div id="bottom" className="split split-horizontal" style={{width: '100%', height: '100%'}} >
                   <div id="bottom_content"
                         className="split content"
                         style={{paddingBottom: '0px' /* for height of input */}}>
