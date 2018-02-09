@@ -15,7 +15,6 @@ import Memory from './Memory.jsx';
 import GdbMiOutput from './GdbMiOutput.jsx';
 import constants from './constants.js';
 
-
 let onmouseup_in_parent_callbacks = []
 , onmousemove_in_parent_callbacks = []
 

@@ -58,7 +58,7 @@ let About ={
     show_about: function(){
       Actions.show_modal('About gdbgui', <React.Fragment>
           {About.get_upgrade_text()}
-
+          <br/>
           <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Report a bug</a>
           <br/>
           <a href="https://github.com/cs01/gdbgui/issues" className="pointer">Request a feature</a>
@@ -73,35 +73,16 @@ let About ={
       </React.Fragment>
       )
     },
-
-    needs_to_update_gdbgui_version: function(){
-        // to actually check each value:
-
-        // let latest = store.get('latest_gdbgui_version').split('.')
-        // , cur = store.get('gdbgui_version').split('.')
-        // if(latest.length !== cur.length){
-        //     return true
-        // }
-        // for(let i in latest){
-        //     let latest_n = latest[i]
-        //     , actual_n = cur[i]
-        //     if(latest_n > actual_n){
-        //         return true
-        //     }
-        // }
-        // return false
-        return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
-    },
     get_upgrade_text: function(){
-        if(About.needs_to_update_gdbgui_version()){
+        if(TopBar.needs_to_update_gdbgui_version()){
             return(
-            <div>
+            <React.Fragment>
                 gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
                 <p/><p/>
                 To upgrade, visit <a href='https://gdbgui.com'>gdbgui.com</a>.
                 <p/><p/>
                 <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
-            </div>
+            </React.Fragment>
             )
         }else{
             return <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
@@ -368,6 +349,24 @@ class TopBar extends React.Component {
                 </div>
             </div>
         )
+    }
+    static needs_to_update_gdbgui_version(){
+      // to actually check each value:
+
+      // let latest = store.get('latest_gdbgui_version').split('.')
+      // , cur = store.get('gdbgui_version').split('.')
+      // if(latest.length !== cur.length){
+      //     return true
+      // }
+      // for(let i in latest){
+      //     let latest_n = latest[i]
+      //     , actual_n = cur[i]
+      //     if(latest_n > actual_n){
+      //         return true
+      //     }
+      // }
+      // return false
+      return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
     }
 }
 

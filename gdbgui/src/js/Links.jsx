@@ -1,5 +1,6 @@
 import Actions from './Actions.js';
 import React from 'react';
+import CopyToClipboard from './CopyToClipboard.jsx';
 
 
 class FileLink extends React.Component {
@@ -18,9 +19,13 @@ class FileLink extends React.Component {
             onclick = ()=>Actions.view_file(this.props.fullname, line)
             cls = 'pointer'
         }
-        return (<span onClick={onclick} className={cls} title={`click to view ${this.props.fullname}`}>
+        return (<React.Fragment>
+                <span onClick={onclick} className={cls} title={`click to view ${this.props.fullname}`}>
                     {this.props.file}{sep}{line} {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ''}
-                </span>)
+                </span>
+
+                <CopyToClipboard content={(this.props.fullname || this.props.file)} />
+              </React.Fragment>)
     }
 }
 

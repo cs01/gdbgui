@@ -4,6 +4,7 @@ import GdbApi from './GdbApi.jsx';
 import Actions from './Actions.js';
 import Util from './Util.js';
 import FileOps from './FileOps.jsx';
+import {FileLink} from './Links.jsx';
 
 const BreakpointSourceLineCache = {
     _cache: {},
@@ -64,7 +65,7 @@ class Breakpoint extends React.Component {
         , checked = b.enabled === 'y' ? 'checked' : ''
         , source_line = this.get_source_line(b.fullname_to_display, b.line)
 
-        let info_glyph, function_jsx, location_jsx, bkpt_num_to_delete
+        let info_glyph, function_jsx, bkpt_num_to_delete
         if(b.is_child_breakpoint){
             bkpt_num_to_delete = b.parent_breakpoint_number
             info_glyph = <span className='glyphicon glyphicon-th-list' title='Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted.'></span>
@@ -77,16 +78,12 @@ class Breakpoint extends React.Component {
         }
 
         const delete_jsx = this.get_delete_jsx(bkpt_num_to_delete)
+        let location_jsx = <FileLink fullname={b.fullname_to_display} file={b.fullname_to_display} line={b.line} />
 
         if(b.is_parent_breakpoint){
             function_jsx =
             <span className='placeholder'>
                 {info_glyph} parent breakpoint on inline, template, or ambiguous location
-            </span>
-
-            location_jsx =
-            <span>
-                {b.fullname_to_display}:{b.line}
             </span>
 
         }else{
@@ -101,12 +98,6 @@ class Breakpoint extends React.Component {
                         thread groups: {b['thread-groups']}
                     </span>
                 </div>
-
-            location_jsx =
-                <span>
-                    {b.fullname_to_display}:{b.line}
-                </span>
-
         }
 
         return  <div className='breakpoint' onClick={()=>Actions.view_file(b.fullname_to_display, b.line)}>

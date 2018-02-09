@@ -484,11 +484,11 @@ class GdbVariable extends React.Component {
                 let x = item.datapoint[0]
                 , y = item.datapoint[1]
 
-                $('#tooltip').html(`(${x}, ${y})`)
+                $('#plot_coordinate_tooltip').html(`(${x}, ${y})`)
                     .css({top: item.pageY+5, left: item.pageX+5})
                     .show()
             } else {
-                $("#tooltip").hide();
+                $("#plot_coordinate_tooltip").hide();
             }
         })
     }

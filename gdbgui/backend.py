@@ -35,9 +35,12 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
 from gdbgui import htmllistformatter, __version__  # noqa
 from gdbgui.statemanager import StateManager  # noqa
+try:
+    from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
+except ImportError:
+    print('Warning: Optional SSL support is not available')
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')

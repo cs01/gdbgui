@@ -8,9 +8,6 @@ import React from 'react';
 class Settings extends React.Component {
     store_keys = [
         'debug',
-        'show_gdbgui_upgrades',
-        'gdbgui_version',
-        'latest_gdbgui_version',
         'current_theme',
         'themes',
         'gdb_version',
@@ -31,29 +28,6 @@ class Settings extends React.Component {
         store.subscribe(this._store_change_callback.bind(this))
 
         this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(this)
-        // Fetch the latest version only if using in normal mode. If debugging, we tend to
-        // refresh quite a bit, which might make too many requests to github and cause them
-        // to block our ip? Either way it just seems weird to make so many ajax requests.
-        if(!store.get('debug')){
-            // fetch version
-            $.ajax({
-                url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
-                cache: false,
-                method: 'GET',
-                success: (data) => {
-                    store.set('latest_gdbgui_version', _.trim(data))
-
-                    if(Settings.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
-                        Actions.show_modal(`Update Available`, Settings.get_upgrade_text())
-                    }
-                },
-                error: (data) => {
-                    void(data)
-                    store.set('latest_gdbgui_version', '(could not contact server)')
-                }
-            })
-        }
-
     }
     _store_change_callback(keys){
         if(_.intersection(this.store_keys, keys).length){
