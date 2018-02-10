@@ -69,7 +69,13 @@ class Threads extends React.Component {
         for(let thread of this.state.threads){
             let is_current_thread_being_rendered = (parseInt(thread.id) === this.state.current_thread_id)
             let stack = Threads.get_stack_for_thread(thread.frame, this.state.stack, is_current_thread_being_rendered)
-            let row_data = Threads.get_row_data_for_stack(stack, this.state.selected_frame_num, thread.frame.addr, thread.id, is_current_thread_being_rendered)
+            let row_data
+            try{
+              row_data = Threads.get_row_data_for_stack(stack, this.state.selected_frame_num, thread.frame.addr, thread.id, is_current_thread_being_rendered)
+            }catch(err){
+              row_data = ['unknown', 'unknown', 'unknown']
+              console.log(err)
+            }
             content.push(Threads.get_thread_header(thread, is_current_thread_being_rendered))
             content.push(<ReactTable
                                 data={row_data}

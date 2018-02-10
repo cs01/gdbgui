@@ -3,3 +3,6 @@ dist
 node_modules
 build
 executable
+.DS_Store
+*.a.dSYM
+gdbgui.spec

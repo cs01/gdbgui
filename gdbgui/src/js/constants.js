@@ -13,6 +13,7 @@ let constants = {
     'IGNORE_ERRORS_TOKEN_STR': '1',
     'DISASSEMBLY_FOR_MISSING_FILE_STR': '2',
     'CREATE_VAR_STR': '3',
+    'INLINE_DISASSEMBLY_STR': '4',
 
     console_entry_type: {
         SENT_COMMAND: 'SENT_COMMAND',
@@ -41,8 +42,6 @@ let constants = {
         NONE_AVAILABLE: 'NONE_AVAILABLE',
     },
 
-
-
     'inferior_states': {
         'unknown': 'unknown',
         'running': 'running',
@@ -52,10 +51,14 @@ let constants = {
 
     'tree_component_id': 'tree',
 
-    default_max_lines_of_code_to_fetch: 500
+    default_max_lines_of_code_to_fetch: 500,
+    gdbgui_upgrade_url: 'https://grassfedcode.onfastspring.com/gdbgui-premium',
+    gdbgui_donate_url: 'https://www.paypal.me/grassfedcode',
+
 }
 constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR)
 constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(constants.DISASSEMBLY_FOR_MISSING_FILE_STR)
 constants['CREATE_VAR_INT'] = parseInt(constants.CREATE_VAR_STR)
+constants['INLINE_DISASSEMBLY_INT'] = parseInt(constants.INLINE_DISASSEMBLY_STR)
 
 export default Object.freeze(constants)

@@ -1,12 +1,11 @@
 # gdbgui installation
 
-
-## Binary Distrubution (recommended)
+## Installation Options
 There are two options to use gdbgui:
 * standalone binary executable or
 * the Python Package `gdbgui`.
 
-**Standalone binary executables are the recommended way to run gdbgui, and are available at [gdbgui.com](http://gdbgui.com)**.
+**Standalone binary executables are easier to install, and are available at [gdbgui.com](http://gdbgui.com)**.
 
 ## Python Package
 If you do not want to use the binary, `gdbgui` is also a package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi) and can be installed using [pip](https://pip.pypa.io/en/stable/), the recommended tool for installing Python packages. It is installed like any other python package:
@@ -15,7 +14,7 @@ If you do not want to use the binary, `gdbgui` is also a package in the [Python 
 
 When installation is finished, type `gdbgui` from the command line to run it, or `gdbgui -h` for help.
 
-If you are unfamiliar with `pip` or if that command did not work, see Troubleshooting below.
+If you are unfamiliar with `pip` or if that command did not work, consider downloading the binary since it can be run directly. If you still want to install with pip, see Troubleshooting below.
 
 **Please create an issue or pull request if any of this information is out of date, incomplete, or incorrect.**
 
@@ -55,7 +54,7 @@ Minimal GNU for Windows ([`MinGW`]([http://mingw.org/)) is the recommended Windo
 
 It will install to somewhere like `C:\MinGW\bin\...`. For example `C:\MinGW\bin\gdb.exe`, `C:\MinGW\bin\mingw32-make.exe`, etc.
 
-Ensure this MinGW binary directory (i.e. `C:\MinGW\bin\`) is on your "Path" environement variable: Go to `Control Panel > System Properties > Environment Variables > System Variables > Path` and make sure `C:\MinGW\bin\` is added to that list. If it is not added to your "Path", you will have to run gdbgui with the path explicitly called out, such as `gdbgui -g C:\MinGW\bin\gdb.exe`.
+Ensure this MinGW binary directory (i.e. `C:\MinGW\bin\`) is on your "Path" environment variable: Go to `Control Panel > System Properties > Environment Variables > System Variables > Path` and make sure `C:\MinGW\bin\` is added to that list. If it is not added to your "Path", you will have to run gdbgui with the path explicitly called out, such as `gdbgui -g C:\MinGW\bin\gdb.exe`.
 
 ##### Cygwin
 Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works with it as well.

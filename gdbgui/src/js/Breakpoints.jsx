@@ -4,6 +4,7 @@ import GdbApi from './GdbApi.jsx';
 import Actions from './Actions.js';
 import Util from './Util.js';
 import FileOps from './FileOps.jsx';
+import {FileLink} from './Links.jsx';
 
 const BreakpointSourceLineCache = {
     _cache: {},
@@ -26,27 +27,24 @@ class Breakpoint extends React.Component {
     get_source_line(fullname, linenum){
         // if we have the source file cached, we can display the line of text
         const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40
-        let escaped_line = null
-
+        let line = null
         if(BreakpointSourceLineCache.get_line(fullname, linenum)){
-            escaped_line = BreakpointSourceLineCache.get_line(fullname, linenum)
+            line = BreakpointSourceLineCache.get_line(fullname, linenum)
 
         } else if(FileOps.line_is_cached(fullname, linenum)){
             let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum)
-            , line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
+            line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
 
             if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){
                 line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + '...'
             }
-            escaped_line = line.replace(/>/g, "&gt;").replace(/</g, "&lt;")
-
-            BreakpointSourceLineCache.add_line(fullname, linenum, escaped_line)
+            BreakpointSourceLineCache.add_line(fullname, linenum, line)
 
         }
 
-        if(escaped_line){
+        if(line){
             return <span className='monospace' style={{'whiteSpace': 'nowrap', 'fontSize': '0.9em'}}>
-                                {escaped_line || <br/>}
+                                {line || <br/>}
                          </span>
         }
         return '(file not cached)'
@@ -54,7 +52,11 @@ class Breakpoint extends React.Component {
     get_delete_jsx(bkpt_num_to_delete){
         return <div style={{'width': '10px', display: 'inline'}}
             className='pointer breakpoint_trashcan'
-            onClick={()=>Breakpoints.delete_breakpoint(bkpt_num_to_delete)}
+            onClick={(e)=>{
+                e.stopPropagation()
+                Breakpoints.delete_breakpoint(bkpt_num_to_delete)
+              }
+            }
             title={`Delete breakpoint ${bkpt_num_to_delete}`}>
             <span className='glyphicon glyphicon-trash'> </span>
         </div>
@@ -64,7 +66,7 @@ class Breakpoint extends React.Component {
         , checked = b.enabled === 'y' ? 'checked' : ''
         , source_line = this.get_source_line(b.fullname_to_display, b.line)
 
-        let info_glyph, function_jsx, location_jsx, bkpt_num_to_delete
+        let info_glyph, function_jsx, bkpt_num_to_delete
         if(b.is_child_breakpoint){
             bkpt_num_to_delete = b.parent_breakpoint_number
             info_glyph = <span className='glyphicon glyphicon-th-list' title='Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted.'></span>
@@ -77,16 +79,12 @@ class Breakpoint extends React.Component {
         }
 
         const delete_jsx = this.get_delete_jsx(bkpt_num_to_delete)
+        let location_jsx = <FileLink fullname={b.fullname_to_display} file={b.fullname_to_display} line={b.line} />
 
         if(b.is_parent_breakpoint){
             function_jsx =
             <span className='placeholder'>
                 {info_glyph} parent breakpoint on inline, template, or ambiguous location
-            </span>
-
-            location_jsx =
-            <span>
-                {b.fullname_to_display}:{b.line}
             </span>
 
         }else{
@@ -101,16 +99,9 @@ class Breakpoint extends React.Component {
                         thread groups: {b['thread-groups']}
                     </span>
                 </div>
-
-            location_jsx =
-                <span>
-                    {b.fullname_to_display}:{b.line}
-                </span>
-
         }
 
         return  <div className='breakpoint' onClick={()=>Actions.view_file(b.fullname_to_display, b.line)}>
-            <div>
                 <table style={{'width': '100%', 'fontSize': '0.9em', 'borderWidth': '1px', 'borderColor': 'black'}} className='lighttext table-condensed'>
                 <tbody>
                     <tr>
@@ -133,7 +124,6 @@ class Breakpoint extends React.Component {
                     </tr>
                 </tbody>
                 </table>
-            </div>
         </div>
 
     } // render function

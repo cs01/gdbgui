@@ -4,12 +4,13 @@
  * functions create gdb variable objects locally, update them,
  * remove them, etc.
  */
-import React from 'react';
-import Memory from './Memory.jsx';
-import constants from './constants.js';
-import {store} from './store.js';
-import GdbApi from './GdbApi.jsx';
-
+import React from 'react'
+import Memory from './Memory.jsx'
+import constants from './constants.js'
+import {store} from './store.js'
+import GdbApi from './GdbApi.jsx'
+import CopyToClipboard from './CopyToClipboard.jsx'
+import Actions from './Actions.js'
 
 /**
  * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
@@ -78,10 +79,7 @@ let VarCreator = {
 
             // - means auto assign variable name in gdb
             // * means evaluate it at the current frame
-            let var_create_cmd = `-var-create - * ${expression}`
-            if(expr_type === 'hover'){
-                var_create_cmd = constants.CREATE_VAR_STR + var_create_cmd
-            }
+            let var_create_cmd = constants.CREATE_VAR_STR + `-var-create - * ${expression}`
             cmds.push(var_create_cmd)
 
             GdbApi.run_gdb_command(cmds)
@@ -128,7 +126,12 @@ let VarCreator = {
         }
         VarCreator._fetch_complete()
     },
-    fetch_failed(){
+    fetch_failed(r){
+        if(VarCreator.expr_type === 'hover'){
+          // do nothing
+        }else{
+          Actions.add_gdb_response_to_console(r)
+        }
         VarCreator._fetch_complete()
     },
     _fetch_complete(){
@@ -173,8 +176,10 @@ class GdbVariable extends React.Component {
         return(
             <div>
                 <span onClick={onclick} className={can_be_expanded ? 'pointer' : ''}>
-                    {can_be_expanded ? '+' : ''} {local.name}: {value}
+                    {can_be_expanded ? '+' : ''} {local.name}&nbsp;
                 </span>
+                {value}
+
                 <span className='var_type'>
                     {_.trim(local.type)}
                 </span>
@@ -280,7 +285,7 @@ class GdbVariable extends React.Component {
         return <ul key={expression} className='varUL'>
             <li className='varLI'>
                 <span className={toggle_classes} onClick={plusminus_click_callback}>
-                    {plus_or_minus} {expression}:
+                    {plus_or_minus} {expression}&nbsp;
                 </span>
 
                 {val}
@@ -289,8 +294,8 @@ class GdbVariable extends React.Component {
                     {_.trim(mi_obj.type) || ''}
                 </span>
 
-
                 <div className='right_help_icon_show_on_hover'>
+                    <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:
                     {tree}
                     {plot_button}
                     {delete_button}
@@ -301,6 +306,40 @@ class GdbVariable extends React.Component {
             </li>
             {child_tree}
         </ul>
+    }
+    static _get_full_path(obj){
+      if(!obj){
+        return ''
+      }
+
+      function update_path(path, obj){
+        let potential_addition = obj.expression || obj.exp
+        if(potential_addition === 'public'
+            || potential_addition === 'private'
+            || potential_addition === 'protected'){
+          // these are inserted by gdb, and arent actually field names!
+          return path
+        }else if (path){
+          return potential_addition  + '.' + path
+        }else{
+          return potential_addition
+        }
+      }
+
+      let path = update_path('', obj)
+      let cur_obj = obj.parent
+      let depth = 0
+      while(cur_obj){
+        path = update_path(path, cur_obj)
+        cur_obj = cur_obj.parent
+
+        depth += 1
+        if(depth > 100){
+          console.warn('exceeded maximum depth, breaking while loop')
+          break
+        }
+      }
+      return path
     }
     static create_variable(expression, expr_type){
         VarCreator.create_variable(expression, expr_type)
@@ -355,7 +394,7 @@ class GdbVariable extends React.Component {
         let parent_obj = GdbVariable.get_obj_from_gdb_var_name(expressions, parent_name)
         if(parent_obj){
             // prepare all the child objects we received for local storage
-            let children = r.payload.children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj))
+            let children = r.payload.children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj, parent_obj))
             // save these children as a field to their parent
             parent_obj.children = children
             parent_obj.numchild = children.length
@@ -381,10 +420,11 @@ class GdbVariable extends React.Component {
      * @param obj (object): mi object returned from gdb
      * @param expr_type (str): type of expression being created (see store creation for documentation)
      */
-    static prepare_gdb_obj_for_storage(obj){
+    static prepare_gdb_obj_for_storage(obj, parent){
         let new_obj = Object.assign({}, obj)
         // obj was copied, now add some additional fields used by gdbgui
 
+        new_obj.parent = parent
         // A varobj's contents may be provided by a Python-based pretty-printer.
         // In this case the varobj is known as a dynamic varobj.
         // Dynamic varobjs have slightly different semantics in some cases.
@@ -484,11 +524,11 @@ class GdbVariable extends React.Component {
                 let x = item.datapoint[0]
                 , y = item.datapoint[1]
 
-                $('#tooltip').html(`(${x}, ${y})`)
+                $('#plot_coordinate_tooltip').html(`(${x}, ${y})`)
                     .css({top: item.pageY+5, left: item.pageX+5})
                     .show()
             } else {
-                $("#tooltip").hide();
+                $("#plot_coordinate_tooltip").hide();
             }
         })
     }
@@ -582,7 +622,7 @@ class GdbVariable extends React.Component {
                     ChildVarFetcher.fetch_children(changelist['name'], obj.expr_type)
                 }
                 if('new_children' in changelist){
-                    let new_children = changelist.new_children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj))
+                    let new_children = changelist.new_children.map(child_obj => GdbVariable.prepare_gdb_obj_for_storage(child_obj, obj))
                     obj.children = obj.children.concat(new_children)
                 }
                 // overwrite fields of obj with fields from changelist
@@ -620,7 +660,7 @@ class GdbVariable extends React.Component {
      * Locally save the variable to our cached variables
      */
     static save_new_expression(expression, expr_type, obj){
-        let new_obj = GdbVariable.prepare_gdb_obj_for_storage(obj)
+        let new_obj = GdbVariable.prepare_gdb_obj_for_storage(obj, null)
         new_obj.expression = expression
         let expressions = store.get('expressions')
         expressions.push(new_obj)

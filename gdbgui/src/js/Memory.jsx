@@ -5,14 +5,13 @@
  * address. It also has methods to manage the global store of memory data.
  */
 
-import {store} from './store.js';
-import GdbApi from './GdbApi.jsx';
+import {store} from './store.js'
+import GdbApi from './GdbApi.jsx'
 import constants from './constants.js'
-import MemoryLink from './MemoryLink.jsx';
-import ReactTable from './ReactTable.jsx';
+import MemoryLink from './MemoryLink.jsx'
+import ReactTable from './ReactTable.jsx'
 import Actions from './Actions'
-//import GdbConsoleComponent from './GdbConsole.js';
-import React from 'react';
+import React from 'react'
 
 class Memory extends React.Component {
     static MAX_ADDRESS_DELTA_BYTES = 1000

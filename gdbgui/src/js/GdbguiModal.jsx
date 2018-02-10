@@ -35,7 +35,7 @@ class Modal extends React.Component {
                     }
                 }
             >
-                <div className='modal_content' onClick={(e)=>e.preventDefault()}>
+                <div className='modal_content'>
                     <div>
                         <button type="button" className='close' onClick={Actions.toggle_modal_visibility}>×</button>
                     </div>
@@ -58,4 +58,3 @@ class Modal extends React.Component {
 }
 
 export default Modal
-
