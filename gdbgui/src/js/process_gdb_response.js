@@ -4,19 +4,19 @@
  * to update.
  */
 
-import React from 'react';
-import {store} from './store.js';
-import GdbMiOutput from './GdbMiOutput.jsx';
-import Breakpoints from './Breakpoints.jsx';
-import constants from './constants.js';
-import Threads from './Threads.jsx';
-import FileOps from './FileOps.jsx';
-import Memory from './Memory.jsx';
-import GdbApi from './GdbApi.jsx';
-import Locals from './Locals.jsx';
-import GdbVariable from './GdbVariable.jsx';
-import Modal from './GdbguiModal.jsx';
-import Actions from './Actions.js';
+import React from 'react'
+import {store} from './store.js'
+import GdbMiOutput from './GdbMiOutput.jsx'
+import Breakpoints from './Breakpoints.jsx'
+import constants from './constants.js'
+import Threads from './Threads.jsx'
+import FileOps from './FileOps.jsx'
+import Memory from './Memory.jsx'
+import GdbApi from './GdbApi.jsx'
+import Locals from './Locals.jsx'
+import GdbVariable from './GdbVariable.jsx'
+import Modal from './GdbguiModal.jsx'
+import Actions from './Actions.js'
 
 const process_gdb_response = function(response_array){
     /**
@@ -71,7 +71,7 @@ const process_gdb_response = function(response_array){
 
         if(is_error(r)){
             if (is_creating_var(r)){
-                GdbVariable.gdb_variable_fetch_failed()
+                GdbVariable.gdb_variable_fetch_failed(r)
                 continue
             }else if (ignore_error(r)){
                 continue

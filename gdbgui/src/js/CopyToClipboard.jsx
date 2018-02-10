@@ -7,9 +7,8 @@ class CopyToClipboard extends React.Component {
         if(!this.props.content){
           return null
         }
-        return  <React.Fragment>
-            <span className={'pointer glyphicon glyphicon-book'}
-                  style={{color: '#ccc'}}
+        return <span className={'pointer glyphicon glyphicon-book'}
+                  style={{color: '#ccc', display: 'inline'}}
                   ref={(node) => this.node = node}
                   onMouseOver={()=>{ToolTip.show_tooltip_on_node('copy to clipboard', this.node)}}
                   onMouseLeave={ToolTip.hide_tooltip}
@@ -30,7 +29,6 @@ class CopyToClipboard extends React.Component {
                   }
                 }
               />
-            </React.Fragment>
     }
 }
 

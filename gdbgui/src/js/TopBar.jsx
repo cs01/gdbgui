@@ -74,18 +74,33 @@ let About ={
       )
     },
     get_upgrade_text: function(){
+        let ltext = <React.Fragment>
+            <span className='bold'>You are using the standard version of gdbgui. </span>
+            <a href={constants.gdbgui_upgrade_url}>Get gdbgui premium key now.</a>
+            </React.Fragment>
+
+        if(initial_data.p === 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
+          ltext = 'You are using the premium version of gdbgui.'
+        }
+
         if(TopBar.needs_to_update_gdbgui_version()){
             return(
             <React.Fragment>
-                gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
+                gdbgui version {store.get('latest_gdbgui_version')} is available.
+                You are using {store.get('gdbgui_version')}.
                 <p/><p/>
-                To upgrade, visit <a href='https://gdbgui.com'>gdbgui.com</a>.
+                Visit <a href='https://gdbgui.com'>gdbgui.com</a> to update to the latest version.
                 <p/><p/>
+                {ltext}
+                <p/>
                 <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
             </React.Fragment>
             )
         }else{
-            return <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
+            return <React.Fragment>
+              <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
+              {ltext}
+            </React.Fragment>
         }
     }
 }
@@ -116,7 +131,7 @@ const menu =
           <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>Shutdown gdbgui server</a></li>
 
           <li role="separator" className="divider" />
-          <li><a href='https://www.paypal.me/grassfedcode' className="pointer">Donate</a></li>
+          <li><a href={constants.gdbgui_donate_url} className="pointer">Donate</a></li>
           <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">Chat room</a></li>
           <li><a href="https://github.com/cs01/gdbgui" className="pointer">GitHub</a></li>
           <li><a href="http://gdbgui.com" className="pointer">Homepage</a></li>
@@ -269,7 +284,7 @@ class TopBar extends React.Component {
         }
 
         return(
-            <div id="top" style={{background: '#f5f6f7', position: 'absolute'}}>
+            <div id="top" style={{background: '#f5f6f7', position: 'absolute', width: '100%'}}>
                 <div className="flexrow">
 
                     <BinaryLoader initial_user_input={this.props.initial_user_input} />
@@ -293,8 +308,11 @@ class TopBar extends React.Component {
                 </div>
 
 
-                <div style={{marginTop: 3}} className="flexrow">
-                    <div role="group" style={{height: 25}} className="btn-group btn-group">
+                <div style={{marginTop: 3, whitespace: 'nowrap'}} className="flexrow">
+                    <div role="group"
+                        style={{height: '25px', width: '280px', marginRight: '10px'}}
+                        className="btn-group btn-group"
+                    >
 
                       <button
                           className='btn btn-default btn-xs'
@@ -343,7 +361,18 @@ class TopBar extends React.Component {
                         className="form-control dropdown-input"
                     />
 
-                    <div style={{marginRight: 5, marginLeft: 5, marginTop: 5, whiteSpace: 'nowrap', fontFamily: 'monospace', fontSize: '0.7em'}} className="lighttext">
+                    <div style={{
+                      marginRight: 5,
+                      marginLeft: 5,
+                      marginTop: 5,
+                      whiteSpace: 'nowrap',
+                      fontFamily: 'monospace',
+                      fontSize: '0.7em',
+                      display: 'flex',
+                      overflow: 'auto'
+                      }}
+                      className="lighttext"
+                    >
                         <SourceCodeHeading />
                     </div>
                 </div>

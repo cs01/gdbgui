@@ -8,6 +8,7 @@ import constants from './constants.js'
 const pre_escape = (string) => {
     return string.replace(/\\n/g, '\n')
                 .replace(/\\"/g, '"')
+                .replace(/\\t/g, '  ')
 }
 
 class GdbConsole extends React.Component {
@@ -93,15 +94,31 @@ class GdbConsole extends React.Component {
                     return (
                         <div
                             key={index}
-                            style={{    color: 'orange',
+                            style={{
+                                color: 'white',
                                 minHeight: '1em',
                                 margin: '2px',
                                 whiteSpace: 'pre',
-                                fontFamily: 'arial'}}>
-                            <span>Thank you for using gdbgui basic! Enter gdbgui license number to support the project and remove this message.  </span>
-                            <a className='btn btn-warning btn-xs'
-                                style={{color: 'black', fontWeight: 'bold'}}
-                                href='https://grassfedcode.onfastspring.com/gdbgui-premium'>upgrade now</a>
+                                fontFamily: 'arial',
+                                fontSize: '1.2em'}}>
+                            <span style={{'fontWeight': 'bold'}}>Enter gdbgui premium license key to support the project and remove this message.  </span>
+                            <a className='btn btn-default btn-xs'
+                                style={{color: 'black'}}
+                                href={constants.gdbgui_upgrade_url}>upgrade now.</a>
+                            <span> or </span>
+                            <a className='btn btn-default btn-xs'
+                                style={{color: 'black'}}
+                                href={constants.gdbgui_donate_url}> donate now.</a>
+
+                            {/* <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+                                <ins className="adsbygoogle"
+                                     style={{display: 'block'}}
+                                     data-ad-client="ca-pub-9016047663812570"
+                                     data-ad-slot="3732200413"
+                                     data-ad-format="auto"></ins>
+                                <script>
+                                (adsbygoogle = window.adsbygoogle || []).push({});
+                              </script> */}
                         </div>
                     )
                 }

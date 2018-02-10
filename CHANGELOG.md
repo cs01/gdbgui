@@ -6,9 +6,9 @@
 * Fix safari ui issue (#164)
 * Update text on reload file button, and disable when no file is loaded (#165)
 * When disassembly can't be fetched in mode 4, fetch in mode 3 and assume gdb version is 7.6.0 (#166)
-* Add copy to clipboard icon for files
+* Add copy to clipboard icon for files and variables
 * Allow SSL module import to fail and print warning (#170)
-* Cleanup menu, add license info, etc.
+* Cleanup menu, add license info, bugfixes, etc. (#169, #136, #163)
 
 ## 0.11.0.0
 * Replace `--auth` cli option with `--user` and `--password`

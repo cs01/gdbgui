@@ -42,8 +42,6 @@ let constants = {
         NONE_AVAILABLE: 'NONE_AVAILABLE',
     },
 
-
-
     'inferior_states': {
         'unknown': 'unknown',
         'running': 'running',
@@ -53,7 +51,10 @@ let constants = {
 
     'tree_component_id': 'tree',
 
-    default_max_lines_of_code_to_fetch: 500
+    default_max_lines_of_code_to_fetch: 500,
+    gdbgui_upgrade_url: 'https://grassfedcode.onfastspring.com/gdbgui-premium',
+    gdbgui_donate_url: 'https://www.paypal.me/grassfedcode',
+
 }
 constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR)
 constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(constants.DISASSEMBLY_FOR_MISSING_FILE_STR)

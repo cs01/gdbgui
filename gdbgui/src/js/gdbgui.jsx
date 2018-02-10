@@ -77,7 +77,14 @@ class Gdbgui extends React.PureComponent {
                 <HoverVar />
                 <Settings />
                 <ToolTip />
-                <textarea ref={(node)=>{
+                <textarea
+                  style={{
+                    width: '0px',
+                    height: '0px',
+                    position: 'absolute',
+                    top: '0',
+                    left: '-1000px'}}
+                  ref={(node)=>{
                     store.set('textarea_to_copy_to_clipboard', node)
                   }
                 } />

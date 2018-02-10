@@ -1,6 +1,7 @@
-import {store} from './store.js';
-import Actions from './Actions.js';
-import React from 'react';
+import {store} from './store.js'
+import Actions from './Actions.js'
+import ToolTip from './ToolTip.jsx'
+import React from 'react'
 
 /**
  * Settings modal when clicking the gear icon
@@ -62,11 +63,15 @@ class Settings extends React.Component {
                 defaultValue={store.get('max_lines_of_code_to_fetch')}
                 ref={(el)=>this.max_source_file_lines_input = el}
             />
-            <button onClick={()=>{
+            <button
+              ref={(n)=>this.save_button = n}
+              onClick={()=>{
                     let new_value = parseInt(this.max_source_file_lines_input.value)
                     Actions.update_max_lines_of_code_to_fetch(new_value)
+                    ToolTip.show_tooltip_on_node('saved!', this.save_button, 1)
                 }
-            }>save</button>
+              }
+            >save</button>
         </td></tr>
     }
     get_table(){

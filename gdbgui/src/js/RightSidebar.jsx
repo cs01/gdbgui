@@ -162,7 +162,7 @@ class RightSidebar extends React.Component {
             } />
             <Collapser id='memory' title='memory' content={<Memory />} />
             <Collapser title='breakpoints' content={<Breakpoints />} />
-            <Collapser title='registers' content={<Registers />} />
+            <Collapser title='registers' collapsed={true} content={<Registers />} />
             {mi_output}
 
         </div>)

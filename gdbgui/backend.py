@@ -344,7 +344,8 @@ def read_and_forward_gdb_output():
     while True:
         socketio.sleep(0.05)
         controllers_to_remove = []
-        for controller, client_ids in _state.controller_to_client_ids.items():
+        controller_items = _state.controller_to_client_ids.items()
+        for controller, client_ids in controller_items:
             try:
                 try:
                     response = controller.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)

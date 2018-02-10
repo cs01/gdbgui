@@ -27,27 +27,24 @@ class Breakpoint extends React.Component {
     get_source_line(fullname, linenum){
         // if we have the source file cached, we can display the line of text
         const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40
-        let escaped_line = null
-
+        let line = null
         if(BreakpointSourceLineCache.get_line(fullname, linenum)){
-            escaped_line = BreakpointSourceLineCache.get_line(fullname, linenum)
+            line = BreakpointSourceLineCache.get_line(fullname, linenum)
 
         } else if(FileOps.line_is_cached(fullname, linenum)){
             let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum)
-            , line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
+            line = _.trim(Util.get_text_from_html(syntax_highlighted_line))
 
             if(line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE){
                 line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + '...'
             }
-            escaped_line = line.replace(/>/g, "&gt;").replace(/</g, "&lt;")
-
-            BreakpointSourceLineCache.add_line(fullname, linenum, escaped_line)
+            BreakpointSourceLineCache.add_line(fullname, linenum, line)
 
         }
 
-        if(escaped_line){
+        if(line){
             return <span className='monospace' style={{'whiteSpace': 'nowrap', 'fontSize': '0.9em'}}>
-                                {escaped_line || <br/>}
+                                {line || <br/>}
                          </span>
         }
         return '(file not cached)'

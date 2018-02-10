@@ -19,13 +19,23 @@ class FileLink extends React.Component {
             onclick = ()=>Actions.view_file(this.props.fullname, line)
             cls = 'pointer'
         }
-        return (<React.Fragment>
-                <span onClick={onclick} className={cls} title={`click to view ${this.props.fullname}`}>
-                    {this.props.file}{sep}{line} {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ''}
+
+        let clipboard_content = null
+        if(this.props.fullname || this.props.file){
+          clipboard_content = (this.props.fullname || this.props.file) + sep + line
+        }
+        return (<div style={{display: 'inline-block', 'whitespace': 'nowrap'}}>
+                <span onClick={onclick}
+                      className={cls}
+                      title={`click to view ${this.props.fullname}`}
+                      style={{display: 'inline'}}
+                >
+                    {this.props.file}{sep}{line}
                 </span>
 
-                <CopyToClipboard content={(this.props.fullname || this.props.file)} />
-              </React.Fragment>)
+                <CopyToClipboard content={clipboard_content}  />
+                {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ''}
+              </div>)
     }
 }
 

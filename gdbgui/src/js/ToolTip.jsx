@@ -44,9 +44,9 @@ class ToolTip extends React.Component {
       let left = '200px'
       let top = '100px'
       if(tooltip.node && !tooltip.hidden){
-        console.log(tooltip.node)
-        left = tooltip.node.offsetLeft + 'px'
-        top = (tooltip.node.offsetTop + tooltip.node.offsetHeight) + 'px'
+        let rect = tooltip.node.getBoundingClientRect()
+        left = rect.x + 'px'
+        top = (rect.y + tooltip.node.offsetHeight) + 'px'
       }else{
         return null
       }
@@ -59,7 +59,8 @@ class ToolTip extends React.Component {
               background: 'white',
               border: '1px solid',
               position: 'fixed',
-              padding: '5px'
+              padding: '5px',
+              zIndex: '121'
             }}
             >
               {tooltip.content}
