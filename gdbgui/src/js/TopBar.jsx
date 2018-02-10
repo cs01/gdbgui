@@ -73,36 +73,6 @@ let About ={
       </React.Fragment>
       )
     },
-    get_upgrade_text: function(){
-        let ltext = <React.Fragment>
-            <span className='bold'>You are using the standard version of gdbgui. </span>
-            <a href={constants.gdbgui_upgrade_url}>Get gdbgui premium key now.</a>
-            </React.Fragment>
-
-        if(initial_data.p === 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
-          ltext = 'You are using the premium version of gdbgui.'
-        }
-
-        if(TopBar.needs_to_update_gdbgui_version()){
-            return(
-            <React.Fragment>
-                gdbgui version {store.get('latest_gdbgui_version')} is available.
-                You are using {store.get('gdbgui_version')}.
-                <p/><p/>
-                Visit <a href='https://gdbgui.com'>gdbgui.com</a> to update to the latest version.
-                <p/><p/>
-                {ltext}
-                <p/>
-                <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
-            </React.Fragment>
-            )
-        }else{
-            return <React.Fragment>
-              <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
-              {ltext}
-            </React.Fragment>
-        }
-    }
 }
 
 let show_session_info = function(){
@@ -396,6 +366,36 @@ class TopBar extends React.Component {
       // }
       // return false
       return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
+    }
+    static  get_upgrade_text(){
+        let ltext = <React.Fragment>
+            <span className='bold'>You are using the standard version of gdbgui. </span>
+            <a href={constants.gdbgui_upgrade_url}>Get gdbgui premium key now.</a>
+            </React.Fragment>
+
+        if(initial_data.p === 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
+          ltext = 'You are using the premium version of gdbgui.'
+        }
+
+        if(TopBar.needs_to_update_gdbgui_version()){
+            return(
+            <React.Fragment>
+                gdbgui version {store.get('latest_gdbgui_version')} is available.
+                You are using {store.get('gdbgui_version')}.
+                <p/><p/>
+                Visit <a href='https://gdbgui.com'>gdbgui.com</a> to update to the latest version.
+                <p/><p/>
+                {ltext}
+                <p/>
+                <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
+            </React.Fragment>
+            )
+        }else{
+            return <React.Fragment>
+              <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
+              {ltext}
+            </React.Fragment>
+        }
     }
 }
 

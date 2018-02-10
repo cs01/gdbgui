@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.11.1.1
+* Bugfix displaying upgrade text
+
 ## 0.11.1.0
 * Add csrf and cross origin protection
 * Convert backslashes to forward slashes when entering windows binary paths (#167)

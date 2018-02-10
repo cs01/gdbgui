@@ -123,7 +123,7 @@ class Gdbgui extends React.PureComponent {
                 success: (data) => {
                     store.set('latest_gdbgui_version', _.trim(data))
                     if(TopBar.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
-                        Actions.show_modal(`Update Available`, Settings.get_upgrade_text())
+                        Actions.show_modal(`Update Available`, TopBar.get_upgrade_text())
                     }
                 },
                 error: (data) => {
