@@ -112,7 +112,12 @@ class BinaryLoader extends React.Component {
         }
     }
     onchange_user_inpu(e){
-        this.setState({'user_input': e.target.value})
+        if(initial_data.using_windows){
+            // replace backslashes with forward slashes when using windows
+            this.setState({'user_input': e.target.value.replace(/\\/g, '/')})
+        }else{
+            this.setState({'user_input': e.target.value})
+        }
     }
     click_set_target_app(){
         this.set_target_app()
@@ -128,7 +133,7 @@ class BinaryLoader extends React.Component {
         if(isNaN(num_gdbgui_sessions)){
             num_gdbgui_sessions = 0
         }
-        if(num_gdbgui_sessions >= 10 && initial_data.p !== 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
+        if(num_gdbgui_sessions >= 9 && initial_data.p !== 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'){  /* global initial_data */
             Actions.add_console_entries('', constants.console_entry_type.UPGRADE_GDBGUI)
             localStorage.setItem('num_gdbgui_sessions', 0)
         }else{

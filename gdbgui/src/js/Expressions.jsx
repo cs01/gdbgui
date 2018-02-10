@@ -17,7 +17,6 @@ class Expressions extends React.Component {
     }
 
     render(){
-        let content = []
         let sorted_expression_objs = _.sortBy(store.get('expressions'), unsorted_obj => unsorted_obj.expression)
         // only render variables in scope that were not created for the Locals component
         this.objs_to_render = sorted_expression_objs.filter(obj => obj.in_scope === 'true' && obj.expr_type === 'expr')
@@ -26,12 +25,11 @@ class Expressions extends React.Component {
         // delete invalid objects
         this.objs_to_delete.map(obj => GdbVariable.delete_gdb_variable(obj.name))
 
-        content = this.objs_to_render.map(obj => <GdbVariable obj={obj} key={obj.expression} expression={obj.expression} expr_type='expr' />)
-
+        let content = this.objs_to_render.map(obj => <GdbVariable obj={obj} key={obj.expression} expression={obj.expression} expr_type='expr' />)
         if(content.length === 0){
             content.push(<span key='empty' className='placeholder'>no expressions in this context</span>)
         }
-        content.push(<div key='tt' id='tooltip' style={{display: 'hidden'}}/>)
+        content.push(<div key='tt' id='plot_coordinate_tooltip' style={{display: 'hidden'}}/>)
 
         return (
         <div>

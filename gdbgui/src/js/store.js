@@ -244,6 +244,8 @@ const initial_store_data = {
     modal_header: null,
     modal_body: null,
 
+    tooltip: {hidden: false, content: 'placeholder', node: null, show_for_n_sec: null},
+    textarea_to_copy_to_clipboard: {},  // will be replaced with textarea dom node
     // preferences
     // syntax highlighting
     themes: initial_data.themes,

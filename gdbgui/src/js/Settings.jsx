@@ -1,6 +1,7 @@
-import {store} from './store.js';
-import Actions from './Actions.js';
-import React from 'react';
+import {store} from './store.js'
+import Actions from './Actions.js'
+import ToolTip from './ToolTip.jsx'
+import React from 'react'
 
 /**
  * Settings modal when clicking the gear icon
@@ -8,9 +9,6 @@ import React from 'react';
 class Settings extends React.Component {
     store_keys = [
         'debug',
-        'show_gdbgui_upgrades',
-        'gdbgui_version',
-        'latest_gdbgui_version',
         'current_theme',
         'themes',
         'gdb_version',
@@ -31,29 +29,6 @@ class Settings extends React.Component {
         store.subscribe(this._store_change_callback.bind(this))
 
         this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(this)
-        // Fetch the latest version only if using in normal mode. If debugging, we tend to
-        // refresh quite a bit, which might make too many requests to github and cause them
-        // to block our ip? Either way it just seems weird to make so many ajax requests.
-        if(!store.get('debug')){
-            // fetch version
-            $.ajax({
-                url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
-                cache: false,
-                method: 'GET',
-                success: (data) => {
-                    store.set('latest_gdbgui_version', _.trim(data))
-
-                    if(Settings.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
-                        Actions.show_modal(`Update Available`, Settings.get_upgrade_text())
-                    }
-                },
-                error: (data) => {
-                    void(data)
-                    store.set('latest_gdbgui_version', '(could not contact server)')
-                }
-            })
-        }
-
     }
     _store_change_callback(keys){
         if(_.intersection(this.store_keys, keys).length){
@@ -67,43 +42,6 @@ class Settings extends React.Component {
         }
         return applicable_state
     }
-
-    static needs_to_update_gdbgui_version(){
-        // to actually check each value:
-
-        // let latest = store.get('latest_gdbgui_version').split('.')
-        // , cur = store.get('gdbgui_version').split('.')
-        // if(latest.length !== cur.length){
-        //     return true
-        // }
-        // for(let i in latest){
-        //     let latest_n = latest[i]
-        //     , actual_n = cur[i]
-        //     if(latest_n > actual_n){
-        //         return true
-        //     }
-        // }
-        // return false
-        return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
-    }
-    static get_upgrade_text(){
-        if(Settings.needs_to_update_gdbgui_version()){
-            return(
-            <div>
-                gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
-                <p/><p/>
-                To upgrade, run<p/>
-                <span className='monospace bold'>[sudo] pip install gdbgui --upgrade</span><p/>
-                or see <a href='https://github.com/cs01/gdbgui/blob/master/INSTALLATION.md'>installation instructions</a> for more detailed instructions.
-                <p/><p/>
-                <a href='https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md'>View changelog</a>
-            </div>
-            )
-        }else{
-            return <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
-        }
-    }
-
     static toggle_key(key){
         store.set(key, !store.get(key))
         localStorage.setItem(key, JSON.stringify(store.get(key)))
@@ -125,11 +63,15 @@ class Settings extends React.Component {
                 defaultValue={store.get('max_lines_of_code_to_fetch')}
                 ref={(el)=>this.max_source_file_lines_input = el}
             />
-            <button onClick={()=>{
+            <button
+              ref={(n)=>this.save_button = n}
+              onClick={()=>{
                     let new_value = parseInt(this.max_source_file_lines_input.value)
                     Actions.update_max_lines_of_code_to_fetch(new_value)
+                    ToolTip.show_tooltip_on_node('saved!', this.save_button, 1)
                 }
-            }>save</button>
+              }
+            >save</button>
         </td></tr>
     }
     get_table(){
@@ -153,21 +95,6 @@ class Settings extends React.Component {
                 }>{store.get('themes').map(t => <option key={t} >{t}</option>)}</select>
             </td></tr>
 
-            <tr><td>
-                gdb version: {store.get('gdb_version')}
-            </td></tr>
-
-            <tr><td>
-                gdb pid for this tab: {store.get('gdb_pid')}
-            </td></tr>
-
-            <tr><td>
-                {Settings.get_upgrade_text()}
-            </td></tr>
-
-            <tr><td>
-            a <a href='http://grassfedcode.com'>grassfedcode</a> project | <a href='https://github.com/cs01/gdbgui'>github</a> | <a href='https://pypi.python.org/pypi/gdbgui'>PyPI</a> | <a href='https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A'>YouTube</a>
-            </td></tr>
             </tbody>
         </table>)
     }

@@ -1,19 +1,20 @@
-import React from 'react';
-import Memory from './Memory.jsx';
+import React from 'react'
+import Memory from './Memory.jsx'
 
 class MemoryLink extends React.Component {
     constructor(props){
-        super();
+        super()
         this.parsed_addr = `0x${parseInt(props.addr, 16).toString(16)}`  // remove leading zeros
     }
     render(){
-        return (
+        return <React.Fragment>
             <span className='pointer memadr_react'
                     onClick={()=>Memory.set_inputs_from_address(this.parsed_addr)}
                     title={`click to explore memory at ${this.parsed_addr}`}
                     style={this.props.style}>
                 {this.parsed_addr}
-            </span>)
+            </span>
+          </React.Fragment>
     }
     static defaultProps = { style: {'fontFamily': 'monospace'} }
 }

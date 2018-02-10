@@ -15,7 +15,6 @@ import Memory from './Memory.jsx';
 import GdbMiOutput from './GdbMiOutput.jsx';
 import constants from './constants.js';
 
-
 let onmouseup_in_parent_callbacks = []
 , onmousemove_in_parent_callbacks = []
 
@@ -163,7 +162,7 @@ class RightSidebar extends React.Component {
             } />
             <Collapser id='memory' title='memory' content={<Memory />} />
             <Collapser title='breakpoints' content={<Breakpoints />} />
-            <Collapser title='registers' content={<Registers />} />
+            <Collapser title='registers' collapsed={true} content={<Registers />} />
             {mi_output}
 
         </div>)

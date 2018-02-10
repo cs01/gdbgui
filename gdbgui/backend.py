@@ -35,9 +35,12 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
 from gdbgui import htmllistformatter, __version__  # noqa
 from gdbgui.statemanager import StateManager  # noqa
+try:
+    from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
+except ImportError:
+    print('Warning: Optional SSL support is not available')
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
@@ -197,7 +200,7 @@ def setup_backend(serve=True,
                 **kwargs)
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
-            sys.stdout.write('gdbgui has exited\n')
+            pass
 
 
 def verify_gdb_exists():
@@ -341,7 +344,8 @@ def read_and_forward_gdb_output():
     while True:
         socketio.sleep(0.05)
         controllers_to_remove = []
-        for controller, client_ids in _state.controller_to_client_ids.items():
+        controller_items = _state.controller_to_client_ids.items()
+        for controller, client_ids in controller_items:
             try:
                 try:
                     response = controller.get_gdb_response(timeout_sec=0, raise_error_on_timeout=False)
@@ -435,6 +439,7 @@ def gdbgui():
             'p': pbkdf2_hex(str(app.config.get('l')), 'Feo8CJol') if app.config.get('l') else '',
             'project_home': app.config['project_home'],
             'csrf_token': session['csrf_token'],
+            'using_windows': USING_WINDOWS,
         }
 
     return render_template('gdbgui.html',
@@ -490,7 +495,6 @@ def help():
 
 @app.route('/_shutdown', methods=['POST'])
 def _shutdown():
-    sys.stdout.write('\ngdbgui has exited\n')
     try:
         _state.exit_all_gdb_processes()
     except Exception:

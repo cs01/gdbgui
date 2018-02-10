@@ -101,7 +101,6 @@ td{
     background-color:rgba(255,255,255,0.1)
 }
 .disabled {
-        z-index: 1000;
         background-color: lightgrey;
         opacity: 0.6;
         pointer-events: none;
@@ -252,6 +251,7 @@ td.line_num{
 }
 #console_container{
     height: 100%;
+    position: relative;
 }
 #console{
     background-color: #292929;
@@ -263,7 +263,10 @@ td.line_num{
     border-bottom: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
-    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 30px;
 }
 #gdb_command_input, #gdb_command_input .gdb_command_input{
     height: 30px;
@@ -406,7 +409,7 @@ ul.varUL{
     height: 200px;
     display: visible;
 }
-#tooltip{
+#plot_coordinate_tooltip{
     position: fixed;
     display: none;
     border: 1px solid #828282;

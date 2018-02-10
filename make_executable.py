@@ -6,14 +6,26 @@
 
 
 import subprocess
+from sys import platform
 from gdbgui import __version__
+import os
+
+
+if platform.startswith('linux'):
+    plaform_dir = 'linux'
+elif platform.startswith('darwin'):
+    platform_dir = 'mac'
+elif platform.startswith('win32'):
+    platform_dir = 'windows'
+else:
+    raise Exception('Unknown platform')
 
 
 def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
 
     spec = """# -*- mode: python -*-
 
-# create executable with: pyinstaller backend.spec
+# create executable with: pyinstaller gdbgui.spec
 # run executable with: dist/gdbgui
 
 block_cipher = None
@@ -56,7 +68,7 @@ exe = EXE(pyz,  # noqa
 
 """ % binary_name
 
-    with open('gdbgui.spec', 'w') as f:
+    with open(spec_path, 'w+') as f:
         f.write(spec)
 
 
@@ -66,7 +78,7 @@ def main():
     write_spec_with_gdbgui_version_in_name(spec_path, binary_name)
 
     subprocess.call(['pyinstaller', spec_path,
-        '--distpath', 'executable',
+        '--distpath', os.path.join('executable', platform_dir),
         '--key', 'a5s1fe65aw41f54sa64v6b4ds98fhea98rhg4etj4et78ku4yu87mn'])
 
 

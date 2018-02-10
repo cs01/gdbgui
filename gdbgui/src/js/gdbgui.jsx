@@ -10,20 +10,22 @@
  /* global debug */
  /* global initial_data */
 
-import {store, initial_store_data} from './store.js';
-import GdbApi from './GdbApi.jsx';
-import ReactDOM from 'react-dom';
-import React from 'react';
-import TopBar from './TopBar.jsx';
-import GlobalEvents from './GlobalEvents.js';
-import MiddleLeft from './MiddleLeft.jsx';
-import FileOps from './FileOps.jsx';
-import Settings from './Settings.jsx';
-import Modal from './GdbguiModal.jsx';
-import HoverVar from './HoverVar.jsx';
-import RightSidebar from './RightSidebar.jsx';
-import FoldersView from './FoldersView.jsx';
-import GdbConsoleContainer from './GdbConsoleContainer.jsx';
+import {store, initial_store_data} from './store.js'
+import GdbApi from './GdbApi.jsx'
+import ReactDOM from 'react-dom'
+import React from 'react'
+import TopBar from './TopBar.jsx'
+import GlobalEvents from './GlobalEvents.js'
+import MiddleLeft from './MiddleLeft.jsx'
+import FileOps from './FileOps.jsx'
+import Settings from './Settings.jsx'
+import Modal from './GdbguiModal.jsx'
+import HoverVar from './HoverVar.jsx'
+import ToolTip from './ToolTip.jsx'
+import RightSidebar from './RightSidebar.jsx'
+import FoldersView from './FoldersView.jsx'
+import GdbConsoleContainer from './GdbConsoleContainer.jsx'
+import Actions from './Actions.js'
 
 store.options.debug = debug
 store.initialize(initial_store_data)
@@ -43,7 +45,7 @@ class Gdbgui extends React.PureComponent {
 
                 <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-                <div id="middle">
+                <div id="middle" style={{paddingTop: '60px'}}>
 
                     <div id='folders_view' className='content' style={{backgroundColor: 'rgb(33, 37, 43)'}}>
                         <FoldersView project_home={initial_data.project_home} />
@@ -62,7 +64,7 @@ class Gdbgui extends React.PureComponent {
                 </div>
 
 
-                <div id="bottom" className="split split-horizontal" style={{paddingBottom: '90px', width: '100%'}} >
+                <div id="bottom" className="split split-horizontal" style={{width: '100%', height: '100%'}} >
                   <div id="bottom_content"
                         className="split content"
                         style={{paddingBottom: '0px' /* for height of input */}}>
@@ -70,9 +72,22 @@ class Gdbgui extends React.PureComponent {
                   </div>
                 </div>
 
+                {/* below are elements that are only displayed under certain conditions */}
                 <Modal />
                 <HoverVar />
                 <Settings />
+                <ToolTip />
+                <textarea
+                  style={{
+                    width: '0px',
+                    height: '0px',
+                    position: 'absolute',
+                    top: '0',
+                    left: '-1000px'}}
+                  ref={(node)=>{
+                    store.set('textarea_to_copy_to_clipboard', node)
+                  }
+                } />
             </div>
         )
     }
@@ -95,6 +110,28 @@ class Gdbgui extends React.PureComponent {
         })
 
         store.set('middle_panes_split_obj', middle_panes_split_obj)
+
+        // Fetch the latest version only if using in normal mode. If debugging, we tend to
+        // refresh quite a bit, which might make too many requests to github and cause them
+        // to block our ip? Either way it just seems weird to make so many ajax requests.
+        if(!store.get('debug')){
+            // fetch version
+            $.ajax({
+                url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
+                cache: false,
+                method: 'GET',
+                success: (data) => {
+                    store.set('latest_gdbgui_version', _.trim(data))
+                    if(TopBar.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
+                        Actions.show_modal(`Update Available`, TopBar.get_upgrade_text())
+                    }
+                },
+                error: (data) => {
+                    void(data)
+                    store.set('latest_gdbgui_version', '(could not contact server)')
+                }
+            })
+        }
     }
 
 }
