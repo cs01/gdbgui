@@ -1,7 +1,7 @@
 A browser-based frontend for GDB
 ====================================
 
-.. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png
+.. figure:: https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif
    :alt: gdbgui
 
 .. image:: https://travis-ci.org/cs01/gdbgui.svg?branch=master

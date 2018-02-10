@@ -52,7 +52,11 @@ class Breakpoint extends React.Component {
     get_delete_jsx(bkpt_num_to_delete){
         return <div style={{'width': '10px', display: 'inline'}}
             className='pointer breakpoint_trashcan'
-            onClick={()=>Breakpoints.delete_breakpoint(bkpt_num_to_delete)}
+            onClick={(e)=>{
+                e.stopPropagation()
+                Breakpoints.delete_breakpoint(bkpt_num_to_delete)
+              }
+            }
             title={`Delete breakpoint ${bkpt_num_to_delete}`}>
             <span className='glyphicon glyphicon-trash'> </span>
         </div>
@@ -98,7 +102,6 @@ class Breakpoint extends React.Component {
         }
 
         return  <div className='breakpoint' onClick={()=>Actions.view_file(b.fullname_to_display, b.line)}>
-            <div>
                 <table style={{'width': '100%', 'fontSize': '0.9em', 'borderWidth': '1px', 'borderColor': 'black'}} className='lighttext table-condensed'>
                 <tbody>
                     <tr>
@@ -121,7 +124,6 @@ class Breakpoint extends React.Component {
                     </tr>
                 </tbody>
                 </table>
-            </div>
         </div>
 
     } // render function
