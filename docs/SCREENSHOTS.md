@@ -61,6 +61,8 @@ Hover over a variable and explore it, just like in the Chrome debugger.
 
 Arbitrary expressions can be evaluated as well. These expressions persist as the program is stepped through. The base/radix can be modified as desired.
 
+![image](https://github.com/cs01/gdbgui/raw/master/screenshots/radix.gif)
+
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/expressions.png)
 
 Expressions record their previous values, and can be displayed in an x/y
@@ -113,5 +115,3 @@ A dashboard is available to let you look at all gdb instances managed by gdbgui.
 ## gdbgui at launch
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/ready.png)
-
-

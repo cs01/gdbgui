@@ -41,6 +41,8 @@ try:
     from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
 except ImportError:
     print('Warning: Optional SSL support is not available')
+    def get_ssl_context(private_key, certificate):  # noqa
+        return None
 
 USING_WINDOWS = os.name == 'nt'
 TEMPLATE_DIR = os.path.join(BASE_PATH, 'templates')
