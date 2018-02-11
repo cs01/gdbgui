@@ -12,7 +12,7 @@ import os
 
 
 if platform.startswith('linux'):
-    plaform_dir = 'linux'
+    platform_dir = 'linux'
 elif platform.startswith('darwin'):
     platform_dir = 'mac'
 elif platform.startswith('win32'):
