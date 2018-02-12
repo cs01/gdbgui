@@ -280,7 +280,7 @@ class TopBar extends React.Component {
 
                 <div style={{marginTop: 3, whitespace: 'nowrap'}} className="flexrow">
                     <div role="group"
-                        style={{height: '25px', width: '280px', marginRight: '10px'}}
+                        style={{height: '25px', marginRight: '10px'}}
                         className="btn-group btn-group"
                     >
 
