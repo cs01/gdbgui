@@ -88,25 +88,12 @@ class GdbConsoleContainer extends React.Component {
 
         this.state = {
             current_command_input: '',
-            gdb_console_entries: store.get('gdb_console_entries'),
-            gdb_autocomplete_options: store.get('gdb_autocomplete_options'),
         }
-        store.subscribe(this._store_change_callback)
+        store.connectComponentState(this, ['gdb_console_entries',
+                                           'gdb_autocomplete_options'],
+                                         this._store_change_callback.bind(this))
     }
-
-    componentWillUnmount(){
-        store.unsubscribe(this._store_change_callback)
-    }
-
-    _store_change_callback = (keys) => {
-        if(!_.intersection(['gdb_autocomplete_options', 'gdb_console_entries'], keys).length){
-            return
-        }
-
-        this.setState({
-            gdb_console_entries: store.get('gdb_console_entries'),
-        })
-
+    _store_change_callback = () => {
         const autocomplete_options = store.get('gdb_autocomplete_options')
         if(autocomplete_options.length === 1){
             this.setState({

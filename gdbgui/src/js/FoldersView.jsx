@@ -26,23 +26,22 @@ class FoldersView extends React.Component {
         this.state = {data:
                 {name: 'Load inferior program, then click "Fetch source files" to populate this window'},
                 has_hidden_entries: false,
-                source_code_state: store.get('source_code_state')
             }
+        store.connectComponentState(this, ['source_file_paths',
+                                          'source_code_state'],
+                                          this.store_change_callback.bind(this)
+        )
         this.onToggle = this.onToggle.bind(this)
         this.reveal_path = this.reveal_path.bind(this)
         this.update_filesystem_data = this.update_filesystem_data.bind(this)
         this.expand_all = this.expand_all.bind(this)
         this.collapse_all = this.collapse_all.bind(this)
-        store.subscribe(this._store_change_callback.bind(this))
-    }
-    _store_change_callback(keys){
-        if(keys.indexOf('source_file_paths') !== -1){
-            this.update_filesystem_data(store.get('source_file_paths'))
-        }
 
-        if(keys.indexOf('source_code_state') !== -1){
-            this.setState({source_code_state: store.get('source_code_state')})
-        }
+        store.subscribe_to_keys(['source_file_paths'],
+                        this.store_change_callback.bind(this))
+    }
+    store_change_callback(){
+        this.update_filesystem_data(store.get('source_file_paths'))
     }
     reveal_path(path){
         if(!path){

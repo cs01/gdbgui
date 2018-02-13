@@ -7,10 +7,9 @@
  */
 
  /* global Split */
- /* global debug */
  /* global initial_data */
 
-import {store, initial_store_data} from './store.js'
+import {store} from './store.js'
 import GdbApi from './GdbApi.jsx'
 import ReactDOM from 'react-dom'
 import React from 'react'
@@ -26,9 +25,16 @@ import RightSidebar from './RightSidebar.jsx'
 import FoldersView from './FoldersView.jsx'
 import GdbConsoleContainer from './GdbConsoleContainer.jsx'
 import Actions from './Actions.js'
+import constants from './constants.js'
+import initial_store_data from './InitialStoreData.js'
 
-store.options.debug = debug
-store.initialize(initial_store_data)
+const store_options = {
+  debug: debug,  /* global debug */
+  keys_to_not_log_changes_in_console: constants.keys_to_not_log_changes_in_console,
+  immutable: false,
+  debounce_ms: 10,
+}
+store.initialize(initial_store_data, store_options)
 // make this visible in the console
 window.store = store
 
@@ -92,8 +98,10 @@ class Gdbgui extends React.PureComponent {
         )
     }
     componentDidMount(){
+        if(debug){
+          console.warn(store.getUnwatchedKeys())
+        }
         // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
-
         let middle_panes_split_obj = Split(['#folders_view', '#source_code_view', '#controls_sidebar'], {
             gutterSize: 8,
             minSize: 100,
@@ -122,7 +130,7 @@ class Gdbgui extends React.PureComponent {
                 method: 'GET',
                 success: (data) => {
                     store.set('latest_gdbgui_version', _.trim(data))
-                    if(TopBar.needs_to_update_gdbgui_version() && store.get('show_gdbgui_upgrades')){
+                    if(initial_data.show_gdbgui_upgrades && TopBar.needs_to_update_gdbgui_version()){
                         Actions.show_modal(`Update Available`, TopBar.get_upgrade_text())
                     }
                 },

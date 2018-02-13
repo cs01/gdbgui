@@ -6,14 +6,7 @@ import constants from './constants.js';
 class Expressions extends React.Component {
     constructor(){
         super()
-        this.state = store._store
-        store.subscribe(this._store_change_callback.bind(this))
-    }
-
-    _store_change_callback(keys){
-        if(_.intersection(['expressions'], keys).length){
-            this.setState(store._store)
-        }
+        store.connectComponentState(this, ['expressions'])
     }
 
     render(){

@@ -116,24 +116,27 @@ const menu =
 
 
 class TopBar extends React.Component {
-    store_keys = ['debug_in_reverse', 'source_code_state', 'waiting_for_response', 'show_filesystem']
     constructor(){
       super()
-      this.state = this._get_applicable_global_state()
-      this.state['assembly_flavor'] = 'intel'  // default to intel (choices are 'att' or 'intel')
-      this.state['show_spinner'] = false  // att or intel
-      store.subscribe(this._store_change_callback.bind(this))
-      store.subscribe(this._set_spinner_timeout.bind(this))
-      store.subscribe(this._clear_spinner_timeout.bind(this))
+      // state local to the component
+      this.state = {
+        'assembly_flavor': 'intel',  // default to intel (choices are 'att' or 'intel')
+        'show_spinner': false
+      }
+      // global state attached to this component
+      store.connectComponentState(this, [
+                    'debug_in_reverse',
+                    'source_code_state',
+                    'waiting_for_response',
+                    'show_filesystem',
+                    'latest_gdbgui_version',
+                    'gdbgui_version'],
+                  this.store_update_callback.bind(this))
 
       this.spinner_timeout = null
       this.spinner_timeout_msec = 5000
     }
-
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
+    store_update_callback(keys){
         if(keys.indexOf('waiting_for_response') !== -1){
           this._clear_spinner_timeout()
           this.setState({'show_spinner': false})
@@ -153,14 +156,6 @@ class TopBar extends React.Component {
     _clear_spinner_timeout(){
       clearTimeout(this.spinner_timeout)
     }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
-    }
-
     toggle_assembly_flavor(){
       const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att'
       this.setState({'assembly_flavor': flavor})

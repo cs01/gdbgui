@@ -18,31 +18,16 @@ let register_name_fetch_count = 0
 
 
 class Registers extends React.Component {
-    store_keys = [
-        'inferior_program',
-        'previous_register_values',
-        'current_register_values',
-        'register_names',
-    ]
     constructor() {
         super()
-        this._store_change_callback = this._store_change_callback.bind(this)
-        this.state = this._get_applicable_global_state()
-        store.subscribe(this._store_change_callback.bind(this))
+        store.connectComponentState(this, [
+            'inferior_program',
+            'previous_register_values',
+            'current_register_values',
+            'register_names',
+            'can_fetch_register_values',
+        ])
     }
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
-    }
-
     static get_update_cmds(){
         let cmds = []
         if(store.get('can_fetch_register_values') === true){

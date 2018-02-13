@@ -3,27 +3,12 @@ import {store} from './store.js'
 
 
 class ToolTip extends React.Component {
-    store_keys = [
-        'tooltip',
-    ]
-
     constructor() {
       super()
-      this.state = this._get_applicable_global_state()
+      store.connectComponentState(this, [
+          'tooltip',
+      ])
       this.timeout = null
-      store.subscribe(this._store_change_callback.bind(this))
-    }
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
     }
     static hide_tooltip(){
         store.set('tooltip', {hidden: true, show_for_n_sec: null, node: null, content: null})

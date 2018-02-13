@@ -7,40 +7,22 @@ import React from 'react'
  * Settings modal when clicking the gear icon
  */
 class Settings extends React.Component {
-    store_keys = [
-        'debug',
-        'current_theme',
-        'themes',
-        'gdb_version',
-        'gdb_pid',
-        'show_settings',
-        'auto_add_breakpoint_to_main',
-        'pretty_print',
-        'refresh_state_after_sending_console_command',
-        'show_all_sent_commands_in_console',
-        'highlight_source_code',
-        'project_home'
-    ]
     constructor() {
         super()
-
-        this._store_change_callback = this._store_change_callback.bind(this)
-        this.state = this._get_applicable_global_state()
-        store.subscribe(this._store_change_callback.bind(this))
-
+        store.connectComponentState(this, [
+            'debug',
+            'current_theme',
+            'themes',
+            'gdb_version',
+            'gdb_pid',
+            'show_settings',
+            'auto_add_breakpoint_to_main',
+            'pretty_print',
+            'refresh_state_after_sending_console_command',
+            'show_all_sent_commands_in_console',
+            'highlight_source_code',
+        ])
         this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(this)
-    }
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
     }
     static toggle_key(key){
         store.set(key, !store.get(key))

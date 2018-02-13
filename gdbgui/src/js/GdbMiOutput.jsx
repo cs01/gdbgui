@@ -12,25 +12,10 @@ import {store} from './store.js';
 class GdbMiOutput extends React.Component {
 
     static MAX_OUTPUT_ENTRIES = 500
-    store_keys = ['gdb_mi_output']
     constructor(){
         super()
-        this._store_change_callback = this._store_change_callback.bind(this)
-        this.state = this._get_applicable_global_state()
-        store.subscribe(this._store_change_callback.bind(this))
+        store.connectComponentState(this, ['gdb_mi_output'])
         this._debounced_scroll_to_bottom = _.debounce(this._scroll_to_bottom.bind(this), 300, {leading: true})
-    }
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
     }
     render(){
         return(

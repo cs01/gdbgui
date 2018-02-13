@@ -18,27 +18,26 @@ class SourceCode extends React.Component {
     static view_more_top_node = null
     static view_more_bottom_node = null
 
-    store_keys = [
-        'fullname_to_render',
-        'cached_source_files',
-        'missing_files',
-        'disassembly_for_missing_file',
-        'line_of_source_to_flash',
-        'paused_on_frame',
-        'breakpoints',
-        'source_code_state',
-        'make_current_line_visible',
-        'source_code_selection_state',
-        'current_theme',
-        'inferior_binary_path',
-        'source_linenum_to_display_start',
-        'source_linenum_to_display_end',
-        'max_lines_of_code_to_fetch',
-        'source_code_infinite_scrolling'
-    ]
-
     constructor() {
         super()
+        store.connectComponentState(this, [
+            'fullname_to_render',
+            'cached_source_files',
+            'missing_files',
+            'disassembly_for_missing_file',
+            'line_of_source_to_flash',
+            'paused_on_frame',
+            'breakpoints',
+            'source_code_state',
+            'make_current_line_visible',
+            'source_code_selection_state',
+            'current_theme',
+            'inferior_binary_path',
+            'source_linenum_to_display_start',
+            'source_linenum_to_display_end',
+            'max_lines_of_code_to_fetch',
+            'source_code_infinite_scrolling'
+        ])
 
         // bind methods
         this.get_body_assembly_only = this.get_body_assembly_only.bind(this)
@@ -46,24 +45,8 @@ class SourceCode extends React.Component {
         this._get_assm_row = this._get_assm_row.bind(this)
         this.click_gutter = this.click_gutter.bind(this)
         this.is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line.bind(this)
-        this._store_change_callback = this._store_change_callback.bind(this)
-
-        this.state = this._get_applicable_global_state()
-        store.subscribe(this._store_change_callback.bind(this))
     }
 
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
-    }
     render(){
         return(<div className={this.state.current_theme} style={{height: '100%'}} >
                     <table id='code_table' className={this.state.current_theme}  style={{width: '100%'}} >
@@ -85,7 +68,6 @@ class SourceCode extends React.Component {
                     store.set('make_current_line_visible', false)
                 }
             }
-            store.set('fullname_rendered', this.state.fullname_to_render)
         }
     }
 

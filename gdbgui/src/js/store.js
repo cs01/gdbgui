@@ -1,10 +1,9 @@
-import constants from './constants.js';
-/* global debug */
-/* global initial_data */
-
 /*
- * The store can be changed via store.set() and retrieved via store.get(). store.get() returns references to objects.
- * store should only be changed with calls to store.set() so that listeners are notified.
+ * The store is the global state of the application.
+ * It can be changed via store.set() and retrieved via store.get().
+ *
+ * The store should only be changed with calls to store.set() so that listeners
+ * are notified.
  *
  * For example, calling store.set('line_of_source_to_flash', 100)
  * will change the highlighted line and automatically scroll to that line in the UI. Or calling
@@ -12,28 +11,131 @@ import constants from './constants.js';
  */
 const store = {
     /**
+     * the store's options
+     */
+    options: {
+        debounce_ms: 0,
+        debug: false,
+        immutable: true,
+        // sometimes values are extremely large and just add noise when logging
+        // if the key name is in this array and debug is true, value changes
+        // will not be logged in the console
+        keys_to_not_log_changes_in_console: [],
+    },
+    /**
      * Set the initial store. This can only be done once, and must be done before the
      * store can be modified. This should be a JavaScript object with key/value pairs.
      * This is the initial "hydration" of the store, and sets the expected types for all keys.
      * @param {object} initial_store: Initial store object
+     * @param {object} options: options to apply to store
      */
-    initialize: function(initial_store){
+    initialize: function(initial_store, options){
         if(store._store_created){
             throw 'cannot create more than one global store'
         }
         for(let k in initial_store){
             store._store[k] = initial_store[k]
         }
+        if(options){
+          Object.assign(store.options, options)
+        }
         store._store_created = true
     },
     /**
-     * options object with the following fields. Can be set like `store.options.debounce_ms = 30`
-     * * **debounce_ms (int, default: 10)**  update subscribers only after this much time has passed and an update has not occurred
-     * * **debug (bool, default: false)**: if true, print store changes to console
+     * connect a React component's state to keys in the global store.
+     * When a watched key of the store is updated, that the component's
+     * setState method will be called.
+     * Call this from the Component's constructor:
+     *  store.connectComponentState(this, ['key1', 'key2'])
      */
-    options: {
-        debounce_ms: 10,
-        debug: false,
+    connectComponentState: function(component,
+                          keys_to_watch_for_changes,
+                          additonal_callback=null){
+
+        component.state = component.state || {}  // initialize if not set
+
+        // add keys that map to the store's keys
+        for (let k of keys_to_watch_for_changes){
+            if(!(store._store.hasOwnProperty(k))){
+              throw 'Store does not have key ' + k
+            }
+            if(component.state.hasOwnProperty(k)){
+              console.warn('Overwriting existing state key ' + k)
+            }
+            component.state[k] = store._store[k]
+            store._record_key_watcher(k, component.constructor.name)
+        }
+
+        // call this function whenever the store changes
+        function _store_change_callback(changed_keys){
+            if(intersection(keys_to_watch_for_changes, changed_keys).length){
+                // only update the state if a key we care about has changed
+                let state_update_obj = {}
+                keys_to_watch_for_changes.forEach(k => state_update_obj[k] = store._store[k])
+                this.setState(state_update_obj)
+
+                // if some other custom callback is required by the component
+                // call that function as well
+                if(additonal_callback){
+                  additonal_callback(changed_keys)
+                }
+            }
+        }
+        let callback_bound_to_component = _store_change_callback.bind(component)
+        return store.subscribe(callback_bound_to_component)
+    },
+    /**
+     * Connect a regular JavaScript function to a callback that is called ONLY
+     * when one of a subset of the keys has been updated
+     */
+    subscribe_to_keys: function(keys_to_watch_for_changes, callback){
+      // add keys that map to the store's keys
+      for (let k of keys_to_watch_for_changes){
+          if(!(store._store.hasOwnProperty(k))){
+            throw 'Store does not have key ' + k
+          }
+          store._record_key_watcher(k, callback.name)
+      }
+
+      // call this function whenever the store changes
+      function _callback(changed_keys){
+          if(intersection(keys_to_watch_for_changes, changed_keys).length){
+              callback(changed_keys)
+          }
+      }
+      return store.subscribe(_callback)
+    },
+    get_key_watchers(){
+      return copy_by_value(store._keys_connected_to_store_updates)
+    },
+    _record_key_watcher(key, watcher_name){
+      if(!store._keys_connected_to_store_updates.hasOwnProperty(key)){
+        store._keys_connected_to_store_updates[key] = []
+      }
+      store._keys_connected_to_store_updates[key].push(watcher_name)
+    },
+    /**
+     * Add listener(s) to store changes. Reactors are automatically subscribed to store changes.
+     * @param {function} function or array of functions to be called when event is dispatched due to store updates
+     */
+    subscribe(callback){
+        let id = store._cur_callback_id
+        store._cur_callback_id++
+
+        function unsubscribe(){
+          store._callback_objs = store._callback_objs.filter(c => c.id !== id)
+        }
+        store._callback_objs.push({id: id, callback: callback})
+        return unsubscribe
+    },
+    /**
+     * return an array of keys that do not trigger any callbacks when changed, and therefore
+     * probably don't need to be included in the global store
+     */
+    getUnwatchedKeys: function(){
+      let arr1 = Object.keys(store._store)
+      , arr2 = Object.keys(store._keys_connected_to_store_updates)
+      return arr1.filter(i => arr2.indexOf(i) === -1)
     },
     /**
      * set key or keys of store object
@@ -58,8 +160,9 @@ const store = {
         }
 
         let oldval = store._store[key]
-        _check_type_match(oldval, value, key)
-        if (_value_changed(oldval, value)){
+        check_type_match(oldval, value, key)
+        if (value_changed(oldval, value)){
+            // TODO add middleware calls
             store._enqueue_change(key, oldval, value)
         }
 
@@ -77,7 +180,7 @@ const store = {
         if(store.options.debug) {
             // this is only meaningful when the store data is immutable
             // and updates aren't just references to the existing object
-            if(KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE.indexOf(key) === -1){
+            if(store.options.keys_to_not_log_changes_in_console.indexOf(key) === -1){
                 console.log(key, oldval, ' -> ', value)
             }
         }
@@ -94,12 +197,16 @@ const store = {
         }
 
         // delay event emission and set new timeout id
-        store._debounce_timeout = setTimeout(store.publish, store.options.debounce_ms)
+        if(store.options.debounce_ms){
+          store._debounce_timeout = setTimeout(store._publish, store.options.debounce_ms)
+        }else{
+          store._publish()
+        }
     },
     /**
      * Get reference to one of the keys in the current store.
      * @param {str} key of the store object to get a reference to
-     * @return reference to value in the store.
+     * @return reference or new object (depending on `immutable` option)
      * NOTE: The store should *only* be update by calling `store.set(...)`
      *   Throws error if key does not exist in store.
      */
@@ -109,42 +216,34 @@ const store = {
         }
         if(arguments.length === 0){
             // return the whole store
-            return store._store
+            if(store.options.immutable){
+              return Object.assign({}, store._store)  // copy entire store by value
+            }else{
+              return store._store  // return reference to store
+            }
         }else if(arguments.length > 1){
             console.error('unexpected number of arguments')
             return
         }
-        // the "get" trap returns a value
-        if(store._store.hasOwnProperty(key)){
-            // TODO should this return a copy or reference?
-            return store._store[key]
-        }else{
-            throw `attempted to access key that was not set during initialization: ${key}`
+
+        if(!store._store.hasOwnProperty(key)){
+          throw `attempted to access key that was not set during initialization: ${key}`
         }
-    },
-    /**
-     * Add listener(s) to store changes. Reactors are automatically subscribed to store changes.
-     * @param {function} function or array of functions to be called when event is dispatched due to store updates
-     */
-    subscribe(callback_function){
-        if(Array.isArray(callback_function)){
-            store._callbacks = store._callbacks.concat(callback_function)
+
+        let ref = store._store[key]
+
+        if(store.options.immutable){
+          return copy_by_value(ref)
         }else{
-            store._callbacks.push(callback_function)
+          // return the reference
+          return ref
         }
-    },
-    /**
-     * Remove listener of store changes
-     * @param {function} function to stop being called when store is udpated
-     */
-    unsubscribe(callback_function){
-        store._callbacks = store._callbacks.filter(c => c !== callback_function)
     },
     /**
      * Run subscribers' callback functions. An array of the changed keys is passed to the callback function.
      * Be careful how often this is called, since re-rendering components can become expensive.
      */
-    publish: function(){
+    _publish: function(){
         const changed_keys = store._changed_keys
         if(changed_keys.length === 0){
             console.error('no keys were changed, yet we are trying to publish a store change')
@@ -155,8 +254,7 @@ const store = {
         // (if callbacks modify state, the list of keys the callback changed would be wiped out)
         store._changed_keys = []
         store._clear_debounce_timeout()
-        store._batched_store_changes = 0
-        store._callbacks.map(c => c(changed_keys))
+        store._callback_objs.forEach(c => c.callback(changed_keys))
 
     },
     /**
@@ -166,15 +264,13 @@ const store = {
     /**
      * array of functions to be called when store changes (usually Reactor.render())
      */
-    _callbacks: [],
+    _callback_objs: [],
+    // unique id for each callback. Used when unsubscribing.
+    _cur_callback_id: 0,
     /**
      * Actual store is held here, but should NEVER be accessed directly. Only access through store.set/store.get!
      */
     _store: {},
-    /**
-     * dom selections that are bound to a reactor (i.e. `#my_id`)
-     */
-    _elements: [],
     /**
      * Clear the debounce timeout
      */
@@ -192,12 +288,30 @@ const store = {
      * replaced, events never get dispatched. This is an "escape hatch" for that.
      * Set to zero when event is dispatched.
      */
-    _batched_store_changes: 0,
-    _store_created: false
+    _store_created: false,
+    _keys_connected_to_store_updates: {},
 }
 
 /****** helper functions ********/
-function _check_type_match(a, b, key){
+function intersection(arr1, arr2){
+  return arr1.filter(i => arr2.indexOf(i) !== -1)
+}
+
+function copy_by_value(ref){
+  if(Array.isArray(ref)){
+    return ref.slice()
+  }else if (is_object(ref)){
+    return Object.assign({}, ref)
+  }else{
+    return ref
+  }
+}
+
+function is_object(ref){
+  return (ref instanceof Object && ref.constructor === Object  )
+}
+
+function check_type_match(a, b, key){
     if(a !== undefined && b !== undefined && a !== null && b !== null){
         let old_type = typeof a
         , new_type = typeof b
@@ -208,155 +322,58 @@ function _check_type_match(a, b, key){
     }
 }
 
-function _value_changed(a, b){
-    if(_.isObject(a)){
+function value_changed(a, b){
+    if((is_object(a) || Array.isArray(a)) &&
+          !store.options.immutable) {
         // since objects can be updated by reference, we don't
         // know if the value changed or not since the reference
         // is still the same. Err on the side of caution assume
         // objects always change
         return true
     }else{
-        return !_.isEqual(a, b)
+        return !shallow_equal(a, b)
     }
 }
 
-/**
- * The initial store data. Keys cannot be added after initialization.
- * All fields in here should be shared by > 1 component, otherwise they should
- * exist as local state for that component.
- *
- */
-const initial_store_data = {
-    // environment
-    debug: debug,  // if gdbgui is run in debug mode
-    interpreter: initial_data.interpreter,  // either 'gdb' or 'llvm'
-    gdbgui_version: initial_data.gdbgui_version,
-    latest_gdbgui_version: '(not fetched)',
-    show_gdbgui_upgrades: initial_data.show_gdbgui_upgrades,
-    gdb_version: undefined,  // this is parsed from gdb's output
-    gdb_version_array: [],  // this is parsed from gdb's output
-    gdb_pid: undefined,
-    can_fetch_register_values: true,  // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
-    show_settings: false,
-
-    'debug_in_reverse': false,
-    show_modal: false,
-    modal_header: null,
-    modal_body: null,
-
-    tooltip: {hidden: false, content: 'placeholder', node: null, show_for_n_sec: null},
-    textarea_to_copy_to_clipboard: {},  // will be replaced with textarea dom node
-    // preferences
-    // syntax highlighting
-    themes: initial_data.themes,
-    current_theme: localStorage.getItem('theme') || initial_data.themes[0],
-    highlight_source_code: true,  // get saved boolean to highlight source code
-    max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
-    auto_add_breakpoint_to_main: true,
-
-    pretty_print: true,  // whether gdb should "pretty print" variables. There is an option for this in Settings
-    refresh_state_after_sending_console_command: true,  // If true, send commands to refresh GUI store after each command is sent from console
-    show_all_sent_commands_in_console: debug,  // show all sent commands if in debug mode
-
-    inferior_program: constants.inferior_states.unknown,
-    inferior_pid: null,
-
-    paused_on_frame: undefined,
-    selected_frame_num: 0,
-    current_thread_id: undefined,
-    stack: [],
-    locals: [],
-    threads: [],
-
-    // source files
-    source_file_paths: [], // all the paths gdb says were used to compile the target binary
-    language: 'c_family',  // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
-    files_being_fetched: [],
-    fullname_to_render: null,
-    fullname_rendered: null,
-    line_of_source_to_flash: null,
-    current_assembly_address: null,
-    // rendered_source: {},
-    make_current_line_visible: false,  // set to true when source code window should jump to current line
-    cached_source_files: [],  // list with keys fullname, source_code
-    disassembly_for_missing_file: [],  // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
-    missing_files: [],  // files that were attempted to be fetched but did not exist on the local filesystem
-    source_code_state: constants.source_code_states.NONE_AVAILABLE,
-    source_code_selection_state: constants.source_code_selection_states.PAUSED_FRAME,
-
-    source_code_infinite_scrolling: false,
-    source_linenum_to_display_start: 0,
-    source_linenum_to_display_end: 0,
-
-    // binary selection
-    inferior_binary_path: null,
-    inferior_binary_path_last_modified_unix_sec: null,
-
-    // registers
-    register_names: [],
-    previous_register_values: {},
-    current_register_values: {},
-
-    // memory
-    memory_cache: {},
-    start_addr: '',
-    end_addr: '',
-    bytes_per_line: '8',
-
-    // breakpoints
-    breakpoints: [],
-
-    // expressions
-    expressions: [],  // array of dicts. Key is expression, value has various keys. See Expressions component.
-    root_gdb_tree_var: null,  // draw tree for this variable
-
-    waiting_for_response: false,
-
-    gdb_mi_output: [],
-
-    gdb_autocomplete_options: [],
-
-    gdb_console_entries: [],
-
-    show_filesystem: false,
-    middle_panes_split_obj: {},
+// adapted from react-redux shallowEqual.js
+// https://github.com/reactjs/react-redux/blob/master/src/utils/shallowEqual.js
+function is_same_ref(x, y) {
+  if (x === y) {
+    return x !== 0 || y !== 0 || 1 / x === 1 / y
+  } else {
+    return x !== x && y !== y
+  }
 }
 
-const KEYS_TO_NOT_LOG_CHANGES_IN_CONSOLE = [
-    'gdb_mi_output',
-    'gdb_console_entries'
-]
+function shallow_equal(objA, objB) {
+  if (is_same_ref(objA, objB)){
+    return true
+  }
 
-// restore saved localStorage data
-for(let key in initial_store_data){
-    try{
-        if(typeof initial_store_data[key] === 'boolean'){
-            if(localStorage.hasOwnProperty(key)){
-                let savedval = JSON.parse(localStorage.getItem(key))
-                , oldval = initial_store_data[key]
+  if (typeof objA !== 'object' || objA === null ||
+      typeof objB !== 'object' || objB === null) {
+    return false
+  }
 
-                if((typeof oldval) === (typeof savedval)){
-                    initial_store_data[key] = savedval
-                }
+  const keysA = Object.keys(objA)
+  const keysB = Object.keys(objB)
 
-            }
-        }
-    }catch(err){
-        console.log(err)
-        localStorage.removeItem(key)
+  if (keysA.length !== keysB.length){
+    return false
+  }
+
+  for (let k of keysA) {
+    if (!objB.hasOwnProperty(k)){
+      return false
+    }else if(!is_same_ref(objA[k], objB[k])) {
+      return false
     }
-}
+  }
 
-if(localStorage.hasOwnProperty('max_lines_of_code_to_fetch')){
-    let savedval = JSON.parse(localStorage.getItem('max_lines_of_code_to_fetch'))
-    if(_.isInteger(savedval) && savedval > 0){
-        initial_store_data['max_lines_of_code_to_fetch'] = savedval
-    }
-
+  return true
 }
 
 
 module.exports = {
     store: store,
-    initial_store_data: initial_store_data
 }

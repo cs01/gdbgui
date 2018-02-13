@@ -4,35 +4,19 @@ import React from 'react'
 import {store} from './store.js'
 
 class InferiorProgramInfo extends React.Component {
-    store_keys = [
-        'inferior_pid',
-        'gdb_pid',
-    ]
     constructor() {
         super()
         this.send_signal = this.send_signal.bind(this)
         this.get_choice = this.get_choice.bind(this)
-        this._store_change_callback = this._store_change_callback.bind(this)
-        this.state = {inferior_pid: store._store.inferior_pid,
+        this.state = {
             selected_inferior_signal: 'SIGINT',
             selected_gdb_signal: 'SIGINT',
         }
-        store.subscribe(this._store_change_callback.bind(this))
+        store.connectComponentState(this, [
+            'inferior_pid',
+            'gdb_pid',
+        ])
     }
-
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
-    }
-
     send_signal(signal_name, pid){
         $.ajax({
           beforeSend: function(xhr) {

@@ -11,7 +11,10 @@ const Tree = {
     width_input: null,
     height_input: null,
     init: function(){
-        store.subscribe(Tree.render)
+        store.subscribe_to_keys(['root_gdb_tree_var',
+                                'expressions',
+                                'root_gdb_tree_var'],
+                                Tree._render)
         let render_on_enter = (e)=>{
             if(e.keyCode===13){
                 Tree._render()
@@ -28,16 +31,6 @@ const Tree = {
     rendered_gdb_var_tree_root: null,
     gdb_var_being_updated: null,  // if user clicks deep in a tree, only rerender that subtree, don't start from root again
 
-    /**
-     * Update the tree component.
-     */
-    render: function(keys){
-        if(!_.intersection(['root_gdb_tree_var', 'expressions', 'root_gdb_tree_var'], keys).length){
-            // no inputs to this component have changed
-            return
-        }
-        Tree._render()
-    },
     _render: function(){
         let gdbvar = store.get('root_gdb_tree_var')
         if(!gdbvar) {

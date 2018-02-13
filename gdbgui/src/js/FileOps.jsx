@@ -122,7 +122,21 @@ const FileOps = {
     unfetchable_disassembly_addresses: {},
     disassembly_addr_being_fetched: null,
     init: function(){
-        store.subscribe(FileOps._store_change_callback)
+        store.subscribe_to_keys(['inferior_program',
+                                    'source_code_selection_state',
+                                    'paused_on_frame',
+                                    'current_assembly_address',
+                                    'disassembly_for_missing_file',
+                                    'highlight_source_code',
+                                    'missing_files',
+                                    'files_being_fetched',
+                                    'gdb_version_array',
+                                    'interpreter',
+                                    'fullname_to_render',
+                                    'line_of_source_to_flash',
+                                    'cached_source_files',
+                                    'max_lines_of_code_to_fetch'],
+                                    FileOps._store_change_callback)
     },
     user_select_file_to_view: function(fullname, line){
         store.set('source_code_selection_state', constants.source_code_selection_states.USER_SELECTION)
@@ -131,27 +145,7 @@ const FileOps = {
         store.set('make_current_line_visible', true)
         store.set('source_code_infinite_scrolling', false)
     },
-    _store_change_callback: function(keys){
-        if(_.intersection(
-            ['inferior_program',
-            'source_code_selection_state',
-            'paused_on_frame',
-            'current_assembly_address',
-            'disassembly_for_missing_file',
-            'highlight_source_code',
-            'missing_files',
-            'files_being_fetched',
-            'gdb_version_array',
-            'interpreter',
-            'fullname_to_render',
-            'line_of_source_to_flash',
-            'cached_source_files',
-            'max_lines_of_code_to_fetch'], keys).length === 0)
-        {
-            // FileOps is not affected by this key
-            return
-        }
-
+    _store_change_callback: function(){
         if(store.get('inferior_program') === constants.inferior_states.running){
             return
         }

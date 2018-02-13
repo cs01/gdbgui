@@ -22,31 +22,15 @@ class FrameArguments extends React.Component {
 }
 
 class Threads extends React.Component {
-    store_keys = [
-        'threads',
-        'current_thread_id',
-        'stack',
-        'selected_frame_num',
-    ]
     constructor() {
         super()
-        this._store_change_callback = this._store_change_callback.bind(this)
-        this.state = this._get_applicable_global_state()
-        store.subscribe(this._store_change_callback.bind(this))
+        store.connectComponentState(this, [
+            'threads',
+            'current_thread_id',
+            'stack',
+            'selected_frame_num',
+        ])
     }
-    _store_change_callback(keys){
-        if(_.intersection(this.store_keys, keys).length){
-            this.setState(this._get_applicable_global_state())
-        }
-    }
-    _get_applicable_global_state(){
-        let applicable_state = {}
-        for (let k of this.store_keys){
-            applicable_state[k] = store._store[k]
-        }
-        return applicable_state
-    }
-
 
     static select_thread_id(thread_id){
         GdbApi.select_thread_id(thread_id)

@@ -28,14 +28,7 @@ class HoverVar extends React.Component {
         $('body').on('mouseenter', '#hovervar', HoverVar.mouseover_hover_window)
         $('body').on('mouseleave', '#hovervar', HoverVar.mouseout_hover_window)
 
-        this.state = store._store
-        store.subscribe(this._store_change_callback.bind(this))
-    }
-
-    _store_change_callback(keys){
-        if(_.intersection(['expressions'], keys).length){
-            this.setState(store._store)
-        }
+        store.connectComponentState(this, ['expressions'])
     }
     render(){
         let hover_objs = store.get('expressions').filter(o => o.expr_type === 'hover')

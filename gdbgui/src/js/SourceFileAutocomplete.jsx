@@ -16,13 +16,11 @@ const help_text = "Enter file path to view, press enter"
 class SourceFileAutocomplete extends React.Component {
     constructor(){
         super()
-        store.subscribe(this._store_change_callback.bind(this))
+        store.subscribe_to_keys(['source_file_paths'], this.store_change_callback.bind(this))
     }
-    _store_change_callback(keys){
-        if(_.intersection(['source_file_paths'], keys).length){
-            if(!_.isEqual(this.awesomeplete_input._list, store.get('source_file_paths'))){
-                this.awesomeplete_input.list = store.get('source_file_paths')
-            }
+    store_change_callback(){
+        if(!_.isEqual(this.awesomeplete_input._list, store.get('source_file_paths'))){
+            this.awesomeplete_input.list = store.get('source_file_paths')
         }
     }
     render(){
