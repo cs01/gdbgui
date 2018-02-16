@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTable from './ReactTable.jsx';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import GdbApi from './GdbApi.jsx';
 import Memory from './Memory.jsx';
 import {FileLink} from './Links.jsx';

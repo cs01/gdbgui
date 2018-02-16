@@ -1,7 +1,7 @@
 import Actions from './Actions.js'
 import constants from './constants.js'
 import React from 'react'
-import {store} from './store.js'
+import {store} from 'statorgfc'
 
 class InferiorProgramInfo extends React.Component {
     constructor() {

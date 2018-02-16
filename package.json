@@ -21,6 +21,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-treebeard": "^2.1.0",
+    "statorgfc": "^0.1.5",
     "webpack": "^3.5.5"
   },
   "devDependencies": {

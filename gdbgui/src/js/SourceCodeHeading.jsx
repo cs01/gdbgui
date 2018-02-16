@@ -1,6 +1,6 @@
 import React from 'react';
 import constants from './constants.js';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import {FileLink} from './Links.jsx';
 import FileOps from './FileOps.jsx';
 

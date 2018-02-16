@@ -1,6 +1,6 @@
 import React from 'react';
 import Actions from './Actions.js';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 
 
 class Modal extends React.Component {

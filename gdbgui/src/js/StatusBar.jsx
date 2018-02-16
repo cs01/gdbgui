@@ -1,6 +1,6 @@
 import React from 'react';
 import Util from './Util.js';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 
 /**
  * Component to render a status message with optional error/warning label

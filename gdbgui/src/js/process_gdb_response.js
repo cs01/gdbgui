@@ -5,7 +5,7 @@
  */
 
 import React from 'react'
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import GdbMiOutput from './GdbMiOutput.jsx'
 import Breakpoints from './Breakpoints.jsx'
 import constants from './constants.js'

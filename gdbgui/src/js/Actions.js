@@ -1,4 +1,4 @@
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import GdbApi from './GdbApi.jsx';
 import SourceCode from './SourceCode.jsx';
 import Locals from './Locals.jsx';

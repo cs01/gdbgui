@@ -4067,6 +4067,10 @@ sshpk@^1.7.0:
     jsbn "~0.1.0"
     tweetnacl "~0.14.0"
 
+statorgfc@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.yarnpkg.com/statorgfc/-/statorgfc-0.1.5.tgz#bb4dbc4f8c824969b87e757bd9cda66426c4e08c"
+
 stream-browserify@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/stream-browserify/-/stream-browserify-2.0.1.tgz#66266ee5f9bdb9940a4e4514cafb43bb71e5c9db"

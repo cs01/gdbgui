@@ -7,7 +7,7 @@
  * message in gdbgui.
  */
 import React from 'react';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 
 class GdbMiOutput extends React.Component {
 

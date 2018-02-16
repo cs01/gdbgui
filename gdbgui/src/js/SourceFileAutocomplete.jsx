@@ -1,4 +1,4 @@
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import constants from './constants.js';
 import Actions from './Actions.js';
 import Util from './Util.js';

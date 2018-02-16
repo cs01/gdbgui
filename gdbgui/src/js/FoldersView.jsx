@@ -1,5 +1,5 @@
 import React from 'react'
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import FileOps from './FileOps.jsx'
 import constants from './constants.js'
 import {Treebeard} from 'react-treebeard'

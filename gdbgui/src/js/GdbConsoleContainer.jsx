@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import constants from './constants.js'
 import GdbApi from './GdbApi.jsx'
 import GdbCommandInput from './GdbCommandInput.jsx'

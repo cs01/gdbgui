@@ -1,5 +1,5 @@
 import React from 'react';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import GdbApi from './GdbApi.jsx';
 import Actions from './Actions.js';
 import Util from './Util.js';

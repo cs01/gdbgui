@@ -1,6 +1,6 @@
 import React from 'react'
 import ToolTip from './ToolTip.jsx'
-import {store} from './store.js'
+import {store} from 'statorgfc'
 
 class CopyToClipboard extends React.Component {
     render(){

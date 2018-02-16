@@ -9,7 +9,7 @@
  /* global Split */
  /* global initial_data */
 
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import GdbApi from './GdbApi.jsx'
 import ReactDOM from 'react-dom'
 import React from 'react'

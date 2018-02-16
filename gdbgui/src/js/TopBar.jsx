@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import BinaryLoader from './BinaryLoader.jsx';
 import Settings from './Settings.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';

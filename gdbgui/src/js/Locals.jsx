@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import GdbVariable from './GdbVariable.jsx';
 
 class Locals extends React.Component {

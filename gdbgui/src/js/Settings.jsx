@@ -1,4 +1,4 @@
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import Actions from './Actions.js'
 import ToolTip from './ToolTip.jsx'
 import React from 'react'

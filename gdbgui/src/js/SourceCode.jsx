@@ -2,7 +2,7 @@
  * A component to render source code, assembly, and break points
  */
 
-import {store} from './store.js';
+import {store} from 'statorgfc';
 import React from 'react';
 import FileOps from './FileOps.jsx';
 import Breakpoints from './Breakpoints.jsx';

@@ -5,7 +5,7 @@
  * address. It also has methods to manage the global store of memory data.
  */
 
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import GdbApi from './GdbApi.jsx'
 import constants from './constants.js'
 import MemoryLink from './MemoryLink.jsx'

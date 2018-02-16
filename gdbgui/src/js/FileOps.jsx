@@ -1,5 +1,5 @@
 
-import {store} from './store.js'
+import {store} from 'statorgfc'
 import GdbApi from './GdbApi.jsx'
 import constants from './constants.js'
 import Actions from './Actions.js'
