@@ -42,7 +42,7 @@ To add a feature or fix a bug, see `CONTRIBUTING <https://github.com/cs01/gdbgui
 
 Authors
 -------
-``gdbgui`` is authored by Chad Smith, with `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_ and several amazing open source libraries. JavaScript libraries include React, splitjs, awesomplete, vis.js, moment.js, lodash, bootstrap, and jquery. Python libraries include flask, socket.io, flask-socket-io, Pygments, gevent, and pygdbmi.
+``gdbgui`` is authored by Chad Smith, with `contributions from the community <https://github.com/cs01/gdbgui/graphs/contributors>`_ and several amazing open source libraries. JavaScript libraries include React, statorgfc, splitjs, awesomplete, vis.js, moment.js, lodash, bootstrap, and jquery. Python libraries include flask, socket.io, flask-socket-io, Pygments, gevent, and pygdbmi.
 
 Contact
 -------

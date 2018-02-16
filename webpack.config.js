@@ -18,14 +18,7 @@ module.exports = {
           'eslint-loader',
         ],
         exclude: /node_modules/
-      },
-      { test: /statorgfc/,
-        use: [
-        'babel-loader',
-        'eslint-loader',
-        ],
-        exclude: /node_modules/
-      },
+      }
     ]
   },
   devtool: 'source-map'
