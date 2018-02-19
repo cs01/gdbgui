@@ -5,7 +5,8 @@
   "scripts": {
     "build": "webpack -p",
     "watch": "webpack --watch",
-    "test": "jest"
+    "test": "jest",
+    "prettier": "prettier ./gdbgui/src/js/** --write"
   },
   "babel": {
     "presets": [
@@ -21,6 +22,7 @@
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-treebeard": "^2.1.0",
+    "statorgfc": "^0.1.6",
     "webpack": "^3.5.5"
   },
   "devDependencies": {
@@ -29,7 +31,9 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "eslint": "^4.7.0",
+    "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-react": "^7.3.0",
-    "jest": "^21.2.1"
+    "jest": "^21.2.1",
+    "prettier": "^1.10.2"
   }
 }
