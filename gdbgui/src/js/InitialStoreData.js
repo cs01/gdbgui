@@ -27,8 +27,8 @@ const initial_store_data = {
 
   tooltip: {hidden: false, content: 'placeholder', node: null, show_for_n_sec: null},
   textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
+
   // preferences
-  // syntax highlighting
   themes: initial_data.themes,
   current_theme: localStorage.getItem('theme') || initial_data.themes[0],
   highlight_source_code: true, // get saved boolean to highlight source code
@@ -37,7 +37,9 @@ const initial_store_data = {
 
   pretty_print: true, // whether gdb should "pretty print" variables. There is an option for this in Settings
   refresh_state_after_sending_console_command: true, // If true, send commands to refresh GUI store after each command is sent from console
+  flush_after_commands: true,
   show_all_sent_commands_in_console: debug, // show all sent commands if in debug mode
+
 
   inferior_program: constants.inferior_states.unknown,
   inferior_pid: null,
