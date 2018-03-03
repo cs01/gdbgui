@@ -21,6 +21,7 @@ class Settings extends React.Component {
       'refresh_state_after_sending_console_command',
       'show_all_sent_commands_in_console',
       'highlight_source_code',
+      'flush_after_commands',
     ])
     this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(this)
   }
@@ -73,6 +74,7 @@ class Settings extends React.Component {
           {this.get_update_max_lines_of_code_to_fetch()}
           {Settings.get_checkbox_row('pretty_print', 'Pretty print dynamic variables (requires restart)')}
           {Settings.get_checkbox_row('refresh_state_after_sending_console_command', 'Refresh all components when a command is sent from the console')}
+          {Settings.get_checkbox_row('flush_after_commands', 'Attempt to flush stdout after each command is run')}
           {Settings.get_checkbox_row(
             'show_all_sent_commands_in_console',
             'Print all sent commands in console, including those sent automatically by gdbgui'

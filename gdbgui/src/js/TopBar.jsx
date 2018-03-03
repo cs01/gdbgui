@@ -123,6 +123,11 @@ const menu = (
           </a>
         </li>
         <li>
+          <a href="https://saythanks.io/to/grassfedcode" className="pointer">
+            Say Thanks
+          </a>
+        </li>
+        <li>
           <a href="https://gitter.im/gdbgui/Lobby" className="pointer">
             Chat room
           </a>

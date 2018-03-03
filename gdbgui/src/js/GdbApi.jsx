@@ -319,6 +319,9 @@ const GdbApi = {
     }
   },
   get_flush_output_cmd: function() {
+    if(!store.get('flush_after_commands')){
+      return ''
+    }
     if (store.get('language') === 'c_family') {
       if (store.get('interpreter') === 'gdb') {
         return constants.IGNORE_ERRORS_TOKEN_STR + '-data-evaluate-expression fflush(0)'
