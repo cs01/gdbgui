@@ -5,7 +5,7 @@ html, body, .splitjs_container {  /* for splitjs, it's important that html also 
 height: 100%;
 padding: 0;
 margin: 0;
-background-color: #F6F6F6;
+background-color: #333;
 box-sizing: border-box;
 overflow: hidden;
 }

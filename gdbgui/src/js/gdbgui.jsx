@@ -59,8 +59,8 @@ class Gdbgui extends React.PureComponent {
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
         <div id="middle" style={{paddingTop: '60px'}}>
-          <div id="folders_view" className="content" style={{backgroundColor: 'rgb(33, 37, 43)'}}>
-            <FoldersView project_home={initial_data.project_home} />
+          <div id="folders_view" className="content" style={{backgroundColor: '#333'}}>
+            <FoldersView />
           </div>
 
           <div id="source_code_view" className="content">
