@@ -2,11 +2,17 @@ import React from 'react'
 import {store} from 'statorgfc'
 import FileOps from './FileOps.jsx'
 import constants from './constants.js'
-import {Treebeard} from 'react-treebeard'
 import SourceFileAutocomplete from './SourceFileAutocomplete.jsx'
+import FileSystem from './FileSystem.jsx'
 import Actions from './Actions.js'
 
-function get_child_node(name, curnode) {
+const default_rootnode = {
+  name: 'Load inferior program, then click "Fetch source files" to populate this window',
+  children: [],
+  toggled: false
+}
+
+function get_child_node_with_name(name, curnode) {
   if (!curnode.children) {
     return null
   }
@@ -19,26 +25,104 @@ function get_child_node(name, curnode) {
 }
 
 class FoldersView extends React.Component {
-  MAX_ENTRIES = 300
   constructor(props) {
     super(props)
     this.state = {
-      data: {
-        name: 'Load inferior program, then click "Fetch source files" to populate this window',
-      },
-      has_hidden_entries: false,
+      rootnode: default_rootnode
     }
-    store.connectComponentState(this, ['source_file_paths', 'source_code_state'], this.store_change_callback.bind(this))
+    store.connectComponentState(this,
+      ['source_code_state', 'source_file_paths'],
+      this.update_filesystem_data.bind(this))
+
+
+    this.max_filesystem_entries = 300
+    this.project_home = initial_data.project_home  /* global initial_data */
     this.onToggle = this.onToggle.bind(this)
+    this.onClickName = this.onClickName.bind(this)
     this.reveal_path = this.reveal_path.bind(this)
-    this.update_filesystem_data = this.update_filesystem_data.bind(this)
     this.expand_all = this.expand_all.bind(this)
     this.collapse_all = this.collapse_all.bind(this)
-
-    store.subscribeToKeys(['source_file_paths'], this.store_change_callback.bind(this))
   }
-  store_change_callback() {
-    this.update_filesystem_data(store.get('source_file_paths'))
+
+  render() {
+    let source_code_state = this.state.source_code_state,
+      file_is_rendered =
+        (source_code_state === constants.source_code_states.SOURCE_CACHED
+          || source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED)
+      , can_reveal = file_is_rendered && this.state.source_file_paths.length
+      , hiding_entries = this.state.source_file_paths.length > this.max_filesystem_entries
+
+
+    return (
+      <div>
+        <button className="btn btn-xs btn-primary" onClick={Actions.fetch_source_files} style={{marginLeft: '5px', marginTop: '5px'}}>
+          Fetch source files
+        </button>
+
+        <div style={{width: '100%'}}>
+          <SourceFileAutocomplete />
+        </div>
+        <div role="group" className="btn-group btn-group" style={{padding: '4px'}}>
+          <button className="btn btn-xs btn-default"
+            onClick={this.expand_all}
+          >
+            Expand all
+          </button>
+
+          <button className="btn btn-xs btn-default"
+                onClick={this.collapse_all}
+          >
+            Collapse all
+          </button>
+
+          <button
+            className={'btn btn-xs btn-default ' + (can_reveal ? '' : 'hidden')}
+            onClick={() => this.reveal_path(store.get('fullname_to_render'))}>
+            Reveal current file
+          </button>
+        </div>
+
+        {store.get('source_file_paths').length ? (
+          <p style={{color: 'white', padding: '4px'}}>
+            {store.get('source_file_paths').length} known files used to compile the inferior program
+          </p>
+        ) : (
+          ''
+        )}
+
+        {hiding_entries ? (
+          <p style={{color: 'black', background: 'orange', padding: '4px'}}>
+            Maximum entries in tree below is {this.max_filesystem_entries} (hiding {store.get('source_file_paths').length - this.max_filesystem_entries}).
+            All files can still be searched for in the input above.
+          </p>
+        ) : (
+          ''
+        )}
+
+        <FileSystem
+          rootnode={this.state.rootnode}
+          onToggle={this.onToggle}
+          onClickName={this.onClickName}
+        />
+      </div>
+    )
+  }
+  onClickName(node){
+    let curnode = node,
+      path = []
+    while (curnode) {
+      if (curnode.name === 'root') {
+        path.unshift('')
+        break
+      }
+      // prepend this file/directory to the path
+      path.unshift(curnode.name)
+      // try to prepend the parent
+      curnode = curnode.parent
+    }
+    if (path.length) {
+      FileOps.user_select_file_to_view(path.join('/'), 1)
+    }
   }
   reveal_path(path) {
     if (!path) {
@@ -49,15 +133,16 @@ class FoldersView extends React.Component {
       this.state.cursor.active = false
     }
 
-    if (this.props.project_home) {
-      path = path.replace(this.props.project_home, '')
+    if (this.project_home) {
+      path = path.replace(this.project_home, '')
     }
 
     let names = path.split('/').filter(n => n !== ''),
-      curnode = this.state.data
+    curnode = this.state.rootnode
+
     curnode.toggled = true // expand the root
     for (let name of names) {
-      curnode = get_child_node(name, curnode)
+      curnode = get_child_node_with_name(name, curnode)
       if (curnode) {
         curnode.toggled = true
       } else {
@@ -68,30 +153,31 @@ class FoldersView extends React.Component {
     if (curnode) {
       curnode.active = true
     }
-    this.setState({data: this.state.data, cursor: curnode})
+    this.setState({rootnode: this.state.rootnode, cursor: curnode})
   }
-  update_filesystem_data(source_paths) {
+  update_filesystem_data(keys) {
+    if(keys.indexOf('source_file_paths') === -1){
+      return
+    }
+
+    let source_paths = this.state.source_file_paths
     if (!_.isArray(source_paths) || !source_paths.length) {
       this.setState({
-        data: {
-          name: 'Load inferior program, then click "Fetch source files" to populate this window',
-        },
+        rootnode: default_rootnode
       })
       return
     }
 
-    let data = {
-      name: this.props.project_home || 'root',
+    let rootnode = {
+      name: this.project_home || 'root',
       toggled: true,
       children: [],
     }
 
-    let entry_num = 0,
-      has_hidden_entries = false,
-      relative_source_paths = source_paths
+    let relative_source_paths = source_paths
 
-    if (this.props.project_home) {
-      let project_home = this.props.project_home
+    if (this.project_home) {
+      let project_home = this.project_home
       relative_source_paths = source_paths.filter(p => p.startsWith(project_home)).map(p => {
         p = p.replace(project_home, '')
         return p
@@ -100,11 +186,11 @@ class FoldersView extends React.Component {
     for (let path of relative_source_paths) {
       let new_node,
         names = path.split('/').filter(n => n !== ''),
-        curnode = data,
+        curnode = rootnode,
         toggled = depth === 0
       let depth = 0
       for (let name of names) {
-        let child = get_child_node(name, curnode)
+        let child = get_child_node_with_name(name, curnode)
         if (child) {
           // found an existing child node, use it
           curnode = child
@@ -121,62 +207,31 @@ class FoldersView extends React.Component {
 
         depth++
       }
-
-      entry_num++
-      if (entry_num >= this.MAX_ENTRIES) {
-        has_hidden_entries = true
-        break
-      }
     }
-
-    this.setState({data: data, has_hidden_entries: has_hidden_entries})
+    this.setState({rootnode: rootnode})
   }
 
-  onToggle(node, toggled) {
-    if (this.state.cursor) {
-      this.state.cursor.active = false
-    }
-    node.active = false
-    if (node.children && node.children.length) {
-      node.toggled = toggled
-    } else {
-      // compute full path to this node
-      // this node has no children (i.e. it's a file)
-      let curnode = node,
-        path = []
-      while (curnode) {
-        if (curnode.name === 'root') {
-          path.unshift('')
-          break
-        }
-        // prepend this file/directory to the path
-        path.unshift(curnode.name)
-        // try to prepend the parent
-        curnode = curnode.parent
-      }
-      if (path.length) {
-        FileOps.user_select_file_to_view(path.join('/'), 1)
-      }
-    }
-    this.setState({cursor: null})
+  onToggle(node) {
+    node.toggled = !node.toggled
+    this.setState({rootnode: this.state.rootnode})
   }
   expand_all() {
     let callback = node => {
       node.toggled = true
     }
-    for (let top_level_child of this.state.data.children) {
+    for (let top_level_child of this.state.rootnode.children) {
       this._dfs(top_level_child, callback)
     }
-    this.setState({data: this.state.data})
+    this.setState({rootnode: this.state.rootnode})
   }
   collapse_all() {
     let callback = node => {
       node.toggled = false
     }
-    for (let top_level_child of this.state.data.children) {
+    for (let top_level_child of this.state.rootnode.children) {
       this._dfs(top_level_child, callback)
     }
-    this.setState({data: this.state.data})
+    this.setState({rootnode: this.state.rootnode})
   }
   _dfs(node, callback) {
     callback(node)
@@ -185,56 +240,6 @@ class FoldersView extends React.Component {
         this._dfs(child, callback)
       }
     }
-  }
-  render() {
-    let source_code_state = store.get('source_code_state'),
-      file_is_rendered =
-        source_code_state === constants.source_code_states.SOURCE_CACHED || source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED,
-      can_reveal = file_is_rendered && store.get('source_file_paths').length
-
-    return (
-      <div>
-        <button className="btn btn-xs btn-primary" onClick={Actions.fetch_source_files} style={{marginLeft: '5px', marginTop: '5px'}}>
-          Fetch source files
-        </button>
-
-        <div style={{width: '100%'}}>
-          <SourceFileAutocomplete />
-        </div>
-        <div role="group" className="btn-group btn-group" style={{padding: '4px'}}>
-          <button className="btn btn-xs btn-default" onClick={this.expand_all}>
-            Expand all
-          </button>
-
-          <button className="btn btn-xs btn-default" onClick={this.collapse_all}>
-            Collapse all
-          </button>
-
-          <button
-            className={'btn btn-xs btn-default ' + (can_reveal ? '' : 'hidden')}
-            onClick={() => this.reveal_path(store.get('fullname_to_render'))}>
-            Reveal current file
-          </button>
-        </div>
-
-        {store.get('source_file_paths').length ? (
-          <p style={{color: 'white', padding: '4px'}}>{store.get('source_file_paths').length} known files used to compile the inferior program</p>
-        ) : (
-          ''
-        )}
-
-        {this.state.has_hidden_entries ? (
-          <p style={{color: 'black', background: 'orange', padding: '4px'}}>
-            Maximum entries to be displayed is {this.MAX_ENTRIES} (hiding {store.get('source_file_paths').length - this.MAX_ENTRIES})
-          </p>
-        ) : (
-          ''
-        )}
-
-        {/*https://github.com/alexcurtis/react-treebeard*/}
-        <Treebeard data={this.state.data} onToggle={this.onToggle} />
-      </div>
-    )
   }
 }
 
