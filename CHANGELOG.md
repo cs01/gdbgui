@@ -1,5 +1,9 @@
 # gdbgui release history
 
+## 0.11.2.0
+* add option to remove fflush command (#179)
+* remove react-treebeard and render filesystem w/ new component
+
 ## 0.11.1.1
 * Bugfix displaying upgrade text
 
