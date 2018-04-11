@@ -28,5 +28,9 @@ class HtmlListFormatter(HtmlFormatter):
         IS_CODE_INDEX = 0
         HTML_VALUE_INDEX = 1
         IS_CODE_VAL = 1
-        source_list = [html_line[HTML_VALUE_INDEX] for html_line in self._wrap_div(self._wrap_pre(source)) if html_line[IS_CODE_INDEX] == IS_CODE_VAL]
+        source_list = [
+            html_line[HTML_VALUE_INDEX]
+            for html_line in self._wrap_div(self._wrap_pre(source))
+            if html_line[IS_CODE_INDEX] == IS_CODE_VAL
+        ]
         return source_list
