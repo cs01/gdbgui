@@ -38,7 +38,7 @@ class TestCommand (Command):
     def run(self):
         # import here so dependency error on Flask is not
         # raised
-        from gdbgui.tests import test_app
+        from tests import test_app
         sys.exit(test_app.main())
 
 
