@@ -8,8 +8,8 @@
 import {store} from 'statorgfc'
 import GdbApi from './GdbApi.jsx'
 import constants from './constants.js'
-import MemoryLink from './MemoryLink.jsx'
 import ReactTable from './ReactTable.jsx'
+import MemoryLink from './MemoryLink.jsx'
 import Actions from './Actions'
 import React from 'react'
 
@@ -219,11 +219,6 @@ class Memory extends React.Component {
     Memory.fetch_memory_from_state()
   }
 
-  static _make_addr_into_link_react(addr) {
-    void React
-    return <MemoryLink addr={addr} />
-  }
-
   /**
    * @param text: string to convert address-like text into clickable components
    * return react component
@@ -233,7 +228,6 @@ class Memory extends React.Component {
     if (text && matches && matches.length) {
       let addr = matches[0]
       let leading_text = text.slice(0, text.indexOf(addr))
-      let component = Memory._make_addr_into_link_react(addr)
       let trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length)
       let suffix_component = trailing_text
       if (trailing_text) {
@@ -241,14 +235,14 @@ class Memory extends React.Component {
         suffix_component = Memory.make_addrs_into_links_react(trailing_text)
       }
       return (
-        <span>
+        <React.Fragment>
           {leading_text}
-          {component}
+          <MemoryLink addr={addr}/>
           {suffix_component}
-        </span>
+        </React.Fragment>
       )
     } else {
-      return <span>{text}</span>
+      return text
     }
   }
 
