@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## dev
+* ensure expressions with hex values are parsed and updated appropriately (#182)
+* improve command line arguments
+* use python logging module
+
 ## 0.11.2.0
 * add option to remove fflush command (#179)
 * remove react-treebeard and render filesystem w/ new component

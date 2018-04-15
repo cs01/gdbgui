@@ -79,7 +79,7 @@ class Settings extends React.Component {
             'show_all_sent_commands_in_console',
             'Print all sent commands in console, including those sent automatically by gdbgui'
           )}
-          {Settings.get_checkbox_row('highlight_source_code', 'Add syntax highlighting to source files (turn off for better performance)')}
+          {Settings.get_checkbox_row('highlight_source_code', 'Add syntax highlighting to source files')}
 
           <tr>
             <td>

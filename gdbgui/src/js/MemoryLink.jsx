@@ -2,21 +2,18 @@ import React from 'react'
 import Memory from './Memory.jsx'
 
 class MemoryLink extends React.Component {
-  constructor(props) {
-    super()
-    this.parsed_addr = `0x${parseInt(props.addr, 16).toString(16)}` // remove leading zeros
-  }
   render() {
+    // turn 0x00000000000000 into 0x0
+    const address_no_leading_zeros = '0x' + parseInt(this.props.addr, 16).toString(16)
     return (
-      <React.Fragment>
-        <span
+      <span
           className="pointer memadr_react"
-          onClick={() => Memory.set_inputs_from_address(this.parsed_addr)}
-          title={`click to explore memory at ${this.parsed_addr}`}
-          style={this.props.style}>
-          {this.parsed_addr}
-        </span>
-      </React.Fragment>
+          onClick={() => Memory.set_inputs_from_address(address_no_leading_zeros)}
+          title={`click to explore memory at ${address_no_leading_zeros}`}
+          style={this.props.style}
+      >
+        {address_no_leading_zeros}
+      </span>
     )
   }
   static defaultProps = {style: {fontFamily: 'monospace'}}

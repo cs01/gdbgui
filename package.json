@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "license": "GPL-3.0",
   "scripts": {
-    "build": "webpack -p",
-    "watch": "webpack --watch",
+    "build": "webpack --mode production --config webpack.config.js",
+    "watch": "webpack --mode development --watch --config webpack.config.js",
     "test": "jest",
     "prettier": "prettier ./gdbgui/src/js/** --write"
   },
@@ -16,23 +16,22 @@
     ]
   },
   "dependencies": {
-    "babel-eslint": "^8.0.0",
-    "babel-preset-stage-0": "^6.24.1",
-    "eslint-loader": "^1.9.0",
-    "react": "^16.2.0",
-    "react-dom": "^16.2.0",
-    "statorgfc": "^0.1.6",
-    "webpack": "^3.5.5"
-  },
-  "devDependencies": {
     "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
+    "babel-eslint": "^8.2.3",
+    "babel-loader": "^7.1.4",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-react": "^6.24.1",
-    "eslint": "^4.7.0",
+    "babel-preset-stage-0": "^6.24.1",
+    "eslint": "^4.19.1",
+    "eslint-loader": "^2.0.0",
     "eslint-plugin-prettier": "^2.6.0",
-    "eslint-plugin-react": "^7.3.0",
+    "eslint-plugin-react": "^7.7.0",
     "jest": "^21.2.1",
-    "prettier": "^1.10.2"
+    "prettier": "^1.12.0",
+    "react": "^16.3.1",
+    "react-dom": "^16.3.1",
+    "statorgfc": "^0.1.6",
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
   }
 }

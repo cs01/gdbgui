@@ -1,7 +1,14 @@
+const path = require('path');
+
 module.exports = {
   entry: './gdbgui/src/js/gdbgui.jsx',
+  devtool: 'source-map',
+  performance: {
+    hints: false
+  },
   output: {
-    filename: './gdbgui/static/js/build.js'
+    path: path.resolve(__dirname, 'gdbgui/static/js/'),
+    filename: 'build.js'
   },
   module: {
     rules: [
@@ -20,6 +27,5 @@ module.exports = {
         exclude: /node_modules/
       }
     ]
-  },
-  devtool: 'source-map'
+  }
 }

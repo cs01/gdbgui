@@ -266,7 +266,6 @@ class GdbVariable extends React.Component {
         ''
       ),
       toggle_classes = has_children ? 'pointer' : '',
-      val = GdbVariable._get_value_jsx(mi_obj),
       plot_content = '',
       plot_button = '',
       plusminus_click_callback = has_children ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name) : () => {}
@@ -300,7 +299,7 @@ class GdbVariable extends React.Component {
             {plus_or_minus} {expression}&nbsp;
           </span>
 
-          {val}
+          {GdbVariable._get_value_jsx(mi_obj)}
 
           <span className="var_type">{_.trim(mi_obj.type) || ''}</span>
 
@@ -472,10 +471,14 @@ class GdbVariable extends React.Component {
     return new_obj
   }
   static _update_numeric_properties(obj) {
-    obj._float_value = parseFloat(obj.value)
+    let value = obj.value
+    if(obj.value.startsWith('0x')){
+      value = parseInt(obj.value, 16)
+    }
+    obj._float_value = parseFloat(value)
     obj.is_numeric = !window.isNaN(obj._float_value)
     obj.can_plot = obj.is_numeric && obj.expr_type === 'expr'
-    obj.is_int = obj.is_numeric ? parseFloat(obj.value) % 1 === 0 : false
+    obj.is_int = obj.is_numeric ? obj._float_value % 1 === 0 : false
   }
   static _update_radix_values(obj) {
     if (obj.is_int) {
