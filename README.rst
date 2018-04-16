@@ -16,6 +16,8 @@ A browser-based frontend for GDB
 .. image:: https://img.shields.io/badge/homepage-gdbgui.com-blue.svg
   :target: https://gdbgui.com
 
+.. image:: https://github.com/cs01/gdbgui/raw/master/images/gdbgui_banner.png
+
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run ``gdbgui`` from the terminal and a new tab will open in your browser.
 
 Download
