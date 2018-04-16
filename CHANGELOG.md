@@ -1,9 +1,12 @@
 # gdbgui release history
 
-## dev
+## 0.11.3.0
 * ensure expressions with hex values are parsed and updated appropriately (#182)
 * improve command line arguments
 * use python logging module
+
+## 0.11.2.1
+* Small bugfix for specific platforms when reading version number
 
 ## 0.11.2.0
 * add option to remove fflush command (#179)
