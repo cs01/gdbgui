@@ -832,7 +832,7 @@ def main():
     )
     # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
-    other.add_argument("--license", help="Store gdbgui premium license key.")
+    other.add_argument("--license", help="Store gdbgui ad-free license key.")
     other.add_argument(
         "--project",
         help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.',
