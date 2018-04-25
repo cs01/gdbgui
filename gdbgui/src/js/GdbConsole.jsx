@@ -103,7 +103,7 @@ class GdbConsole extends React.Component {
                 fontFamily: 'arial',
                 fontSize: '1.2em',
               }}>
-              <span style={{fontWeight: 'bold'}}>Enter gdbgui premium license key to support the project and remove this message. </span>
+              <span style={{fontWeight: 'bold'}}>Enter gdbgui ad-free license key to support the project and remove this message. </span>
               <a className="btn btn-default btn-xs" style={{color: 'black'}} href={constants.gdbgui_upgrade_url}>
                 upgrade now.
               </a>

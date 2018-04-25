@@ -97,6 +97,24 @@ const Util = {
     }
     return output
   },
+  /* Return true is latest is > current
+    1.0.0, 0.9.9 -> true
+    0.1.0, 0.0.9 -> true
+    0.0.9, 0.0.8 -> false
+  */
+  is_newer(latest, current){
+    latest = latest.split('.')
+    current = current.split('.')
+    if(latest.length !== current.length){
+        return true
+    }
+    for(let i in latest){
+        if(latest[i] > current[i]){
+            return true
+        }
+    }
+    return false
+  }
 }
 
 export default Util

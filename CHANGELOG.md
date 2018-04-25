@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## 0.11.4.0 (latest master)
+* Rename "premium" to "ad-free"
+* Do smarter version checking
+* Fix bug when trying to view "about"
+
 ## 0.11.3.0
 * ensure expressions with hex values are parsed and updated appropriately (#182)
 * improve command line arguments
