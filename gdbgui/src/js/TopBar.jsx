@@ -8,6 +8,7 @@ import FileOps from './FileOps.jsx'
 import GdbApi from './GdbApi.jsx'
 import Actions from './Actions.js'
 import constants from './constants.js'
+import Util from './Util.js'
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -54,7 +55,7 @@ let About = {
     Actions.show_modal(
       'About gdbgui',
       <React.Fragment>
-        {About.get_upgrade_text()}
+        {TopBar.get_upgrade_text()}
         <br />
         <a href="https://github.com/cs01/gdbgui/issues" className="pointer">
           Report a bug
@@ -405,33 +406,27 @@ class TopBar extends React.Component {
   }
   static needs_to_update_gdbgui_version() {
     // to actually check each value:
-
-    // let latest = store.get('latest_gdbgui_version').split('.')
-    // , cur = store.get('gdbgui_version').split('.')
-    // if(latest.length !== cur.length){
-    //     return true
-    // }
-    // for(let i in latest){
-    //     let latest_n = latest[i]
-    //     , actual_n = cur[i]
-    //     if(latest_n > actual_n){
-    //         return true
-    //     }
-    // }
-    // return false
-    return store.get('latest_gdbgui_version') !== store.get('gdbgui_version')
+    try{
+      return Util.is_newer(
+        store.get('latest_gdbgui_version'),
+        store.get('gdbgui_version')
+      )
+    }catch(err){
+      console.error(err)
+      return true
+    }
   }
   static get_upgrade_text() {
     let ltext = (
       <React.Fragment>
         <span className="bold">You are using the standard version of gdbgui. </span>
-        <a href={constants.gdbgui_upgrade_url}>Get gdbgui premium key now.</a>
+        <a href={constants.gdbgui_upgrade_url}>Get gdbgui ad-free key now.</a>
       </React.Fragment>
     )
 
     if (initial_data.p === 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc') {
       /* global initial_data */
-      ltext = 'You are using the premium version of gdbgui.'
+      ltext = 'You are using the ad-free version of gdbgui.'
     }
 
     if (TopBar.needs_to_update_gdbgui_version()) {

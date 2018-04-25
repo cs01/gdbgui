@@ -8,7 +8,16 @@ https://github.com/cs01/gdbgui
 import argparse
 import binascii
 from distutils.spawn import find_executable
-from flask import Flask, session, request, Response, render_template, jsonify, redirect, abort
+from flask import (
+    Flask,
+    session,
+    request,
+    Response,
+    render_template,
+    jsonify,
+    redirect,
+    abort
+)
 from flask_socketio import SocketIO, emit
 from flask_compress import Compress
 from functools import wraps

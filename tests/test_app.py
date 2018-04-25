@@ -56,6 +56,11 @@ class Test(unittest.TestCase):
         assert '<!DOCTYPE html>' in data
 
 
+class TestSocketError(unittest.TestCase):
+    def test_same_port(self):
+        backend.setup_backend(testing=True)
+
+
 def main():
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
@@ -64,6 +69,7 @@ def main():
     # https://github.com/miguelgrinberg/Flask-SocketIO/issues/405
     suite.addTests(loader.loadTestsFromTestCase(TestWebsockets))
     suite.addTests(loader.loadTestsFromTestCase(Test))
+    suite.addTests(loader.loadTestsFromTestCase(TestSocketError))
 
     runner = unittest.TextTestRunner(verbosity=1)
     result = runner.run(suite)
