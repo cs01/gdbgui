@@ -13,7 +13,7 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 EXCLUDE_FROM_PACKAGES = []
 REQUIRED = [
-    'Flask>=0.12.2',  # to run server
+    'Flask>=0.12.2,<1.0',  # to run server
     'Flask-Compress>=1.4.0',  # to compress flask responses
     'Flask-SocketIO>=2.9.3',  # for websockets
     'gevent>=1.2.2',  # for websockets (preferred)
