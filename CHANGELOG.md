@@ -1,6 +1,7 @@
 # gdbgui release history
 
-## 0.11.4.0 (latest master)
+## 0.11.3.1
+* Limit maximum Flask version to prevent `Session expired. Please refresh this webpage.` error
 * Rename "premium" to "ad-free"
 * Do smarter version checking
 * Fix bug when trying to view "about"
