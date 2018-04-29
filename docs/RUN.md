@@ -39,7 +39,7 @@ There are a couple of small niggles.
 Instead of showing your `main` function the initial screen will be blank and `gdbgui` will print `File not found: main`.
 You need to help `gdbgui` out by typing `main` into the file browser box:
 
-![](https://github.com/PhilipDaniels/gdbgui/blob/rustimprov/screenshots/rust_main.png)
+![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/rust_main.png)
 
 and selecting the `main.rs` file. The source code should then appear in the browser and you can click to set breakpoints
 and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.
