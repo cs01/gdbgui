@@ -34,7 +34,7 @@ You can start debugging with a simple
 
 `gdbgui target/debug/myprog`
 
-There are a couple of small niggles.
+There are a couple of small difficulties.
 
 Instead of showing your `main` function the initial screen will be blank and `gdbgui` will print `File not found: main`.
 You need to help `gdbgui` out by typing `main` into the file browser box:
@@ -44,7 +44,7 @@ You need to help `gdbgui` out by typing `main` into the file browser box:
 and selecting the `main.rs` file. The source code should then appear in the browser and you can click to set breakpoints
 and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.
 
-The second niggle is not with `gdbgui` but with the GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
+The second difficulty is with the GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
 which makes it print the message
 
 ```
