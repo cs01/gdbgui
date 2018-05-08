@@ -19,6 +19,47 @@ Now that gdbgui is open, you can interactively run a program with it.
 
 For a list of gdbgui arguments, see the Arguments section below or type gdbgui --help.
 
+### Debugging Rust Programs
+
+`gdbgui` can be used to debug programs written in Rust. Assuming you use [Cargo](https://doc.rust-lang.org/stable/cargo/) to create a new program
+and build it in Debug mode in the standard way:
+
+```
+cargo new myprog
+cd myprog
+cargo build
+```
+
+You can start debugging with a simple
+
+`gdbgui target/debug/myprog`
+
+There are a couple of small difficulties.
+
+Instead of showing your `main` function the initial screen will be blank and `gdbgui` will print `File not found: main`.
+You need to help `gdbgui` out by typing `main` into the file browser box:
+
+![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/rust_main.png)
+
+and selecting the `main.rs` file. The source code should then appear in the browser and you can click to set breakpoints
+and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.
+
+The second difficulty is with the GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
+which makes it print the message
+
+```
+warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/phil/temp/myprog/target/debug/myprog.
+Use `info auto-load python-scripts [REGEXP]' to list them.
+```
+
+You can safely ignore this, but the [Rust issue](https://github.com/rust-lang/rust/issues/33159#issuecomment-384073290)
+describes the workarounds necessary (create a `.gdbinit` file and paste a few lines into the Python helper script).
+
+* On Windows Rust defaults to the MSVC toolchain, and `gdbgui` can't debug binaries compiled that way. If you want to use `gdbgui`,
+  you'll have to [switch to the GNU toolchain](https://github.com/rust-lang-nursery/rustup.rs#working-with-rust-on-windows).
+* If you want to debug programs compiled in Release mode, you will need to create a `profile.release` section in your
+  `Cargo.toml` and add `debug = true` to it. See the [Cargo manifest](https://doc.rust-lang.org/stable/cargo/reference/manifest.html) for details.
+
 ### Running gdbgui Remotely
 Because gdbgui is a server, it naturally allows you to debug programs running on other computers.
 
