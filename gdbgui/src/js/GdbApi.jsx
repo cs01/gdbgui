@@ -71,6 +71,8 @@ const GdbApi = {
       )
       if (using_existing) {
         Actions.refresh_state_for_gdb_pause()
+      }else{
+        GdbApi.run_initial_commands()
       }
     })
 
@@ -91,6 +93,9 @@ const GdbApi = {
   click_run_button: function() {
     Actions.inferior_program_running()
     GdbApi.run_gdb_command('-exec-run')
+  },
+  run_initial_commands: function(){
+    GdbApi.run_gdb_command('set breakpoint pending on')
   },
   inferior_is_paused: function() {
     return [constants.inferior_states.unknown, constants.inferior_states.paused].indexOf(store.get('inferior_program')) !== -1
