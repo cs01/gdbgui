@@ -36,7 +36,7 @@ You can start debugging with a simple
 
 There are a couple of small difficulties.
 
-Instead of showing your `main` function the initial screen will be blank and `gdbgui` will print `File not found: main`.
+1.) Instead of showing your `main` function the initial screen will be blank and `gdbgui` will print `File not found: main`.
 You need to help `gdbgui` out by typing `main` into the file browser box:
 
 ![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/rust_main.png)
@@ -44,7 +44,21 @@ You need to help `gdbgui` out by typing `main` into the file browser box:
 and selecting the `main.rs` file. The source code should then appear in the browser and you can click to set breakpoints
 and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.
 
-The second difficulty is with the GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
+**Note for macOS Users:** When you load your rust binary on a mac, you may see many warnings like this
+
+> warning /Users/user/examples/rust/target/debug/deps/hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o': can't open to read symbols: No such file or directory.
+
+Symbols are names of variables, functions and types defined in your program. You can define symbols for your program by loading symbol files. gdb usually does this automatically for you, but sometimes has trouble finding the right paths.
+
+In this case, you need to manually tell gdb where the symbol files is; it's usually the first part of the missing file. In the above example, it's `hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o`.
+
+You can load this into gdb with the following command (changed as appropriate):
+
+```
+symbol-file /Users/user/git/gdbgui/examples/rust/target/debug/deps/hello-486956f9dde465e5
+```
+
+2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
 which makes it print the message
 
 ```
@@ -59,6 +73,10 @@ describes the workarounds necessary (create a `.gdbinit` file and paste a few li
   you'll have to [switch to the GNU toolchain](https://github.com/rust-lang-nursery/rustup.rs#working-with-rust-on-windows).
 * If you want to debug programs compiled in Release mode, you will need to create a `profile.release` section in your
   `Cargo.toml` and add `debug = true` to it. See the [Cargo manifest](https://doc.rust-lang.org/stable/cargo/reference/manifest.html) for details.
+
+
+
+and now gdb will be able to see which files were used to compile your binary, among other things.
 
 ### Running gdbgui Remotely
 Because gdbgui is a server, it naturally allows you to debug programs running on other computers.
