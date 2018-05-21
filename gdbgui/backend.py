@@ -766,18 +766,6 @@ def main():
     other = parser.add_argument_group(title="other settings")
 
     gdb_group.add_argument(
-        "cmd",
-        nargs="*",
-        help="The binary and arguments to run in gdb. Example: './mybinary myarg -flag1 -flag2'",
-        default=[],
-    )
-    gdb_group.add_argument(
-        "--args",
-        nargs="+",
-        help='Alias for cmd argument above. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"',
-        default=[],
-    )
-    gdb_group.add_argument(
         "-x", "--gdb_cmd_file", help="Execute GDB commands from file."
     )
     gdb_group.add_argument(
@@ -864,6 +852,24 @@ def main():
         "Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected",
         action="store_true",
     )
+
+    gdb_group.add_argument(
+        "--args",
+        nargs=argparse.REMAINDER,
+        help='All remaining args are taken as the binary and arguments to run'
+            ' in gdb (as with gdb --args).'
+            ' Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2',
+        default=[],
+    )
+    gdb_group.add_argument(
+        "cmd",
+        nargs='?',
+        help='Name of the binary to run in gdb. To pass flags to the binary,'
+            ' use --args.'
+            ' Example: gdbgui ./mybinary [gdbgui-args...]',
+        default=[],
+    )
+
     args = parser.parse_args()
 
     initialize_preferences()
