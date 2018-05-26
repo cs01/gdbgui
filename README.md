@@ -6,6 +6,7 @@
 [![image](https://img.shields.io/badge/pypi-0.11.3.1-blue.svg)](https://pypi.python.org/pypi/gdbgui/)
 ![image](https://img.shields.io/badge/python-2.7,3.4,3.5,3.6,pypy-blue.svg)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
+
 [![image](https://github.com/cs01/gdbgui/raw/master/images/gdbgui_banner.png)](https://gdbgui.com)
 
 A modern, browser-based frontend to gdb (gnu debugger). Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Simply run `gdbgui` from the terminal and a new tab will open in your browser.
