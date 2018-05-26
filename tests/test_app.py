@@ -18,12 +18,13 @@ backend.setup_backend(testing=True)
 socketio = backend.socketio
 
 
-@socketio.on('connect')
+@socketio.on("connect")
 def on_connect():
-    send('connected')
+    send("connected")
 
 
 class TestWebsockets(unittest.TestCase):
+
     @classmethod
     def setUp(self):
         pass
@@ -35,7 +36,7 @@ class TestWebsockets(unittest.TestCase):
         client = socketio.test_client(backend.app)
         received = client.get_received()
         self.assertEqual(len(received), 1)
-        self.assertEqual(received[0]['args'], 'connected')
+        self.assertEqual(received[0]["args"], "connected")
         client.disconnect()
 
 
@@ -50,13 +51,14 @@ class Test(unittest.TestCase):
         pass
 
     def test_load_main_page(self):
-        response = self.app.get('/')
+        response = self.app.get("/")
         assert response.status_code == 200
         data = response.data.decode() if PYTHON3 else response.data
-        assert '<!DOCTYPE html>' in data
+        assert "<!DOCTYPE html>" in data
 
 
 class TestSocketError(unittest.TestCase):
+
     def test_same_port(self):
         backend.setup_backend(testing=True)
 
@@ -76,5 +78,5 @@ def main():
     return len(result.errors) + len(result.failures)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

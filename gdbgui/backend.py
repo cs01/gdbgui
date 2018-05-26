@@ -16,7 +16,7 @@ from flask import (
     render_template,
     jsonify,
     redirect,
-    abort
+    abort,
 )
 from flask_socketio import SocketIO, emit
 from flask_compress import Compress
@@ -267,9 +267,10 @@ def verify_gdb_exists():
         else:
             print('try "sudo apt-get install gdb" for Linux or "brew install gdb"')
         sys.exit(1)
-    elif "lldb" in app.config["gdb_path"].lower() and "lldb-mi" not in app.config[
-        "gdb_path"
-    ].lower():
+    elif (
+        "lldb" in app.config["gdb_path"].lower()
+        and "lldb-mi" not in app.config["gdb_path"].lower()
+    ):
         pygdbmi.printcolor.print_red(
             'gdbgui cannot use the standard lldb executable. You must use an executable with "lldb-mi" in its name.'
         )
@@ -499,8 +500,11 @@ def authenticate(f):
     def wrapper(*args, **kwargs):
         if app.config.get("gdbgui_auth_user_credentials") is not None:
             auth = request.authorization
-            if not auth or not auth.username or not auth.password or not credentials_are_valid(
-                auth.username, auth.password
+            if (
+                not auth
+                or not auth.username
+                or not auth.password
+                or not credentials_are_valid(auth.username, auth.password)
             ):
                 return Response(
                     "You must log in to continue.",
@@ -531,9 +535,9 @@ def gdbgui():
         "themes": THEMES,
         "signals": SIGNAL_NAME_TO_OBJ,
         "gdbpid": gdbpid,
-        "p": pbkdf2_hex(str(app.config.get("l")), "Feo8CJol") if app.config.get(
-            "l"
-        ) else "",
+        "p": pbkdf2_hex(str(app.config.get("l")), "Feo8CJol")
+        if app.config.get("l")
+        else "",
         "project_home": app.config["project_home"],
         "csrf_token": session["csrf_token"],
         "using_windows": USING_WINDOWS,
@@ -561,12 +565,15 @@ def send_signal_to_pid():
     try:
         pid_int = int(pid_str)
     except ValueError:
-        return jsonify(
-            {
-                "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
-                % (pid_str, signal_name)
-            }
-        ), 400
+        return (
+            jsonify(
+                {
+                    "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
+                    % (pid_str, signal_name)
+                }
+            ),
+            400,
+        )
 
     os.kill(pid_int, signal_obj)
     return jsonify(
@@ -658,7 +665,9 @@ def read_file():
             raise e
 
         else:
-            highlight = True  # highlight argument was invalid for some reason, default to true
+            highlight = (
+                True
+            )  # highlight argument was invalid for some reason, default to true
 
     if path and os.path.isfile(path):
         try:
@@ -676,7 +685,7 @@ def read_file():
                     if raw_source_code_list[i] == "":
                         raw_source_code_list[i] = " "
                 raw_source_code_lines_of_interest = raw_source_code_list[
-                    (start_line - 1):(end_line)
+                    (start_line - 1) : (end_line)
                 ]
             try:
                 lexer = get_lexer_for_filename(path)
@@ -688,7 +697,9 @@ def read_file():
                 # convert string into tokens
                 tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))
                 # format tokens into nice, marked up list of html
-                formatter = htmllistformatter.HtmlListFormatter()  # Don't add newlines after each line
+                formatter = (
+                    htmllistformatter.HtmlListFormatter()
+                )  # Don't add newlines after each line
                 source_code = formatter.get_marked_up_list(tokens)
             else:
                 highlighted = False

@@ -12,7 +12,9 @@ YEAR_IN_SECS = 31536000
 class SSLify(object):
     """Secures your Flask App."""
 
-    def __init__(self, app=None, age=YEAR_IN_SECS, subdomains=False, permanent=False, skips=None):
+    def __init__(
+        self, app=None, age=YEAR_IN_SECS, subdomains=False, permanent=False, skips=None
+    ):
         self.app = app
         self.hsts_age = age
 
@@ -25,13 +27,15 @@ class SSLify(object):
 
     def init_app(self, app):
         """Configures the specified Flask app to enforce SSL."""
-        app.config.setdefault('SSLIFY_SUBDOMAINS', False)
-        app.config.setdefault('SSLIFY_PERMANENT', False)
-        app.config.setdefault('SSLIFY_SKIPS', None)
+        app.config.setdefault("SSLIFY_SUBDOMAINS", False)
+        app.config.setdefault("SSLIFY_PERMANENT", False)
+        app.config.setdefault("SSLIFY_SKIPS", None)
 
-        self.hsts_include_subdomains = self.hsts_include_subdomains or app.config['SSLIFY_SUBDOMAINS']
-        self.permanent = self.permanent or self.app.config['SSLIFY_PERMANENT']
-        self.skip_list = self.skip_list or self.app.config['SSLIFY_SKIPS']
+        self.hsts_include_subdomains = (
+            self.hsts_include_subdomains or app.config["SSLIFY_SUBDOMAINS"]
+        )
+        self.permanent = self.permanent or self.app.config["SSLIFY_PERMANENT"]
+        self.skip_list = self.skip_list or self.app.config["SSLIFY_SKIPS"]
 
         app.before_request(self.redirect_to_ssl)
         app.after_request(self.set_hsts_header)
@@ -39,10 +43,10 @@ class SSLify(object):
     @property
     def hsts_header(self):
         """Returns the proper HSTS policy."""
-        hsts_policy = 'max-age={0}'.format(self.hsts_age)
+        hsts_policy = "max-age={0}".format(self.hsts_age)
 
         if self.hsts_include_subdomains:
-            hsts_policy += '; includeSubDomains'
+            hsts_policy += "; includeSubDomains"
 
         return hsts_policy
 
@@ -52,7 +56,7 @@ class SSLify(object):
         # Should we skip?
         if self.skip_list and isinstance(self.skip_list, list):
             for skip in self.skip_list:
-                if request.path.startswith('/{0}'.format(skip)):
+                if request.path.startswith("/{0}".format(skip)):
                     return True
         return False
 
@@ -63,12 +67,12 @@ class SSLify(object):
             request.is_secure,
             self.app.debug,
             self.app.testing,
-            request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+            request.headers.get("X-Forwarded-Proto", "http") == "https",
         ]
 
         if not any(criteria) and not self.skip:
-            if request.url.startswith('http://'):
-                url = request.url.replace('http://', 'https://', 1)
+            if request.url.startswith("http://"):
+                url = request.url.replace("http://", "https://", 1)
                 code = 302
                 if self.permanent:
                     code = 301
@@ -79,7 +83,7 @@ class SSLify(object):
         """Adds HSTS header to each response."""
         # Should we add STS header?
         if request.is_secure and not self.skip:
-            response.headers.setdefault('Strict-Transport-Security', self.hsts_header)
+            response.headers.setdefault("Strict-Transport-Security", self.hsts_header)
         return response
 
 
@@ -88,7 +92,12 @@ def get_ssl_context(private_key, certificate):
     The return value is used when calling Flask.
     i.e. app.run(ssl_context=get_ssl_context(,,,))
     """
-    if certificate and os.path.isfile(certificate) and private_key and os.path.isfile(private_key):
+    if (
+        certificate
+        and os.path.isfile(certificate)
+        and private_key
+        and os.path.isfile(private_key)
+    ):
         context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
         context.load_cert_chain(certificate, private_key)
         return context

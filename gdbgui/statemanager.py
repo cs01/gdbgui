@@ -53,9 +53,9 @@ class StateManager(object):
         if self.get_controller_from_client_id(client_id) is None:
             logger.info("new sid", client_id)
 
-            gdb_args = deepcopy(
-                self.config["initial_binary_and_args"]
-            ) + REQUIRED_GDB_FLAGS
+            gdb_args = (
+                deepcopy(self.config["initial_binary_and_args"]) + REQUIRED_GDB_FLAGS
+            )
 
             if startup_with_shell_off:
                 # macOS Sierra (and later) may have issues with gdb. This should fix it, but there might be other issues
@@ -75,7 +75,8 @@ class StateManager(object):
 
             pid = self.get_pid_from_controller(controller)
             message += "gdbgui spawned subprocess with pid %s from executable %s." % (
-                str(pid), self.config["gdb_path"]
+                str(pid),
+                self.config["gdb_path"],
             )
 
         return {
