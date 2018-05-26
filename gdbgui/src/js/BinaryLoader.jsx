@@ -2,6 +2,7 @@ import React from 'react'
 import constants from './constants.js'
 import Actions from './Actions.js'
 import Util from './Util.js'
+import ToolTipTourguide from './ToolTipTourguide.jsx'
 
 const TARGET_TYPES = {
   file: 'file',
@@ -60,9 +61,13 @@ class BinaryLoader extends React.Component {
       <form style={{marginBottom: 1, flex: '2 0 0'}}>
         <div className="input-group input-group-sm">
           <div className="dropdown input-group-btn">
-            <button className="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+            <button
+              className="btn btn-primary dropdown-toggle" type="button"
+              data-toggle="dropdown"
+            >
               <span className="caret" />
             </button>
+
             <ul className="dropdown-menu">
               <li>
                 <a className="pointer" onClick={() => this.setState({target_type: TARGET_TYPES.file})}>
@@ -81,7 +86,12 @@ class BinaryLoader extends React.Component {
               </li>
             </ul>
 
-            <button type="button" title={title} onClick={this.click_set_target_app.bind(this)} className="btn btn-primary">
+            <button
+                type="button"
+                title={title}
+                onClick={this.click_set_target_app.bind(this)}
+                className="btn btn-primary"
+            >
               {button_text}
             </button>
           </div>
@@ -97,7 +107,46 @@ class BinaryLoader extends React.Component {
             value={this.state.user_input}
           />
         </div>
+        <ToolTipTourguide
+          step_num={1}
+          position={'bottomcenter'}
+          content={
+              <div>
+              <h5>
+                Enter the path to the binary you wish to debug here.
+              </h5>
+              <p>
+              This is the first thing you should do.
+            </p>
+            <p>
+              The path can be absolute, or relative to where gdbgui was launched from.
+            </p>
+            </div>}
+
+        />
+        <ToolTipTourguide
+          step_num={2}
+          position={'bottomleft'}
+          content={
+            <div>
+              <h5>
+                Press this button to load the executable specified in the input.
+              </h5>
+              <p>
+                This is the second thing you should do.
+              </p>
+
+              <p>
+              Debugging won't start, but you will be able to set breakpoints.
+
+              If present, <a href='https://en.wikipedia.org/wiki/Debug_symbol'>debugging symbols</a> in the binary are also loaded.
+            </p>
+            <p>If you don't want to debug a binary, click the dropdown to choose a different target type.</p>
+            </div>
+          }
+        />
         <datalist id="past_binaries">{this.state.past_binaries.map((b, i) => <option key={i}>{b}</option>)}</datalist>
+
       </form>
     )
   }

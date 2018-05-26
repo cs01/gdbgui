@@ -28,6 +28,7 @@ import GdbConsoleContainer from './GdbConsoleContainer.jsx'
 import Actions from './Actions.js'
 import constants from './constants.js'
 import initial_store_data from './InitialStoreData.js'
+import ToolTipTourguide from './ToolTipTourguide.jsx'
 
 const store_options = {
   immutable: false,
@@ -72,7 +73,23 @@ class Gdbgui extends React.PureComponent {
           </div>
         </div>
 
-        <div id="bottom" className="split split-horizontal" style={{width: '100%', height: '100%'}}>
+        <div id="bottom" className="split split-horizontal"
+          style={{width: '100%', height: '100%'}}
+        >
+
+          <ToolTipTourguide step_num={4}
+            position={'topleft'}
+            content={
+            <div>
+              <h5>
+                You can view gdb's output here.
+              </h5>
+              You usually don't need to enter commands here, but you have the option to
+              if there is something you can't do in the UI.
+            </div>
+          }
+          />
+
           <div id="bottom_content" className="split content" style={{paddingBottom: '0px' /* for height of input */}}>
             <GdbConsoleContainer />
           </div>

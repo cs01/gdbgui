@@ -6,7 +6,6 @@ import constants from './constants.js'
  * The initial store data. Keys cannot be added after initialization.
  * All fields in here should be shared by > 1 component, otherwise they should
  * exist as local state for that component.
- *
  */
 const initial_store_data = {
   // environment
@@ -25,6 +24,9 @@ const initial_store_data = {
   modal_header: null,
   modal_body: null,
 
+  show_tour_guide: true,
+  tour_guide_step: 0,
+  num_tour_guide_steps: 0,
   tooltip: {hidden: false, content: 'placeholder', node: null, show_for_n_sec: null},
   textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
 
@@ -104,23 +106,26 @@ const initial_store_data = {
   middle_panes_split_obj: {},
 }
 
+function get_stored(key, default_val){
+  try{
+    if (localStorage.hasOwnProperty(key)) {
+      let cached = JSON.parse(localStorage.getItem(key))
+      if (typeof cached === typeof default_val) {
+        return cached
+      }
+      return default_val
+    }
+  }catch(err){
+    console.error(err)
+  }
+  localStorage.removeItem(key)
+  return default_val
+}
+
 // restore saved localStorage data
 for (let key in initial_store_data) {
-  try {
-    if (typeof initial_store_data[key] === 'boolean') {
-      if (localStorage.hasOwnProperty(key)) {
-        let savedval = JSON.parse(localStorage.getItem(key)),
-          oldval = initial_store_data[key]
-
-        if (typeof oldval === typeof savedval) {
-          initial_store_data[key] = savedval
-        }
-      }
-    }
-  } catch (err) {
-    console.log(err)
-    localStorage.removeItem(key)
-  }
+  let default_val = initial_store_data[key]
+  initial_store_data[key] = get_stored(key, default_val)
 }
 
 if (localStorage.hasOwnProperty('max_lines_of_code_to_fetch')) {

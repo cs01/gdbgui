@@ -24,15 +24,15 @@ class ToolTip extends React.Component {
   render() {
     clearTimeout(this.timeout)
     const tooltip = store.get('tooltip')
-    let left = '200px'
-    let top = '100px'
-    if (tooltip.node && !tooltip.hidden) {
-      let rect = tooltip.node.getBoundingClientRect()
-      left = rect.x + 'px'
-      top = rect.y + tooltip.node.offsetHeight + 'px'
-    } else {
+    if (!tooltip.node || tooltip.hidden) {
       return null
     }
+    let rect = tooltip.node.getBoundingClientRect()
+    , assumed_width_px = 200
+    , distance_to_right_edge = (window.innerWidth - rect.x)
+    , horizontal_buffer = distance_to_right_edge < assumed_width_px ? assumed_width_px - distance_to_right_edge : 0
+    , left = (rect.x - horizontal_buffer) + 'px'
+    , top = rect.y + tooltip.node.offsetHeight + 'px'
     if (_.isInteger(tooltip.show_for_n_sec)) {
       this.timeout = setTimeout(ToolTip.hide_tooltip, tooltip.show_for_n_sec * 1000)
     }
@@ -41,6 +41,7 @@ class ToolTip extends React.Component {
         style={{
           top: top,
           left: left,
+          maxWidth: '350px',
           background: 'white',
           border: '1px solid',
           position: 'fixed',
