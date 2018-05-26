@@ -4,6 +4,7 @@
 * Update Rust documentation
 * Run `set breakpoint pending on` on initial connection
 * Add tour
+* Make requirements.txt point to setup.py's dependencies
 
 ## 0.11.3.1
 * Limit maximum Flask version to prevent `Session expired. Please refresh this webpage.` error
