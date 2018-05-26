@@ -4,6 +4,7 @@ import {store} from 'statorgfc'
 import BinaryLoader from './BinaryLoader.jsx'
 import Settings from './Settings.jsx'
 import SourceCodeHeading from './SourceCodeHeading.jsx'
+import ToolTipTourguide from './ToolTipTourguide.jsx'
 import FileOps from './FileOps.jsx'
 import GdbApi from './GdbApi.jsx'
 import Actions from './Actions.js'
@@ -97,13 +98,23 @@ let show_session_info = function() {
 const menu = (
   <ul style={{height: 25, padding: 0, paddingRight: '15px', fontSize: '1.3em'}} className="nav navbar-nav navbar-right">
     <li id="menudropdown" className="dropdown">
-      <a href="#" data-toggle="dropdown" role="button" style={{height: 25, padding: 0, paddingRight: 20}} className="dropdown-toggle">
+      <a href="#"
+        data-toggle="dropdown"
+        role="button"
+        style={{height: 25, padding: 0, paddingRight: 20}}
+        className="dropdown-toggle"
+      >
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
       </a>
       <ul className="dropdown-menu">
         <li>
           <a title="dashboard" className="pointer" href="/dashboard">
             Dashboard
+          </a>
+        </li>
+        <li>
+          <a title="show guide" className="pointer" onClick={ToolTipTourguide.start_guide}>
+            Show Guide
           </a>
         </li>
         <li>
@@ -156,6 +167,23 @@ const menu = (
           </a>
         </li>
       </ul>
+
+      <ToolTipTourguide
+        top={'100%'}
+        left={'-300px'}
+        step_num={0}
+        content={
+          <div>
+            <h5>
+              Welcome to gdbgui.
+            </h5>
+            <p>
+              This guide can be shown at any time by clicking the menu button,
+              <span className="glyphicon glyphicon-menu-hamburger"> </span>, then clicking "Show Guide".
+            </p>
+          </div>
+        }
+      />
     </li>
   </ul>
 )
@@ -208,14 +236,39 @@ class TopBar extends React.Component {
   get_controls() {
     return (
       <div role="group" style={{marginBottom: 6, height: 25, width: 250}} className="btn-group btn-group">
-        <button
+        <ToolTipTourguide
+          step_num={3}
+          position={'bottomleft'}
+          onClick={(e) => e.stopPropagation()}
+          content={
+            <div>
+            <h5>
+              These buttons allow you to control execution of the target you are debugging.
+            </h5>
+            <p>
+              This is usually the third thing you want to use.
+            </p>
+            <p>
+            Hover over these buttons to see a description of their action. For example,
+            the <span className="glyphicon glyphicon-repeat" /> button
+             starts (or restarts) a program from the beginning.
+           </p>
+            <p>
+              Each button has a keyboard shortcut. For example, you can press "r" to start running.
+            </p>
+          </div>
+          }
+        />
+          <button
           id="run_button"
           onClick={GdbApi.click_run_button}
           type="button"
           title="Start inferior program from the beginning (keyboard shortcut: r)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-repeat" />
-        </button>
+          className={btn_class}
+          >
+            <span className="glyphicon glyphicon-repeat" />
+          </button>
+
         <button
           id="continue_button"
           onClick={GdbApi.click_continue_button}

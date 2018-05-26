@@ -1,7 +1,18 @@
+import {store} from 'statorgfc'
+
 /**
  * Some general utility methods
  */
 const Util = {
+
+  persist_value_for_key: function(key){
+    try{
+      let value = store.get(key)
+      localStorage.setItem(key, JSON.stringify(value))
+    }catch(err){
+      console.error(err)
+    }
+  },
   /**
    * Get html table
    * @param columns: array of strings

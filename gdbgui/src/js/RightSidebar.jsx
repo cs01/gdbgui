@@ -4,16 +4,18 @@
  */
 
 import React from 'react'
-import InferiorProgramInfo from './InferiorProgramInfo.jsx'
+
 import Breakpoints from './Breakpoints.jsx'
-import Expressions from './Expressions.jsx'
-import Locals from './Locals.jsx'
-import Tree from './Tree.js'
-import Registers from './Registers.jsx'
-import Threads from './Threads.jsx'
-import Memory from './Memory.jsx'
-import GdbMiOutput from './GdbMiOutput.jsx'
 import constants from './constants.js'
+import Expressions from './Expressions.jsx'
+import GdbMiOutput from './GdbMiOutput.jsx'
+import InferiorProgramInfo from './InferiorProgramInfo.jsx'
+import Locals from './Locals.jsx'
+import Memory from './Memory.jsx'
+import Registers from './Registers.jsx'
+import Tree from './Tree.js'
+import Threads from './Threads.jsx'
+import ToolTipTourguide from './ToolTipTourguide.jsx'
 
 let onmouseup_in_parent_callbacks = [],
   onmousemove_in_parent_callbacks = []
@@ -138,7 +140,33 @@ class RightSidebar extends React.Component {
 
     return (
       <div className="content" onMouseUp={onmouseup_in_parent_callback} onMouseMove={onmousemove_in_parent_callback}>
-        <Collapser title="signals" content={<InferiorProgramInfo signals={this.props.signals} />} />
+        <Collapser
+          title="signals"
+          content={<InferiorProgramInfo
+          signals={this.props.signals} />}
+        />
+        <ToolTipTourguide
+          position={'topleft'}
+          content={
+            <div>
+              <h5>This sidebar contains visuals of the state of your program</h5>
+              <p>
+                You can see which function the process is stopped in, explore vaiables, and much more.
+              </p>
+              <p>
+                There is more to discover, but this should be enough to get you started.
+              </p>
+              <p>
+                Something missing? Found a bug? <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on github.
+              </p>
+
+              <p>
+                Happy debugging!
+              </p>
+
+          </div>}
+          step_num={5}
+        />
 
         <Collapser title="threads" content={<Threads />} />
 
