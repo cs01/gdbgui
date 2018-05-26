@@ -13,12 +13,12 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 EXCLUDE_FROM_PACKAGES = []
 REQUIRED = [
-    'Flask>=0.12.2,<1.0',  # to run server
-    'Flask-Compress>=1.4.0',  # to compress flask responses
-    'Flask-SocketIO>=2.9.3',  # for websockets
-    'gevent>=1.2.2',  # for websockets (preferred)
-    'pygdbmi>=0.8.2.0',  # to parse gdb output
-    'Pygments>=2.2.0',  # for syntax highlighting
+    'Flask>=0.12.2, <1.0',  # http server
+    'Flask-Compress>=1.4.0, <2.0',  # to compress flask responses
+    'Flask-SocketIO>=2.9, <3.0',  # websocket server
+    'gevent>=1.2.2, <2.0',  # websocket handling
+    'pygdbmi>=0.8.2.0, <0.9',  # parse gdb output
+    'Pygments>=2.2.0, <3.0',  # syntax highlighting
 ]
 
 README = io.open(os.path.join(CURDIR, 'README.rst'), 'r', encoding="utf-8").read()
