@@ -1,9 +1,9 @@
-import {store} from 'statorgfc'
-import constants from './constants.js'
-import Actions from './Actions.js'
-import Util from './Util.js'
-import FileOps from './FileOps.jsx'
-import React from 'react'
+import {store} from 'statorgfc';
+import constants from './constants.js';
+import Actions from './Actions.js';
+import Util from './Util.js';
+import FileOps from './FileOps.jsx';
+import React from 'react';
 
 /**
  * The autocomplete dropdown of source files is complicated enough
@@ -11,16 +11,16 @@ import React from 'react'
  * which is really nice: https://leaverou.github.io/awesomplete/
  */
 
-const help_text = 'Enter file path to view, press enter'
+const help_text = 'Enter file path to view, press enter';
 /* global Awesomplete */
 class SourceFileAutocomplete extends React.Component {
   constructor() {
-    super()
-    store.subscribeToKeys(['source_file_paths'], this.store_change_callback.bind(this))
+    super();
+    store.subscribeToKeys(['source_file_paths'], this.store_change_callback.bind(this));
   }
   store_change_callback() {
     if (!_.isEqual(this.awesomeplete_input._list, store.get('source_file_paths'))) {
-      this.awesomeplete_input.list = store.get('source_file_paths')
+      this.awesomeplete_input.list = store.get('source_file_paths');
     }
   }
   render() {
@@ -46,40 +46,40 @@ class SourceFileAutocomplete extends React.Component {
           <span className="caret" />
         </button>
       </div>
-    )
+    );
   }
   keyup_source_file_input(e) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      let user_input = _.trim(e.currentTarget.value)
+      let user_input = _.trim(e.currentTarget.value);
 
       if (user_input.length === 0) {
-        return
+        return;
       }
 
       let fullname,
         default_line = 0,
-        line
-      ;[fullname, line] = Util.parse_fullname_and_line(user_input, default_line)
-      FileOps.user_select_file_to_view(fullname, line)
+        line;
+      [fullname, line] = Util.parse_fullname_and_line(user_input, default_line);
+      FileOps.user_select_file_to_view(fullname, line);
     } else if (store.get('source_file_paths').length === 0) {
       // source file list has not been fetched yet, so fetch it
-      Actions.fetch_source_files()
+      Actions.fetch_source_files();
     }
   }
   onclick_dropdown() {
     if (store.get('source_file_paths').length === 0) {
       // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
       // request that gdb populate this list.
-      Actions.fetch_source_files()
-      return
+      Actions.fetch_source_files();
+      return;
     }
 
     if (this.awesomeplete_input.ul.childNodes.length === 0) {
-      this.awesomeplete_input.evaluate()
+      this.awesomeplete_input.evaluate();
     } else if (this.awesomeplete_input.ul.hasAttribute('hidden')) {
-      this.awesomeplete_input.open()
+      this.awesomeplete_input.open();
     } else {
-      this.awesomeplete_input.close()
+      this.awesomeplete_input.close();
     }
   }
   componentDidMount() {
@@ -91,16 +91,16 @@ class SourceFileAutocomplete extends React.Component {
       list: [],
       // standard sort algorithm (the default Awesomeplete sort is weird)
       sort: (a, b) => {
-        return a < b ? -1 : 1
+        return a < b ? -1 : 1;
       },
-    })
+    });
 
     // perform action when an item is selected
     this.html_input.addEventListener('awesomplete-selectcomplete', function(e) {
-      let fullname = e.currentTarget.value
-      FileOps.user_select_file_to_view(fullname, 1)
-    })
+      let fullname = e.currentTarget.value;
+      FileOps.user_select_file_to_view(fullname, 1);
+    });
   }
 }
 
-export default SourceFileAutocomplete
+export default SourceFileAutocomplete;

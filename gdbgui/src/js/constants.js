@@ -55,10 +55,12 @@ let constants = {
   gdbgui_donate_url: 'https://www.paypal.me/grassfedcode',
 
   keys_to_not_log_changes_in_console: ['gdb_mi_output', 'gdb_console_entries'],
-}
-constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR)
-constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(constants.DISASSEMBLY_FOR_MISSING_FILE_STR)
-constants['CREATE_VAR_INT'] = parseInt(constants.CREATE_VAR_STR)
-constants['INLINE_DISASSEMBLY_INT'] = parseInt(constants.INLINE_DISASSEMBLY_STR)
+};
+constants['IGNORE_ERRORS_TOKEN_INT'] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR);
+constants['DISASSEMBLY_FOR_MISSING_FILE_INT'] = parseInt(
+  constants.DISASSEMBLY_FOR_MISSING_FILE_STR
+);
+constants['CREATE_VAR_INT'] = parseInt(constants.CREATE_VAR_STR);
+constants['INLINE_DISASSEMBLY_INT'] = parseInt(constants.INLINE_DISASSEMBLY_STR);
 
-export default Object.freeze(constants)
+export default Object.freeze(constants);
