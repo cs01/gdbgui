@@ -1,11 +1,11 @@
-import React from 'react'
-import ToolTip from './ToolTip.jsx'
-import {store} from 'statorgfc'
+import React from 'react';
+import ToolTip from './ToolTip.jsx';
+import {store} from 'statorgfc';
 
 class CopyToClipboard extends React.Component {
   render() {
     if (!this.props.content) {
-      return null
+      return null;
     }
     return (
       <span
@@ -13,26 +13,26 @@ class CopyToClipboard extends React.Component {
         style={{color: '#ccc', display: 'inline'}}
         ref={node => (this.node = node)}
         onMouseOver={() => {
-          ToolTip.show_tooltip_on_node('copy to clipboard', this.node)
+          ToolTip.show_tooltip_on_node('copy to clipboard', this.node);
         }}
         onMouseLeave={ToolTip.hide_tooltip}
         onClick={() => {
           try {
-            let textarea = store.get('textarea_to_copy_to_clipboard')
-            textarea.value = this.props.content
-            textarea.select()
+            let textarea = store.get('textarea_to_copy_to_clipboard');
+            textarea.value = this.props.content;
+            textarea.select();
             if (document.execCommand('copy') === true) {
-              ToolTip.show_copied_tooltip_on_node(this.node)
+              ToolTip.show_copied_tooltip_on_node(this.node);
             } else {
-              ToolTip.show_tooltip_on_node('unable to copy', this.node)
+              ToolTip.show_tooltip_on_node('unable to copy', this.node);
             }
           } catch (err) {
-            ToolTip.show_tooltip_on_node('unable to copy', this.node)
+            ToolTip.show_tooltip_on_node('unable to copy', this.node);
           }
         }}
       />
-    )
+    );
   }
 }
 
-export default CopyToClipboard
+export default CopyToClipboard;

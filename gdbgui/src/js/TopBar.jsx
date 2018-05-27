@@ -1,55 +1,63 @@
-import React from 'react'
+import React from 'react';
 
-import {store} from 'statorgfc'
-import BinaryLoader from './BinaryLoader.jsx'
-import Settings from './Settings.jsx'
-import SourceCodeHeading from './SourceCodeHeading.jsx'
-import ToolTipTourguide from './ToolTipTourguide.jsx'
-import FileOps from './FileOps.jsx'
-import GdbApi from './GdbApi.jsx'
-import Actions from './Actions.js'
-import constants from './constants.js'
-import Util from './Util.js'
+import {store} from 'statorgfc';
+import BinaryLoader from './BinaryLoader.jsx';
+import Settings from './Settings.jsx';
+import SourceCodeHeading from './SourceCodeHeading.jsx';
+import ToolTipTourguide from './ToolTipTourguide.jsx';
+import FileOps from './FileOps.jsx';
+import GdbApi from './GdbApi.jsx';
+import Actions from './Actions.js';
+import constants from './constants.js';
+import Util from './Util.js';
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-    Actions.set_line_state(e.currentTarget.value)
+    Actions.set_line_state(e.currentTarget.value);
   }
-}
+};
 
-let btn_class = 'btn btn-default btn-sm'
+let btn_class = 'btn btn-default btn-sm';
 
 let click_shutdown_button = function() {
   // no need to show confirmation before leaving, because we're about to prompt the user
-  window.onbeforeunload = () => null
+  window.onbeforeunload = () => null;
   // prompt user
-  if (window.confirm('This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?') === true) {
+  if (
+    window.confirm(
+      'This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?'
+    ) === true
+  ) {
     // user wants to shutdown, redirect them to the shutdown page
-    window.location = '/shutdown'
+    window.location = '/shutdown';
   } else {
     // re-add confirmation before leaving page (when user actually leaves at a later time)
-    window.onbeforeunload = () => 'some text'
+    window.onbeforeunload = () => 'some text';
   }
-}
+};
 
 let show_license = function() {
   Actions.show_modal(
     'gdbgui license',
     <React.Fragment>
-      <a href="https://github.com/cs01/gdbgui/blob/master/LICENSE">GNU General Public License v3.0</a>
+      <a href="https://github.com/cs01/gdbgui/blob/master/LICENSE">
+        GNU General Public License v3.0
+      </a>
       <p>Copyright © Chad Smith</p>
       <p>This software can be used personally or commercially for free.</p>
       <p>
-        Permissions of this strong copyleft license are conditioned on making available complete source code of licensed works and modifications,
-        which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors
-        provide an express grant of patent rights.
+        Permissions of this strong copyleft license are conditioned on making available
+        complete source code of licensed works and modifications, which include larger
+        works using a licensed work, under the same license. Copyright and license notices
+        must be preserved. Contributors provide an express grant of patent rights.
       </p>
       <p>
-        If you wish to redistribute gdbgui as part of a closed source product, you can do so for a fee. Contact grassfedcode@gmail.com for details.
+        If you wish to redistribute gdbgui as part of a closed source product, you can do
+        so for a fee. Contact grassfedcode@gmail.com for details.
       </p>
     </React.Fragment>
-  )
-}
+  );
+};
 
 let About = {
   show_about: function() {
@@ -66,15 +74,18 @@ let About = {
           Request a feature
         </a>
         <br />
-        <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">YouTube Channel</a>
+        <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
+          YouTube Channel
+        </a>
         <p />
-        A <a href="http://grassfedcode.com">grassfedcode</a> project to make the easiest to use and most accessible gdb frontend.
+        A <a href="http://grassfedcode.com">grassfedcode</a> project to make the easiest
+        to use and most accessible gdb frontend.
         <p />
         Copyright © Chad Smith
       </React.Fragment>
-    )
+    );
   },
-}
+};
 
 let show_session_info = function() {
   Actions.show_modal(
@@ -92,18 +103,20 @@ let show_session_info = function() {
         </tbody>
       </table>
     </React.Fragment>
-  )
-}
+  );
+};
 
 const menu = (
-  <ul style={{height: 25, padding: 0, paddingRight: '15px', fontSize: '1.3em'}} className="nav navbar-nav navbar-right">
+  <ul
+    style={{height: 25, padding: 0, paddingRight: '15px', fontSize: '1.3em'}}
+    className="nav navbar-nav navbar-right">
     <li id="menudropdown" className="dropdown">
-      <a href="#"
+      <a
+        href="#"
         data-toggle="dropdown"
         role="button"
         style={{height: 25, padding: 0, paddingRight: 20}}
-        className="dropdown-toggle"
-      >
+        className="dropdown-toggle">
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
       </a>
       <ul className="dropdown-menu">
@@ -113,7 +126,10 @@ const menu = (
           </a>
         </li>
         <li>
-          <a title="show guide" className="pointer" onClick={ToolTipTourguide.start_guide}>
+          <a
+            title="show guide"
+            className="pointer"
+            onClick={ToolTipTourguide.start_guide}>
             Show Guide
           </a>
         </li>
@@ -174,100 +190,108 @@ const menu = (
         step_num={0}
         content={
           <div>
-            <h5>
-              Welcome to gdbgui.
-            </h5>
+            <h5>Welcome to gdbgui.</h5>
             <p>
               This guide can be shown at any time by clicking the menu button,
-              <span className="glyphicon glyphicon-menu-hamburger"> </span>, then clicking "Show Guide".
+              <span className="glyphicon glyphicon-menu-hamburger"> </span>, then clicking
+              "Show Guide".
             </p>
           </div>
         }
       />
     </li>
   </ul>
-)
+);
 
 class TopBar extends React.Component {
   constructor() {
-    super()
+    super();
     // state local to the component
     this.state = {
       assembly_flavor: 'intel', // default to intel (choices are 'att' or 'intel')
       show_spinner: false,
-    }
+    };
     // global state attached to this component
     store.connectComponentState(
       this,
-      ['debug_in_reverse', 'source_code_state', 'waiting_for_response', 'show_filesystem', 'latest_gdbgui_version', 'gdbgui_version'],
+      [
+        'debug_in_reverse',
+        'source_code_state',
+        'waiting_for_response',
+        'show_filesystem',
+        'latest_gdbgui_version',
+        'gdbgui_version',
+      ],
       this.store_update_callback.bind(this)
-    )
+    );
 
-    this.spinner_timeout = null
-    this.spinner_timeout_msec = 5000
+    this.spinner_timeout = null;
+    this.spinner_timeout_msec = 5000;
   }
   store_update_callback(keys) {
     if (keys.indexOf('waiting_for_response') !== -1) {
-      this._clear_spinner_timeout()
-      this.setState({show_spinner: false})
+      this._clear_spinner_timeout();
+      this.setState({show_spinner: false});
       if (this.state.waiting_for_response === true) {
         // false to true
-        this._set_spinner_timeout()
+        this._set_spinner_timeout();
       }
     }
   }
   _set_spinner_timeout() {
     this.spinner_timeout = setTimeout(() => {
       if (this.state.waiting_for_response) {
-        this.setState({show_spinner: true})
+        this.setState({show_spinner: true});
       }
-    }, this.spinner_timeout_msec)
+    }, this.spinner_timeout_msec);
   }
   _clear_spinner_timeout() {
-    clearTimeout(this.spinner_timeout)
+    clearTimeout(this.spinner_timeout);
   }
   toggle_assembly_flavor() {
-    const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att'
-    this.setState({assembly_flavor: flavor})
-    GdbApi.set_assembly_flavor(flavor)
-    Actions.clear_cached_assembly()
-    FileOps.fetch_assembly_cur_line()
+    const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att';
+    this.setState({assembly_flavor: flavor});
+    GdbApi.set_assembly_flavor(flavor);
+    Actions.clear_cached_assembly();
+    FileOps.fetch_assembly_cur_line();
   }
   get_controls() {
     return (
-      <div role="group" style={{marginBottom: 6, height: 25, width: 250}} className="btn-group btn-group">
+      <div
+        role="group"
+        style={{marginBottom: 6, height: 25, width: 250}}
+        className="btn-group btn-group">
         <ToolTipTourguide
           step_num={3}
           position={'bottomleft'}
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
           content={
             <div>
-            <h5>
-              These buttons allow you to control execution of the target you are debugging.
-            </h5>
-            <p>
-              This is usually the third thing you want to use.
-            </p>
-            <p>
-            Hover over these buttons to see a description of their action. For example,
-            the <span className="glyphicon glyphicon-repeat" /> button
-             starts (or restarts) a program from the beginning.
-           </p>
-            <p>
-              Each button has a keyboard shortcut. For example, you can press "r" to start running.
-            </p>
-          </div>
+              <h5>
+                These buttons allow you to control execution of the target you are
+                debugging.
+              </h5>
+              <p>This is usually the third thing you want to use.</p>
+              <p>
+                Hover over these buttons to see a description of their action. For
+                example, the <span className="glyphicon glyphicon-repeat" /> button starts
+                (or restarts) a program from the beginning.
+              </p>
+              <p>
+                Each button has a keyboard shortcut. For example, you can press "r" to
+                start running.
+              </p>
+            </div>
           }
         />
-          <button
+        <button
           id="run_button"
           onClick={GdbApi.click_run_button}
           type="button"
           title="Start inferior program from the beginning (keyboard shortcut: r)"
-          className={btn_class}
-          >
-            <span className="glyphicon glyphicon-repeat" />
-          </button>
+          className={btn_class}>
+          <span className="glyphicon glyphicon-repeat" />
+        </button>
 
         <button
           id="continue_button"
@@ -320,12 +344,13 @@ class TopBar extends React.Component {
           </button>
         </div>
       </div>
-    )
+    );
   }
   render() {
-    let toggle_assm_button = ''
+    let toggle_assm_button = '';
     if (
-      this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      this.state.source_code_state ===
+        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.ASSM_CACHED
     ) {
       toggle_assm_button = (
@@ -334,17 +359,23 @@ class TopBar extends React.Component {
           type="button"
           title={'Toggle between assembly flavors. The options are att or intel.'}
           className={'btn btn-default btn-xs'}>
-          <span title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}>{this.state.assembly_flavor}</span>
+          <span
+            title={`Currently displaying ${
+              this.state.assembly_flavor
+            }. Click to toggle.`}>
+            {this.state.assembly_flavor}
+          </span>
         </button>
-      )
+      );
     }
 
-    let reload_button_disabled = 'disabled'
+    let reload_button_disabled = 'disabled';
     if (
-      this.state.source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      this.state.source_code_state ===
+        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.SOURCE_CACHED
     ) {
-      reload_button_disabled = ''
+      reload_button_disabled = '';
     }
     let reload_button = (
       <button
@@ -354,11 +385,18 @@ class TopBar extends React.Component {
         className={'btn btn-default btn-xs ' + reload_button_disabled}>
         <span>reload file</span>
       </button>
-    )
+    );
 
-    let spinner = <span className="" style={{height: '100%', margin: '5px', width: '14px'}} />
+    let spinner = (
+      <span className="" style={{height: '100%', margin: '5px', width: '14px'}} />
+    );
     if (this.state.show_spinner) {
-      spinner = <span className="glyphicon glyphicon-refresh glyphicon-refresh-animate" style={{height: '100%', margin: '5px', width: '14px'}} />
+      spinner = (
+        <span
+          className="glyphicon glyphicon-refresh glyphicon-refresh-animate"
+          style={{height: '100%', margin: '5px', width: '14px'}}
+        />
+      );
     }
 
     return (
@@ -373,7 +411,7 @@ class TopBar extends React.Component {
               type="checkbox"
               checked={store.get('debug_in_reverse')}
               onChange={e => {
-                store.set('debug_in_reverse', e.target.checked)
+                store.set('debug_in_reverse', e.target.checked);
               }}
             />
             reverse
@@ -391,7 +429,10 @@ class TopBar extends React.Component {
         </div>
 
         <div style={{marginTop: 3, whitespace: 'nowrap'}} className="flexrow">
-          <div role="group" style={{height: '25px', marginRight: '10px'}} className="btn-group btn-group">
+          <div
+            role="group"
+            style={{height: '25px', marginRight: '10px'}}
+            className="btn-group btn-group">
             <button
               className="btn btn-default btn-xs"
               title="Toggle file explorer visibility"
@@ -402,27 +443,39 @@ class TopBar extends React.Component {
                   sidebar_size = middle_pane_sizes[2],
                   new_file_explorer_size,
                   new_source_size,
-                  new_sidebar_size
+                  new_sidebar_size;
 
                 if (store.get('show_filesystem')) {
                   // hide it since it's shown right now
-                  new_file_explorer_size = 0
-                  new_source_size = source_size + file_explorer_size / 2
-                  new_sidebar_size = sidebar_size + file_explorer_size / 2
+                  new_file_explorer_size = 0;
+                  new_source_size = source_size + file_explorer_size / 2;
+                  new_sidebar_size = sidebar_size + file_explorer_size / 2;
                 } else {
-                  new_file_explorer_size = 30
-                  new_source_size = Math.max(30, source_size - new_file_explorer_size / 2)
-                  new_sidebar_size = 99 - new_file_explorer_size - new_source_size
+                  new_file_explorer_size = 30;
+                  new_source_size = Math.max(
+                    30,
+                    source_size - new_file_explorer_size / 2
+                  );
+                  new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
                 }
 
-                store.set('show_filesystem', !store.get('show_filesystem'))
-                localStorage.setItem('show_filesystem', JSON.stringify(store.get('show_filesystem'))) // save this for next session
-                store.get('middle_panes_split_obj').setSizes([new_file_explorer_size, new_source_size, new_sidebar_size])
+                store.set('show_filesystem', !store.get('show_filesystem'));
+                localStorage.setItem(
+                  'show_filesystem',
+                  JSON.stringify(store.get('show_filesystem'))
+                ); // save this for next session
+                store
+                  .get('middle_panes_split_obj')
+                  .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
               }}>
               {store.get('show_filesystem') ? 'hide filesystem' : 'show filesystem'}
             </button>
 
-            <button onClick={() => FileOps.fetch_assembly_cur_line()} type="button" title="fetch disassembly" className="btn btn-default btn-xs">
+            <button
+              onClick={() => FileOps.fetch_assembly_cur_line()}
+              type="button"
+              title="fetch disassembly"
+              className="btn btn-default btn-xs">
               <span>fetch disassembly</span>
             </button>
 
@@ -455,18 +508,18 @@ class TopBar extends React.Component {
           </div>
         </div>
       </div>
-    )
+    );
   }
   static needs_to_update_gdbgui_version() {
     // to actually check each value:
-    try{
+    try {
       return Util.is_newer(
         store.get('latest_gdbgui_version'),
         store.get('gdbgui_version')
-      )
-    }catch(err){
-      console.error(err)
-      return true
+      );
+    } catch (err) {
+      console.error(err);
+      return true;
     }
   }
   static get_upgrade_text() {
@@ -475,36 +528,43 @@ class TopBar extends React.Component {
         <span className="bold">You are using the standard version of gdbgui. </span>
         <a href={constants.gdbgui_upgrade_url}>Get gdbgui ad-free key now.</a>
       </React.Fragment>
-    )
+    );
 
-    if (initial_data.p === 'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc') {
+    if (
+      initial_data.p ===
+      'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'
+    ) {
       /* global initial_data */
-      ltext = 'You are using the ad-free version of gdbgui.'
+      ltext = 'You are using the ad-free version of gdbgui.';
     }
 
     if (TopBar.needs_to_update_gdbgui_version()) {
       return (
         <React.Fragment>
-          gdbgui version {store.get('latest_gdbgui_version')} is available. You are using {store.get('gdbgui_version')}.
+          gdbgui version {store.get('latest_gdbgui_version')} is available. You are using{' '}
+          {store.get('gdbgui_version')}.
           <p />
           <p />
-          Visit <a href="https://gdbgui.com">gdbgui.com</a> to update to the latest version.
+          Visit <a href="https://gdbgui.com">gdbgui.com</a> to update to the latest
+          version.
           <p />
           <p />
           {ltext}
           <p />
-          <a href="https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md">View changelog</a>
+          <a href="https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md">
+            View changelog
+          </a>
         </React.Fragment>
-      )
+      );
     } else {
       return (
         <React.Fragment>
           <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
           {ltext}
         </React.Fragment>
-      )
+      );
     }
   }
 }
 
-export default TopBar
+export default TopBar;

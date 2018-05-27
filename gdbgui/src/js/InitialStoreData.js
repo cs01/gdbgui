@@ -1,6 +1,6 @@
 /* global initial_data */
 /* global debug */
-import constants from './constants.js'
+import constants from './constants.js';
 
 /**
  * The initial store data. Keys cannot be added after initialization.
@@ -41,7 +41,6 @@ const initial_store_data = {
   refresh_state_after_sending_console_command: true, // If true, send commands to refresh GUI store after each command is sent from console
   flush_after_commands: true,
   show_all_sent_commands_in_console: debug, // show all sent commands if in debug mode
-
 
   inferior_program: constants.inferior_states.unknown,
   inferior_pid: null,
@@ -104,35 +103,35 @@ const initial_store_data = {
 
   show_filesystem: false,
   middle_panes_split_obj: {},
-}
+};
 
-function get_stored(key, default_val){
-  try{
+function get_stored(key, default_val) {
+  try {
     if (localStorage.hasOwnProperty(key)) {
-      let cached = JSON.parse(localStorage.getItem(key))
+      let cached = JSON.parse(localStorage.getItem(key));
       if (typeof cached === typeof default_val) {
-        return cached
+        return cached;
       }
-      return default_val
+      return default_val;
     }
-  }catch(err){
-    console.error(err)
+  } catch (err) {
+    console.error(err);
   }
-  localStorage.removeItem(key)
-  return default_val
+  localStorage.removeItem(key);
+  return default_val;
 }
 
 // restore saved localStorage data
 for (let key in initial_store_data) {
-  let default_val = initial_store_data[key]
-  initial_store_data[key] = get_stored(key, default_val)
+  let default_val = initial_store_data[key];
+  initial_store_data[key] = get_stored(key, default_val);
 }
 
 if (localStorage.hasOwnProperty('max_lines_of_code_to_fetch')) {
-  let savedval = JSON.parse(localStorage.getItem('max_lines_of_code_to_fetch'))
+  let savedval = JSON.parse(localStorage.getItem('max_lines_of_code_to_fetch'));
   if (_.isInteger(savedval) && savedval > 0) {
-    initial_store_data['max_lines_of_code_to_fetch'] = savedval
+    initial_store_data['max_lines_of_code_to_fetch'] = savedval;
   }
 }
 
-export default initial_store_data
+export default initial_store_data;

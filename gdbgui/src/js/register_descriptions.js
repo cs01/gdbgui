@@ -116,7 +116,8 @@ export default {
   dh: '',
   ax: 'lower 16-bits of eax (accumulator register, used in arithmetic operations)',
   bx: 'lower 16-bits of ebx (base register)',
-  cx: 'lower 16-bits of ecx (counter register, used in shift/rotate instructions and loops)',
+  cx:
+    'lower 16-bits of ecx (counter register, used in shift/rotate instructions and loops)',
   dx: 'lower 16-bits of edx (data register, used in arithmetic and I/O)',
   si: 'lower 16-bits of esi (source index register)',
   di: 'lower 16-bits of edi (destination index register)',
@@ -139,7 +140,8 @@ export default {
 
   // ARM
   R0: 'Argument1, Return Value (Temporary register)',
-  R1: 'Argument2, Second 32-bits if double or 64-bit int return value (Temporary register)',
+  R1:
+    'Argument2, Second 32-bits if double or 64-bit int return value (Temporary register)',
   R2: 'Arguments (Temporary register)',
   R3: 'Arguments (Temporary register)',
   R4: 'R7 is THUMB frame pointer (Permanent register)',
@@ -256,4 +258,4 @@ export default {
   wcgr1: 'WMMX control general-purpose register, synonymous with wc9',
   wcgr2: 'WMMX control general-purpose register, synonymous with wc10',
   wcgr3: 'WMMX control general-purpose register, synonymous with wc11',
-}
+};

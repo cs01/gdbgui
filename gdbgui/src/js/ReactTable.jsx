@@ -1,37 +1,37 @@
-import React from 'react'
+import React from 'react';
 
 class TableRow extends React.Component {
   get_tds() {
-    let tds = []
+    let tds = [];
     for (let i in this.props.data) {
-      tds.push(<td key={i}>{this.props.data[i]}</td>)
+      tds.push(<td key={i}>{this.props.data[i]}</td>);
     }
-    return tds
+    return tds;
   }
 
   render() {
-    return <tr className={this.className}>{this.get_tds()}</tr>
+    return <tr className={this.className}>{this.get_tds()}</tr>;
   }
 }
 
 class ReactTable extends React.Component {
-  static defaultProps = {header: []}
+  static defaultProps = {header: []};
   render_row(row_data, i) {
-    return <TableRow data={row_data} key={i} />
+    return <TableRow data={row_data} key={i} />;
   }
 
   render_head() {
     let ths = [],
-      i = 0
+      i = 0;
     for (let th_data of this.props.header) {
-      ths.push(<th key={i}>{th_data}</th>)
-      i++
+      ths.push(<th key={i}>{th_data}</th>);
+      i++;
     }
-    return ths
+    return ths;
   }
 
   render() {
-    let classes = ['table', 'table-condensed'].concat(this.props.classes)
+    let classes = ['table', 'table-condensed'].concat(this.props.classes);
     return (
       <table className={classes.join(' ')} style={this.props.style}>
         <thead>
@@ -39,8 +39,8 @@ class ReactTable extends React.Component {
         </thead>
         <tbody>{this.props.data.map(this.render_row)}</tbody>
       </table>
-    )
+    );
   }
 }
 
-export default ReactTable
+export default ReactTable;
