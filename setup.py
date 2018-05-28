@@ -54,6 +54,7 @@ setup(
     author_email="grassfedcode@gmail.com",
     description="Browser-based frontend to gdb. Debug C, C++, Go, or Rust.",
     long_description=README,
+    long_description_content_type="text/markdown",
     url="https://github.com/cs01/gdbgui",
     license="License :: GNU GPLv3",
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
