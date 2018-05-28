@@ -293,29 +293,32 @@ const process_gdb_response = function(response_array) {
           }
           Actions.inferior_program_paused(r.payload.frame);
         } else if (r.payload.reason === 'signal-received') {
-          Actions.add_console_entries(
-            `gdbgui noticed a signal was recieved (${r.payload['signal-meaning']}, ${
-              r.payload['signal-name']
-            }).`,
-            constants.console_entry_type.GDBGUI_OUTPUT
-          );
-          Actions.add_console_entries(
-            'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ',
-            constants.console_entry_type.GDBGUI_OUTPUT
-          );
-          Actions.add_console_entries(
-            'occurred by clicking the below button.',
-            constants.console_entry_type.GDBGUI_OUTPUT
-          );
-
-          Actions.add_console_entries(
-            'Re-Enter Program (backtrace)',
-            constants.console_entry_type.BACKTRACE_LINK
-          );
           Actions.inferior_program_paused(r.payload.frame);
+
+          if (r.payload['signal-name'] !== 'SIGINT') {
+            Actions.add_console_entries(
+              `gdbgui noticed a signal was recieved (${r.payload['signal-meaning']}, ${
+                r.payload['signal-name']
+              }).`,
+              constants.console_entry_type.GDBGUI_OUTPUT
+            );
+            Actions.add_console_entries(
+              'If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ',
+              constants.console_entry_type.GDBGUI_OUTPUT
+            );
+            Actions.add_console_entries(
+              'occurred by clicking the below button.',
+              constants.console_entry_type.GDBGUI_OUTPUT
+            );
+
+            Actions.add_console_entries(
+              'Re-Enter Program (backtrace)',
+              constants.console_entry_type.BACKTRACE_LINK
+            );
+          }
         } else {
-          console.log('TODO handle new reason for stopping. Notify developer of this.');
-          console.log(r);
+          console.warn('TODO handle new reason for stopping. Notify developer of this.');
+          console.warn(r);
         }
       } else {
         Actions.inferior_program_paused(r.payload.frame);
