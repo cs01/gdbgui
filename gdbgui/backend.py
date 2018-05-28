@@ -559,12 +559,7 @@ def gdbgui():
 
 @app.route("/send_signal_to_pid", methods=["POST"])
 def send_signal_to_pid():
-    signal_name = request.form.get("signal_name", "")
-
-    signal_obj = SIGNAL_NAME_TO_OBJ.get(signal_name.upper())
-    if signal_obj is None:
-        raise ValueError("no such signal %s" % signal_name)
-
+    signal_name = request.form.get("signal_name", "").upper()
     pid_str = str(request.form.get("pid"))
     try:
         pid_int = int(pid_str)
@@ -579,11 +574,15 @@ def send_signal_to_pid():
             400,
         )
 
-    os.kill(pid_int, signal_obj)
+    if signal_name not in SIGNAL_NAME_TO_OBJ:
+        raise ValueError("no such signal %s" % signal_name)
+    signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
+
+    os.kill(pid_int, signal_value)
     return jsonify(
         {
             "message": "sent signal %s (%s) to process id %s"
-            % (signal_name, signal_obj.value, pid_str)
+            % (signal_name, signal_value, pid_str)
         }
     )
 
