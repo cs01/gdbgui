@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int main(int argc, char *argv) {
+int main(int argc, char **argv) {
   printf("entering\n");
   while(1){
     // while this loop is running, you cannot interact with

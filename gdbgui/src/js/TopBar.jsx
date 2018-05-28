@@ -2,6 +2,7 @@ import React from 'react';
 
 import {store} from 'statorgfc';
 import BinaryLoader from './BinaryLoader.jsx';
+import ControlButtons from './ControlButtons.jsx';
 import Settings from './Settings.jsx';
 import SourceCodeHeading from './SourceCodeHeading.jsx';
 import ToolTipTourguide from './ToolTipTourguide.jsx';
@@ -16,8 +17,6 @@ let onkeyup_jump_to_line = e => {
     Actions.set_line_state(e.currentTarget.value);
   }
 };
-
-let btn_class = 'btn btn-default btn-sm';
 
 let click_shutdown_button = function() {
   // no need to show confirmation before leaving, because we're about to prompt the user
@@ -284,65 +283,7 @@ class TopBar extends React.Component {
             </div>
           }
         />
-        <button
-          id="run_button"
-          onClick={GdbApi.click_run_button}
-          type="button"
-          title="Start inferior program from the beginning (keyboard shortcut: r)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-repeat" />
-        </button>
-
-        <button
-          id="continue_button"
-          onClick={GdbApi.click_continue_button}
-          type="button"
-          title="Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-play" />
-        </button>
-        <button
-          id="next_button"
-          onClick={GdbApi.click_next_button}
-          type="button"
-          title="Step over next function call (keyboard shortcut: n or right arrow)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-step-forward" />
-        </button>
-        <button
-          id="step_button"
-          onClick={GdbApi.click_step_button}
-          type="button"
-          title="Step into next function call (keyboard shortcut: s or down arrow)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-arrow-down" />
-        </button>
-        <button
-          id="return_button"
-          onClick={GdbApi.click_return_button}
-          type="button"
-          title="Step out of current function (keyboard shortcut: u or up arrow)"
-          className={btn_class}>
-          <span className="glyphicon glyphicon-arrow-up" />
-        </button>
-        <div role="group" className="btn-group btn-group-xs">
-          <button
-            id="next_instruction_button"
-            onClick={GdbApi.click_next_instruction_button}
-            type="button"
-            title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)"
-            className="btn btn-default">
-            NI
-          </button>
-          <button
-            id="step_instruction_button"
-            onClick={GdbApi.click_step_instruction_button}
-            type="button"
-            title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)"
-            className="btn btn-default">
-            SI
-          </button>
-        </div>
+        <ControlButtons />
       </div>
     );
   }
