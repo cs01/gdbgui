@@ -578,7 +578,18 @@ def send_signal_to_pid():
         raise ValueError("no such signal %s" % signal_name)
     signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
 
-    os.kill(pid_int, signal_value)
+    try:
+        os.kill(pid_int, signal_value)
+    except Exception:
+        return (
+            jsonify(
+                {
+                    "message": "Process could not be killed. Is %s an active PID?"
+                    % pid_int
+                }
+            ),
+            400,
+        )
     return jsonify(
         {
             "message": "sent signal %s (%s) to process id %s"

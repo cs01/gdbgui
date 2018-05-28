@@ -160,10 +160,6 @@ class RightSidebar extends React.Component {
         className="content"
         onMouseUp={onmouseup_in_parent_callback}
         onMouseMove={onmousemove_in_parent_callback}>
-        <Collapser
-          title="signals"
-          content={<InferiorProgramInfo signals={this.props.signals} />}
-        />
         <ToolTipTourguide
           position={'topleft'}
           content={
@@ -214,7 +210,12 @@ class RightSidebar extends React.Component {
         />
         <Collapser id="memory" title="memory" content={<Memory />} />
         <Collapser title="breakpoints" content={<Breakpoints />} />
+        <Collapser
+          title="signals"
+          content={<InferiorProgramInfo signals={this.props.signals} />}
+        />
         <Collapser title="registers" collapsed={true} content={<Registers />} />
+
         {mi_output}
       </div>
     );
