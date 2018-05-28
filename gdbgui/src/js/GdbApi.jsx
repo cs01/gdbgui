@@ -210,20 +210,30 @@ const GdbApi = {
     const WAIT_TIME_SEC = 10;
     clearTimeout(GdbApi._waiting_for_response_timeout);
     GdbApi._waiting_for_response_timeout = setTimeout(() => {
-      let text = `No gdb response received after ${WAIT_TIME_SEC} seconds. This usually indicates an error.`;
       store.set('waiting_for_response', false);
 
-      Actions.add_console_entries(text, constants.console_entry_type.GDBGUI_OUTPUT);
+      Actions.add_console_entries(
+        `No gdb response received after ${WAIT_TIME_SEC} seconds.`,
+        constants.console_entry_type.GDBGUI_OUTPUT
+      );
       Actions.add_console_entries(
         'Possible reasons include:',
         constants.console_entry_type.GDBGUI_OUTPUT
       );
       Actions.add_console_entries(
-        '1) an inferior program was not loaded; 2) gdb or the inferior process need to be interrupted with the SIGNINT signal; 3) gdb has exited unexpectedly; 4) an unexpected error occurred',
+        '1) gdbgui, gdb, or the debugged process is not running.',
         constants.console_entry_type.GDBGUI_OUTPUT
       );
+
       Actions.add_console_entries(
-        `If an operation that takes longer than ${WAIT_TIME_SEC} seconds was run, this message can be ignored.`,
+        '2) gdb or the inferior process is busy running and needs to be ' +
+          'interrupted (press the pause button up top).',
+        constants.console_entry_type.GDBGUI_OUTPUT
+      );
+
+      Actions.add_console_entries(
+        '3) Something is just taking a long time to finish and respond back to ' +
+          'this browser window, in which case you can just keep waiting.',
         constants.console_entry_type.GDBGUI_OUTPUT
       );
     }, WAIT_TIME_SEC * 1000);
