@@ -866,9 +866,10 @@ def main():
     args_group.add_argument(
         "--args",
         nargs=argparse.REMAINDER,
-        help='All remaining args are taken as the binary and arguments to run'
-            ' in gdb (as with gdb --args).'
-            ' Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2',
+        help='Specify the executable file and any arguments. All arguments are'
+             ' taken literally, so if used, this must be the last argument'
+             ' passed to gdbgui.'
+             ' Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2',
         default=[],
     )
 
