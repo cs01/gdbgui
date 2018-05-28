@@ -1,14 +1,15 @@
 # gdbgui release history
 
 ## master
-* Update Rust documentation
-* Run `set breakpoint pending on` on initial connection
-* Add tour
-* Make requirements.txt point to setup.py's dependencies
-* Update command line parsing for cmd and --args, change arguments from underscore to hyphen, add option to specify browser (@fritzr)
-* Fix bug when sending signals in Python2
 * Add pause button
+* Update command line parsing for cmd and --args, change arguments from underscore to hyphen, add option to specify browser (@fritzr)
+* Add tour
+* Run `set breakpoint pending on` on initial connection
+* Allow signal to be sent to arbitrary PIDs
+* Fix bug when sending signals in Python2
 * Move signal component lower in side pane
+* Update Rust documentation
+* Make requirements.txt point to setup.py's dependencies
 
 ## 0.11.3.1
 * Limit maximum Flask version to prevent `Session expired. Please refresh this webpage.` error

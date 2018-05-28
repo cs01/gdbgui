@@ -14,7 +14,7 @@ A modern, browser-based frontend to gdb (gnu debugger)
 </p>
 
 <p align="center">
-<a href="https://travis-ci.org/cs01/gdbgui"><img src="https://travis-ci.org/cs01/gdbgui.svg?branch=master" alt="image" /></a> <a href="https://pypi.python.org/pypi/gdbgui/"><img src="https://img.shields.io/badge/pypi-0.11.3.1-blue.svg" alt="image" /></a> <img src="https://img.shields.io/badge/python-2,3,pypy-blue.svg" alt="image" /> <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black" /></a> <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square" alt="code style: prettier" /></a></p>
+<a href="https://travis-ci.org/cs01/gdbgui"><img src="https://travis-ci.org/cs01/gdbgui.svg?branch=master" alt="image" /></a> <a href="https://pypi.python.org/pypi/gdbgui/"><img src="https://img.shields.io/badge/pypi-0.12.0.0-blue.svg" alt="image" /></a> <img src="https://img.shields.io/badge/python-2,3,pypy-blue.svg" alt="image" /> <a href="https://github.com/ambv/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black" /></a> <a href="https://github.com/prettier/prettier"><img src="https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square" alt="code style: prettier" /></a></p>
 
 
 
