@@ -782,7 +782,7 @@ def main():
     other = parser.add_argument_group(title="other settings")
 
     gdb_group.add_argument(
-        "-x", "--gdb_cmd_file", help="Execute GDB commands from file."
+        "-x", "--gdb-cmd-file", help="Execute GDB commands from file."
     )
     gdb_group.add_argument(
         "-g",
@@ -852,13 +852,13 @@ def main():
     )
     other.add_argument("-v", "--version", help="Print version", action="store_true")
     other.add_argument(
-        "--hide_gdbgui_upgrades",
+        "--hide-gdbgui-upgrades",
         help="Hide messages regarding newer version of gdbgui. Default: False.",
         action="store_true",
     )
     other.add_argument(
         "-n",
-        "--no_browser",
+        "--no-browser",
         help="By default, the browser will open with gdbgui. Pass this flag so the browser does not open.",
         action="store_true",
     )
@@ -879,15 +879,16 @@ def main():
         "cmd",
         nargs="?",
         type=lambda prog: [prog],
-        help="Name of the binary to run in gdb. To pass flags to the binary,"
-        " use --args instead."
-        " Example: gdbgui ./mybinary [gdbgui-args...]",
+        help="The executable file and any arguments to pass to it."
+        " To pass flags to the binary, wrap in quotes, or use --args instead."
+        " Example: gdbgui ./mybinary [other-gdbgui-args...]"
+        " Example: gdbgui './mybinary myarg -flag1 -flag2' [other gdbgui args...]",
         default=[],
     )
     args_group.add_argument(
         "--args",
         nargs=argparse.REMAINDER,
-        help="Specify the executable file and any arguments. All arguments are"
+        help="Specify the executable file and any arguments to pass to it. All arguments are"
         " taken literally, so if used, this must be the last argument"
         " passed to gdbgui."
         " Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2",
