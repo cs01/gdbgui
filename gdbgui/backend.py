@@ -233,7 +233,7 @@ def setup_backend(
                 url = (host, port)
 
         if open_browser is True and debug is False:
-            browsertext = repr(browsername) if browsername else 'default browser'
+            browsertext = repr(browsername) if browsername else "default browser"
             args = (browsertext,) + url
             text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
             print(colorize(text))
@@ -863,11 +863,11 @@ def main():
         action="store_true",
     )
     other.add_argument(
-         "-b",
-         "--browser",
-         help="Use the given browser executable instead of the system default.",
-         default=None,
-     )
+        "-b",
+        "--browser",
+        help="Use the given browser executable instead of the system default.",
+        default=None,
+    )
     other.add_argument(
         "--debug",
         help="The debug flag of this Flask application. "
@@ -877,20 +877,20 @@ def main():
 
     args_group.add_argument(
         "cmd",
-        nargs='?',
-        type=lambda prog : [prog],
-        help='Name of the binary to run in gdb. To pass flags to the binary,'
-            ' use --args instead.'
-            ' Example: gdbgui ./mybinary [gdbgui-args...]',
+        nargs="?",
+        type=lambda prog: [prog],
+        help="Name of the binary to run in gdb. To pass flags to the binary,"
+        " use --args instead."
+        " Example: gdbgui ./mybinary [gdbgui-args...]",
         default=[],
     )
     args_group.add_argument(
         "--args",
         nargs=argparse.REMAINDER,
-        help='Specify the executable file and any arguments. All arguments are'
-             ' taken literally, so if used, this must be the last argument'
-             ' passed to gdbgui.'
-             ' Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2',
+        help="Specify the executable file and any arguments. All arguments are"
+        " taken literally, so if used, this must be the last argument"
+        " passed to gdbgui."
+        " Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2",
         default=[],
     )
 
