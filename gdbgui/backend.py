@@ -181,6 +181,7 @@ def setup_backend(
     port=DEFAULT_PORT,
     debug=False,
     open_browser=True,
+    browsername=None,
     testing=False,
     private_key=None,
     certificate=None,
@@ -232,9 +233,12 @@ def setup_backend(
                 url = (host, port)
 
         if open_browser is True and debug is False:
-            text = ("Opening gdbgui in browser at " + protocol + "%s:%d") % url
+            browsertext = repr(browsername) if browsername else 'default browser'
+            args = (browsertext,) + url
+            text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
             print(colorize(text))
-            webbrowser.open(url_with_prefix)
+            b = webbrowser.get(browsername) if browsername else webbrowser
+            b.open(url_with_prefix)
         else:
             print(colorize("View gdbgui at %s%s:%d" % (protocol, url[0], url[1])))
 
@@ -859,6 +863,12 @@ def main():
         action="store_true",
     )
     other.add_argument(
+         "-b",
+         "--browser",
+         help="Use the given browser executable instead of the system default.",
+         default=None,
+     )
+    other.add_argument(
         "--debug",
         help="The debug flag of this Flask application. "
         "Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected",
@@ -894,6 +904,10 @@ def main():
 
     cmd = args.cmd or args.args
 
+    if args.no_browser and args.browser:
+        print("Cannot specify no-browser and browser. Must specify one or the other.")
+        exit(1)
+
     app.config["initial_binary_and_args"] = cmd
     app.config["rr"] = args.rr
     app.config["gdb_path"] = args.gdb
@@ -926,6 +940,7 @@ def main():
         port=int(args.port),
         debug=bool(args.debug),
         open_browser=(not args.no_browser),
+        browsername=args.browser,
         private_key=args.key,
         certificate=args.cert,
     )
