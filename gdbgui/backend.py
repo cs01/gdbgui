@@ -772,22 +772,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
 
     gdb_group = parser.add_argument_group(title="gdb commands")
+    args_group = parser.add_mutually_exclusive_group()
     network = parser.add_argument_group(title="gdbgui network settings")
     security = parser.add_argument_group(title="security settings")
     other = parser.add_argument_group(title="other settings")
 
-    gdb_group.add_argument(
-        "cmd",
-        nargs="*",
-        help="The binary and arguments to run in gdb. Example: './mybinary myarg -flag1 -flag2'",
-        default=[],
-    )
-    gdb_group.add_argument(
-        "--args",
-        nargs="+",
-        help='Alias for cmd argument above. Example: gdbgui --args "./mybinary myarg -flag1 -flag2"',
-        default=[],
-    )
     gdb_group.add_argument(
         "-x", "--gdb_cmd_file", help="Execute GDB commands from file."
     )
@@ -875,6 +864,26 @@ def main():
         "Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected",
         action="store_true",
     )
+
+    args_group.add_argument(
+        "cmd",
+        nargs='?',
+        type=lambda prog : [prog],
+        help='Name of the binary to run in gdb. To pass flags to the binary,'
+            ' use --args instead.'
+            ' Example: gdbgui ./mybinary [gdbgui-args...]',
+        default=[],
+    )
+    args_group.add_argument(
+        "--args",
+        nargs=argparse.REMAINDER,
+        help='Specify the executable file and any arguments. All arguments are'
+             ' taken literally, so if used, this must be the last argument'
+             ' passed to gdbgui.'
+             ' Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2',
+        default=[],
+    )
+
     args = parser.parse_args()
 
     initialize_preferences()
@@ -883,13 +892,7 @@ def main():
         print(__version__)
         return
 
-    if args.cmd and args.args:
-        print("Cannot specify command and args. Must specify one or the other.")
-        exit(1)
-    if args.cmd:
-        cmd = args.cmd
-    else:
-        cmd = args.args
+    cmd = args.cmd or args.args
 
     app.config["initial_binary_and_args"] = cmd
     app.config["rr"] = args.rr
