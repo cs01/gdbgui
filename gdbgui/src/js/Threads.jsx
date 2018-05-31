@@ -133,7 +133,7 @@ class Threads extends React.Component {
     return (
       <span key={'thread' + thread.id} className={`${cls}`} style={{fontSize: '0.9em'}}>
         {status} {Memory.make_addrs_into_links_react(thread['target-id'])}, core{' '}
-        {thread.core}, {thread.state}, id {thread.id}
+        {thread.core}, {thread.state}, id {thread.id}, {thread.name && 'name'} {thread.name}
       </span>
     );
   }
