@@ -6,3 +6,8 @@ executable
 .DS_Store
 *.a.dSYM
 gdbgui.spec
+*-link
+*-link.c
+*-link.dSYM
+*.pyc
+yarn-error.log
