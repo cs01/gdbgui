@@ -166,7 +166,7 @@ class RightSidebar extends React.Component {
             <div>
               <h5>This sidebar contains visuals of the state of your program</h5>
               <p>
-                You can see which function the process is stopped in, explore vaiables,
+                You can see which function the process is stopped in, explore variables,
                 and much more.
               </p>
               <p>
