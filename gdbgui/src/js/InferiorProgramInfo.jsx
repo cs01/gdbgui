@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
-import Actions from './Actions.js';
-import {store} from 'statorgfc';
+import Actions from "./Actions.js";
+import { store } from "statorgfc";
 
 class InferiorProgramInfo extends React.Component {
   constructor() {
@@ -9,10 +9,10 @@ class InferiorProgramInfo extends React.Component {
     this.get_li_for_signal = this.get_li_for_signal.bind(this);
     this.get_dropdown = this.get_dropdown.bind(this);
     this.state = {
-      selected_signal: 'SIGINT',
-      other_pid: '',
+      selected_signal: "SIGINT",
+      other_pid: ""
     };
-    store.connectComponentState(this, ['inferior_pid', 'gdb_pid']);
+    store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
   get_li_for_signal(s, signal_key) {
     let onclick = function() {
@@ -31,12 +31,12 @@ class InferiorProgramInfo extends React.Component {
     let signals = [];
     // push SIGINT and SIGKILL to top
     for (let s in this.props.signals) {
-      if (s === 'SIGKILL' || s === 'SIGINT') {
+      if (s === "SIGKILL" || s === "SIGINT") {
         signals.push(this.get_li_for_signal(s, signal_key));
       }
     }
     for (let s in this.props.signals) {
-      if (s !== 'SIGKILL' && s !== 'SIGINT') {
+      if (s !== "SIGKILL" && s !== "SIGINT") {
         signals.push(this.get_li_for_signal(s, signal_key));
       }
     }
@@ -48,14 +48,15 @@ class InferiorProgramInfo extends React.Component {
         <button
           className="btn btn-default btn-xs dropdown-toggle"
           type="button"
-          data-toggle="dropdown">
+          data-toggle="dropdown"
+        >
           {this.state.selected_signal}
-          <span className="caret" style={{marginLeft: '5px'}}>
-            {' '}
+          <span className="caret" style={{ marginLeft: "5px" }}>
+            {" "}
           </span>
         </button>
-        <ul className="dropdown-menu" style={{maxHeight: '300px', overflow: 'auto'}}>
-          {this.get_signal_choices('selected_signal')}
+        <ul className="dropdown-menu" style={{ maxHeight: "300px", overflow: "auto" }}>
+          {this.get_signal_choices("selected_signal")}
         </ul>
       </div>
     );
@@ -70,7 +71,8 @@ class InferiorProgramInfo extends React.Component {
         title={`Send signal to gdb`}
         onClick={() =>
           Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
-        }>
+        }
+      >
         {`gdb (pid ${this.state.gdb_pid})`}
       </button>
     );
@@ -84,7 +86,8 @@ class InferiorProgramInfo extends React.Component {
           title={`Send signal to program being debugged`}
           onClick={() =>
             Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
-          }>
+          }
+        >
           {`debug program (pid ${this.state.inferior_pid})`}
         </button>
       );
@@ -98,7 +101,8 @@ class InferiorProgramInfo extends React.Component {
         title={`Send signal to custom PID. Enter PID to enable this button.`}
         onClick={() =>
           Actions.send_signal(this.state.selected_signal, this.state.other_pid)
-        }>
+        }
+      >
         {`other pid ${this.state.other_pid}`}
       </button>
     );
@@ -116,14 +120,14 @@ class InferiorProgramInfo extends React.Component {
           <input
             placeholder="pid"
             style={{
-              display: 'inline',
-              height: '25px',
-              width: '75px',
-              border: '1px solid #ccc',
-              borderRadius: '4px',
+              display: "inline",
+              height: "25px",
+              width: "75px",
+              border: "1px solid #ccc",
+              borderRadius: "4px"
             }}
             onChange={e => {
-              this.setState({other_pid: e.currentTarget.value});
+              this.setState({ other_pid: e.currentTarget.value });
             }}
             value={this.state.other_pid}
           />

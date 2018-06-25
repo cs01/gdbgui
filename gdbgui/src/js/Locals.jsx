@@ -3,19 +3,19 @@
  * assist in their creation and deletion.
  */
 
-import React from 'react';
-import {store} from 'statorgfc';
-import GdbVariable from './GdbVariable.jsx';
+import React from "react";
+import { store } from "statorgfc";
+import GdbVariable from "./GdbVariable.jsx";
 
 class Locals extends React.Component {
   constructor() {
     super();
-    store.connectComponentState(this, ['expressions', 'locals']);
+    store.connectComponentState(this, ["expressions", "locals"]);
   }
   render() {
     let content = [];
     let sorted_local_objs = _.sortBy(
-      store.get('locals'),
+      store.get("locals"),
       unsorted_obj => unsorted_obj.name
     );
 
@@ -53,8 +53,8 @@ class Locals extends React.Component {
     }
   }
   get_autocreated_obj_from_expr(expr) {
-    for (let obj of store.get('expressions')) {
-      if (obj.expression === expr && obj.expr_type === 'local') {
+    for (let obj of store.get("expressions")) {
+      if (obj.expression === expr && obj.expr_type === "local") {
         return obj;
       }
     }
@@ -62,12 +62,12 @@ class Locals extends React.Component {
   }
   static clear_autocreated_exprs() {
     let exprs_objs_to_remove = store
-      .get('expressions')
-      .filter(obj => obj.expr_type === 'local');
+      .get("expressions")
+      .filter(obj => obj.expr_type === "local");
     exprs_objs_to_remove.map(obj => GdbVariable.delete_gdb_variable(obj.name));
   }
   static clear() {
-    store.set('locals', []);
+    store.set("locals", []);
     Locals.clear_autocreated_exprs();
   }
   static save_locals(locals) {
@@ -76,15 +76,15 @@ class Locals extends React.Component {
       local.can_be_expanded = Locals.can_local_be_expanded(local) ? true : false;
       return local;
     });
-    store.set('locals', locals_with_meta);
+    store.set("locals", locals_with_meta);
   }
   static can_local_be_expanded(local) {
     // gdb returns list of locals. We may want to turn that local into a GdbVariable
     // to explore its children
-    if ('value' in local) {
+    if ("value" in local) {
       // local has a value associated with it. It's either a native
       // type or a pointer. It's not a complex type like a struct.
-      if (local.type.indexOf('*') !== -1) {
+      if (local.type.indexOf("*") !== -1) {
         // make plus if value is a pointer (has asterisk)
         // and can therefore be evaluated further by gdb
         return true;

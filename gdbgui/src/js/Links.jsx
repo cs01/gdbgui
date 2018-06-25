@@ -1,22 +1,22 @@
-import Actions from './Actions.js';
-import React from 'react';
-import CopyToClipboard from './CopyToClipboard.jsx';
+import Actions from "./Actions.js";
+import React from "react";
+import CopyToClipboard from "./CopyToClipboard.jsx";
 
 class FileLink extends React.Component {
   render() {
     let line = parseInt(this.props.line);
     let onclick = null,
-      cls = '';
+      cls = "";
     if (!this.props.file || !line) {
-      line = '';
+      line = "";
     }
-    let sep = '';
+    let sep = "";
     if (line && line !== 0) {
-      sep = ':';
+      sep = ":";
     }
     if (this.props.fullname) {
       onclick = () => Actions.view_file(this.props.fullname, line);
-      cls = 'pointer';
+      cls = "pointer";
     }
 
     let clipboard_content = null;
@@ -24,19 +24,20 @@ class FileLink extends React.Component {
       clipboard_content = (this.props.fullname || this.props.file) + sep + line;
     }
     return (
-      <div style={{display: 'inline-block', whitespace: 'nowrap'}}>
+      <div style={{ display: "inline-block", whitespace: "nowrap" }}>
         <span
           onClick={onclick}
           className={cls}
           title={`click to view ${this.props.fullname}`}
-          style={{display: 'inline'}}>
+          style={{ display: "inline" }}
+        >
           {this.props.file}
           {sep}
           {line}
         </span>
 
         <CopyToClipboard content={clipboard_content} />
-        {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ''}
+        {this.props.num_lines ? `(${this.props.num_lines} lines total)` : ""}
       </div>
     );
   }
@@ -51,7 +52,7 @@ class FrameLink extends React.Component {
           file={this.props.file}
           line={this.props.line}
         />
-        <span style={{whiteSpace: 'pre'}}> </span>
+        <span style={{ whiteSpace: "pre" }}> </span>
         <MemoryLink addr={this.props.addr} />
       </div>
     );
@@ -60,5 +61,5 @@ class FrameLink extends React.Component {
 
 module.exports = {
   FileLink: FileLink,
-  FrameLink: FrameLink,
+  FrameLink: FrameLink
 };

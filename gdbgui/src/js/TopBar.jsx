@@ -1,16 +1,16 @@
-import React from 'react';
+import React from "react";
 
-import {store} from 'statorgfc';
-import BinaryLoader from './BinaryLoader.jsx';
-import ControlButtons from './ControlButtons.jsx';
-import Settings from './Settings.jsx';
-import SourceCodeHeading from './SourceCodeHeading.jsx';
-import ToolTipTourguide from './ToolTipTourguide.jsx';
-import FileOps from './FileOps.jsx';
-import GdbApi from './GdbApi.jsx';
-import Actions from './Actions.js';
-import constants from './constants.js';
-import Util from './Util.js';
+import { store } from "statorgfc";
+import BinaryLoader from "./BinaryLoader.jsx";
+import ControlButtons from "./ControlButtons.jsx";
+import Settings from "./Settings.jsx";
+import SourceCodeHeading from "./SourceCodeHeading.jsx";
+import ToolTipTourguide from "./ToolTipTourguide.jsx";
+import FileOps from "./FileOps.jsx";
+import GdbApi from "./GdbApi.jsx";
+import Actions from "./Actions.js";
+import constants from "./constants.js";
+import Util from "./Util.js";
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -24,20 +24,20 @@ let click_shutdown_button = function() {
   // prompt user
   if (
     window.confirm(
-      'This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?'
+      "This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?"
     ) === true
   ) {
     // user wants to shutdown, redirect them to the shutdown page
-    window.location = '/shutdown';
+    window.location = "/shutdown";
   } else {
     // re-add confirmation before leaving page (when user actually leaves at a later time)
-    window.onbeforeunload = () => 'some text';
+    window.onbeforeunload = () => "some text";
   }
 };
 
 let show_license = function() {
   Actions.show_modal(
-    'gdbgui license',
+    "gdbgui license",
     <React.Fragment>
       <a href="https://github.com/cs01/gdbgui/blob/master/LICENSE">
         GNU General Public License v3.0
@@ -61,7 +61,7 @@ let show_license = function() {
 let About = {
   show_about: function() {
     Actions.show_modal(
-      'About gdbgui',
+      "About gdbgui",
       <React.Fragment>
         {TopBar.get_upgrade_text()}
         <br />
@@ -83,21 +83,21 @@ let About = {
         Copyright © Chad Smith
       </React.Fragment>
     );
-  },
+  }
 };
 
 let show_session_info = function() {
   Actions.show_modal(
-    'session information',
+    "session information",
     <React.Fragment>
       <table>
         <tbody>
           <tr>
-            <td>gdb version: {store.get('gdb_version')}</td>
+            <td>gdb version: {store.get("gdb_version")}</td>
           </tr>
 
           <tr>
-            <td>gdb pid for this tab: {store.get('gdb_pid')}</td>
+            <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
           </tr>
         </tbody>
       </table>
@@ -107,15 +107,17 @@ let show_session_info = function() {
 
 const menu = (
   <ul
-    style={{height: 25, padding: 0, paddingRight: '15px', fontSize: '1.3em'}}
-    className="nav navbar-nav navbar-right">
+    style={{ height: 25, padding: 0, paddingRight: "15px", fontSize: "1.3em" }}
+    className="nav navbar-nav navbar-right"
+  >
     <li id="menudropdown" className="dropdown">
       <a
         href="#"
         data-toggle="dropdown"
         role="button"
-        style={{height: 25, padding: 0, paddingRight: 20}}
-        className="dropdown-toggle">
+        style={{ height: 25, padding: 0, paddingRight: 20 }}
+        className="dropdown-toggle"
+      >
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
       </a>
       <ul className="dropdown-menu">
@@ -128,7 +130,8 @@ const menu = (
           <a
             title="show guide"
             className="pointer"
-            onClick={ToolTipTourguide.start_guide}>
+            onClick={ToolTipTourguide.start_guide}
+          >
             Show Guide
           </a>
         </li>
@@ -184,8 +187,8 @@ const menu = (
       </ul>
 
       <ToolTipTourguide
-        top={'100%'}
-        left={'-300px'}
+        top={"100%"}
+        left={"-300px"}
         step_num={0}
         content={
           <div>
@@ -207,19 +210,19 @@ class TopBar extends React.Component {
     super();
     // state local to the component
     this.state = {
-      assembly_flavor: 'intel', // default to intel (choices are 'att' or 'intel')
-      show_spinner: false,
+      assembly_flavor: "intel", // default to intel (choices are 'att' or 'intel')
+      show_spinner: false
     };
     // global state attached to this component
     store.connectComponentState(
       this,
       [
-        'debug_in_reverse',
-        'source_code_state',
-        'waiting_for_response',
-        'show_filesystem',
-        'latest_gdbgui_version',
-        'gdbgui_version',
+        "debug_in_reverse",
+        "source_code_state",
+        "waiting_for_response",
+        "show_filesystem",
+        "latest_gdbgui_version",
+        "gdbgui_version"
       ],
       this.store_update_callback.bind(this)
     );
@@ -228,9 +231,9 @@ class TopBar extends React.Component {
     this.spinner_timeout_msec = 5000;
   }
   store_update_callback(keys) {
-    if (keys.indexOf('waiting_for_response') !== -1) {
+    if (keys.indexOf("waiting_for_response") !== -1) {
       this._clear_spinner_timeout();
-      this.setState({show_spinner: false});
+      this.setState({ show_spinner: false });
       if (this.state.waiting_for_response === true) {
         // false to true
         this._set_spinner_timeout();
@@ -240,7 +243,7 @@ class TopBar extends React.Component {
   _set_spinner_timeout() {
     this.spinner_timeout = setTimeout(() => {
       if (this.state.waiting_for_response) {
-        this.setState({show_spinner: true});
+        this.setState({ show_spinner: true });
       }
     }, this.spinner_timeout_msec);
   }
@@ -248,8 +251,8 @@ class TopBar extends React.Component {
     clearTimeout(this.spinner_timeout);
   }
   toggle_assembly_flavor() {
-    const flavor = this.state.assembly_flavor === 'att' ? 'intel' : 'att';
-    this.setState({assembly_flavor: flavor});
+    const flavor = this.state.assembly_flavor === "att" ? "intel" : "att";
+    this.setState({ assembly_flavor: flavor });
     GdbApi.set_assembly_flavor(flavor);
     Actions.clear_cached_assembly();
     FileOps.fetch_assembly_cur_line();
@@ -258,11 +261,12 @@ class TopBar extends React.Component {
     return (
       <div
         role="group"
-        style={{marginBottom: 6, height: 25, width: 250}}
-        className="btn-group btn-group">
+        style={{ marginBottom: 6, height: 25, width: 250 }}
+        className="btn-group btn-group"
+      >
         <ToolTipTourguide
           step_num={3}
-          position={'bottomleft'}
+          position={"bottomleft"}
           onClick={e => e.stopPropagation()}
           content={
             <div>
@@ -288,7 +292,7 @@ class TopBar extends React.Component {
     );
   }
   render() {
-    let toggle_assm_button = '';
+    let toggle_assm_button = "";
     if (
       this.state.source_code_state ===
         constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
@@ -298,61 +302,66 @@ class TopBar extends React.Component {
         <button
           onClick={this.toggle_assembly_flavor.bind(this)}
           type="button"
-          title={'Toggle between assembly flavors. The options are att or intel.'}
-          className={'btn btn-default btn-xs'}>
+          title={"Toggle between assembly flavors. The options are att or intel."}
+          className={"btn btn-default btn-xs"}
+        >
           <span
-            title={`Currently displaying ${
-              this.state.assembly_flavor
-            }. Click to toggle.`}>
+            title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}
+          >
             {this.state.assembly_flavor}
           </span>
         </button>
       );
     }
 
-    let reload_button_disabled = 'disabled';
+    let reload_button_disabled = "disabled";
     if (
       this.state.source_code_state ===
         constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.SOURCE_CACHED
     ) {
-      reload_button_disabled = '';
+      reload_button_disabled = "";
     }
     let reload_button = (
       <button
         onClick={FileOps.refresh_cached_source_files}
         type="button"
         title="Erase file from local cache and re-fetch it"
-        className={'btn btn-default btn-xs ' + reload_button_disabled}>
+        className={"btn btn-default btn-xs " + reload_button_disabled}
+      >
         <span>reload file</span>
       </button>
     );
 
     let spinner = (
-      <span className="" style={{height: '100%', margin: '5px', width: '14px'}} />
+      <span className="" style={{ height: "100%", margin: "5px", width: "14px" }} />
     );
     if (this.state.show_spinner) {
       spinner = (
         <span
           className="glyphicon glyphicon-refresh glyphicon-refresh-animate"
-          style={{height: '100%', margin: '5px', width: '14px'}}
+          style={{ height: "100%", margin: "5px", width: "14px" }}
         />
       );
     }
 
     return (
-      <div id="top" style={{background: '#f5f6f7', position: 'absolute', width: '100%'}}>
+      <div
+        id="top"
+        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}
+      >
         <div className="flexrow">
           <BinaryLoader initial_user_input={this.props.initial_user_input} />
           {spinner}
           <label
             title="when clicking buttons to the right, pass the `--reverse` flag to gdb in an attempt to debug in reverse. This is not always supported. rr is known to support reverse debugging."
-            style={{fontWeight: 'normal', fontSize: '0.9em', margin: '5px'}}>
+            style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
+          >
             <input
               type="checkbox"
-              checked={store.get('debug_in_reverse')}
+              checked={store.get("debug_in_reverse")}
               onChange={e => {
-                store.set('debug_in_reverse', e.target.checked);
+                store.set("debug_in_reverse", e.target.checked);
               }}
             />
             reverse
@@ -361,24 +370,25 @@ class TopBar extends React.Component {
           {this.get_controls()}
 
           <span
-            onClick={() => Settings.toggle_key('show_settings')}
+            onClick={() => Settings.toggle_key("show_settings")}
             title="settings"
             className="pointer glyphicon glyphicon-cog"
-            style={{marginRight: '10px', fontSize: '1.3em'}}
+            style={{ marginRight: "10px", fontSize: "1.3em" }}
           />
           {menu}
         </div>
 
-        <div style={{marginTop: 3, whitespace: 'nowrap'}} className="flexrow">
+        <div style={{ marginTop: 3, whitespace: "nowrap" }} className="flexrow">
           <div
             role="group"
-            style={{height: '25px', marginRight: '10px'}}
-            className="btn-group btn-group">
+            style={{ height: "25px", marginRight: "10px" }}
+            className="btn-group btn-group"
+          >
             <button
               className="btn btn-default btn-xs"
               title="Toggle file explorer visibility"
               onClick={() => {
-                let middle_pane_sizes = store.get('middle_panes_split_obj').getSizes(),
+                let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
                   file_explorer_size = middle_pane_sizes[0],
                   source_size = middle_pane_sizes[1],
                   sidebar_size = middle_pane_sizes[2],
@@ -386,7 +396,7 @@ class TopBar extends React.Component {
                   new_source_size,
                   new_sidebar_size;
 
-                if (store.get('show_filesystem')) {
+                if (store.get("show_filesystem")) {
                   // hide it since it's shown right now
                   new_file_explorer_size = 0;
                   new_source_size = source_size + file_explorer_size / 2;
@@ -400,23 +410,25 @@ class TopBar extends React.Component {
                   new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
                 }
 
-                store.set('show_filesystem', !store.get('show_filesystem'));
+                store.set("show_filesystem", !store.get("show_filesystem"));
                 localStorage.setItem(
-                  'show_filesystem',
-                  JSON.stringify(store.get('show_filesystem'))
+                  "show_filesystem",
+                  JSON.stringify(store.get("show_filesystem"))
                 ); // save this for next session
                 store
-                  .get('middle_panes_split_obj')
+                  .get("middle_panes_split_obj")
                   .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
-              }}>
-              {store.get('show_filesystem') ? 'hide filesystem' : 'show filesystem'}
+              }}
+            >
+              {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
             </button>
 
             <button
               onClick={() => FileOps.fetch_assembly_cur_line()}
               type="button"
               title="fetch disassembly"
-              className="btn btn-default btn-xs">
+              className="btn btn-default btn-xs"
+            >
               <span>fetch disassembly</span>
             </button>
 
@@ -429,7 +441,7 @@ class TopBar extends React.Component {
             autoComplete="on"
             title="Enter line number, then press enter"
             placeholder="jump to line"
-            style={{width: 150, height: 25, marginLeft: 10}}
+            style={{ width: 150, height: 25, marginLeft: 10 }}
             className="form-control dropdown-input"
           />
 
@@ -438,13 +450,14 @@ class TopBar extends React.Component {
               marginRight: 5,
               marginLeft: 5,
               marginTop: 5,
-              whiteSpace: 'nowrap',
-              fontFamily: 'monospace',
-              fontSize: '0.7em',
-              display: 'flex',
-              overflow: 'auto',
+              whiteSpace: "nowrap",
+              fontFamily: "monospace",
+              fontSize: "0.7em",
+              display: "flex",
+              overflow: "auto"
             }}
-            className="lighttext">
+            className="lighttext"
+          >
             <SourceCodeHeading />
           </div>
         </div>
@@ -455,8 +468,8 @@ class TopBar extends React.Component {
     // to actually check each value:
     try {
       return Util.is_newer(
-        store.get('latest_gdbgui_version'),
-        store.get('gdbgui_version')
+        store.get("latest_gdbgui_version"),
+        store.get("gdbgui_version")
       );
     } catch (err) {
       console.error(err);
@@ -473,17 +486,17 @@ class TopBar extends React.Component {
 
     if (
       initial_data.p ===
-      'd2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc'
+      "d2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc"
     ) {
       /* global initial_data */
-      ltext = 'You are using the ad-free version of gdbgui.';
+      ltext = "You are using the ad-free version of gdbgui.";
     }
 
     if (TopBar.needs_to_update_gdbgui_version()) {
       return (
         <React.Fragment>
-          gdbgui version {store.get('latest_gdbgui_version')} is available. You are using{' '}
-          {store.get('gdbgui_version')}.
+          gdbgui version {store.get("latest_gdbgui_version")} is available. You are using{" "}
+          {store.get("gdbgui_version")}.
           <p />
           <p />
           Visit <a href="https://gdbgui.com">gdbgui.com</a> to update to the latest
@@ -500,7 +513,7 @@ class TopBar extends React.Component {
     } else {
       return (
         <React.Fragment>
-          <span>gdbgui version {store.get('gdbgui_version')} (latest version)</span>
+          <span>gdbgui version {store.get("gdbgui_version")} (latest version)</span>
           {ltext}
         </React.Fragment>
       );

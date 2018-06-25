@@ -1,15 +1,15 @@
 // component to display output from gdb, as well as gdbgui diagnostic messages
 //
-import React from 'react';
+import React from "react";
 
-import GdbApi from './GdbApi.jsx';
-import constants from './constants.js';
+import GdbApi from "./GdbApi.jsx";
+import constants from "./constants.js";
 
 const pre_escape = string => {
   return string
-    .replace(/\\n/g, '\n')
+    .replace(/\\n/g, "\n")
     .replace(/\\"/g, '"')
-    .replace(/\\t/g, '  ');
+    .replace(/\\t/g, "  ");
 };
 
 class GdbConsole extends React.Component {
@@ -18,9 +18,9 @@ class GdbConsole extends React.Component {
   }
   scroll_to_bottom() {
     this.console_end.scrollIntoView({
-      block: 'end',
-      inline: 'nearest',
-      behavior: 'smooth',
+      block: "end",
+      inline: "nearest",
+      behavior: "smooth"
     });
   }
   backtrace_button_clicked = event => {
@@ -68,7 +68,8 @@ class GdbConsole extends React.Component {
             <p
               key={index}
               className="otpt sent_command pointer"
-              onClick={() => this.props.on_sent_command_clicked(entry.value)}>
+              onClick={() => this.props.on_sent_command_clicked(entry.value)}
+            >
               {escaped_value}
             </p>
           );
@@ -79,12 +80,14 @@ class GdbConsole extends React.Component {
             <p
               key={index}
               className="otpt autocmplt pointer"
-              onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}>
+              onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}
+            >
               <span>{escaped_value}</span>
               <span> </span>
               <span
                 className="label label-primary"
-                onClick={() => GdbApi.run_gdb_command(`help ${entry.value}`)}>
+                onClick={() => GdbApi.run_gdb_command(`help ${entry.value}`)}
+              >
                 help
               </span>
             </p>
@@ -96,8 +99,9 @@ class GdbConsole extends React.Component {
             <div key={index}>
               <a
                 onClick={this.backtrace_button_clicked}
-                style={{fontFamily: 'arial', marginLeft: '10px'}}
-                className="btn btn-success backtrace btn-xs">
+                style={{ fontFamily: "arial", marginLeft: "10px" }}
+                className="btn btn-success backtrace btn-xs"
+              >
                 {escaped_value}
               </a>
             </div>
@@ -108,29 +112,32 @@ class GdbConsole extends React.Component {
             <div
               key={index}
               style={{
-                color: 'white',
-                minHeight: '1em',
-                margin: '2px',
-                whiteSpace: 'pre',
-                fontFamily: 'arial',
-                fontSize: '1.2em',
-              }}>
-              <span style={{fontWeight: 'bold'}}>
+                color: "white",
+                minHeight: "1em",
+                margin: "2px",
+                whiteSpace: "pre",
+                fontFamily: "arial",
+                fontSize: "1.2em"
+              }}
+            >
+              <span style={{ fontWeight: "bold" }}>
                 Enter gdbgui ad-free license key to support the project and remove this
-                message.{' '}
+                message.{" "}
               </span>
               <a
                 className="btn btn-default btn-xs"
-                style={{color: 'black'}}
-                href={constants.gdbgui_upgrade_url}>
+                style={{ color: "black" }}
+                href={constants.gdbgui_upgrade_url}
+              >
                 upgrade now.
               </a>
               <span> or </span>
               <a
                 className="btn btn-default btn-xs"
-                style={{color: 'black'}}
-                href={constants.gdbgui_donate_url}>
-                {' '}
+                style={{ color: "black" }}
+                href={constants.gdbgui_donate_url}
+              >
+                {" "}
                 donate now.
               </a>
 
@@ -150,7 +157,7 @@ class GdbConsole extends React.Component {
     });
   }
   render() {
-    const {console_entries} = this.props;
+    const { console_entries } = this.props;
 
     return (
       <div id="console" ref={el => (this.console = el)}>

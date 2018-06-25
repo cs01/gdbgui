@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 class TableRow extends React.Component {
   get_tds() {
@@ -15,7 +15,7 @@ class TableRow extends React.Component {
 }
 
 class ReactTable extends React.Component {
-  static defaultProps = {header: []};
+  static defaultProps = { header: [] };
   render_row(row_data, i) {
     return <TableRow data={row_data} key={i} />;
   }
@@ -31,9 +31,9 @@ class ReactTable extends React.Component {
   }
 
   render() {
-    let classes = ['table', 'table-condensed'].concat(this.props.classes);
+    let classes = ["table", "table-condensed"].concat(this.props.classes);
     return (
-      <table className={classes.join(' ')} style={this.props.style}>
+      <table className={classes.join(" ")} style={this.props.style}>
         <thead>
           <tr>{this.render_head()}</tr>
         </thead>

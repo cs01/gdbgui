@@ -3,19 +3,19 @@
  * in the source code
  */
 
-import React from 'react';
+import React from "react";
 
-import Breakpoints from './Breakpoints.jsx';
-import constants from './constants.js';
-import Expressions from './Expressions.jsx';
-import GdbMiOutput from './GdbMiOutput.jsx';
-import InferiorProgramInfo from './InferiorProgramInfo.jsx';
-import Locals from './Locals.jsx';
-import Memory from './Memory.jsx';
-import Registers from './Registers.jsx';
-import Tree from './Tree.js';
-import Threads from './Threads.jsx';
-import ToolTipTourguide from './ToolTipTourguide.jsx';
+import Breakpoints from "./Breakpoints.jsx";
+import constants from "./constants.js";
+import Expressions from "./Expressions.jsx";
+import GdbMiOutput from "./GdbMiOutput.jsx";
+import InferiorProgramInfo from "./InferiorProgramInfo.jsx";
+import Locals from "./Locals.jsx";
+import Memory from "./Memory.jsx";
+import Registers from "./Registers.jsx";
+import Tree from "./Tree.js";
+import Threads from "./Threads.jsx";
+import ToolTipTourguide from "./ToolTipTourguide.jsx";
 
 let onmouseup_in_parent_callbacks = [],
   onmousemove_in_parent_callbacks = [];
@@ -30,7 +30,7 @@ let onmousemove_in_parent_callback = function(e) {
 };
 
 class Collapser extends React.Component {
-  static defaultProps = {collapsed: false, id: ''};
+  static defaultProps = { collapsed: false, id: "" };
   constructor(props) {
     super();
     this.state = {
@@ -38,7 +38,7 @@ class Collapser extends React.Component {
       autosize: true,
       height_px: null, // if an integer, force height to this value
       _mouse_y_click_pos_px: null,
-      _height_when_clicked: null,
+      _height_when_clicked: null
     };
     this.onmousedown_resizer = this.onmousedown_resizer.bind(this);
     this.onmouseup_resizer = this.onmouseup_resizer.bind(this);
@@ -49,7 +49,7 @@ class Collapser extends React.Component {
     onmousemove_in_parent_callbacks.push(this.onmousemove_resizer.bind(this));
   }
   toggle_visibility() {
-    this.setState({collapsed: !this.state.collapsed});
+    this.setState({ collapsed: !this.state.collapsed });
   }
   onmousedown_resizer(e) {
     this._resizing = true;
@@ -64,49 +64,51 @@ class Collapser extends React.Component {
       let dh = e.pageY - this._page_y_orig;
       this.setState({
         height_px: this._height_when_clicked + dh,
-        autosize: false,
+        autosize: false
       });
     }
   }
   onclick_restore_autosize() {
-    this.setState({autosize: true});
+    this.setState({ autosize: true });
   }
   render() {
     let style = {
-      height: this.state.autosize ? 'auto' : this.state.height_px + 'px',
-      overflow: this.state.autosize ? 'visible' : 'auto',
+      height: this.state.autosize ? "auto" : this.state.height_px + "px",
+      overflow: this.state.autosize ? "visible" : "auto"
     };
 
-    let reset_size_button = '';
+    let reset_size_button = "";
     if (!this.state.autosize) {
       reset_size_button = (
         <span
           onClick={this.onclick_restore_autosize}
           className="placeholder"
           title={
-            'Height frozen at ' + this.state.height_px + 'px. Click to restore autosize.'
+            "Height frozen at " + this.state.height_px + "px. Click to restore autosize."
           }
           style={{
-            align: 'right',
-            position: 'relative',
-            top: '-10px',
-            cursor: 'pointer',
-          }}>
+            align: "right",
+            position: "relative",
+            top: "-10px",
+            cursor: "pointer"
+          }}
+        >
           reset height
         </span>
       );
     }
 
-    let resizer = '';
+    let resizer = "";
     if (!this.state.collapsed) {
       resizer = (
         <React.Fragment>
           <div
             className="rowresizer"
             onMouseDown={this.onmousedown_resizer}
-            style={{textAlign: 'right'}}
-            title="Click and drag to resize height">
-            {' '}
+            style={{ textAlign: "right" }}
+            title="Click and drag to resize height"
+          >
+            {" "}
             {reset_size_button}
           </div>
         </React.Fragment>
@@ -118,18 +120,19 @@ class Collapser extends React.Component {
         <div className="pointer titlebar" onClick={this.toggle_visibility.bind(this)}>
           <span
             className={`glyphicon glyphicon-chevron-${
-              this.state.collapsed ? 'right' : 'down'
+              this.state.collapsed ? "right" : "down"
             }`}
-            style={{marginRight: '6px'}}
+            style={{ marginRight: "6px" }}
           />
           <span className="lighttext">{this.props.title}</span>
         </div>
 
         <div
-          className={this.state.collapsed ? 'hidden' : ''}
+          className={this.state.collapsed ? "hidden" : ""}
           id={this.props.id}
           style={style}
-          ref={n => (this.collapser_box_node = n)}>
+          ref={n => (this.collapser_box_node = n)}
+        >
           {this.props.content}
         </div>
 
@@ -142,13 +145,13 @@ class Collapser extends React.Component {
 class RightSidebar extends React.Component {
   render() {
     let input_style = {
-        display: 'inline',
-        width: '100px',
-        padding: '6px 6px',
-        height: '25px',
-        fontSize: '1em',
+        display: "inline",
+        width: "100px",
+        padding: "6px 6px",
+        height: "25px",
+        fontSize: "1em"
       },
-      mi_output = '';
+      mi_output = "";
     if (this.props.debug) {
       mi_output = (
         <Collapser title="gdb mi output" content={<GdbMiOutput id="gdb_mi_output" />} />
@@ -159,9 +162,10 @@ class RightSidebar extends React.Component {
       <div
         className="content"
         onMouseUp={onmouseup_in_parent_callback}
-        onMouseMove={onmousemove_in_parent_callback}>
+        onMouseMove={onmousemove_in_parent_callback}
+      >
         <ToolTipTourguide
-          position={'topleft'}
+          position={"topleft"}
           content={
             <div>
               <h5>This sidebar contains visuals of the state of your program</h5>
@@ -173,7 +177,7 @@ class RightSidebar extends React.Component {
                 There is more to discover, but this should be enough to get you started.
               </p>
               <p>
-                Something missing? Found a bug?{' '}
+                Something missing? Found a bug?{" "}
                 <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on
                 github.
               </p>

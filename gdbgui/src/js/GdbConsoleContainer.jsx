@@ -1,17 +1,17 @@
 // gdb console (input/output)
 
-import React from 'react';
+import React from "react";
 
-import {store} from 'statorgfc';
-import constants from './constants.js';
-import GdbApi from './GdbApi.jsx';
-import GdbCommandInput from './GdbCommandInput.jsx';
-import GdbConsole from './GdbConsole.jsx';
-import Actions from './Actions.js';
+import { store } from "statorgfc";
+import constants from "./constants.js";
+import GdbApi from "./GdbApi.jsx";
+import GdbCommandInput from "./GdbCommandInput.jsx";
+import GdbConsole from "./GdbConsole.jsx";
+import Actions from "./Actions.js";
 
 let initial_sent_cmds = [];
 try {
-  initial_sent_cmds = JSON.parse(localStorage.getItem('sent_cmds')) || [];
+  initial_sent_cmds = JSON.parse(localStorage.getItem("sent_cmds")) || [];
 } catch (err) {
   initial_sent_cmds = [];
 }
@@ -69,13 +69,13 @@ const CommandHistory = {
     }
 
     CH.sent_cmds.push(command);
-    localStorage.setItem('sent_cmds', JSON.stringify(CH.sent_cmds));
+    localStorage.setItem("sent_cmds", JSON.stringify(CH.sent_cmds));
   },
 
   reset: function() {
     CH.is_history_being_used = false;
     CH.index = 0;
-  },
+  }
 };
 const CH = CommandHistory;
 
@@ -85,47 +85,47 @@ class GdbConsoleContainer extends React.Component {
     super();
 
     this.state = {
-      current_command_input: '',
+      current_command_input: ""
     };
     store.connectComponentState(
       this,
-      ['gdb_console_entries', 'gdb_autocomplete_options'],
+      ["gdb_console_entries", "gdb_autocomplete_options"],
       this._store_change_callback.bind(this)
     );
   }
   _store_change_callback = () => {
-    const autocomplete_options = store.get('gdb_autocomplete_options');
+    const autocomplete_options = store.get("gdb_autocomplete_options");
     if (autocomplete_options.length === 1) {
       this.setState({
-        current_command_input: `${autocomplete_options[0]} `, // just use the autocomplete value
+        current_command_input: `${autocomplete_options[0]} ` // just use the autocomplete value
       });
-      store.set('gdb_autocomplete_options', []);
+      store.set("gdb_autocomplete_options", []);
     } else if (autocomplete_options.length > 1) {
       Actions.add_console_entries(
         autocomplete_options,
         constants.console_entry_type.AUTOCOMPLETE_OPTION
       );
-      store.set('gdb_autocomplete_options', []);
+      store.set("gdb_autocomplete_options", []);
     }
   };
 
   on_current_command_input_change = value => {
     this.setState({
-      current_command_input: value,
+      current_command_input: value
     });
   };
 
   on_sent_command_clicked = command => {
     CommandHistory.reset();
     this.setState({
-      current_command_input: command,
+      current_command_input: command
     });
   };
 
   on_autocomplete_text_clicked = command => {
     CommandHistory.reset();
     this.setState({
-      current_command_input: command + ' ',
+      current_command_input: command + " "
     });
   };
 
@@ -133,7 +133,7 @@ class GdbConsoleContainer extends React.Component {
     this.setState({
       current_command_input:
         CommandHistory.get_previous_command(this.state.current_command_input) ||
-        this.state.current_command_input,
+        this.state.current_command_input
     });
   };
 
@@ -141,7 +141,7 @@ class GdbConsoleContainer extends React.Component {
     this.setState({
       current_command_input:
         CommandHistory.get_next_command(this.state.current_command_input) ||
-        this.state.current_command_input,
+        this.state.current_command_input
     });
   };
 
@@ -151,7 +151,7 @@ class GdbConsoleContainer extends React.Component {
     Actions.add_console_entries(command, constants.console_entry_type.SENT_COMMAND);
     Actions.execute_console_command(command);
 
-    this.setState({current_command_input: ''});
+    this.setState({ current_command_input: "" });
   };
 
   send_autocomplete_command = () => {
@@ -163,7 +163,7 @@ class GdbConsoleContainer extends React.Component {
     const {
       gdb_console_entries,
       current_command_input,
-      gdb_autocomplete_options,
+      gdb_autocomplete_options
     } = this.state;
 
     return (
