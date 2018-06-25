@@ -2,14 +2,14 @@
  * A component to render source code, assembly, and break points
  */
 
-import {store} from 'statorgfc';
-import React from 'react';
-import FileOps from './FileOps.jsx';
-import Breakpoints from './Breakpoints.jsx';
-import Memory from './Memory.jsx';
-import MemoryLink from './MemoryLink.jsx';
-import constants from './constants.js';
-import Actions from './Actions.js';
+import { store } from "statorgfc";
+import React from "react";
+import FileOps from "./FileOps.jsx";
+import Breakpoints from "./Breakpoints.jsx";
+import Memory from "./Memory.jsx";
+import MemoryLink from "./MemoryLink.jsx";
+import constants from "./constants.js";
+import Actions from "./Actions.js";
 
 class SourceCode extends React.Component {
   static el_code_container = null; // todo: no jquery
@@ -21,22 +21,22 @@ class SourceCode extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, [
-      'fullname_to_render',
-      'cached_source_files',
-      'missing_files',
-      'disassembly_for_missing_file',
-      'line_of_source_to_flash',
-      'paused_on_frame',
-      'breakpoints',
-      'source_code_state',
-      'make_current_line_visible',
-      'source_code_selection_state',
-      'current_theme',
-      'inferior_binary_path',
-      'source_linenum_to_display_start',
-      'source_linenum_to_display_end',
-      'max_lines_of_code_to_fetch',
-      'source_code_infinite_scrolling',
+      "fullname_to_render",
+      "cached_source_files",
+      "missing_files",
+      "disassembly_for_missing_file",
+      "line_of_source_to_flash",
+      "paused_on_frame",
+      "breakpoints",
+      "source_code_state",
+      "make_current_line_visible",
+      "source_code_selection_state",
+      "current_theme",
+      "inferior_binary_path",
+      "source_linenum_to_display_start",
+      "source_linenum_to_display_end",
+      "max_lines_of_code_to_fetch",
+      "source_code_infinite_scrolling"
     ]);
 
     // bind methods
@@ -49,11 +49,12 @@ class SourceCode extends React.Component {
 
   render() {
     return (
-      <div className={this.state.current_theme} style={{height: '100%'}}>
+      <div className={this.state.current_theme} style={{ height: "100%" }}>
         <table
           id="code_table"
           className={this.state.current_theme}
-          style={{width: '100%'}}>
+          style={{ width: "100%" }}
+        >
           <tbody id="code_body">{this.get_body()}</tbody>
         </table>
       </div>
@@ -69,7 +70,7 @@ class SourceCode extends React.Component {
       if (this.state.make_current_line_visible) {
         let success = SourceCode.make_current_line_visible();
         if (success) {
-          store.set('make_current_line_visible', false);
+          store.set("make_current_line_visible", false);
         }
       }
     }
@@ -82,14 +83,14 @@ class SourceCode extends React.Component {
       case states.SOURCE_CACHED: {
         let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render);
         if (!obj) {
-          console.error('expected to find source file');
+          console.error("expected to find source file");
           return this.get_body_empty();
         }
         let paused_addr = this.state.paused_on_frame
             ? this.state.paused_on_frame.addr
             : null,
-          start_linenum = store.get('source_linenum_to_display_start'),
-          end_linenum = store.get('source_linenum_to_display_end');
+          start_linenum = store.get("source_linenum_to_display_start"),
+          end_linenum = store.get("source_linenum_to_display_end");
         return this.get_body_source_and_assm(
           obj.fullname,
           obj.source_code_obj,
@@ -142,7 +143,7 @@ class SourceCode extends React.Component {
         return this.get_body_empty();
       }
       default: {
-        console.error('developer error: unhandled state');
+        console.error("developer error: unhandled state");
         return this.get_body_empty();
       }
     }
@@ -161,36 +162,36 @@ class SourceCode extends React.Component {
     assembly_for_line,
     paused_addr
   ) {
-    let row_class = ['srccode'];
+    let row_class = ["srccode"];
 
     if (is_gdb_paused_on_this_line) {
-      row_class.push('paused_on_line');
+      row_class.push("paused_on_line");
     } else if (line_should_flash) {
-      row_class.push('flash');
+      row_class.push("flash");
     }
 
-    let id = '';
+    let id = "";
     if (
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.PAUSED_FRAME
     ) {
       if (is_gdb_paused_on_this_line) {
-        id = 'scroll_to_line';
+        id = "scroll_to_line";
       }
     } else if (
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.USER_SELECTION
     ) {
       if (line_should_flash) {
-        id = 'scroll_to_line';
+        id = "scroll_to_line";
       }
     }
 
-    let gutter_cls = '';
+    let gutter_cls = "";
     if (has_bkpt) {
-      gutter_cls = 'breakpoint';
+      gutter_cls = "breakpoint";
     } else if (has_disabled_bkpt) {
-      gutter_cls = 'disabled_breakpoint';
+      gutter_cls = "disabled_breakpoint";
     }
 
     let assembly_content = [];
@@ -198,31 +199,32 @@ class SourceCode extends React.Component {
       let i = 0;
       for (let assm of assembly_for_line) {
         assembly_content.push(SourceCode._get_assm_content(i, assm, paused_addr));
-        assembly_content.push(<br key={'br' + i} />);
+        assembly_content.push(<br key={"br" + i} />);
         i++;
       }
     }
 
     return (
-      <tr id={id} key={line_num_being_rendered} className={`${row_class.join(' ')}`}>
+      <tr id={id} key={line_num_being_rendered} className={`${row_class.join(" ")}`}>
         {this.get_linenum_td(line_num_being_rendered, gutter_cls)}
 
-        <td style={{verticalAlign: 'top'}} className="loc">
-          <span className="wsp" dangerouslySetInnerHTML={{__html: source}} />
+        <td style={{ verticalAlign: "top" }} className="loc">
+          <span className="wsp" dangerouslySetInnerHTML={{ __html: source }} />
         </td>
 
         <td className="assembly">{assembly_content}</td>
       </tr>
     );
   }
-  get_linenum_td(linenum, gutter_cls = '') {
+  get_linenum_td(linenum, gutter_cls = "") {
     return (
       <td
-        style={{verticalAlign: 'top', width: '30px'}}
-        className={'line_num ' + gutter_cls}
+        style={{ verticalAlign: "top", width: "30px" }}
+        className={"line_num " + gutter_cls}
         onClick={() => {
           this.click_gutter(linenum);
-        }}>
+        }}
+      >
         <div>{linenum}</div>
       </td>
     );
@@ -235,25 +237,25 @@ class SourceCode extends React.Component {
     let opcodes = assm.opcodes ? (
         <span className="instrContent">{`(${assm.opcodes})`}</span>
       ) : (
-        ''
+        ""
       ),
       instruction = Memory.make_addrs_into_links_react(assm.inst),
-      func_name = assm['func-name'],
+      func_name = assm["func-name"],
       offset = assm.offset,
       addr = assm.address,
       on_current_instruction = paused_addr === assm.address,
-      cls = on_current_instruction ? 'current_assembly_command' : '',
+      cls = on_current_instruction ? "current_assembly_command" : "",
       asterisk = on_current_instruction ? (
         <span
           className="glyphicon glyphicon-chevron-right"
-          style={{width: '10px', display: 'inline-block'}}
+          style={{ width: "10px", display: "inline-block" }}
         />
       ) : (
-        <span style={{width: '10px', display: 'inline-block'}}> </span>
+        <span style={{ width: "10px", display: "inline-block" }}> </span>
       );
     return (
-      <span key={key} style={{whiteSpace: 'nowrap'}} className={cls}>
-        {asterisk} <MemoryLink addr={addr} style={{paddingRight: '5px'}} />
+      <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
+        {asterisk} <MemoryLink addr={addr} style={{ paddingRight: "5px" }} />
         {opcodes /* i.e. mov */}
         <span className="instrContent">{instruction}</span>
         {func_name ? (
@@ -261,7 +263,7 @@ class SourceCode extends React.Component {
             {func_name}+{offset}
           </span>
         ) : (
-          ''
+          ""
         )}
       </span>
     );
@@ -295,8 +297,9 @@ class SourceCode extends React.Component {
           onClick={() => {
             Actions.view_file(fullname, linenum);
           }}
-          style={{fontStyle: 'italic', paddingLeft: '10px'}}
-          className="pointer">
+          style={{ fontStyle: "italic", paddingLeft: "10px" }}
+          className="pointer"
+        >
           view more
         </td>
       </tr>
@@ -306,7 +309,7 @@ class SourceCode extends React.Component {
     return (
       <tr key={linenum}>
         <td />
-        <td style={{fontStyle: 'italic', paddingLeft: '10px', fontSize: '0.8em'}}>
+        <td style={{ fontStyle: "italic", paddingLeft: "10px", fontSize: "0.8em" }}>
           (end of file)
         </td>
       </tr>
@@ -337,7 +340,7 @@ class SourceCode extends React.Component {
         linenum--;
       }
     }
-    return {start_linenum_to_render, end_linenum_to_render};
+    return { start_linenum_to_render, end_linenum_to_render };
   }
   get_body_source_and_assm(
     fullname,
@@ -361,7 +364,10 @@ class SourceCode extends React.Component {
         : 0;
 
     const line_of_source_to_flash = this.state.line_of_source_to_flash;
-    const {start_linenum_to_render, end_linenum_to_render} = this.get_line_nums_to_render(
+    const {
+      start_linenum_to_render,
+      end_linenum_to_render
+    } = this.get_line_nums_to_render(
       source_code_obj,
       start_linenum,
       line_of_source_to_flash,
@@ -401,11 +407,11 @@ class SourceCode extends React.Component {
     // add "view more" buttons if necessary
     if (start_linenum_to_render > start_linenum) {
       body.unshift(
-        this.get_view_more_tr(fullname, start_linenum_to_render - 1, 'view_more_top_node')
+        this.get_view_more_tr(fullname, start_linenum_to_render - 1, "view_more_top_node")
       );
     } else if (start_linenum !== 1) {
       body.unshift(
-        this.get_view_more_tr(fullname, start_linenum - 1, 'view_more_top_node')
+        this.get_view_more_tr(fullname, start_linenum - 1, "view_more_top_node")
       );
     }
 
@@ -414,12 +420,12 @@ class SourceCode extends React.Component {
         this.get_view_more_tr(
           fullname,
           end_linenum_to_render + 1,
-          'view_more_bottom_node'
+          "view_more_bottom_node"
         )
       );
     } else if (end_linenum < num_lines_in_file) {
       body.push(
-        this.get_view_more_tr(fullname, line_num_being_rendered, 'view_more_bottom_node')
+        this.get_view_more_tr(fullname, line_num_being_rendered, "view_more_bottom_node")
       );
     }
 
@@ -447,12 +453,12 @@ class SourceCode extends React.Component {
     );
   }
   static make_current_line_visible() {
-    return SourceCode._make_jq_selector_visible($('#scroll_to_line'));
+    return SourceCode._make_jq_selector_visible($("#scroll_to_line"));
   }
   static is_source_line_visible(jq_selector) {
     if (jq_selector.length !== 1) {
       // make sure something is selected before trying to scroll to it
-      throw 'Unexpected jquery selector';
+      throw "Unexpected jquery selector";
     }
 
     let top_of_container = SourceCode.el_code_container.position().top,
@@ -460,14 +466,14 @@ class SourceCode extends React.Component {
       bottom_of_container = top_of_container + height_of_container,
       top_of_line = jq_selector.position().top,
       bottom_of_line = top_of_line + jq_selector.height(),
-      top_of_table = jq_selector.closest('table').position().top,
+      top_of_table = jq_selector.closest("table").position().top,
       is_visible =
         top_of_line >= top_of_container && bottom_of_line <= bottom_of_container;
 
     if (is_visible) {
-      return {is_visible: true, top_of_line, top_of_table, height_of_container};
+      return { is_visible: true, top_of_line, top_of_table, height_of_container };
     } else {
-      return {is_visible: false, top_of_line, top_of_table, height_of_container};
+      return { is_visible: false, top_of_line, top_of_table, height_of_container };
     }
   }
   /**
@@ -482,14 +488,14 @@ class SourceCode extends React.Component {
         is_visible,
         top_of_line,
         top_of_table,
-        height_of_container,
+        height_of_container
       } = SourceCode.is_source_line_visible(jq_selector);
 
       if (!is_visible) {
         // line is out of view, scroll so it's in the middle of the table
         const time_to_scroll = 0;
         let scroll_top = top_of_line - (top_of_table + height_of_container / 2);
-        SourceCode.el_code_container.animate({scrollTop: scroll_top}, time_to_scroll);
+        SourceCode.el_code_container.animate({ scrollTop: scroll_top }, time_to_scroll);
       }
       return true;
     } else {

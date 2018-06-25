@@ -1,7 +1,7 @@
-import React from 'react';
+import React from "react";
 
-import {store} from 'statorgfc';
-import constants from './constants.js';
+import { store } from "statorgfc";
+import constants from "./constants.js";
 
 class GdbCommandInput extends React.Component {
   componentDidUpdate(prevProps) {
@@ -37,9 +37,9 @@ class GdbCommandInput extends React.Component {
     const {
       on_current_command_input_change,
       current_command_input,
-      clear_console,
+      clear_console
     } = this.props;
-    const interpreter = store.get('interpreter');
+    const interpreter = store.get("interpreter");
     const message = `enter ${interpreter} command. To interrupt inferior, send SIGINT.`;
     let input_value = current_command_input;
 

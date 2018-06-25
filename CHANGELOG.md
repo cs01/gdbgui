@@ -1,6 +1,10 @@
 # gdbgui release history
 
 ## master
+* Add "name" to Threads (new gdb 8.1 feature) (@P4Cu)
+* Fix typo in tour (@nkirkby)
+
+## 0.12.0.0
 * Add pause button
 * Update command line parsing for cmd and --args, change arguments from underscore to hyphen, add option to specify browser (@fritzr)
 * Add tour

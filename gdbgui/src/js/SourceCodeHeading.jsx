@@ -1,17 +1,17 @@
-import React from 'react';
-import constants from './constants.js';
-import {store} from 'statorgfc';
-import {FileLink} from './Links.jsx';
-import FileOps from './FileOps.jsx';
+import React from "react";
+import constants from "./constants.js";
+import { store } from "statorgfc";
+import { FileLink } from "./Links.jsx";
+import FileOps from "./FileOps.jsx";
 
 class SourceCodeHeading extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, [
-      'fullname_to_render',
-      'paused_on_frame',
-      'line_of_source_to_flash',
-      'source_code_selection_state',
+      "fullname_to_render",
+      "paused_on_frame",
+      "line_of_source_to_flash",
+      "source_code_selection_state"
     ]);
   }
   render() {

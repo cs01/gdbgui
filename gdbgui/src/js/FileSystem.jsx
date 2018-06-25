@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 class FileSystem extends React.Component {
   get_node_jsx(node, depth = 0) {
@@ -13,12 +13,12 @@ class FileSystem extends React.Component {
       }
       return <ul>{node.children.map(child => this.get_node_jsx(child, depth + 1))}</ul>;
     };
-    let indent = '\u00A0\u00A0\u00A0'.repeat(depth),
+    let indent = "\u00A0\u00A0\u00A0".repeat(depth),
       glyph = null;
     let is_file = !node.children,
       is_dir = !is_file;
     if (is_dir) {
-      glyph = node.toggled ? 'glyphicon-chevron-down' : 'glyphicon-chevron-right';
+      glyph = node.toggled ? "glyphicon-chevron-down" : "glyphicon-chevron-right";
     }
 
     let onClickName = null;
@@ -33,7 +33,7 @@ class FileSystem extends React.Component {
         <li className="pointer">
           {indent}
           <span
-            className={'glyphicon  ' + glyph}
+            className={"glyphicon  " + glyph}
             onClick={() => {
               this.props.onToggle(node);
             }}
@@ -49,7 +49,7 @@ class FileSystem extends React.Component {
     this.nodecount = -1;
     return (
       <div id="filesystem">
-        <ul style={{color: '#ccc'}}>{this.get_node_jsx(this.props.rootnode)}</ul>
+        <ul style={{ color: "#ccc" }}>{this.get_node_jsx(this.props.rootnode)}</ul>
       </div>
     );
   }

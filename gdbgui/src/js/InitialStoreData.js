@@ -1,6 +1,6 @@
 /* global initial_data */
 /* global debug */
-import constants from './constants.js';
+import constants from "./constants.js";
 
 /**
  * The initial store data. Keys cannot be added after initialization.
@@ -12,7 +12,7 @@ const initial_store_data = {
   debug: debug, // if gdbgui is run in debug mode
   interpreter: initial_data.interpreter, // either 'gdb' or 'llvm'
   gdbgui_version: initial_data.gdbgui_version,
-  latest_gdbgui_version: '(not fetched)',
+  latest_gdbgui_version: "(not fetched)",
   gdb_version: undefined, // this is parsed from gdb's output
   gdb_version_array: [], // this is parsed from gdb's output
   gdb_pid: undefined,
@@ -27,12 +27,12 @@ const initial_store_data = {
   show_tour_guide: true,
   tour_guide_step: 0,
   num_tour_guide_steps: 0,
-  tooltip: {hidden: false, content: 'placeholder', node: null, show_for_n_sec: null},
+  tooltip: { hidden: false, content: "placeholder", node: null, show_for_n_sec: null },
   textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
 
   // preferences
   themes: initial_data.themes,
-  current_theme: localStorage.getItem('theme') || initial_data.themes[0],
+  current_theme: localStorage.getItem("theme") || initial_data.themes[0],
   highlight_source_code: true, // get saved boolean to highlight source code
   max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
   auto_add_breakpoint_to_main: true,
@@ -54,7 +54,7 @@ const initial_store_data = {
 
   // source files
   source_file_paths: [], // all the paths gdb says were used to compile the target binary
-  language: 'c_family', // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
+  language: "c_family", // assume langage of program is c or c++. Language is determined by source file paths. Used to turn on/off certain features/warnings.
   files_being_fetched: [],
   fullname_to_render: null,
   line_of_source_to_flash: null,
@@ -82,9 +82,9 @@ const initial_store_data = {
 
   // memory
   memory_cache: {},
-  start_addr: '',
-  end_addr: '',
-  bytes_per_line: '8',
+  start_addr: "",
+  end_addr: "",
+  bytes_per_line: "8",
 
   // breakpoints
   breakpoints: [],
@@ -102,7 +102,7 @@ const initial_store_data = {
   gdb_console_entries: [],
 
   show_filesystem: false,
-  middle_panes_split_obj: {},
+  middle_panes_split_obj: {}
 };
 
 function get_stored(key, default_val) {
@@ -127,10 +127,10 @@ for (let key in initial_store_data) {
   initial_store_data[key] = get_stored(key, default_val);
 }
 
-if (localStorage.hasOwnProperty('max_lines_of_code_to_fetch')) {
-  let savedval = JSON.parse(localStorage.getItem('max_lines_of_code_to_fetch'));
+if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
+  let savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
   if (_.isInteger(savedval) && savedval > 0) {
-    initial_store_data['max_lines_of_code_to_fetch'] = savedval;
+    initial_store_data["max_lines_of_code_to_fetch"] = savedval;
   }
 }
 

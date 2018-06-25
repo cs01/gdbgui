@@ -10,30 +10,30 @@
 /* global initial_data */
 /* global debug */
 
-import ReactDOM from 'react-dom';
-import React from 'react';
-import {store, middleware} from 'statorgfc';
+import ReactDOM from "react-dom";
+import React from "react";
+import { store, middleware } from "statorgfc";
 
-import Actions from './Actions.js';
-import constants from './constants.js';
-import GdbApi from './GdbApi.jsx';
-import FileOps from './FileOps.jsx';
-import FoldersView from './FoldersView.jsx';
-import GdbConsoleContainer from './GdbConsoleContainer.jsx';
-import GlobalEvents from './GlobalEvents.js';
-import HoverVar from './HoverVar.jsx';
-import initial_store_data from './InitialStoreData.js';
-import MiddleLeft from './MiddleLeft.jsx';
-import Modal from './GdbguiModal.jsx';
-import RightSidebar from './RightSidebar.jsx';
-import Settings from './Settings.jsx';
-import ToolTip from './ToolTip.jsx';
-import TopBar from './TopBar.jsx';
-import ToolTipTourguide from './ToolTipTourguide.jsx';
+import Actions from "./Actions.js";
+import constants from "./constants.js";
+import GdbApi from "./GdbApi.jsx";
+import FileOps from "./FileOps.jsx";
+import FoldersView from "./FoldersView.jsx";
+import GdbConsoleContainer from "./GdbConsoleContainer.jsx";
+import GlobalEvents from "./GlobalEvents.js";
+import HoverVar from "./HoverVar.jsx";
+import initial_store_data from "./InitialStoreData.js";
+import MiddleLeft from "./MiddleLeft.jsx";
+import Modal from "./GdbguiModal.jsx";
+import RightSidebar from "./RightSidebar.jsx";
+import Settings from "./Settings.jsx";
+import ToolTip from "./ToolTip.jsx";
+import TopBar from "./TopBar.jsx";
+import ToolTipTourguide from "./ToolTipTourguide.jsx";
 
 const store_options = {
   immutable: false,
-  debounce_ms: 10,
+  debounce_ms: 10
 };
 store.initialize(initial_store_data, store_options);
 if (debug) {
@@ -60,8 +60,8 @@ class Gdbgui extends React.PureComponent {
       <div className="splitjs_container">
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle" style={{paddingTop: '60px'}}>
-          <div id="folders_view" className="content" style={{backgroundColor: '#333'}}>
+        <div id="middle" style={{ paddingTop: "60px" }}>
+          <div id="folders_view" className="content" style={{ backgroundColor: "#333" }}>
             <FoldersView />
           </div>
 
@@ -69,7 +69,7 @@ class Gdbgui extends React.PureComponent {
             <MiddleLeft />
           </div>
 
-          <div id="controls_sidebar" className="content" style={{overflowX: 'visible'}}>
+          <div id="controls_sidebar" className="content" style={{ overflowX: "visible" }}>
             <RightSidebar signals={initial_data.signals} debug={debug} />
           </div>
         </div>
@@ -77,10 +77,11 @@ class Gdbgui extends React.PureComponent {
         <div
           id="bottom"
           className="split split-horizontal"
-          style={{width: '100%', height: '100%'}}>
+          style={{ width: "100%", height: "100%" }}
+        >
           <ToolTipTourguide
             step_num={4}
-            position={'topleft'}
+            position={"topleft"}
             content={
               <div>
                 <h5>You can view gdb's output here.</h5>
@@ -93,7 +94,8 @@ class Gdbgui extends React.PureComponent {
           <div
             id="bottom_content"
             className="split content"
-            style={{paddingBottom: '0px' /* for height of input */}}>
+            style={{ paddingBottom: "0px" /* for height of input */ }}
+          >
             <GdbConsoleContainer />
           </div>
         </div>
@@ -105,14 +107,14 @@ class Gdbgui extends React.PureComponent {
         <ToolTip />
         <textarea
           style={{
-            width: '0px',
-            height: '0px',
-            position: 'absolute',
-            top: '0',
-            left: '-1000px',
+            width: "0px",
+            height: "0px",
+            position: "absolute",
+            top: "0",
+            left: "-1000px"
           }}
           ref={node => {
-            store.set('textarea_to_copy_to_clipboard', node);
+            store.set("textarea_to_copy_to_clipboard", node);
           }}
         />
       </div>
@@ -124,36 +126,36 @@ class Gdbgui extends React.PureComponent {
     }
     // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
     let middle_panes_split_obj = Split(
-      ['#folders_view', '#source_code_view', '#controls_sidebar'],
+      ["#folders_view", "#source_code_view", "#controls_sidebar"],
       {
         gutterSize: 8,
         minSize: 100,
-        cursor: 'col-resize',
-        direction: 'horizontal', // horizontal makes a left/right pane, and a divider running vertically
-        sizes: store.get('show_filesystem') ? [30, 40, 29] : [0, 70, 29], // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
+        cursor: "col-resize",
+        direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
+        sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29] // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
       }
     );
 
-    Split(['#middle', '#bottom'], {
+    Split(["#middle", "#bottom"], {
       gutterSize: 8,
-      cursor: 'row-resize',
-      direction: 'vertical', // vertical makes a top and bottom pane, and a divider running horizontally
-      sizes: [70, 30],
+      cursor: "row-resize",
+      direction: "vertical", // vertical makes a top and bottom pane, and a divider running horizontally
+      sizes: [70, 30]
     });
 
-    store.set('middle_panes_split_obj', middle_panes_split_obj);
+    store.set("middle_panes_split_obj", middle_panes_split_obj);
 
     // Fetch the latest version only if using in normal mode. If debugging, we tend to
     // refresh quite a bit, which might make too many requests to github and cause them
     // to block our ip? Either way it just seems weird to make so many ajax requests.
-    if (!store.get('debug')) {
+    if (!store.get("debug")) {
       // fetch version
       $.ajax({
-        url: 'https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt',
+        url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
         cache: false,
-        method: 'GET',
+        method: "GET",
         success: data => {
-          store.set('latest_gdbgui_version', _.trim(data));
+          store.set("latest_gdbgui_version", _.trim(data));
           if (
             initial_data.show_gdbgui_upgrades &&
             TopBar.needs_to_update_gdbgui_version()
@@ -163,11 +165,11 @@ class Gdbgui extends React.PureComponent {
         },
         error: data => {
           void data;
-          store.set('latest_gdbgui_version', '(could not contact server)');
-        },
+          store.set("latest_gdbgui_version", "(could not contact server)");
+        }
       });
     }
   }
 }
 
-ReactDOM.render(<Gdbgui />, document.getElementById('gdbgui'));
+ReactDOM.render(<Gdbgui />, document.getElementById("gdbgui"));

@@ -1,10 +1,10 @@
-import React from 'react';
-import ReactTable from './ReactTable.jsx';
-import {store} from 'statorgfc';
-import GdbApi from './GdbApi.jsx';
-import Memory from './Memory.jsx';
-import {FileLink} from './Links.jsx';
-import MemoryLink from './MemoryLink.jsx';
+import React from "react";
+import ReactTable from "./ReactTable.jsx";
+import { store } from "statorgfc";
+import GdbApi from "./GdbApi.jsx";
+import Memory from "./Memory.jsx";
+import { FileLink } from "./Links.jsx";
+import MemoryLink from "./MemoryLink.jsx";
 
 class FrameArguments extends React.Component {
   render_frame_arg(frame_arg) {
@@ -19,7 +19,7 @@ class FrameArguments extends React.Component {
     return (
       <ReactTable
         data={frame_args.map(this.render_frame_arg)}
-        style={{fontSize: '0.9em', borderWidth: '0'}}
+        style={{ fontSize: "0.9em", borderWidth: "0" }}
       />
     );
   }
@@ -29,10 +29,10 @@ class Threads extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, [
-      'threads',
-      'current_thread_id',
-      'stack',
-      'selected_frame_num',
+      "threads",
+      "current_thread_id",
+      "stack",
+      "selected_frame_num"
     ]);
   }
 
@@ -41,9 +41,9 @@ class Threads extends React.Component {
   }
 
   static select_frame(framenum) {
-    store.set('selected_frame_num', framenum);
-    store.set('line_of_source_to_flash', null);
-    store.set('make_current_line_visible', true);
+    store.set("selected_frame_num", framenum);
+    store.set("line_of_source_to_flash", null);
+    store.set("make_current_line_visible", true);
     GdbApi.select_frame(framenum);
   }
 
@@ -72,20 +72,20 @@ class Threads extends React.Component {
           is_current_thread_being_rendered
         );
       } catch (err) {
-        row_data = ['unknown', 'unknown', 'unknown'];
+        row_data = ["unknown", "unknown", "unknown"];
         console.log(err);
       }
       content.push(Threads.get_thread_header(thread, is_current_thread_being_rendered));
       content.push(
         <ReactTable
           data={row_data}
-          style={{fontSize: '0.9em', marginBottom: 0}}
+          style={{ fontSize: "0.9em", marginBottom: 0 }}
           key={thread.id}
-          header={['func', 'file', 'addr', 'args']}
-          classes={['table-bordered', 'table-striped']}
+          header={["func", "file", "addr", "args"]}
+          classes={["table-bordered", "table-striped"]}
         />
       );
-      content.push(<br key={thread.id + 'br'} />);
+      content.push(<br key={thread.id + "br"} />);
     }
     return <div>{content}</div>;
   }
@@ -106,13 +106,14 @@ class Threads extends React.Component {
 
   static get_thread_header(thread, is_current_thread_being_rendered) {
     let selected,
-      cls = '';
+      cls = "";
     if (is_current_thread_being_rendered) {
-      cls = 'bold';
+      cls = "bold";
       selected = (
         <span
           className="label label-primary"
-          title="This thread is selected. Variables can be inspected for the current frame of this thread.">
+          title="This thread is selected. Variables can be inspected for the current frame of this thread."
+        >
           selected
         </span>
       );
@@ -124,18 +125,19 @@ class Threads extends React.Component {
             Threads.select_thread_id(thread.id);
           }}
           title="Select this thread"
-          style={{fontSize: '75%'}}>
+          style={{ fontSize: "75%" }}
+        >
           select
         </button>
       );
     }
-    const details = Memory.make_addrs_into_links_react(thread['target-id']);
-    const core = thread.core ? `, core ${thread.core}` : '';
-    const state = ', ' + thread.state;
-    const id = ', id ' + thread.id;
-    const name = thread.name ? `, ${thread.name}` : '';
+    const details = Memory.make_addrs_into_links_react(thread["target-id"]);
+    const core = thread.core ? `, core ${thread.core}` : "";
+    const state = ", " + thread.state;
+    const id = ", id " + thread.id;
+    const name = thread.name ? `, ${thread.name}` : "";
     return (
-      <span key={'thread' + thread.id} className={`${cls}`} style={{fontSize: '0.9em'}}>
+      <span key={"thread" + thread.id} className={`${cls}`} style={{ fontSize: "0.9em" }}>
         {selected} {details}
         {id}
         {core}
@@ -158,31 +160,31 @@ class Threads extends React.Component {
     if (is_selected_frame) {
       // current frame, current thread
       onclick = () => {};
-      classes.push('bold');
+      classes.push("bold");
       title = `this is the active frame of the selected thread (frame id ${frame_num})`;
     } else if (is_current_thread_being_rendered) {
       onclick = () => {
         Threads.select_frame(frame_num);
       };
-      classes.push('pointer');
+      classes.push("pointer");
       title = `click to select this frame (frame id ${frame_num})`;
     } else {
       // different thread, allow user to switch threads
       onclick = () => {
         Threads.select_thread_id(thread_id);
       };
-      classes.push('pointer');
+      classes.push("pointer");
       title = `click to select this thead (thread id ${thread_id})`;
     }
     let key = thread_id + frame_num;
 
     return [
-      <span key={key} title={title} className={classes.join(' ')} onClick={onclick}>
+      <span key={key} title={title} className={classes.join(" ")} onClick={onclick}>
         {frame.func}
       </span>,
       <FileLink fullname={frame.fullname} file={frame.file} line={frame.line} />,
       <MemoryLink addr={frame.addr} />,
-      <FrameArguments args={frame.args} />,
+      <FrameArguments args={frame.args} />
     ];
   }
 
@@ -211,23 +213,23 @@ class Threads extends React.Component {
     }
 
     if (stack.length === 0) {
-      row_data.push(['unknown', 'unknown', 'unknown']);
+      row_data.push(["unknown", "unknown", "unknown"]);
     }
     return row_data;
   }
   static update_stack(stack) {
-    store.set('stack', stack);
-    store.set('paused_on_frame', stack[store.get('selected_frame_num') || 0]);
+    store.set("stack", stack);
+    store.set("paused_on_frame", stack[store.get("selected_frame_num") || 0]);
     store.set(
-      'fullname_to_render',
-      store.get('paused_on_frame') ? store.get('paused_on_frame').fullname : {}
+      "fullname_to_render",
+      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {}
     );
-    store.set('line_of_source_to_flash', parseInt(store.get('paused_on_frame').line));
-    store.set('current_assembly_address', store.get('paused_on_frame').addr);
-    store.set('make_current_line_visible', true);
+    store.set("line_of_source_to_flash", parseInt(store.get("paused_on_frame").line));
+    store.set("current_assembly_address", store.get("paused_on_frame").addr);
+    store.set("make_current_line_visible", true);
   }
   set_thread_id(id) {
-    store.set('current_thread_id', parseInt(id));
+    store.set("current_thread_id", parseInt(id));
   }
 }
 

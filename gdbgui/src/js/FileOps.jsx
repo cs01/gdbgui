@@ -1,8 +1,8 @@
-import {store} from 'statorgfc';
-import GdbApi from './GdbApi.jsx';
-import constants from './constants.js';
-import Actions from './Actions.js';
-import React from 'react'; // needed for jsx
+import { store } from "statorgfc";
+import GdbApi from "./GdbApi.jsx";
+import constants from "./constants.js";
+import Actions from "./Actions.js";
+import React from "react"; // needed for jsx
 void React;
 
 let debug_print;
@@ -41,19 +41,19 @@ let FileFetcher = {
       start_line: start_line,
       end_line: end_line,
       path: fullname,
-      highlight: store.get('highlight_source_code'),
+      highlight: store.get("highlight_source_code")
     };
 
     $.ajax({
       beforeSend: function(xhr) {
         xhr.setRequestHeader(
-          'x-csrftoken',
+          "x-csrftoken",
           initial_data.csrf_token
         ); /* global initial_data */
       },
-      url: '/read_file',
+      url: "/read_file",
       cache: false,
-      type: 'GET',
+      type: "GET",
       data: data,
       success: function(response) {
         response.source_code;
@@ -91,7 +91,7 @@ let FileFetcher = {
         FileFetcher._queue = FileFetcher._queue.filter(o => o.fullname !== fullname);
 
         FileFetcher._fetch_next();
-      },
+      }
     });
   },
   _fetch_next: function() {
@@ -110,11 +110,11 @@ let FileFetcher = {
   fetch: function(fullname, start_line, end_line) {
     if (!start_line) {
       start_line = 1;
-      console.warn('expected start line');
+      console.warn("expected start line");
     }
     if (!end_line) {
       end_line = start_line;
-      console.warn('expected end line');
+      console.warn("expected end line");
     }
 
     if (FileOps.lines_are_cached(fullname, start_line, end_line)) {
@@ -124,9 +124,9 @@ let FileFetcher = {
       return;
     }
 
-    FileFetcher._queue.push({fullname, start_line, end_line});
+    FileFetcher._queue.push({ fullname, start_line, end_line });
     FileFetcher._fetch_next();
-  },
+  }
 };
 
 const FileOps = {
@@ -136,45 +136,45 @@ const FileOps = {
   init: function() {
     store.subscribeToKeys(
       [
-        'inferior_program',
-        'source_code_selection_state',
-        'paused_on_frame',
-        'current_assembly_address',
-        'disassembly_for_missing_file',
-        'highlight_source_code',
-        'missing_files',
-        'files_being_fetched',
-        'gdb_version_array',
-        'interpreter',
-        'fullname_to_render',
-        'line_of_source_to_flash',
-        'cached_source_files',
-        'max_lines_of_code_to_fetch',
+        "inferior_program",
+        "source_code_selection_state",
+        "paused_on_frame",
+        "current_assembly_address",
+        "disassembly_for_missing_file",
+        "highlight_source_code",
+        "missing_files",
+        "files_being_fetched",
+        "gdb_version_array",
+        "interpreter",
+        "fullname_to_render",
+        "line_of_source_to_flash",
+        "cached_source_files",
+        "max_lines_of_code_to_fetch"
       ],
       FileOps._store_change_callback
     );
   },
   user_select_file_to_view: function(fullname, line) {
     store.set(
-      'source_code_selection_state',
+      "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
     );
-    store.set('fullname_to_render', fullname);
-    store.set('line_of_source_to_flash', line);
-    store.set('make_current_line_visible', true);
-    store.set('source_code_infinite_scrolling', false);
+    store.set("fullname_to_render", fullname);
+    store.set("line_of_source_to_flash", line);
+    store.set("make_current_line_visible", true);
+    store.set("source_code_infinite_scrolling", false);
   },
   _store_change_callback: function() {
-    if (store.get('inferior_program') === constants.inferior_states.running) {
+    if (store.get("inferior_program") === constants.inferior_states.running) {
       return;
     }
 
-    let source_code_selection_state = store.get('source_code_selection_state'),
+    let source_code_selection_state = store.get("source_code_selection_state"),
       fullname = null,
       is_paused = false,
       paused_addr = null,
       paused_frame_fullname = null,
-      paused_frame = store.get('paused_on_frame');
+      paused_frame = store.get("paused_on_frame");
 
     if (paused_frame) {
       paused_frame_fullname = paused_frame.fullname;
@@ -185,25 +185,25 @@ const FileOps = {
       source_code_selection_state ===
       constants.source_code_selection_states.USER_SELECTION
     ) {
-      fullname = store.get('fullname_to_render');
+      fullname = store.get("fullname_to_render");
       is_paused = false;
       paused_addr = null;
-      require_cached_line_num = parseInt(store.get('line_of_source_to_flash'));
+      require_cached_line_num = parseInt(store.get("line_of_source_to_flash"));
     } else if (
       source_code_selection_state === constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      is_paused = store.get('inferior_program') === constants.inferior_states.paused;
-      paused_addr = store.get('current_assembly_address');
+      is_paused = store.get("inferior_program") === constants.inferior_states.paused;
+      paused_addr = store.get("current_assembly_address");
       fullname = paused_frame_fullname;
-      require_cached_line_num = parseInt(store.get('line_of_source_to_flash'));
+      require_cached_line_num = parseInt(store.get("line_of_source_to_flash"));
     }
 
-    let source_code_infinite_scrolling = store.get('source_code_infinite_scrolling'),
+    let source_code_infinite_scrolling = store.get("source_code_infinite_scrolling"),
       assembly_is_cached = FileOps.assembly_is_cached(fullname),
       file_is_missing = FileOps.is_missing_file(fullname),
       start_line,
       end_line;
-    ({start_line, end_line, require_cached_line_num} = FileOps.get_start_and_end_lines(
+    ({ start_line, end_line, require_cached_line_num } = FileOps.get_start_and_end_lines(
       fullname,
       require_cached_line_num,
       source_code_infinite_scrolling
@@ -227,8 +227,8 @@ const FileOps = {
   ) {
     let start_line, end_line;
     if (source_code_infinite_scrolling) {
-      start_line = store.get('source_linenum_to_display_start');
-      end_line = store.get('source_linenum_to_display_end');
+      start_line = store.get("source_linenum_to_display_start");
+      end_line = store.get("source_linenum_to_display_end");
       require_cached_line_num = start_line;
     } else {
       let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
@@ -237,23 +237,23 @@ const FileOps = {
       }
 
       start_line = Math.max(
-        Math.floor(require_cached_line_num - store.get('max_lines_of_code_to_fetch') / 2),
+        Math.floor(require_cached_line_num - store.get("max_lines_of_code_to_fetch") / 2),
         1
       );
-      end_line = Math.ceil(start_line + store.get('max_lines_of_code_to_fetch'));
+      end_line = Math.ceil(start_line + store.get("max_lines_of_code_to_fetch"));
 
       if (source_file_obj) {
         end_line = Math.ceil(Math.min(end_line, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
       }
       if (start_line > end_line) {
         start_line = Math.floor(
-          Math.max(1, end_line - store.get('max_lines_of_code_to_fetch'))
+          Math.max(1, end_line - store.get("max_lines_of_code_to_fetch"))
         );
       }
       require_cached_line_num = Math.min(require_cached_line_num, end_line);
     }
 
-    return {start_line, end_line, require_cached_line_num};
+    return { start_line, end_line, require_cached_line_num };
   },
   update_source_code_state(
     fullname,
@@ -271,37 +271,37 @@ const FileOps = {
     if (fullname && line_is_cached) {
       // we have file cached. We may have assembly cached too.
       store.set(
-        'source_code_state',
+        "source_code_state",
         assembly_is_cached ? states.ASSM_AND_SOURCE_CACHED : states.SOURCE_CACHED
       );
-      store.set('source_linenum_to_display_start', start_line);
+      store.set("source_linenum_to_display_start", start_line);
       end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname));
-      store.set('source_linenum_to_display_end', end_line);
+      store.set("source_linenum_to_display_end", end_line);
     } else if (fullname && !file_is_missing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it
-      store.set('source_code_state', states.FETCHING_SOURCE);
+      store.set("source_code_state", states.FETCHING_SOURCE);
 
       FileFetcher.fetch(fullname, start_line, end_line);
     } else if (
       is_paused &&
       paused_addr &&
       store
-        .get('disassembly_for_missing_file')
+        .get("disassembly_for_missing_file")
         .some(obj => parseInt(obj.address, 16) === parseInt(paused_addr, 16))
     ) {
-      store.set('source_code_state', states.ASSM_CACHED);
+      store.set("source_code_state", states.ASSM_CACHED);
     } else if (is_paused && paused_addr) {
       if (paused_addr in FileOps.unfetchable_disassembly_addresses) {
-        store.set('source_code_state', states.ASSM_UNAVAILABLE);
+        store.set("source_code_state", states.ASSM_UNAVAILABLE);
       } else {
         // get disassembly
-        store.set('source_code_state', states.FETCHING_ASSM);
+        store.set("source_code_state", states.FETCHING_ASSM);
         FileOps.fetch_disassembly_for_missing_file(paused_addr);
       }
     } else if (file_is_missing) {
-      store.set('source_code_state', states.FILE_MISSING);
+      store.set("source_code_state", states.FILE_MISSING);
     } else {
-      store.set('source_code_state', states.NONE_AVAILABLE);
+      store.set("source_code_state", states.NONE_AVAILABLE);
     }
   },
   get_num_lines_in_file: function(fullname, source_file_obj) {
@@ -309,7 +309,7 @@ const FileOps = {
       source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     }
     if (!source_file_obj) {
-      console.error('Developer error: expected to find file object for ' + fullname);
+      console.error("Developer error: expected to find file object for " + fullname);
       return;
     }
     if (!source_file_obj.num_lines_in_file) {
@@ -366,7 +366,7 @@ const FileOps = {
     );
   },
   get_source_file_obj_from_cache: function(fullname) {
-    let cached_files = store.get('cached_source_files');
+    let cached_files = store.get("cached_source_files");
     for (let sf of cached_files) {
       if (sf.fullname === fullname) {
         return sf;
@@ -389,12 +389,12 @@ const FileOps = {
           assembly: {},
           last_modified_unix_sec: last_modified_unix_sec,
           num_lines_in_file: num_lines_in_file,
-          exists: true,
+          exists: true
         },
-        cached_source_files = store.get('cached_source_files');
+        cached_source_files = store.get("cached_source_files");
 
       cached_source_files.push(new_source_file);
-      store.set('cached_source_files', cached_source_files);
+      store.set("cached_source_files", cached_source_files);
       FileOps.warning_shown_for_old_binary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
@@ -403,21 +403,21 @@ const FileOps = {
     } else {
       // mutate existing source code object by adding keys (lines) of the new source code object
       Object.assign(cached_file_obj.source_code_obj, source_code_obj);
-      store.set('cached_source_files', store.get('cached_source_files'));
+      store.set("cached_source_files", store.get("cached_source_files"));
     }
   },
   /**
    * Show modal warning if user is trying to show a file that was modified after the binary was compiled
    */
   show_modal_if_file_modified_after_binary(fullname, src_last_modified_unix_sec) {
-    if (store.get('inferior_binary_path')) {
+    if (store.get("inferior_binary_path")) {
       if (
         src_last_modified_unix_sec >
-          store.get('inferior_binary_path_last_modified_unix_sec') &&
+          store.get("inferior_binary_path_last_modified_unix_sec") &&
         FileOps.warning_shown_for_old_binary === false
       ) {
         Actions.show_modal(
-          'Warning',
+          "Warning",
           <div>
             This source file was modified <span className="bold">after</span> the binary
             was compiled. Recompile the binary, then try again. Otherwise the source code
@@ -427,8 +427,8 @@ const FileOps = {
               src_last_modified_unix_sec * 1000
             ).format(constants.DATE_FORMAT)}`}</p>
             <p>
-              {`Binary: ${store.get('inferior_binary_path')}, modified ${moment(
-                store.get('inferior_binary_path_last_modified_unix_sec') * 1000
+              {`Binary: ${store.get("inferior_binary_path")}, modified ${moment(
+                store.get("inferior_binary_path_last_modified_unix_sec") * 1000
               ).format(constants.DATE_FORMAT)}`})
             </p>
           </div>
@@ -438,7 +438,7 @@ const FileOps = {
     }
   },
   get_cached_assembly_for_file: function(fullname) {
-    for (let file of store.get('cached_source_files')) {
+    for (let file of store.get("cached_source_files")) {
       if (file.fullname === fullname) {
         return file.assembly;
       }
@@ -449,65 +449,65 @@ const FileOps = {
     FileOps.clear_cached_source_files();
   },
   clear_cached_source_files: function() {
-    store.set('cached_source_files', []);
+    store.set("cached_source_files", []);
   },
   fetch_more_source_at_beginning() {
-    let fullname = store.get('fullname_to_render');
-    let center_on_line = store.get('source_linenum_to_display_start') - 1;
+    let fullname = store.get("fullname_to_render");
+    let center_on_line = store.get("source_linenum_to_display_start") - 1;
     // store.set('source_code_infinite_scrolling', true)
     store.set(
-      'source_linenum_to_display_start',
+      "source_linenum_to_display_start",
       Math.max(
-        store.get('source_linenum_to_display_start') -
-          Math.floor(store.get('max_lines_of_code_to_fetch') / 2),
+        store.get("source_linenum_to_display_start") -
+          Math.floor(store.get("max_lines_of_code_to_fetch") / 2),
         1
       )
     );
     store.set(
-      'source_linenum_to_display_end',
+      "source_linenum_to_display_end",
       Math.ceil(
-        store.get('source_linenum_to_display_start') +
-          store.get('max_lines_of_code_to_fetch')
+        store.get("source_linenum_to_display_start") +
+          store.get("max_lines_of_code_to_fetch")
       )
     );
     Actions.view_file(fullname, center_on_line);
     FileFetcher.fetch(
       fullname,
-      store.get('source_linenum_to_display_start'),
-      store.get('source_linenum_to_display_end')
+      store.get("source_linenum_to_display_start"),
+      store.get("source_linenum_to_display_end")
     );
   },
   fetch_more_source_at_end() {
-    store.set('source_code_infinite_scrolling', true);
+    store.set("source_code_infinite_scrolling", true);
 
-    let fullname = store.get('fullname_to_render');
+    let fullname = store.get("fullname_to_render");
     let end_line =
-      store.get('source_linenum_to_display_end') +
-      Math.ceil(store.get('max_lines_of_code_to_fetch') / 2);
+      store.get("source_linenum_to_display_end") +
+      Math.ceil(store.get("max_lines_of_code_to_fetch") / 2);
 
     let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (source_file_obj) {
       end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
     }
 
-    let start_line = end_line - store.get('max_lines_of_code_to_fetch');
+    let start_line = end_line - store.get("max_lines_of_code_to_fetch");
     start_line = Math.max(1, start_line);
-    store.set('source_linenum_to_display_end', end_line);
-    store.set('source_linenum_to_display_start', start_line);
+    store.set("source_linenum_to_display_end", end_line);
+    store.set("source_linenum_to_display_start", start_line);
 
     FileFetcher.fetch(
       fullname,
-      store.get('source_linenum_to_display_start'),
-      store.get('source_linenum_to_display_end')
+      store.get("source_linenum_to_display_start"),
+      store.get("source_linenum_to_display_end")
     );
   },
   is_missing_file: function(fullname) {
-    return store.get('missing_files').indexOf(fullname) !== -1;
+    return store.get("missing_files").indexOf(fullname) !== -1;
   },
   add_missing_file: function(fullname) {
-    let missing_files = store.get('missing_files');
+    let missing_files = store.get("missing_files");
     missing_files.push(fullname);
-    store.set('missing_files', missing_files);
+    store.set("missing_files", missing_files);
   },
   /**
    * gdb changed its api for the data-disassemble command
@@ -531,17 +531,17 @@ const FileOps = {
   },
   get_fetch_disassembly_command: function(fullname, start_line, mi_response_format) {
     if (_.isString(fullname)) {
-      if (store.get('interpreter') === 'gdb') {
+      if (store.get("interpreter") === "gdb") {
         return (
           constants.INLINE_DISASSEMBLY_STR +
           `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
         );
       } else {
-        console.log('TODOLLDB - get mi command to disassemble');
+        console.log("TODOLLDB - get mi command to disassemble");
         return `disassemble --frame`;
       }
     } else {
-      console.warn('not fetching undefined file');
+      console.warn("not fetching undefined file");
     }
   },
   /**
@@ -551,12 +551,12 @@ const FileOps = {
     if (mi_response_format === null || !_.isNumber(mi_response_format)) {
       // try to determine response format based on our guess of the gdb version being used
       mi_response_format = FileOps.get_dissasembly_format_num(
-        store.get('gdb_version_array')
+        store.get("gdb_version_array")
       );
     }
 
-    let fullname = store.get('fullname_to_render'),
-      line = parseInt(store.get('line_of_source_to_flash'));
+    let fullname = store.get("fullname_to_render"),
+      line = parseInt(store.get("line_of_source_to_flash"));
     if (!line) {
       line = 1;
     }
@@ -601,12 +601,12 @@ const FileOps = {
     FileOps.disassembly_addr_being_fetched = null;
 
     if (!_.isArray(mi_assembly) || mi_assembly.length === 0) {
-      console.error('Attempted to save unexpected assembly', mi_assembly);
+      console.error("Attempted to save unexpected assembly", mi_assembly);
     }
 
     let fullname = mi_assembly[0].fullname;
     if (mi_token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
-      store.set('disassembly_for_missing_file', mi_assembly);
+      store.set("disassembly_for_missing_file", mi_assembly);
       return;
     }
 
@@ -617,7 +617,7 @@ const FileOps = {
       assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn;
     }
 
-    let cached_source_files = store.get('cached_source_files');
+    let cached_source_files = store.get("cached_source_files");
     for (let cached_file of cached_source_files) {
       if (cached_file.fullname === fullname) {
         cached_file.assembly = Object.assign(cached_file.assembly, assembly_to_save);
@@ -625,17 +625,17 @@ const FileOps = {
         let max_assm_line = Math.max(Object.keys(cached_file.assembly)),
           max_source_line = Math.max(Object.keys(cached_file.source_code_obj));
         if (max_assm_line > max_source_line) {
-          cached_file.source_code_obj[max_assm_line] = '';
+          cached_file.source_code_obj[max_assm_line] = "";
           for (let i = 0; i < max_assm_line; i++) {
             if (!cached_file.source_code_obj[i]) {
-              cached_file.source_code_obj[i] = '';
+              cached_file.source_code_obj[i] = "";
             }
           }
         }
-        store.set('cached_source_files', cached_source_files);
+        store.set("cached_source_files", cached_source_files);
         break;
       }
     }
-  },
+  }
 };
 export default FileOps;

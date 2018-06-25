@@ -1,25 +1,25 @@
-import React from 'react';
-import {store} from 'statorgfc';
-import GdbVariable from './GdbVariable.jsx';
-import constants from './constants.js';
+import React from "react";
+import { store } from "statorgfc";
+import GdbVariable from "./GdbVariable.jsx";
+import constants from "./constants.js";
 
 class Expressions extends React.Component {
   constructor() {
     super();
-    store.connectComponentState(this, ['expressions']);
+    store.connectComponentState(this, ["expressions"]);
   }
 
   render() {
     let sorted_expression_objs = _.sortBy(
-      store.get('expressions'),
+      store.get("expressions"),
       unsorted_obj => unsorted_obj.expression
     );
     // only render variables in scope that were not created for the Locals component
     this.objs_to_render = sorted_expression_objs.filter(
-      obj => obj.in_scope === 'true' && obj.expr_type === 'expr'
+      obj => obj.in_scope === "true" && obj.expr_type === "expr"
     );
     this.objs_to_delete = sorted_expression_objs.filter(
-      obj => obj.in_scope === 'invalid'
+      obj => obj.in_scope === "invalid"
     );
 
     // delete invalid objects
@@ -41,7 +41,7 @@ class Expressions extends React.Component {
       );
     }
     content.push(
-      <div key="tt" id="plot_coordinate_tooltip" style={{display: 'hidden'}} />
+      <div key="tt" id="plot_coordinate_tooltip" style={{ display: "hidden" }} />
     );
 
     return (
@@ -51,11 +51,11 @@ class Expressions extends React.Component {
           className="form-control"
           placeholder="expression or variable"
           style={{
-            display: 'inline',
-            padding: '6px 6px',
-            height: '25px',
-            fontSize: '1em',
-            marginTop: '5px',
+            display: "inline",
+            padding: "6px 6px",
+            height: "25px",
+            fontSize: "1em",
+            marginTop: "5px"
           }}
           onKeyUp={Expressions.keydown_on_input}
         />
@@ -77,8 +77,8 @@ class Expressions extends React.Component {
       let expr = e.currentTarget.value,
         trimmed_expr = _.trim(expr);
 
-      if (trimmed_expr !== '') {
-        GdbVariable.create_variable(trimmed_expr, 'expr');
+      if (trimmed_expr !== "") {
+        GdbVariable.create_variable(trimmed_expr, "expr");
       }
     }
   }
