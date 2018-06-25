@@ -105,12 +105,11 @@ class Threads extends React.Component {
   }
 
   static get_thread_header(thread, is_current_thread_being_rendered) {
-    // add thread name
-    let status,
+    let selected,
       cls = '';
     if (is_current_thread_being_rendered) {
       cls = 'bold';
-      status = (
+      selected = (
         <span
           className="label label-primary"
           title="This thread is selected. Variables can be inspected for the current frame of this thread.">
@@ -118,7 +117,7 @@ class Threads extends React.Component {
         </span>
       );
     } else {
-      status = (
+      selected = (
         <button
           className="pointer btn btn-default btn-xs"
           onClick={() => {
@@ -130,10 +129,18 @@ class Threads extends React.Component {
         </button>
       );
     }
+    const details = Memory.make_addrs_into_links_react(thread['target-id']);
+    const core = thread.core ? `, core ${thread.core}` : '';
+    const state = ', ' + thread.state;
+    const id = ', id ' + thread.id;
+    const name = thread.name ? `, ${thread.name}` : '';
     return (
       <span key={'thread' + thread.id} className={`${cls}`} style={{fontSize: '0.9em'}}>
-        {status} {Memory.make_addrs_into_links_react(thread['target-id'])}, core{' '}
-        {thread.core}, {thread.state}, id {thread.id}
+        {selected} {details}
+        {id}
+        {core}
+        {state}
+        {name}
       </span>
     );
   }
