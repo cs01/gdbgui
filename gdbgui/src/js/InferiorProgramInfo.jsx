@@ -111,7 +111,7 @@ class InferiorProgramInfo extends React.Component {
         send&nbsp;
         {this.get_dropdown()}
         &nbsp;to&nbsp;
-        <div class="btn-group" role="group">
+        <div className="btn-group" role="group">
           {gdb_button}
           {inferior_button}
         </div>

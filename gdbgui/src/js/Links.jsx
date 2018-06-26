@@ -59,7 +59,5 @@ class FrameLink extends React.Component {
   }
 }
 
-module.exports = {
-  FileLink: FileLink,
-  FrameLink: FrameLink
-};
+export { FileLink };
+export { FrameLink };
