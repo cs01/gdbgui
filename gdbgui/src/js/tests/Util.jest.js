@@ -5,9 +5,10 @@ import Util from '../Util.js';
 test('parses spaces', ()=>{
     const fn = Util.string_to_array_safe_quotes
     expect(fn('hi')).toEqual(['hi'])
-    expect(fn('"hi bye"')).toEqual(['hi bye'])
+    expect(fn('"hi bye"')).toEqual(['"hi bye"'])
     expect(fn('hi bye')).toEqual(['hi', 'bye'])
-    expect(fn('hi bye "1 2, 3" asdf\n\t' )).toEqual(['hi', 'bye', '1 2, 3', 'asdf\n\t'])
+    expect(fn('hi bye "1 2, 3" asdf\n\t' )).toEqual(['hi', 'bye', '"1 2, 3"', 'asdf\n\t'])
+    expect(fn('"hi bye" "1 2, 3" asdf\n\t' )).toEqual(['"hi bye"', '"1 2, 3"', 'asdf\n\t'])
 })
 
 test('dot version comparison', ()=>{
