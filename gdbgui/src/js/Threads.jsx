@@ -67,7 +67,6 @@ class Threads extends React.Component {
         row_data = Threads.get_row_data_for_stack(
           stack,
           this.state.selected_frame_num,
-          thread.frame.addr,
           thread.id,
           is_current_thread_being_rendered
         );
@@ -96,7 +95,7 @@ class Threads extends React.Component {
     // is the full stack of the selected thread
     if (is_current_thread_being_rendered) {
       for (let frame of stack_data) {
-        if (frame.addr === cur_frame.addr) {
+        if (frame && cur_frame && frame.addr === cur_frame.addr) {
           return stack_data;
         }
       }
@@ -191,7 +190,6 @@ class Threads extends React.Component {
   static get_row_data_for_stack(
     stack,
     selected_frame_num,
-    paused_addr,
     thread_id,
     is_current_thread_being_rendered
   ) {
@@ -202,7 +200,7 @@ class Threads extends React.Component {
         selected_frame_num === frame_num && is_current_thread_being_rendered;
       row_data.push(
         Threads.get_frame_row(
-          frame,
+          frame || {},
           is_selected_frame,
           thread_id,
           is_current_thread_being_rendered,

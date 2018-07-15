@@ -71,7 +71,6 @@ logger.setLevel(logging.ERROR)
 
 
 class ColorFormatter(logging.Formatter):
-
     def format(self, record):
         color = "\033[1;0m"
         if not USING_WINDOWS and sys.stdout.isatty():
@@ -499,7 +498,6 @@ def credentials_are_valid(username, password):
 
 
 def authenticate(f):
-
     @wraps(f)
     def wrapper(*args, **kwargs):
         if app.config.get("gdbgui_auth_user_credentials") is not None:
@@ -531,6 +529,7 @@ def gdbgui():
     add_csrf_token_to_session()
 
     THEMES = ["monokai", "light"]
+    # fmt: off
     initial_data = {
         "gdbgui_version": __version__,
         "interpreter": interpreter,
@@ -546,6 +545,7 @@ def gdbgui():
         "csrf_token": session["csrf_token"],
         "using_windows": USING_WINDOWS,
     }
+    # fmt: on
 
     return render_template(
         "gdbgui.html",

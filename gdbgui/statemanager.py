@@ -19,7 +19,6 @@ if darwin_match is not None and int(darwin_match.groups()[0]) >= 16:
 
 
 class StateManager(object):
-
     def __init__(self, config):
         self.controller_to_client_ids = defaultdict(
             list
