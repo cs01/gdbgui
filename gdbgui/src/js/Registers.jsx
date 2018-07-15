@@ -96,7 +96,7 @@ class Registers extends React.Component {
           disp_dec_val = "",
           register_description = register_descriptions[name] || "";
 
-        if (obj) {
+        if (obj && obj.value) {
           hex_val_raw = obj["value"];
 
           let old_obj = _.find(prev_register_values, v => v["number"] === i),
