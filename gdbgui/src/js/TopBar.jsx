@@ -274,7 +274,6 @@ class TopBar extends React.Component {
                 These buttons allow you to control execution of the target you are
                 debugging.
               </h5>
-              <p>This is usually the third thing you want to use.</p>
               <p>
                 Hover over these buttons to see a description of their action. For
                 example, the <span className="glyphicon glyphicon-repeat" /> button starts
