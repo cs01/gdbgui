@@ -349,7 +349,7 @@ const GdbApi = {
   },
   get_insert_break_cmd: function(fullname, line) {
     if (store.get("interpreter") === "gdb") {
-      return [`-break-insert ${fullname}:${line}`];
+      return [`-break-insert "${fullname}:${line}"`];
     } else {
       console.log("TODOLLDB - find mi-friendly command");
       return [`breakpoint set --file ${fullname} --line ${line}`];

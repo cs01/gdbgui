@@ -94,6 +94,7 @@ const Util = {
 
       if (char === '"') {
         in_quotes = !in_quotes;
+        cur_str += char;
       } else if (char !== " " || (char === " " && in_quotes)) {
         cur_str += char;
       } else if (char === " ") {
