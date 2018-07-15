@@ -28,6 +28,7 @@ import pygdbmi
 from pygments.lexers import get_lexer_for_filename
 from pygdbmi.gdbcontroller import NoGdbProcessError
 import signal
+import shlex
 import sys
 import socket
 import traceback
@@ -785,20 +786,25 @@ def main():
     """Entry point from command line"""
     parser = argparse.ArgumentParser(description=__doc__)
 
-    gdb_group = parser.add_argument_group(title="gdb commands")
+    gdb_group = parser.add_argument_group(title="gdb settings")
     args_group = parser.add_mutually_exclusive_group()
     network = parser.add_argument_group(title="gdbgui network settings")
     security = parser.add_argument_group(title="security settings")
     other = parser.add_argument_group(title="other settings")
 
     gdb_group.add_argument(
-        "-x", "--gdb-cmd-file", help="Execute GDB commands from file."
-    )
-    gdb_group.add_argument(
         "-g",
         "--gdb",
         help="Path to debugger. Default: %s" % DEFAULT_GDB_EXECUTABLE,
         default=DEFAULT_GDB_EXECUTABLE,
+    )
+    gdb_group.add_argument(
+        "--gdb-args",
+        help=(
+            "Arguments passed directly to gdb when gdb is invoked. "
+            'For example,--gdb-args="--nx --tty=/dev/ttys002"'
+        ),
+        default=""
     )
     gdb_group.add_argument(
         "--rr",
@@ -809,7 +815,6 @@ def main():
             "i.e. gdbgui /recorded/dir --rr. See http://rr-project.org/."
         ),
     )
-
     network.add_argument(
         "-p",
         "--port",
@@ -920,9 +925,9 @@ def main():
         exit(1)
 
     app.config["initial_binary_and_args"] = cmd
+    app.config["gdb_args"] = shlex.split(args.gdb_args)
     app.config["rr"] = args.rr
     app.config["gdb_path"] = args.gdb
-    app.config["gdb_cmd_file"] = args.gdb_cmd_file
     app.config["show_gdbgui_upgrades"] = not args.hide_gdbgui_upgrades
     app.config["gdbgui_auth_user_credentials"] = get_gdbgui_auth_user_credentials(
         args.auth_file, args.user, args.password
@@ -939,7 +944,8 @@ def main():
         args.no_browser = True
         if app.config["gdbgui_auth_user_credentials"] is None:
             print(
-                "Warning: authentication is recommended when serving on a publicly accessible IP address. See gdbgui --help."
+                "Warning: authentication is recommended when serving on a publicly "
+                "accessible IP address. See gdbgui --help."
             )
 
     if args.debug:

@@ -53,7 +53,7 @@ class StateManager(object):
             logger.info("new sid", client_id)
 
             gdb_args = (
-                deepcopy(self.config["initial_binary_and_args"]) + REQUIRED_GDB_FLAGS
+                deepcopy(self.config["initial_binary_and_args"]) + deepcopy(self.config["gdb_args"]) + REQUIRED_GDB_FLAGS
             )
 
             if startup_with_shell_off:
@@ -61,9 +61,6 @@ class StateManager(object):
                 # as well. Please create an issue if you encounter one since I do not own a mac.
                 # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
                 gdb_args.append("--init-eval-command=set startup-with-shell off")
-
-            if self.config["gdb_cmd_file"]:
-                gdb_args.append("-x=%s" % self.config["gdb_cmd_file"])
 
             controller = GdbController(
                 gdb_path=self.config["gdb_path"],
