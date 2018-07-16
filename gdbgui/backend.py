@@ -258,11 +258,11 @@ def setup_backend(
             pass
 
 
-def verify_gdb_exists():
-    if find_executable(app.config["gdb_path"]) is None:
+def verify_gdb_exists(gdb_path):
+    if find_executable(gdb_path) is None:
         pygdbmi.printcolor.print_red(
             'gdb executable "%s" was not found. Verify the executable exists, or that it is a directory on your $PATH environment variable.'
-            % app.config["gdb_path"]
+            % gdb_path
         )
         if USING_WINDOWS:
             print(
@@ -272,7 +272,7 @@ def verify_gdb_exists():
             print('try "sudo apt-get install gdb" for Linux or "brew install gdb"')
         sys.exit(1)
     elif (
-        "lldb" in app.config["gdb_path"].lower()
+        "lldb" in gdb_path.lower()
         and "lldb-mi" not in app.config["gdb_path"].lower()
     ):
         pygdbmi.printcolor.print_red(
@@ -532,18 +532,19 @@ def gdbgui():
     THEMES = ["monokai", "light"]
     # fmt: off
     initial_data = {
+        "csrf_token": session["csrf_token"],
         "gdbgui_version": __version__,
+        "gdbpid": gdbpid,
         "interpreter": interpreter,
         "initial_binary_and_args": app.config["initial_binary_and_args"],
-        "show_gdbgui_upgrades": app.config["show_gdbgui_upgrades"],
-        "themes": THEMES,
-        "signals": SIGNAL_NAME_TO_OBJ,
-        "gdbpid": gdbpid,
         "p": pbkdf2_hex(str(app.config.get("l")), "Feo8CJol")
         if app.config.get("l")
         else "",
         "project_home": app.config["project_home"],
-        "csrf_token": session["csrf_token"],
+        "remap_sources": app.config["remap_sources"],
+        "show_gdbgui_upgrades": app.config["show_gdbgui_upgrades"],
+        "themes": THEMES,
+        "signals": SIGNAL_NAME_TO_OBJ,
         "using_windows": USING_WINDOWS,
     }
     # fmt: on
@@ -782,8 +783,7 @@ def save_license(license):
     print("saved license information")
 
 
-def main():
-    """Entry point from command line"""
+def get_parser():
     parser = argparse.ArgumentParser(description=__doc__)
 
     gdb_group = parser.add_argument_group(title="gdb settings")
@@ -804,7 +804,7 @@ def main():
             "Arguments passed directly to gdb when gdb is invoked. "
             'For example,--gdb-args="--nx --tty=/dev/ttys002"'
         ),
-        default=""
+        default="",
     )
     gdb_group.add_argument(
         "--rr",
@@ -860,7 +860,15 @@ def main():
     )
     # https://www.digitalocean.com/community/tutorials/openssl-essentials-working-with-ssl-certificates-private-keys-and-csrs
 
-    other.add_argument("--license", help="Store gdbgui ad-free license key.")
+    other.add_argument(
+        "--remap-sources",
+        "-m",
+        help=(
+            "Replace compile-time source paths to local source paths. "
+            "Pass valid JSON key/value pairs."
+            "i.e. --remap-sources='{\"/buildmachine\": \"/home/chad\"}'"
+        ),
+    )
     other.add_argument(
         "--project",
         help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.',
@@ -883,6 +891,7 @@ def main():
         help="Use the given browser executable instead of the system default.",
         default=None,
     )
+    other.add_argument("--license", help="Store gdbgui ad-free license key.")
     other.add_argument(
         "--debug",
         help="The debug flag of this Flask application. "
@@ -909,7 +918,12 @@ def main():
         " Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2",
         default=[],
     )
+    return parser
 
+
+def main():
+    """Entry point from command line"""
+    parser = get_parser()
     args = parser.parse_args()
 
     initialize_preferences()
@@ -933,12 +947,21 @@ def main():
         args.auth_file, args.user, args.password
     )
     app.config["project_home"] = args.project
+    if args.remap_sources:
+        try:
+            app.config["remap_sources"] = json.loads(args.remap_sources)
+        except json.decoder.JSONDecodeError as e:
+            print("The '--remap-sources' argument must be valid JSON. See gdbgui --help.")
+            print(e)
+            exit(1)
+    else:
+        app.config["remap_sources"] = {}
 
     if args.license:
         print("saving license information")
         save_license(args.license)
 
-    verify_gdb_exists()
+    verify_gdb_exists(app.config["gdb_path"])
     if args.remote:
         args.host = "0.0.0.0"
         args.no_browser = True

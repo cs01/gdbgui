@@ -24,7 +24,6 @@ def on_connect():
 
 
 class TestWebsockets(unittest.TestCase):
-
     @classmethod
     def setUp(self):
         pass
@@ -41,7 +40,6 @@ class TestWebsockets(unittest.TestCase):
 
 
 class Test(unittest.TestCase):
-
     def setUp(self):
         """Built-in to unittest.TestCase"""
         self.app = backend.app.test_client()
