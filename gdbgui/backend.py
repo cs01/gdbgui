@@ -542,6 +542,7 @@ def gdbgui():
         else "",
         "project_home": app.config["project_home"],
         "remap_sources": app.config["remap_sources"],
+        "rr": app.config["rr"],
         "show_gdbgui_upgrades": app.config["show_gdbgui_upgrades"],
         "themes": THEMES,
         "signals": SIGNAL_NAME_TO_OBJ,

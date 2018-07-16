@@ -114,10 +114,10 @@ const GdbApi = {
     GdbApi.run_gdb_command("-exec-run");
   },
   run_initial_commands: function() {
-    const cmds = ["set breakpoint pending on"]
-    for(const src in initial_data.remap_sources){
-      const dst = initial_data.remap_sources[src]
-      cmds.push(`set substitute-path "${src}" "${dst}"`)
+    const cmds = ["set breakpoint pending on"];
+    for (const src in initial_data.remap_sources) {
+      const dst = initial_data.remap_sources[src];
+      cmds.push(`set substitute-path "${src}" "${dst}"`);
     }
     GdbApi.run_gdb_command(cmds);
   },
@@ -128,22 +128,22 @@ const GdbApi = {
       ) !== -1
     );
   },
-  click_continue_button: function() {
+  click_continue_button: function(reverse = false) {
     Actions.inferior_program_running();
     GdbApi.run_gdb_command(
-      "-exec-continue" + (store.get("debug_in_reverse") ? " --reverse" : "")
+      "-exec-continue" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
-  click_next_button: function() {
+  click_next_button: function(reverse = false) {
     Actions.inferior_program_running();
     GdbApi.run_gdb_command(
-      "-exec-next" + (store.get("debug_in_reverse") ? " --reverse" : "")
+      "-exec-next" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
-  click_step_button: function() {
+  click_step_button: function(reverse = false) {
     Actions.inferior_program_running();
     GdbApi.run_gdb_command(
-      "-exec-step" + (store.get("debug_in_reverse") ? " --reverse" : "")
+      "-exec-step" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_return_button: function() {
@@ -154,16 +154,18 @@ const GdbApi = {
     GdbApi.run_gdb_command("-exec-return");
     Actions.inferior_program_paused();
   },
-  click_next_instruction_button: function() {
+  click_next_instruction_button: function(reverse = false) {
     Actions.inferior_program_running();
     GdbApi.run_gdb_command(
-      "-exec-next-instruction" + (store.get("debug_in_reverse") ? " --reverse" : "")
+      "-exec-next-instruction" +
+        (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
-  click_step_instruction_button: function() {
+  click_step_instruction_button: function(reverse = false) {
     Actions.inferior_program_running();
     GdbApi.run_gdb_command(
-      "-exec-step-instruction" + (store.get("debug_in_reverse") ? " --reverse" : "")
+      "-exec-step-instruction" +
+        (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_send_interrupt_button: function() {
