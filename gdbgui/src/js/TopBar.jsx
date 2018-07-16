@@ -344,6 +344,30 @@ class TopBar extends React.Component {
       );
     }
 
+    let reverse_checkbox = null;
+    if (initial_data.rr) {
+      reverse_checkbox = (
+        <label
+          title={
+            "when clicking buttons to the right, pass the `--reverse` " +
+            "flag to gdb in an attempt to debug in reverse. This is not always supported. " +
+            "rr is known to support reverse debugging. Keyboard shortcuts go in " +
+            "reverse when pressed with the shift key."
+          }
+          style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
+        >
+          <input
+            type="checkbox"
+            checked={store.get("debug_in_reverse")}
+            onChange={e => {
+              store.set("debug_in_reverse", e.target.checked);
+            }}
+          />
+          reverse
+        </label>
+      );
+    }
+
     return (
       <div
         id="top"
@@ -352,19 +376,7 @@ class TopBar extends React.Component {
         <div className="flexrow">
           <BinaryLoader initial_user_input={this.props.initial_user_input} />
           {spinner}
-          <label
-            title="when clicking buttons to the right, pass the `--reverse` flag to gdb in an attempt to debug in reverse. This is not always supported. rr is known to support reverse debugging."
-            style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
-          >
-            <input
-              type="checkbox"
-              checked={store.get("debug_in_reverse")}
-              onChange={e => {
-                store.set("debug_in_reverse", e.target.checked);
-              }}
-            />
-            reverse
-          </label>
+          {reverse_checkbox}
 
           {this.get_controls()}
 

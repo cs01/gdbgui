@@ -1,17 +1,17 @@
 # gdbgui release history
 
 ## 0.13.0.0
-* Add ability to map source file paths. Added flags `--remap-sources` and `-m` to replace compile-time source paths to local source paths. i.e. `gdbgui --remap-sources='{"/buildmachine":"/home/chad"}'` (#158)
+* Add ability to re-map source file paths. Added flags `--remap-sources` and `-m` to replace compile-time source paths to local source paths. i.e. `gdbgui --remap-sources='{"/buildmachine": "/home/chad"}'` (#158)
+* Add shift keyboard shortcut to go in reverse when using rr (#201)
 * Pass arbitrary gdb arguments directly to gdb: added `--gdb-args` flag
 * Removed `-x` CLI option, which caused major version to change. New way to pass is `gdbgui --gdb-args='-x=FILE'` (#205)
-* Fix typo in tour (@nkirkby)
 * Add "name" to Threads (new gdb 8.1 feature) (@P4Cu)
 * Fix crash/black screen from "Python Exception <class NameError> name long is not defined" #212
 * Fix bug when debugging filenames with spaces (Fix Cannot create breakpoint: -break-insert: Garbage following <location> #211")
 * Fix empty frame causes the ui to crash/black screen #216
-* Update tour text
-* update npm packages; update react to 16.4
-* update prettier rules
+* Update npm packages; update react to 16.4
+* Update prettier rules
+* Update tour text + fix typo in tour (@nkirkby)
 
 ## 0.12.0.0
 * Add pause button

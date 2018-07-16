@@ -16,9 +16,9 @@ class ControlButtons extends React.Component {
       <React.Fragment>
         <button
           id="run_button"
-          onClick={GdbApi.click_run_button}
+          onClick={()=>GdbApi.click_run_button()}
           type="button"
-          title="Start inferior program from the beginning (keyboard shortcut: r)"
+          title="Start inferior program from the beginning keyboard shortcut: r"
           className={btn_class}
         >
           <span className="glyphicon glyphicon-repeat" />
@@ -26,9 +26,12 @@ class ControlButtons extends React.Component {
 
         <button
           id="continue_button"
-          onClick={GdbApi.click_continue_button}
+          onClick={()=>GdbApi.click_continue_button()}
           type="button"
-          title="Continue until breakpoint is hit or inferior program exits (keyboard shortcut: c)"
+          title={
+            "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
+            (initial_data.rr ? ". shift + c for reverse." : "")
+          }
           className={btn_class}
         >
           <span className="glyphicon glyphicon-play" />
@@ -45,9 +48,12 @@ class ControlButtons extends React.Component {
 
         <button
           id="next_button"
-          onClick={GdbApi.click_next_button}
+          onClick={()=>GdbApi.click_next_button()}
           type="button"
-          title="Step over next function call (keyboard shortcut: n or right arrow)"
+          title={
+            "Step over next function call keyboard shortcut: n or right arrow" +
+            (initial_data.rr ? ". shift + n for reverse." : "")
+          }
           className={btn_class}
         >
           <span className="glyphicon glyphicon-step-forward" />
@@ -55,9 +61,12 @@ class ControlButtons extends React.Component {
 
         <button
           id="step_button"
-          onClick={GdbApi.click_step_button}
+          onClick={()=>GdbApi.click_step_button()}
           type="button"
-          title="Step into next function call (keyboard shortcut: s or down arrow)"
+          title={
+            "Step into next function call keyboard shortcut: s or down arrow" +
+            (initial_data.rr ? ". shift + s for reverse." : "")
+          }
           className={btn_class}
         >
           <span className="glyphicon glyphicon-arrow-down" />
@@ -65,9 +74,9 @@ class ControlButtons extends React.Component {
 
         <button
           id="return_button"
-          onClick={GdbApi.click_return_button}
+          onClick={()=>GdbApi.click_return_button()}
           type="button"
-          title="Step out of current function (keyboard shortcut: u or up arrow)"
+          title="Step out of current function keyboard shortcut: u or up arrow"
           className={btn_class}
         >
           <span className="glyphicon glyphicon-arrow-up" />
@@ -75,18 +84,24 @@ class ControlButtons extends React.Component {
         <div role="group" className="btn-group btn-group-xs">
           <button
             id="next_instruction_button"
-            onClick={GdbApi.click_next_instruction_button}
+            onClick={()=>GdbApi.click_next_instruction_button()}
             type="button"
-            title="Next Instruction: Execute one machine instruction, stepping over function calls (keyboard shortcut: m)"
+            title={
+              "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
+              (initial_data.rr ? ". shift + m for reverse." : "")
+            }
             className="btn btn-default"
           >
             NI
           </button>
           <button
             id="step_instruction_button"
-            onClick={GdbApi.click_step_instruction_button}
+            onClick={()=>GdbApi.click_step_instruction_button()}
             type="button"
-            title="Step Instruction: Execute one machine instruction, stepping into function calls (keyboard shortcut: ,)"
+            title={
+              "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +
+              (initial_data.rr ? ". shift + , for reverse." : "")
+            }
             className="btn btn-default"
           >
             SI
