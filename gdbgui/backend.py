@@ -107,6 +107,8 @@ app.config["show_gdbgui_upgrades"] = True
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["LLDB"] = False  # assume false, okay to change later
 app.config["project_home"] = None
+app.config["remap_sources"] = {}
+app.config["rr"] = False
 app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
 
 
@@ -955,8 +957,6 @@ def main():
             print("The '--remap-sources' argument must be valid JSON. See gdbgui --help.")
             print(e)
             exit(1)
-    else:
-        app.config["remap_sources"] = {}
 
     if args.license:
         print("saving license information")
