@@ -53,7 +53,9 @@ class StateManager(object):
             logger.info("new sid", client_id)
 
             gdb_args = (
-                deepcopy(self.config["initial_binary_and_args"]) + deepcopy(self.config["gdb_args"]) + REQUIRED_GDB_FLAGS
+                deepcopy(self.config["initial_binary_and_args"])
+                + deepcopy(self.config["gdb_args"])
+                + REQUIRED_GDB_FLAGS
             )
 
             if startup_with_shell_off:

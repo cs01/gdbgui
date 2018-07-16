@@ -114,7 +114,12 @@ const GdbApi = {
     GdbApi.run_gdb_command("-exec-run");
   },
   run_initial_commands: function() {
-    GdbApi.run_gdb_command("set breakpoint pending on");
+    const cmds = ["set breakpoint pending on"]
+    for(const src in initial_data.remap_sources){
+      const dst = initial_data.remap_sources[src]
+      cmds.push(`set substitute-path "${src}" "${dst}"`)
+    }
+    GdbApi.run_gdb_command(cmds);
   },
   inferior_is_paused: function() {
     return (

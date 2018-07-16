@@ -1,7 +1,9 @@
 # gdbgui release history
 
 ## 0.13.0.0
-* Pass arbitrary gdb arguments directly to gdb (also removed `-x` option, which caused major version to change) (#205)
+* Add ability to map source file paths. Added flags `--remap-sources` and `-m` to replace compile-time source paths to local source paths. i.e. `gdbgui --remap-sources='{"/buildmachine":"/home/chad"}'` (#158)
+* Pass arbitrary gdb arguments directly to gdb: added `--gdb-args` flag
+* Removed `-x` CLI option, which caused major version to change. New way to pass is `gdbgui --gdb-args='-x=FILE'` (#205)
 * Fix typo in tour (@nkirkby)
 * Add "name" to Threads (new gdb 8.1 feature) (@P4Cu)
 * Fix crash/black screen from "Python Exception <class NameError> name long is not defined" #212
