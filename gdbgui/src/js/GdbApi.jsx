@@ -110,7 +110,7 @@ const GdbApi = {
   },
   _waiting_for_response_timeout: null,
   click_run_button: function() {
-    Actions.inferior_program_running();
+    Actions.inferior_program_starting();
     GdbApi.run_gdb_command("-exec-run");
   },
   run_initial_commands: function() {
@@ -129,19 +129,19 @@ const GdbApi = {
     );
   },
   click_continue_button: function(reverse = false) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command(
       "-exec-continue" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_next_button: function(reverse = false) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command(
       "-exec-next" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_step_button: function(reverse = false) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command(
       "-exec-step" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
@@ -149,31 +149,31 @@ const GdbApi = {
   click_return_button: function() {
     // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
     // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
-    // That means we do NOT dispatch the event `event_inferior_program_running`, because it's not, in fact, running.
+    // That means we do NOT dispatch the event `event_inferior_program_resuming`, because it's not, in fact, running.
     // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
     GdbApi.run_gdb_command("-exec-return");
     Actions.inferior_program_paused();
   },
   click_next_instruction_button: function(reverse = false) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command(
       "-exec-next-instruction" +
         (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_step_instruction_button: function(reverse = false) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command(
       "-exec-step-instruction" +
         (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
   click_send_interrupt_button: function() {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command("-exec-interrupt");
   },
   send_autocomplete_command: function(command) {
-    Actions.inferior_program_running();
+    Actions.inferior_program_resuming();
     GdbApi.run_gdb_command("complete " + command);
   },
   click_gdb_cmd_button: function(e) {
@@ -220,6 +220,7 @@ const GdbApi = {
     const WAIT_TIME_SEC = 10;
     clearTimeout(GdbApi._waiting_for_response_timeout);
     GdbApi._waiting_for_response_timeout = setTimeout(() => {
+      Actions.clear_program_state();
       store.set("waiting_for_response", false);
 
       Actions.add_console_entries(

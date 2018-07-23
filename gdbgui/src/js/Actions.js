@@ -18,9 +18,12 @@ const Actions = {
     Memory.clear_cache();
     Locals.clear();
   },
-  inferior_program_running: function() {
+  inferior_program_starting: function() {
     store.set("inferior_program", constants.inferior_states.running);
     Actions.clear_program_state();
+  },
+  inferior_program_resuming: function() {
+    store.set("inferior_program", constants.inferior_states.running);
   },
   inferior_program_paused: function(frame = {}) {
     store.set("inferior_program", constants.inferior_states.paused);
