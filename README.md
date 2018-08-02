@@ -26,13 +26,21 @@ Add breakpoints, view stack traces, and more in C, C++, Go, and Rust! Perfect fo
 
 Visit [gdbgui.com](https://gdbgui.com) to download, view documentation, installation instructions, screenshots and more.
 
+## Install
+gdbgui can be installed with pip
+```
+pip install gdbgui
+```
+or a binary executable can be downloaded from [gdbgui.com](https://gdbgui.com).
+
 ## License
 
-[GNU GPLv3]()
+GNU GPLv3, which means you can use it for free at work or for personal use.
 
-For alternate licensing schemes, contact <grassfedcode@gmail.com> for more information.
+[gdbgui.com](https://gdbgui.com), [https://github.com/cs01/gdbgui](https://github.com/cs01/gdbgui), and [PyPI](https://pypi.python.org/pypi/gdbgui/) are the only official sources of gdbgui that should be trusted.
 
-[gdbgui.com](https://gdbgui.com), [https://github.com/cs01/gdbgui](https://github.com/cs01/gdbgui), and [PyPI](https://pypi.python.org/pypi/gdbgui/) are the only official sources of gdbgui.
+## FAQ
+[click here](https://github.com/cs01/gdbgui/blob/master/docs/FAQ.md)
 
 ## Support gdbgui
 
