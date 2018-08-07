@@ -11,3 +11,7 @@ debug_segfault: debug_segfault.c
 threads: threads.c
 	gcc threads.c -o threads.a -std=c99 -lpthread -g
 	$(GDBGUI) threads.a
+
+sleeper: sleeper.c
+	gcc sleeper.c -o sleeper.a -std=c99 -g
+	$(GDBGUI) sleeper.a

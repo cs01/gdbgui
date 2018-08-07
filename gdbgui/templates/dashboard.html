@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>gdbgui - dashboard</title>
+    <base target="_blank">
+    <link href="static/vendor/css/bootstrap.min.css" rel="stylesheet">
+    <script type="text/javascript" src="static/vendor/js/jquery.min.js"></script>
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+  <style>
+    html{
+        background: linear-gradient(165deg,#6e60cc 0%,#484389 100%);
+    }
+  </style>
+  <body style="position: fixed; width: 100%; height: 100%;">
+    <div class="container-fluid">
+      <h3>active gdb processes managed by gdbgui</h3>
+      <table class="table table-condensed">
+        <tr>
+          <th>gdb path</th>
+          <th>command</th>
+          <th>gdb pid</th>
+          <th>number of connected browser tabs</th>
+          <th></th>
+          <th></th>
+        </tr>
+
+      {% for pid, val  in processes.items() %}
+        <tr>
+          <td>{{val.abs_gdb_path}}</td>
+          <td>{{val.cmd}}</td>
+          <td>{{pid}}</td>
+          <td>{{val.number_of_connected_browser_tabs}}</td>
+          <td>
+            <a onClick="window.view_gdbgui_with_gdb_pid({{pid}})" class="btn btn-xs btn-primary">View</a>
+          </td>
+          <td>
+            <a onClick="window.remove_gdb_controller({{pid}})" class="btn btn-xs btn-danger">Kill process</a>
+          </td>
+        </tr>
+      {% endfor %}
+
+      </table><a onClick="window.new_gdbgui_instance()" class="btn btn-xs btn-success"><span class="glyphicon glyphicon-plus"></span>  open tab with new gdb process</a>
+    </div>
+  </body>
+  <script>
+    function remove_gdb_controller(gdbpid){
+        $.ajax({
+            url: "/remove_gdb_controller",
+            cache: false,
+            type: 'POST',
+            data: {gdbpid: gdbpid, signal_name: 'sigkill', csrf_token: {{ csrf_token | tojson }} },
+            success: function(response){
+                setTimeout(()=>window.location.reload(), 500)
+            },
+            error: function(response){
+            },
+        })
+    }
+    function view_gdbgui_with_gdb_pid(gdbpid){
+        let url = '/?gdbpid=' + gdbpid
+        window.open(url, '_blank');
+        setTimeout(()=>window.location.reload(), 500)
+    }
+    function new_gdbgui_instance(){
+        window.open('/', '_blank');
+        setTimeout(()=>window.location.reload(), 500)
+    }
+  </script>
+</html>

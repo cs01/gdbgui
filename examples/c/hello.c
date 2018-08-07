@@ -24,16 +24,18 @@ struct mystruct_t {
   union {
     int unionint;
     double uniondouble;
-  }
+  };
 };
 
-int main(void) {
+
+int main(int argc, char **argv) {
   printf("Hello World\n");
 
   int retval = 1;
 
-  struct mystruct_t s; /* sizeof(struct mystruct_t) bytes are allocated for s,
-                          but still contain garbage */
+  /* bytes are allocated for s,
+  but still contain garbage */
+  struct mystruct_t s;
   s.value = 100;
   s.string = "pass";
   s.substruct.dbl = 567.8;

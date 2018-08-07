@@ -1,7 +1,143 @@
 # gdbgui release history
 
-## dev
-Changes that are in master but have not yet been pushed to PyPI.
+## master
+* Do not clear program state when resuming inferior so that scroll position is better maintained
+
+## 0.13.0.0
+* Add ability to re-map source file paths. Added flags `--remap-sources` and `-m` to replace compile-time source paths to local source paths. i.e. `gdbgui --remap-sources='{"/buildmachine": "/home/chad"}'` (#158)
+* Add shift keyboard shortcut to go in reverse when using rr (#201)
+* Pass arbitrary gdb arguments directly to gdb: added `--gdb-args` flag
+* Removed `-x` CLI option, which caused major version to change. New way to pass is `gdbgui --gdb-args='-x=FILE'` (#205)
+* Add "name" to Threads (new gdb 8.1 feature) (@P4Cu)
+* Fix crash/black screen from "Python Exception <class NameError> name long is not defined" #212
+* Fix bug when debugging filenames with spaces (Fix Cannot create breakpoint: -break-insert: Garbage following <location> #211")
+* Fix empty frame causes the ui to crash/black screen #216
+* Update npm packages; update react to 16.4
+* Update prettier rules
+* Update tour text + fix typo in tour (@nkirkby)
+
+## 0.12.0.0
+* Add pause button
+* Update command line parsing for cmd and --args, change arguments from underscore to hyphen, add option to specify browser (@fritzr)
+* Add tour
+* Run `set breakpoint pending on` on initial connection
+* Allow signal to be sent to arbitrary PIDs
+* Fix bug when sending signals in Python2
+* Move signal component lower in side pane
+* Update Rust documentation
+* Make requirements.txt point to setup.py's dependencies
+
+## 0.11.3.1
+* Limit maximum Flask version to prevent `Session expired. Please refresh this webpage.` error
+* Rename "premium" to "ad-free"
+* Do smarter version checking
+* Fix bug when trying to view "about"
+
+## 0.11.3.0
+* ensure expressions with hex values are parsed and updated appropriately (#182)
+* improve command line arguments
+* use python logging module
+
+## 0.11.2.1
+* Small bugfix for specific platforms when reading version number
+
+## 0.11.2.0
+* add option to remove fflush command (#179)
+* remove react-treebeard and render filesystem w/ new component
+
+## 0.11.1.1
+* Bugfix displaying upgrade text
+
+## 0.11.1.0
+* Add csrf and cross origin protection
+* Convert backslashes to forward slashes when entering windows binary paths (#167)
+* Fix safari ui issue (#164)
+* Update text on reload file button, and disable when no file is loaded (#165)
+* When disassembly can't be fetched in mode 4, fetch in mode 3 and assume gdb version is 7.6.0 (#166)
+* Add copy to clipboard icon for files and variables
+* Allow SSL module import to fail and print warning (#170)
+* Cleanup menu, add license info, bugfixes, etc. (#169, #136, #163, #172)
+
+## 0.11.0.0
+* Replace `--auth` cli option with `--user` and `--password`
+
+## 0.10.3.0
+* Added resizer buttons to components on right pane
+
+## 0.10.2.1
+* Add link for fix for macOS users
+* Update version of React to 16.2
+* Remove unused links
+
+## 0.10.2.0
+* Add folders view, rearrange layout (@martin-der)
+* Add settings cog button
+* Add message when sending signal to inferior process (#156)
+* Change default theme to monokai, rename 'default' theme to 'light'
+* Minor bugfixes
+
+## 0.10.1.0
+* Display descriptions of registers
+* Do not try to fetch Registers when they cannot be read
+
+## 0.10.0.2
+* Add support for rr (--rr flag)
+* Add dashboard to connect to/kill existing gdb processes
+* Add option to specify SSL key and certificate to enable https
+* Add option to connect to process
+* Add option to connect to gdbserver
+* Add infinite scrolling
+
+## 0.9.4.1
+* Remove `pypugjs` dependency
+
+## 0.9.4.0
+* Add native Windows support (no longer relies on Cygwin)
+
+## 0.9.3.0
+* Only display assembly flavor is assembly is displayed
+* Add new output type to console (gdbgui output)
+* Add dashboard link and dropdown for gdb server/pid attach
+* Handle invalid signal choice better
+* Print gdb mi log messages to console
+* Remove localStorage keys when they are invalid
+
+## 0.9.2.0
+* Add signals component and allow signals to be sent to gdb (issue ##141)
+* Fix bug when jumping to line of source file
+
+## 0.9.1.1
+* Fix bug when passing arguments to gdb
+* Require latest version of pygdbmi for faster parsing of large gdb output
+
+## 0.9.1.0
+* Lazily load files (issue #131)
+* Update setup.py to build wheels
+
+## 0.9.0.1
+* Reupload to fix setup.cfg PyPI bug
+
+## 0.9.0.0
+* Compress responses from server (massive bandwidth improvement)
+* Add button to toggle assembly flavors (issue #110)
+* Parse executable+args with spaces (issue #116)
+* Turn modals into components
+* Move everything into a single root React component
+* Refresh state when clicking "return" button
+* Add javascript unit tests
+
+## 0.8.2.0
+* Add optional authentication (@nickamon, issue #132)
+* Support the `--args` flag (issue #126)
+* Ensure code is correct and adheres to recommended Python style when running tests/building (flake8)
+* Display source when running `backtrace` (fix regression, #134)
+
+
+## 0.8.1.0
+* Add autocomplete functionality (@bobthekingofegypt, issue #129)
+* Rearranged and improved alignment of assembly
+* Fixed bug when fetching variable fails
+* Plot floating point values instead of casting to int
 
 ## 0.8.0.3
 * modify component initialization order so that store updates are better sequenced

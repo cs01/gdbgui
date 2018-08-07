@@ -16,6 +16,13 @@ td{
 
 
 /* styling for generic classes */
+.flip180{
+    -webkit-transform: rotate(180deg);
+    -moz-transform: rotate(180deg);
+    -o-transform: rotate(180deg);
+    -ms-transform: rotate(180deg);
+    transform: rotate(180deg);
+}
 .inline{
     display: inline;
 }
@@ -72,19 +79,28 @@ td{
 .pointer{
     cursor: pointer;
 }
-.gdb_content_div{
-    /*flex-direction: column;*/
-    background-color: white;
+.collapser:hover .rowresizer{
+  cursor: row-resize;
+  height: 10px;
+  width: 100%;
+  background-color: white;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-image: url('/static/vendor/images/splitjs/grips/horizontal.png');
+}
+.collapser .rowresizer{
+  height: 10px;
+  width: 100%;
+  background-color: white;
 }
 .sent_command{
     color: #00d8ff;
 }
-.sent_command:hover{
+.sent_command:hover, .autocmplt:hover{
     /* lighten background */
     background-color:rgba(255,255,255,0.1)
 }
 .disabled {
-        z-index: 1000;
         background-color: lightgrey;
         opacity: 0.6;
         pointer-events: none;
@@ -159,6 +175,11 @@ td.assembly{
     padding-top: 0px;
     white-space: nowrap;
 }
+/* instruction content */
+.instrContent{
+    min-width: 250px;
+    display:inline-block;
+}
 #code_table{
     font-family: monospace;
     border-collapse: separate;
@@ -228,28 +249,63 @@ td.line_num{
     z-index: 1000;
     background: #f1f1f1;
 }
+#console_container{
+    height: 100%;
+    position: relative;
+}
 #console{
     background-color: #292929;
     color: #d6d6d6 !important;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
     width: 100%;
     overflow: auto;
+    font-size: 0.9em;
+    border-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 30px;
 }
-#gdb_command_input, .gdb_command_input{
+#filesystem ul,
+#filesystem li
+{
+  listStyleType: none;
+  padding: 0;
+}
+#gdb_command_input, #gdb_command_input .gdb_command_input{
+    height: 30px;
     border-width: 0;
-    padding: 10px;
     background-color: #3c3c3c !important;
     color: #f9f9f9 !important;
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace !important;
 }
-
-#gdb_command_input:focus {
+#gdb_command_input{
+    width: 100%;
+    height: 30px;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+}
+#gdb_command_input tr td:nth-child(1) {
+    width: 30px;
+    vertical-align: middle;
+}
+#gdb_command_input tr td:nth-child(2) {
+    width: 100%;
+}
+#gdb_command_input tr td:nth-child(3) {
+    width: 15px;
+    vertical-align: middle;
+    padding-right: 10px;
+}
+#gdb_command_input .gdb_command_input:focus{
     outline-color: none;
     box-shadow: none;
 }
-
-
-#settings_content{
+.fullscreen_modal{
+    padding: 10px;
     width: 100%;
     height: 100%;
     position: fixed;
@@ -264,7 +320,6 @@ td.line_num{
 }
 #gdb_settings_modal{
     width: 800px;
-    margin: 50px;
     padding: 40px;
     z-index: 120;
     background: white;
@@ -272,6 +327,18 @@ td.line_num{
     overflow: auto;
     margin-left: auto;
     margin-right: auto;
+}
+.modal_content{
+    padding: 20px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    background: white;
+    margin: auto;
+    border: 1px solid #888;
+    border-radius: 4px;
+    width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
 }
 
 #hovervar{
@@ -297,7 +364,12 @@ td.line_num{
     margin: 2px;
     white-space: pre;
 }
-
+.gdbguiConsoleOutput{
+    color: orange;
+    min-height: 1em;
+    margin: 2px;
+    white-space: pre;
+}
 #gdb_mi_output{
     font-family: Menlo,Monaco,Consolas,"Courier New",monospace;
     overflow: auto;
@@ -343,7 +415,7 @@ ul.varUL{
     height: 200px;
     display: visible;
 }
-#tooltip{
+#plot_coordinate_tooltip{
     position: fixed;
     display: none;
     border: 1px solid #828282;
@@ -373,4 +445,3 @@ ul.varUL{
         from { transform: scale(1) rotate(0deg);}
         to { transform: scale(1) rotate(360deg);}
 }
-

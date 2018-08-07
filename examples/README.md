@@ -25,6 +25,3 @@ For example, in `gdbgui/examples/c`, running `make hello` will:
 * load the executable for the make target you just built
 * insert a breakpoint at main (Rust and Go users may see machine code displayed rather than source code. This is a `gdb` limitation.)
 * **Note: Although the program has loaded, you still must click the run icon to actually begin running the program.**
-
-## Contributing
-If you have another example you think would be useful to demonstrate debugger features, please submit a pull request. No `gdbgui` knowledge is required to add example code :).

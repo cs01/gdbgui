@@ -2,14 +2,6 @@
 
 If you think you have found a bug or aren't sure, create an issue.
 
-When filing a bug report please include
-
-* output of `pip freeze`
-* operating system and version
-* gdbgui version (`gdbgui -v`)
-* gdb version (`gdb -v`)
-* browser being used
-
 ## Development
 Documentation, spelling fixes, bug fixes, and features are welcome.
 

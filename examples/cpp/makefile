@@ -12,3 +12,6 @@ smart_ptr_demo: smart_ptr_demo.cpp
 	g++ smart_ptr_demo.cpp -o smart_ptr_demo_cpp.a -std=c++11 -g
 	$(GDBGUI) smart_ptr_demo_cpp.a
 
+sin: sin.cpp
+	g++ sin.cpp -o sin_cpp.a -std=c++11 -g
+	$(GDBGUI) sin_cpp.a

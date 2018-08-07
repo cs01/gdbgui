@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>gdbgui - gdb in a browser</title>
+    <base target="_blank">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  </head>
+  <body style='background-color: #333;'>
+    <div id="gdbgui" class="splitjs_container">
+      <div style='text-align: center; color: #ccc;'>
+        <h3>Loading application, please wait.</h3>
+        <p>
+          Note: JavaScript and cookies must be enabled.
+        </p>
+      </div>
+    </div>
+  </body>
+
+  <link href="static/css/gdbgui.css?_=undefined" rel="stylesheet">
+  <link href="static/css/splitjs-gdbgui.css?_=undefined" rel="stylesheet">
+  <link href="static/vendor/css/bootstrap.min.css" rel="stylesheet">
+  <link href="static/vendor/css/gdbgui_awesomeplete.css" rel="stylesheet">
+  <script>
+    initial_data = {{initial_data | tojson}}
+    debug = {{debug | tojson}}
+  </script>
+  <script type="text/javascript" src="static/vendor/js/jquery.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/jquery.flot-0.8.3.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/lodash.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/moment.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/vis-4.20.1.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/awesomeplete.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/socket.io-2.0.3.min.js"></script>
+  <script type="text/javascript" src="static/vendor/js/splitjs.min-1.2.0.js"></script>
+  <script type="text/javascript" src="static/js/build.js?_={{version}}"></script>
+
+
+  {% for theme in themes %}
+  <link href='static/vendor/css/pygments/{{theme}}.css' rel="stylesheet">
+  {% endfor %}
+</html>
