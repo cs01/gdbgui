@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Note: To use the 'upload' functionality of this file, you must:
-#  pip install twine
-
 import io
 import os
 import sys
@@ -17,7 +14,7 @@ REQUIRED = [
     "Flask-Compress>=1.4.0, <2.0",  # to compress flask responses
     "Flask-SocketIO>=2.9, <3.0",  # websocket server
     "gevent>=1.2.2, <2.0",  # websocket handling
-    "pygdbmi>=0.8.2.0, <0.9",  # parse gdb output
+    "pygdbmi>=0.8.4.0, <0.9",  # parse gdb output
     "Pygments>=2.2.0, <3.0",  # syntax highlighting
 ]
 
