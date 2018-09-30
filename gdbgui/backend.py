@@ -24,9 +24,11 @@ from functools import wraps
 import json
 import logging
 import os
+import platform
 import pygdbmi
 from pygments.lexers import get_lexer_for_filename
 from pygdbmi.gdbcontroller import NoGdbProcessError
+import re
 import signal
 import shlex
 import sys
@@ -68,7 +70,7 @@ IS_A_TTY = sys.stdout.isatty()
 DEFAULT_GDB_EXECUTABLE = "gdb"
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.WARNING)
 
 
 class ColorFormatter(logging.Formatter):
@@ -79,9 +81,7 @@ class ColorFormatter(logging.Formatter):
                 color = "\33[93m"  # yellow
             elif record.levelname == "ERROR":
                 color = "\033[1;41m"
-        return "{color}{name} - {levelname}\033[1;0m - {msg}".format(
-            color=color, **vars(record)
-        )
+        return "{color}{levelname}\033[1;0m - {msg}".format(color=color, **vars(record))
 
 
 formatter = ColorFormatter()
@@ -273,10 +273,7 @@ def verify_gdb_exists(gdb_path):
         else:
             print('try "sudo apt-get install gdb" for Linux or "brew install gdb"')
         sys.exit(1)
-    elif (
-        "lldb" in gdb_path.lower()
-        and "lldb-mi" not in app.config["gdb_path"].lower()
-    ):
+    elif "lldb" in gdb_path.lower() and "lldb-mi" not in app.config["gdb_path"].lower():
         pygdbmi.printcolor.print_red(
             'gdbgui cannot use the standard lldb executable. You must use an executable with "lldb-mi" in its name.'
         )
@@ -869,7 +866,7 @@ def get_parser():
         help=(
             "Replace compile-time source paths to local source paths. "
             "Pass valid JSON key/value pairs."
-            "i.e. --remap-sources='{\"/buildmachine\": \"/home/chad\"}'"
+            'i.e. --remap-sources=\'{"/buildmachine": "/home/chad"}\''
         ),
     )
     other.add_argument(
@@ -929,6 +926,9 @@ def main():
     parser = get_parser()
     args = parser.parse_args()
 
+    if args.debug:
+        logger.setLevel(logging.NOTSET)
+
     initialize_preferences()
 
     if args.version:
@@ -954,7 +954,9 @@ def main():
         try:
             app.config["remap_sources"] = json.loads(args.remap_sources)
         except json.decoder.JSONDecodeError as e:
-            print("The '--remap-sources' argument must be valid JSON. See gdbgui --help.")
+            print(
+                "The '--remap-sources' argument must be valid JSON. See gdbgui --help."
+            )
             print(e)
             exit(1)
 
@@ -972,8 +974,13 @@ def main():
                 "accessible IP address. See gdbgui --help."
             )
 
-    if args.debug:
-        logger.setLevel(logging.NOTSET)
+    if warn_startup_with_shell_off(platform.platform().lower(), args.gdb_args):
+        logger.warning(
+            "You may need to set startup-with-shell off when running on a mac. i.e.\n"
+            "  gdbgui --gdb-args='--init-eval-command=set startup-with-shell off'\n"
+            "see http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra\n"
+            "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
+        )
 
     setup_backend(
         serve=True,
@@ -985,6 +992,20 @@ def main():
         private_key=args.key,
         certificate=args.cert,
     )
+
+
+def warn_startup_with_shell_off(platform, gdb_args):
+    """return True if user may need to turn shell off
+    if mac OS version is 16 (sierra) or higher, may need to set shell off due
+    to os's security requirements
+    http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
+    """
+    darwin_match = re.match("darwin-(\d+)\..*", platform)
+    on_darwin = darwin_match is not None and int(darwin_match.groups()[0]) >= 16
+    if on_darwin:
+        shell_is_off = "startup-with-shell off" in gdb_args
+        return not shell_is_off
+    return False
 
 
 if __name__ == "__main__":
