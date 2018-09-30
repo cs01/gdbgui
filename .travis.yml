@@ -13,16 +13,14 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.6-dev"
   - "3.7-dev"
-  - "nightly"
+  - "3.8-dev"
   - "pypy"
 
 matrix:
   allow_failures:
-    - python: '3.6-dev'
     - python: '3.7-dev'
-    - python: 'nightly'
+    - python: '3.8-dev'
 
 before_install:
   # install collective.checkdocs to allow for python setup.py test command to work

@@ -129,7 +129,7 @@ def csrf_protect_all_post_and_cross_origin_requests():
             return success
 
         else:
-            logger.warning("Received invalid csrf token due. Aborting")
+            logger.warning("Received invalid csrf token. Aborting")
             abort(403)
 
 
@@ -313,7 +313,8 @@ def client_connected():
         return
 
     elif csrf_token != session.get("csrf_token"):
-        logger.warning(
+        # this can happen fairly often, so log debug message, not warning
+        logger.debug(
             "Recieved invalid csrf token %s (expected %s)"
             % (csrf_token, str(session.get("csrf_token")))
         )
@@ -977,7 +978,7 @@ def main():
     if warn_startup_with_shell_off(platform.platform().lower(), args.gdb_args):
         logger.warning(
             "You may need to set startup-with-shell off when running on a mac. i.e.\n"
-            "  gdbgui --gdb-args='--init-eval-command=set startup-with-shell off'\n"
+            "  gdbgui --gdb-args='--init-eval-command=\"set startup-with-shell off\"'\n"
             "see http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra\n"
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )

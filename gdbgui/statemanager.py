@@ -28,9 +28,10 @@ class StateManager(object):
 
             if controller:
                 self.controller_to_client_ids[controller].append(client_id)
-                message = "gdbgui is using existing subprocess with pid %s" % str(
+                message = "gdbgui is using existing subprocess with pid %s, "
+                "originally opened with command %s" % (str(
                     desired_gdbpid
-                )
+                ), controller.get_subprocess_cmd())
                 using_existing = True
                 pid = desired_gdbpid
             else:
@@ -57,9 +58,9 @@ class StateManager(object):
             self.controller_to_client_ids[controller].append(client_id)
 
             pid = self.get_pid_from_controller(controller)
-            message += "gdbgui spawned subprocess with pid %s from executable %s." % (
+            message += "gdbgui spawned subprocess with pid %s from command %s." % (
                 str(pid),
-                self.config["gdb_path"],
+                controller.get_subprocess_cmd(),
             )
 
         return {
