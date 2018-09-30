@@ -2,20 +2,11 @@ from collections import defaultdict
 from copy import deepcopy
 from pygdbmi.gdbcontroller import GdbController
 import logging
-import platform
-import re
 import traceback
 
 
 REQUIRED_GDB_FLAGS = ["--interpreter=mi2"]
 logger = logging.getLogger(__name__)
-
-startup_with_shell_off = False
-darwin_match = re.match("darwin-(\d+)\..*", platform.platform().lower())
-if darwin_match is not None and int(darwin_match.groups()[0]) >= 16:
-    # if mac OS version is 16 (sierra) or higher, need to set shell off due to
-    # os's security requirements
-    startup_with_shell_off = True
 
 
 class StateManager(object):
@@ -58,12 +49,6 @@ class StateManager(object):
                 + REQUIRED_GDB_FLAGS
             )
 
-            if startup_with_shell_off:
-                # macOS Sierra (and later) may have issues with gdb. This should fix it, but there might be other issues
-                # as well. Please create an issue if you encounter one since I do not own a mac.
-                # http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
-                gdb_args.append("--init-eval-command=set startup-with-shell off")
-
             controller = GdbController(
                 gdb_path=self.config["gdb_path"],
                 gdb_args=gdb_args,
@@ -102,7 +87,6 @@ class StateManager(object):
         return orphaned_client_ids
 
     def get_client_ids_from_gdb_pid(self, pid):
-        """TODO"""
         controller = self.get_controller_from_pid(pid)
         return self.controller_to_client_ids.get(controller, [])
 
