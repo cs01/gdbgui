@@ -3,8 +3,7 @@
 
 import io
 import os
-import sys
-from setuptools import find_packages, setup, Command
+from setuptools import find_packages, setup
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -24,25 +23,6 @@ VERSION = (
     .read()
     .strip()
 )
-
-
-class TestCommand(Command):
-    description = "test task"
-    user_options = []
-
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        # import here so dependency error on Flask is not
-        # raised
-        from tests import test_app
-
-        sys.exit(test_app.main())
-
 
 setup(
     name="gdbgui",
@@ -81,7 +61,6 @@ setup(
     },
     extras_require={},
     zip_safe=False,
-    cmdclass={"test": TestCommand},
     install_requires=REQUIRED,
     classifiers=[
         "Intended Audience :: Developers",
