@@ -311,10 +311,6 @@ const GdbApi = {
       // print the name, type and value for simple data types,
       // and the name and type for arrays, structures and unions.
       constants.IGNORE_ERRORS_TOKEN_STR + "-stack-list-variables --simple-values",
-      // flush inferior process' output (if any)
-      // by default, it only flushes when the program terminates
-      // so this additional call is needed
-      GdbApi.get_flush_output_cmd()
     ];
     if (store.get("interpreter") === "gdb") {
       // update all user-defined variables in gdb
@@ -377,22 +373,6 @@ const GdbApi = {
     } else if (store.get("interpreter") === "lldb") {
       console.log("TODOLLDB - find mi-friendly command");
       return "breakpoint list";
-    }
-  },
-  get_flush_output_cmd: function() {
-    if (!store.get("flush_after_commands")) {
-      return "";
-    }
-    if (store.get("language") === "c_family") {
-      if (store.get("interpreter") === "gdb") {
-        return constants.IGNORE_ERRORS_TOKEN_STR + "-data-evaluate-expression fflush(0)";
-      } else if (store.get("interpreter") === "lldb") {
-        return "";
-      }
-    } else if (store.get("language") === "go") {
-      return ""; // TODO?
-    } else if (store.get("language") === "rust") {
-      return ""; // TODO?
     }
   },
   get_load_binary_and_arguments_cmds(binary, args) {
