@@ -3,6 +3,10 @@
 ## master
 * Do not clear program state when resuming inferior so that scroll position is better maintained
 
+## 0.13.1.0
+* Remove automatic flushing of stdout and require newer version of pygdbmi
+* Add flake8 tests to CI build
+
 ## 0.13.0.0
 * Add ability to re-map source file paths. Added flags `--remap-sources` and `-m` to replace compile-time source paths to local source paths. i.e. `gdbgui --remap-sources='{"/buildmachine": "/home/chad"}'` (#158)
 * Add shift keyboard shortcut to go in reverse when using rr (#201)

@@ -138,7 +138,7 @@ class StateManager(object):
         return data
 
     def disconnect_client(self, client_id):
-        for controller, client_ids in self.controller_to_client_ids.items():
+        for _, client_ids in self.controller_to_client_ids.items():
             if client_id in client_ids:
                 client_ids.remove(client_id)
 

@@ -477,7 +477,7 @@ def get_extra_files():
     extra_dirs = [THIS_DIR]
     extra_files = []
     for extra_dir in extra_dirs:
-        for dirname, dirs, files in os.walk(extra_dir):
+        for dirname, _, files in os.walk(extra_dir):
             for filename in files:
                 filepath = os.path.join(dirname, filename)
                 if os.path.isfile(filepath) and filepath not in extra_files:
