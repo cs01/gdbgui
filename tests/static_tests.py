@@ -2,14 +2,14 @@ import subprocess
 
 
 def run(cmd):
-    print(f"Running {' '.join(cmd)!r}")
+    print("Running %r" % ' '.join(cmd))
     return subprocess.run(cmd).returncode
 
 
 def main():
     files = ["gdbgui", "tests", "setup.py"]
     ret = 0
-    ret += run(["black", "--check"] + files)
+    # ret += run(["black", "--check"] + files)
     ret += run(["flake8"] + files)
     return ret
 
