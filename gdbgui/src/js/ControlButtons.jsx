@@ -16,7 +16,7 @@ class ControlButtons extends React.Component {
       <React.Fragment>
         <button
           id="run_button"
-          onClick={()=>GdbApi.click_run_button()}
+          onClick={() => GdbApi.click_run_button()}
           type="button"
           title="Start inferior program from the beginning keyboard shortcut: r"
           className={btn_class}
@@ -26,7 +26,7 @@ class ControlButtons extends React.Component {
 
         <button
           id="continue_button"
-          onClick={()=>GdbApi.click_continue_button()}
+          onClick={() => GdbApi.click_continue_button()}
           type="button"
           title={
             "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
@@ -48,7 +48,7 @@ class ControlButtons extends React.Component {
 
         <button
           id="next_button"
-          onClick={()=>GdbApi.click_next_button()}
+          onClick={() => GdbApi.click_next_button()}
           type="button"
           title={
             "Step over next function call keyboard shortcut: n or right arrow" +
@@ -61,7 +61,7 @@ class ControlButtons extends React.Component {
 
         <button
           id="step_button"
-          onClick={()=>GdbApi.click_step_button()}
+          onClick={() => GdbApi.click_step_button()}
           type="button"
           title={
             "Step into next function call keyboard shortcut: s or down arrow" +
@@ -74,7 +74,7 @@ class ControlButtons extends React.Component {
 
         <button
           id="return_button"
-          onClick={()=>GdbApi.click_return_button()}
+          onClick={() => GdbApi.click_return_button()}
           type="button"
           title="Step out of current function keyboard shortcut: u or up arrow"
           className={btn_class}
@@ -84,7 +84,7 @@ class ControlButtons extends React.Component {
         <div role="group" className="btn-group btn-group-xs">
           <button
             id="next_instruction_button"
-            onClick={()=>GdbApi.click_next_instruction_button()}
+            onClick={() => GdbApi.click_next_instruction_button()}
             type="button"
             title={
               "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
@@ -96,7 +96,7 @@ class ControlButtons extends React.Component {
           </button>
           <button
             id="step_instruction_button"
-            onClick={()=>GdbApi.click_step_instruction_button()}
+            onClick={() => GdbApi.click_step_instruction_button()}
             type="button"
             title={
               "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +

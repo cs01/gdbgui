@@ -20,7 +20,7 @@ class Settings extends React.Component {
       "pretty_print",
       "refresh_state_after_sending_console_command",
       "show_all_sent_commands_in_console",
-      "highlight_source_code",
+      "highlight_source_code"
     ]);
     this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(
       this
