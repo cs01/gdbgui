@@ -21,7 +21,8 @@ A modern, browser-based frontend to gdb (gnu debugger)
 <img src="https://img.shields.io/badge/pypi-0.13.1.1-blue.svg" alt="image" />
 </a>
 
-[![Downloads](https://pepy.tech/badge/gdbgui)](https://pepy.tech/project/gdbgui)
+<img src="https://pepy.tech/badge/gdbgui" alt="image" />
+
 </p>
 
 
