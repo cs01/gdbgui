@@ -1,8 +1,5 @@
 # gdbgui release history
 
-## master
-* Do not clear program state when resuming inferior so that scroll position is better maintained
-
 ## 0.13.1.0
 * Remove automatic flushing of stdout and require newer version of pygdbmi
 * Add flake8 tests to CI build

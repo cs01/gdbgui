@@ -63,20 +63,6 @@ let About = {
     Actions.show_modal(
       "About gdbgui",
       <React.Fragment>
-        {TopBar.get_upgrade_text()}
-        <br />
-        <a href="https://github.com/cs01/gdbgui/issues" className="pointer">
-          Report a bug
-        </a>
-        <br />
-        <a href="https://github.com/cs01/gdbgui/issues" className="pointer">
-          Request a feature
-        </a>
-        <br />
-        <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
-          YouTube Channel
-        </a>
-        <p />
         A <a href="http://grassfedcode.com">grassfedcode</a> project to make the easiest
         to use and most accessible gdb frontend.
         <p />
@@ -153,11 +139,6 @@ const menu = (
           </a>
         </li>
         <li>
-          <a href="https://saythanks.io/to/grassfedcode" className="pointer">
-            Say Thanks
-          </a>
-        </li>
-        <li>
           <a href="https://gitter.im/gdbgui/Lobby" className="pointer">
             Chat room
           </a>
@@ -170,6 +151,12 @@ const menu = (
         <li>
           <a href="http://gdbgui.com" className="pointer">
             Homepage
+          </a>
+        </li>
+
+        <li>
+          <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
+            YouTube Channel
           </a>
         </li>
 
@@ -485,49 +472,6 @@ class TopBar extends React.Component {
     } catch (err) {
       console.error(err);
       return true;
-    }
-  }
-  static get_upgrade_text() {
-    let ltext = (
-      <React.Fragment>
-        <span className="bold">You are using the standard version of gdbgui. </span>
-        <a href={constants.gdbgui_upgrade_url}>Get gdbgui ad-free key now.</a>
-      </React.Fragment>
-    );
-
-    if (
-      initial_data.p ===
-      "d2b6fad22b1e05178f4888fcb461a481e8e0e3b7a28b6bc60b1df7eb286a77dc"
-    ) {
-      /* global initial_data */
-      ltext = "You are using the ad-free version of gdbgui.";
-    }
-
-    if (TopBar.needs_to_update_gdbgui_version()) {
-      return (
-        <React.Fragment>
-          gdbgui version {store.get("latest_gdbgui_version")} is available. You are using{" "}
-          {store.get("gdbgui_version")}.
-          <p />
-          <p />
-          Visit <a href="https://gdbgui.com">gdbgui.com</a> to update to the latest
-          version.
-          <p />
-          <p />
-          {ltext}
-          <p />
-          <a href="https://github.com/cs01/gdbgui/blob/master/CHANGELOG.md">
-            View changelog
-          </a>
-        </React.Fragment>
-      );
-    } else {
-      return (
-        <React.Fragment>
-          <span>gdbgui version {store.get("gdbgui_version")} (latest version)</span>
-          {ltext}
-        </React.Fragment>
-      );
     }
   }
 }

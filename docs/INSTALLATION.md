@@ -1,38 +1,54 @@
 # gdbgui installation
 
-## Installation Options
-There are two options to use gdbgui:
-* standalone binary executable or
-* the Python Package `gdbgui`.
+## Try Without Installing
+By using [pipx](https://github.com/cs01/pipx), you can run Python CLI programs in ephemeral one-time virtual environments.
+```
+pipx gdbgui
+```
+A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
 
-**Standalone binary executables are easier to install, and are available at [gdbgui.com](http://gdbgui.com)**.
 
-## Python Package
-If you do not want to use the binary, `gdbgui` is also a package in the [Python Package Index (PyPI)](https://pypi.python.org/pypi) and can be installed using [pip](https://pip.pypa.io/en/stable/), the recommended tool for installing Python packages. It is installed like any other python package:
+## Recommended Installation Instructions
+gdbgui recommends using [pipx](https://github.com/cs01/pipx), a program to run Python CLI binaries in isolated environments. You can install pipx like this:
+```
+curl https://raw.githubusercontent.com/cs01/pipx/master/get-pipx.py | python3
+```
 
-    [sudo] pip install gdbgui --upgrade
+Then install gdbgui with pipx:
+```
+pipx install gdbgui
+```
+
+To upgrade run
+```
+pipx upgrade gdbgui
+```
 
 When installation is finished, type `gdbgui` from the command line to run it, or `gdbgui -h` for help.
 
-If you are unfamiliar with `pip` or if that command did not work, consider downloading the binary since it can be run directly. If you still want to install with pip, see Troubleshooting below.
+## Alternate Installation 1
+If you prefer to use Virtual Environments, you can activate one and then run
+```
+pip install gdbgui
+```
+
+## Alternate Installation 2
+Download and run the binary executable for your system on [gdbgui.com](http://gdbgui.com).
+
 
 **Please create an issue or pull request if any of this information is out of date, incomplete, or incorrect.**
 
-## Prerequisites if Using Python Package
+## System Dependencies
+Note that this only applies if you are installing the Python package, and not using the binary executable from gdbgui.com.
 
 * gdb (gnu debugger)
 * Python 3.4+ (recommended) or 2.7
 * pip version 8 or higher
 
-### Linux Prerequisites
-
-Note: this is for python package installation only, and not related to the standalone binary executables available at [gdbgui.com](http://gdbgui.com).
-
+### Linux Dependencies
     sudo apt-get install gdb python3
-    sudo python3 -m pip install pip --upgrade
 
-### macOS Prerequisites
-
+### macOS Dependencies
     brew install python3
     brew install gdb --with-python --with-all-targets
 
@@ -40,10 +56,7 @@ macOS users must also codesign gdb: follow [these
 instructions](http://andresabino.com/2015/04/14/codesign-gdb-on-mac-os-x-yosemite-10-10-2/). This will fix the error
 `please check gdb is codesigned - see taskgated(8)`.
 
-### Windows Prerequisites
-
-Note: this is for python package installation only, and not related to the standalone binary executables available at [gdbgui.com](http://gdbgui.com).
-
+### Windows Dependencies
 * [Python 3](https://www.python.org/downloads/windows/)
 * gdb, make, gcc
 
@@ -58,7 +71,7 @@ Ensure this MinGW binary directory (i.e. `C:\MinGW\bin\`) is on your "Path" envi
 
 ##### Cygwin
 Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works with it as well.
-* Install [cygwin](https://cygwin.com/install.html) | [homepage](https://cygwin.com/index.html))
+* Install [cygwin](https://cygwin.com/install.html)
 * When installing cygwin packages, add the following:
 ** python3
 ** python3-pip
@@ -67,49 +80,22 @@ Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works wi
 ** gcc-core
 ** gcc-g++
 
-Then run
-`pip install gdbgui --upgrade`
 
-## Troubleshooting
-
-Note: this is for python package installation only, and not related to the standalone binary executables available at [gdbgui.com](http://gdbgui.com).
-
-### Linux, macOS, Windows
-
-If there is a conflict or error when installing via pip, use [`pipsi`](https://github.com/mitsuhiko/pipsi). pipsi is like pip, but it sandboxes everything into its own python environment, and it works on all operating systems.
-
-* [Download the pipsi installer](https://raw.githubusercontent.com/mitsuhiko/pipsi/master/get-pipsi.py)
-* Run with python: `python get-pipsi.py`
-* `~/.local/bin/pipsi.exe install gdbgui`
-
-When installation is finished, type `gdbgui` from the command line to run it, or `gdbgui -h` for help.
-
-To upgrade gdbgui with pipsi:
-* `~/.local/bin/pipsi.exe upgrade gdbgui`
-
-### Running from source
-
+### Running from Source
+In an activated Virtual Environment, run
 ```bash
 git clone https://github.com/cs01/gdbgui
 cd gdbgui
-pip install -r requirements.txt  # run as sudo if this fails
-gdbgui/backend.py
+pip install -e .
+python -m gdbgui
 ```
 
-Note: Although not strictly required, you should install requirements.txt using a virtualenv to avoid changing system python packages.
+A Virtual Environment sandboxes python packages, which guarantees there will be no installation conflicts.
 
-A [virtualenv](https://virtualenv.pypa.io/en/stable/) sandboxes python packages, which guarantees there will be no installation
-conflicts.
-
-To use a new virtualenv:
+To create and use a new virtualenv:
 
 ```bash
-pip install virtualenv  # run as sudo if this fails
-virtualenv venv -p python3  # creates a virtual env named "venv"
+pythom3 -m venv  # creates a virtual env named "venv"
 source venv/bin/activate  # activates the virtualenv sandbox
 pip install pip --upgrade  # make sure pip is at the latest version
 ```
-
-Then run
-
-    pip install -r requirements.txt

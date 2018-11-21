@@ -20,14 +20,14 @@ run the Flask server with the `debug` flag.
 ```bash
 git clone https://github.com/cs01/gdbgui
 cd gdbgui
-pip install -r requirements.txt
+pip install -e .
 pip install -r dev_requirements.txt
 ```
 
 
 #### Step 2: Run Python server
 ```bash
-gdbgui/backend.py --debug
+python -m gdbgui --debug
 ```
 
 The `--debug` flag:
@@ -53,7 +53,6 @@ Now every JavaScript source file you change will be noticed by webpack and recom
 If you are modifying `gdbgui.js`, make sure you have caching turned off. In Chrome, for example, this is a setting in the developer console.
 
 #### Step 5: Make your changes
-Add your super awesome bugfix/feature/whatever
 
 #### Step 6: Run and Add tests
 

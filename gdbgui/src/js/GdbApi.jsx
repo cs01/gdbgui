@@ -310,7 +310,7 @@ const GdbApi = {
       constants.IGNORE_ERRORS_TOKEN_STR + "-thread-info",
       // print the name, type and value for simple data types,
       // and the name and type for arrays, structures and unions.
-      constants.IGNORE_ERRORS_TOKEN_STR + "-stack-list-variables --simple-values",
+      constants.IGNORE_ERRORS_TOKEN_STR + "-stack-list-variables --simple-values"
     ];
     if (store.get("interpreter") === "gdb") {
       // update all user-defined variables in gdb

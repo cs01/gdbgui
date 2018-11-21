@@ -1,7 +1,7 @@
 # run pip install -r dev_requirements.txt before running make test
 .PHONY: test publish executable
 test:
-	python -m test
+	python -m tests
 	yarn test
 	yarn build
 	python setup.py checkdocs
