@@ -1,6 +1,6 @@
 import React from "react";
 
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import BinaryLoader from "./BinaryLoader.jsx";
 import ControlButtons from "./ControlButtons.jsx";
 import Settings from "./Settings.jsx";
@@ -18,7 +18,7 @@ let onkeyup_jump_to_line = e => {
   }
 };
 
-let click_shutdown_button = function() {
+let click_shutdown_button = function () {
   // no need to show confirmation before leaving, because we're about to prompt the user
   window.onbeforeunload = () => null;
   // prompt user
@@ -35,7 +35,7 @@ let click_shutdown_button = function() {
   }
 };
 
-let show_license = function() {
+let show_license = function () {
   Actions.show_modal(
     "gdbgui license",
     <React.Fragment>
@@ -59,32 +59,32 @@ let show_license = function() {
 };
 
 let About = {
-  show_about: function() {
+  show_about: function () {
     Actions.show_modal(
       "About gdbgui",
       <React.Fragment>
         A <a href="http://grassfedcode.com">grassfedcode</a> project to make the easiest
         to use and most accessible gdb frontend.
-        <p />
+        <p/>
         Copyright © Chad Smith
       </React.Fragment>
     );
   }
 };
 
-let show_session_info = function() {
+let show_session_info = function () {
   Actions.show_modal(
     "session information",
     <React.Fragment>
       <table>
         <tbody>
-          <tr>
-            <td>gdb version: {store.get("gdb_version")}</td>
-          </tr>
+        <tr>
+          <td>gdb version: {store.get("gdb_version")}</td>
+        </tr>
 
-          <tr>
-            <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
-          </tr>
+        <tr>
+          <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
+        </tr>
         </tbody>
       </table>
     </React.Fragment>
@@ -101,76 +101,54 @@ const menu = (
         href="#"
         data-toggle="dropdown"
         role="button"
-        style={{ height: 25, padding: 0, paddingRight: 20 }}
         className="dropdown-toggle"
       >
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
       </a>
       <ul className="dropdown-menu">
-        <li>
-          <a title="dashboard" className="pointer" href="/dashboard">
-            Dashboard
-          </a>
-        </li>
-        <li>
-          <a
-            title="show guide"
-            className="pointer"
-            onClick={ToolTipTourguide.start_guide}
-          >
-            Show Guide
-          </a>
-        </li>
-        <li>
-          <a onClick={show_session_info} className="pointer">
-            Session Information
-          </a>
-        </li>
-        <li>
-          <a title="shutdown" className="pointer" onClick={click_shutdown_button}>
-            Shutdown gdbgui server
-          </a>
-        </li>
+        <li><a title="settings"
+               onClick={() => Settings.toggle_key("show_settings")}>
+          Settings
+        </a></li>
+        <li><a title="dashboard" className="pointer" href="/dashboard">
+          Dashboard
+        </a></li>
+        <li><a title="show guide"
+               className="pointer"
+               onClick={ToolTipTourguide.start_guide}>
+          Show Guide
+        </a></li>
+        <li><a onClick={show_session_info} className="pointer">
+          Session Information
+        </a></li>
+        <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>
+          Shutdown gdbgui server
+        </a></li>
 
-        <li role="separator" className="divider" />
-        <li>
-          <a href={constants.gdbgui_donate_url} className="pointer">
-            Donate
-          </a>
-        </li>
-        <li>
-          <a href="https://gitter.im/gdbgui/Lobby" className="pointer">
-            Chat room
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/cs01/gdbgui" className="pointer">
-            GitHub
-          </a>
-        </li>
-        <li>
-          <a href="http://gdbgui.com" className="pointer">
-            Homepage
-          </a>
-        </li>
+        <li role="separator" className="divider"/>
+        <li><a href={constants.gdbgui_donate_url} className="pointer">
+          Donate
+        </a></li>
+        <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">
+          Chat room
+        </a></li>
+        <li><a href="https://github.com/cs01/gdbgui" className="pointer">
+          GitHub
+        </a></li>
+        <li><a href="http://gdbgui.com" className="pointer">
+          Homepage
+        </a></li>
+        <li><a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
+          YouTube Channel
+        </a></li>
 
-        <li>
-          <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
-            YouTube Channel
-          </a>
-        </li>
-
-        <li role="separator" className="divider" />
-        <li>
-          <a onClick={show_license} className="pointer">
-            License
-          </a>
-        </li>
-        <li>
-          <a onClick={About.show_about} className="pointer">
-            About gdbgui
-          </a>
-        </li>
+        <li role="separator" className="divider"/>
+        <li><a onClick={show_license} className="pointer">
+          License
+        </a></li>
+        <li><a onClick={About.show_about} className="pointer">
+          About gdbgui
+        </a></li>
       </ul>
 
       <ToolTipTourguide
@@ -217,6 +195,7 @@ class TopBar extends React.Component {
     this.spinner_timeout = null;
     this.spinner_timeout_msec = 5000;
   }
+
   store_update_callback(keys) {
     if (keys.indexOf("waiting_for_response") !== -1) {
       this._clear_spinner_timeout();
@@ -227,6 +206,7 @@ class TopBar extends React.Component {
       }
     }
   }
+
   _set_spinner_timeout() {
     this.spinner_timeout = setTimeout(() => {
       if (this.state.waiting_for_response) {
@@ -234,9 +214,11 @@ class TopBar extends React.Component {
       }
     }, this.spinner_timeout_msec);
   }
+
   _clear_spinner_timeout() {
     clearTimeout(this.spinner_timeout);
   }
+
   toggle_assembly_flavor() {
     const flavor = this.state.assembly_flavor === "att" ? "intel" : "att";
     this.setState({ assembly_flavor: flavor });
@@ -244,6 +226,7 @@ class TopBar extends React.Component {
     Actions.clear_cached_assembly();
     FileOps.fetch_assembly_cur_line();
   }
+
   get_controls() {
     return (
       <div
@@ -263,7 +246,7 @@ class TopBar extends React.Component {
               </h5>
               <p>
                 Hover over these buttons to see a description of their action. For
-                example, the <span className="glyphicon glyphicon-repeat" /> button starts
+                example, the <span className="glyphicon glyphicon-repeat"/> button starts
                 (or restarts) a program from the beginning.
               </p>
               <p>
@@ -273,15 +256,16 @@ class TopBar extends React.Component {
             </div>
           }
         />
-        <ControlButtons />
+        <ControlButtons/>
       </div>
     );
   }
+
   render() {
     let toggle_assm_button = "";
     if (
       this.state.source_code_state ===
-        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.ASSM_CACHED
     ) {
       toggle_assm_button = (
@@ -303,7 +287,7 @@ class TopBar extends React.Component {
     let reload_button_disabled = "disabled";
     if (
       this.state.source_code_state ===
-        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.SOURCE_CACHED
     ) {
       reload_button_disabled = "";
@@ -320,7 +304,7 @@ class TopBar extends React.Component {
     );
 
     let spinner = (
-      <span className="" style={{ height: "100%", margin: "5px", width: "14px" }} />
+      <span className="" style={{ height: "100%", margin: "5px", width: "14px" }}/>
     );
     if (this.state.show_spinner) {
       spinner = (
@@ -358,30 +342,21 @@ class TopBar extends React.Component {
     return (
       <div
         id="top"
-        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}
-      >
+        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}>
         <div className="flexrow">
-          <BinaryLoader initial_user_input={this.props.initial_user_input} />
+          <BinaryLoader initial_user_input={this.props.initial_user_input}/>
           {spinner}
           {reverse_checkbox}
 
           {this.get_controls()}
-
-          <span
-            onClick={() => Settings.toggle_key("show_settings")}
-            title="settings"
-            className="pointer glyphicon glyphicon-cog"
-            style={{ marginRight: "10px", fontSize: "1.3em" }}
-          />
           {menu}
         </div>
 
         <div style={{ marginTop: 3, whitespace: "nowrap" }} className="flexrow">
           <div
             role="group"
-            style={{ height: "25px", marginRight: "10px" }}
-            className="btn-group btn-group"
-          >
+            style={{ height: "25px", margin: "0 10px" }}
+            className="btn-group btn-group">
             <button
               className="btn btn-default btn-xs"
               title="Toggle file explorer visibility"
@@ -416,8 +391,7 @@ class TopBar extends React.Component {
                 store
                   .get("middle_panes_split_obj")
                   .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
-              }}
-            >
+              }}>
               {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
             </button>
 
@@ -434,14 +408,12 @@ class TopBar extends React.Component {
             {toggle_assm_button}
           </div>
 
+          <span className='top-bar-text'>goto line</span>
           <input
             onKeyUp={onkeyup_jump_to_line}
             autoComplete="on"
             title="Enter line number, then press enter"
-            placeholder="jump to line"
-            style={{ width: 150, height: 25, marginLeft: 10 }}
-            className="form-control dropdown-input"
-          />
+            className="form-control dropdown-input jump-to-line"/>
 
           <div
             style={{
@@ -454,14 +426,14 @@ class TopBar extends React.Component {
               display: "flex",
               overflow: "auto"
             }}
-            className="lighttext"
-          >
-            <SourceCodeHeading />
+            className="lighttext">
+            <SourceCodeHeading/>
           </div>
         </div>
       </div>
     );
   }
+
   static needs_to_update_gdbgui_version() {
     // to actually check each value:
     try {

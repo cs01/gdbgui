@@ -82,8 +82,7 @@ class Registers extends React.Component {
       Registers.clear_cached_values();
       GdbApi.run_gdb_command(Registers.get_update_cmds());
     } else if (num_register_names === num_register_values) {
-      let columns = ["name", "value (hex)", "value (decimal)", "description"],
-        register_table_data = [],
+      let register_table_data = [],
         register_names = store.get("register_names"),
         register_values = store.get("current_register_values"),
         prev_register_values = store.get("previous_register_values");
@@ -135,8 +134,9 @@ class Registers extends React.Component {
       return (
         <ReactTable
           data={register_table_data}
-          header={columns}
-          style={{ fontSize: "0.9em" }}
+          header={["name", "hex", "decimal", "desc"]}
+          style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
+          classes={["table-striped"]}
         />
       );
     }

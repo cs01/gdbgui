@@ -2,6 +2,7 @@
  * The middle left div will be rendered with this content
  */
 
+import { store } from "statorgfc";
 import React from "react";
 import SourceCode from "./SourceCode.jsx";
 import FileOps from "./FileOps.jsx";
@@ -9,6 +10,9 @@ import FileOps from "./FileOps.jsx";
 class MiddleLeft extends React.Component {
   constructor() {
     super();
+    store.connectComponentState(this, [
+      "current_theme",
+    ]);
     this.onscroll_container = this.onscroll_container.bind(this);
     this.onscroll_timeout = null;
     this.fetch_more_at_top_timeout = null;
@@ -17,6 +21,7 @@ class MiddleLeft extends React.Component {
     return (
       <div
         id="code_container"
+        className={this.state.current_theme}
         style={{ overflow: "auto", height: "100%" }}
         ref={el => (this.source_code_container_node = el)}
       >

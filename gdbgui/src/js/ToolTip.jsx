@@ -46,6 +46,7 @@ class ToolTip extends React.Component {
     }
     return (
       <div
+        className='le-tooltip'
         style={{
           top: top,
           left: left,

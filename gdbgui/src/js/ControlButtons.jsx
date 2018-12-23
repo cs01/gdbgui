@@ -2,13 +2,14 @@ import React from "react";
 
 import Actions from "./Actions.js";
 import GdbApi from "./GdbApi.jsx";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 
 class ControlButtons extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, ["gdb_pid"]);
   }
+
   render() {
     let btn_class = "btn btn-default btn-sm";
 
@@ -19,9 +20,8 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_run_button()}
           type="button"
           title="Start inferior program from the beginning keyboard shortcut: r"
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-repeat" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-repeat"/>
         </button>
 
         <button
@@ -32,18 +32,16 @@ class ControlButtons extends React.Component {
             "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
             (initial_data.rr ? ". shift + c for reverse." : "")
           }
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-play" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-play"/>
         </button>
 
         <button
           onClick={() => Actions.send_signal("SIGINT", this.state.gdb_pid)}
           type="button"
           title="Send Interrupt signal (SIGINT) to gdb process to pause it and allow interaction with it"
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-pause" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-pause"/>
         </button>
 
         <button
@@ -54,9 +52,8 @@ class ControlButtons extends React.Component {
             "Step over next function call keyboard shortcut: n or right arrow" +
             (initial_data.rr ? ". shift + n for reverse." : "")
           }
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-step-forward" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-step-forward"/>
         </button>
 
         <button
@@ -67,9 +64,8 @@ class ControlButtons extends React.Component {
             "Step into next function call keyboard shortcut: s or down arrow" +
             (initial_data.rr ? ". shift + s for reverse." : "")
           }
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-arrow-down" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-arrow-down"/>
         </button>
 
         <button
@@ -77,9 +73,8 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_return_button()}
           type="button"
           title="Step out of current function keyboard shortcut: u or up arrow"
-          className={btn_class}
-        >
-          <span className="glyphicon glyphicon-arrow-up" />
+          className={btn_class}>
+          <span className="glyphicon glyphicon-arrow-up"/>
         </button>
         <div role="group" className="btn-group btn-group-xs">
           <button
@@ -90,9 +85,8 @@ class ControlButtons extends React.Component {
               "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
               (initial_data.rr ? ". shift + m for reverse." : "")
             }
-            className="btn btn-default"
-          >
-            NI
+            className="btn btn-default">
+            ni
           </button>
           <button
             id="step_instruction_button"
@@ -102,9 +96,8 @@ class ControlButtons extends React.Component {
               "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +
               (initial_data.rr ? ". shift + , for reverse." : "")
             }
-            className="btn btn-default"
-          >
-            SI
+            className="btn btn-default">
+            si
           </button>
         </div>
       </React.Fragment>

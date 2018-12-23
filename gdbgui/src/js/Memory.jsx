@@ -5,7 +5,7 @@
  * address. It also has methods to manage the global store of memory data.
  */
 
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import constants from "./constants.js";
 import ReactTable from "./ReactTable.jsx";
@@ -27,6 +27,7 @@ class Memory extends React.Component {
       "bytes_per_line"
     ]);
   }
+
   get_memory_component_jsx_content() {
     if (Object.keys(store.get("memory_cache")).length === 0) {
       return (
@@ -114,61 +115,68 @@ class Memory extends React.Component {
       ]);
     }
 
-    return <ReactTable data={data} header={["address", "hex", "char"]} />;
+    return <ReactTable
+      data={data}
+      header={["address", "hex", "char"]}
+      style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
+      classes={["table-striped"]}/>;
   }
+
   render() {
-    let input_style = {
-        display: "inline",
-        width: "100px",
-        padding: "6px 6px",
-        height: "25px",
-        fontSize: "1em"
-      },
-      content = this.get_memory_component_jsx_content();
-    return (
+    let content = this.get_memory_component_jsx_content();
+    return (<div>
+      <div className="form-group">
+        <div className="input-group input-group-sm">
+          <span className="input-group-addon">start</span>
+          <input
+            id="memory_start_address"
+            className="form-control monospace"
+            placeholder="hex addr"
+            value={this.state.start_addr}
+            onKeyUp={Memory.keypress_on_input}
+            onChange={e => {
+              store.set("start_addr", e.target.value);
+            }}
+          />
+          <span className="input-group-addon" style={{ borderWidth: "1px 0" }}>end</span>
+          <input
+            id="memory_end_address"
+            className="form-control monospace"
+            placeholder="hex addr"
+            value={this.state.end_addr}
+            onKeyUp={Memory.keypress_on_input}
+            onChange={e => {
+              store.set("end_addr", e.target.value);
+            }}
+          />
+        </div>
+      </div>
       <div>
-        <input
-          id="memory_start_address"
-          className="form-control"
-          placeholder="start address (hex)"
-          style={input_style}
-          value={this.state.start_addr}
-          onKeyUp={Memory.keypress_on_input}
-          onChange={e => {
-            store.set("start_addr", e.target.value);
-          }}
-        />
-        <input
-          id="memory_end_address"
-          className="form-control"
-          placeholder="end address (hex)"
-          style={input_style}
-          value={this.state.end_addr}
-          onKeyUp={Memory.keypress_on_input}
-          onChange={e => {
-            store.set("end_addr", e.target.value);
-          }}
-        />
+        {content}
+      </div>
+      <div className='input-group input-group-sm'>
+        <span className="input-group-addon">bytes per line</span>
         <input
           id="memory_bytes_per_line"
           className="form-control"
-          placeholder="bytes per line (dec)"
-          style={input_style}
           value={this.state.bytes_per_line}
           onKeyUp={Memory.keypress_on_input}
           onChange={e => {
             store.set("bytes_per_line", e.target.value);
-          }}
-        />
-        {content}
+          }}/>
+        <span className="input-group-btn">
+            <button className="btn btn-primary">save</button>
+          </span>
       </div>
-    );
+    </div>);
   }
+
   static keypress_on_input(e) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
       Memory.fetch_memory_from_state();
     }
   }
+
   static set_inputs_from_address(addr) {
     // set inputs in DOM
     store.set("start_addr", "0x" + parseInt(addr, 16).toString(16));
@@ -198,7 +206,7 @@ class Memory extends React.Component {
         store.set("end_addr", "0x" + end_addr.toString(16));
         Actions.add_console_entries(
           `Cannot fetch ${orig_end_addr -
-            start_addr} bytes. Changed end address to ${store.get(
+          start_addr} bytes. Changed end address to ${store.get(
             "end_addr"
           )} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
           constants.console_entry_type.STD_ERR
@@ -265,7 +273,7 @@ class Memory extends React.Component {
       return (
         <React.Fragment>
           {leading_text}
-          <MemoryLink addr={addr} />
+          <MemoryLink addr={addr}/>
           {suffix_component}
         </React.Fragment>
       );

@@ -1,7 +1,7 @@
 import React from "react";
 
 import Actions from "./Actions.js";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 
 class InferiorProgramInfo extends React.Component {
   constructor() {
@@ -14,8 +14,9 @@ class InferiorProgramInfo extends React.Component {
     };
     store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
+
   get_li_for_signal(s, signal_key) {
-    let onclick = function() {
+    let onclick = function () {
       let obj = {};
       obj[signal_key] = s;
       this.setState(obj);
@@ -27,6 +28,7 @@ class InferiorProgramInfo extends React.Component {
       </li>
     );
   }
+
   get_signal_choices(signal_key) {
     let signals = [];
     // push SIGINT and SIGKILL to top
@@ -42,38 +44,36 @@ class InferiorProgramInfo extends React.Component {
     }
     return signals;
   }
+
   get_dropdown() {
-    return (
-      <div className="dropdown btn-group">
-        <button
-          className="btn btn-default btn-xs dropdown-toggle"
-          type="button"
-          data-toggle="dropdown"
-        >
-          {this.state.selected_signal}
-          <span className="caret" style={{ marginLeft: "5px" }}>
-            {" "}
-          </span>
-        </button>
-        <ul className="dropdown-menu" style={{ maxHeight: "300px", overflow: "auto" }}>
-          {this.get_signal_choices("selected_signal")}
-        </ul>
-      </div>
-    );
+    return (<span className="input-group-btn">
+          <button
+            className="btn btn-default dropdown-toggle"
+            type="button"
+            data-toggle="dropdown">
+            {this.state.selected_signal}
+            <span className="caret">
+                &nbsp;
+            </span>
+          </button>
+          <ul className="dropdown-menu">
+            {this.get_signal_choices("selected_signal")}
+          </ul>
+      </span>);
   }
+
   render() {
     let gdb_button = (
       <button
-        className="btn btn-default btn-xs"
+        className="btn btn-default"
         // id="step_instruction_button"
         // style={{marginLeft: '5px'}}
         type="button"
-        title={`Send signal to gdb`}
+        title={`send ${this.state.selected_signal} to ${this.state.gdb_pid}`}
         onClick={() =>
           Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
-        }
-      >
-        {`gdb (pid ${this.state.gdb_pid})`}
+        }>
+        gdb
       </button>
     );
 
@@ -81,60 +81,51 @@ class InferiorProgramInfo extends React.Component {
     if (this.state.inferior_pid) {
       inferior_button = (
         <button
-          className="btn btn-default btn-xs"
+          className="btn btn-default"
           type="button"
-          title={`Send signal to program being debugged`}
+          title={`send ${this.state.selected_signal} to ${this.state.inferior_pid}`}
           onClick={() =>
             Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
-          }
-        >
-          {`debug program (pid ${this.state.inferior_pid})`}
+          }>
+          this
         </button>
       );
     }
 
-    let other_input_and_button = (
+    let pid_button = (
       <button
         disabled={!this.state.other_pid}
         className="btn btn-default btn-xs"
         type="button"
-        title={`Send signal to custom PID. Enter PID to enable this button.`}
-        onClick={() =>
-          Actions.send_signal(this.state.selected_signal, this.state.other_pid)
-        }
-      >
-        {`other pid ${this.state.other_pid}`}
+        title={`send ${this.state.selected_signal} to ${this.state.other_pid}`}
+        onClick={() => Actions.send_signal(this.state.selected_signal, this.state.other_pid)}>
+        pid
       </button>
     );
-    return (
-      <div>
-        send&nbsp;
-        {this.get_dropdown()}
-        &nbsp;to&nbsp;
-        <div className="btn-group" role="group">
-          {gdb_button}
-          {inferior_button}
-        </div>
-        <p>
-          {other_input_and_button}
+
+    return (<div>
+        <div className="input-group input-group-sm">
+          <span className="input-group-addon">send</span>
+          {this.get_dropdown()}
+          <span className="input-group-addon">to</span>
+          <span className="input-group-btn">
+            {gdb_button}
+            {inferior_button}
+          </span>
           <input
             placeholder="pid"
-            style={{
-              display: "inline",
-              height: "25px",
-              width: "75px",
-              border: "1px solid #ccc",
-              borderRadius: "4px"
-            }}
+            className="form-control"
             onChange={e => {
               this.setState({ other_pid: e.currentTarget.value });
             }}
-            value={this.state.other_pid}
-          />
-        </p>
+            value={this.state.other_pid}/>
+          <span className="input-group-btn">
+            {pid_button}
+          </span>
+        </div>
       </div>
-    ); // return
-  } // render
-} // component
+    );
+  }
+}
 
 export default InferiorProgramInfo;

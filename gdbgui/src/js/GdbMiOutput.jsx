@@ -27,10 +27,9 @@ class GdbMiOutput extends React.Component {
       <div>
         <button
           title="clear all mi output"
-          className="pointer btn btn-default btn-xs"
+          className="btn btn-default btn-xs clear-gdb-mi"
           onClick={() => store.set("gdb_mi_output", [])}
         >
-          clear output
           <span className="glyphicon glyphicon-ban-circle pointer" />
         </button>
         <div id="gdb_mi_output" className="otpt" style={{ fontSize: "0.8em" }}>

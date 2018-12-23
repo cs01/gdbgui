@@ -80,21 +80,14 @@ class Collapser extends React.Component {
     let reset_size_button = "";
     if (!this.state.autosize) {
       reset_size_button = (
-        <span
+        <button
           onClick={this.onclick_restore_autosize}
-          className="placeholder"
+          className="placeholder reset-height btn btn-default btn-xs"
           title={
-            "Height frozen at " + this.state.height_px + "px. Click to restore autosize."
-          }
-          style={{
-            align: "right",
-            position: "relative",
-            top: "-10px",
-            cursor: "pointer"
-          }}
-        >
-          reset height
-        </span>
+            "Height frozen at " + this.state.height_px + "px"
+          }>
+          auto
+        </button>
       );
     }
 
@@ -119,12 +112,12 @@ class Collapser extends React.Component {
       <div className="collapser">
         <div className="pointer titlebar" onClick={this.toggle_visibility.bind(this)}>
           <span
-            className={`glyphicon glyphicon-chevron-${
+            className={`glyphicon titlebar glyphicon-chevron-${
               this.state.collapsed ? "right" : "down"
             }`}
-            style={{ marginRight: "6px" }}
+            style={{ margin: "0 4px" }}
           />
-          <span className="lighttext">{this.props.title}</span>
+          <span>{this.props.title}</span>
         </div>
 
         <div
@@ -145,18 +138,12 @@ class Collapser extends React.Component {
 class RightSidebar extends React.Component {
   render() {
     let input_style = {
-        display: "inline",
-        width: "100px",
-        padding: "6px 6px",
-        height: "25px",
-        fontSize: "1em"
-      },
-      mi_output = "";
-    if (this.props.debug) {
-      mi_output = (
-        <Collapser title="gdb mi output" content={<GdbMiOutput id="gdb_mi_output" />} />
-      );
-    }
+      display: "inline",
+      width: "100px",
+      padding: "6px 6px",
+      height: "25px",
+      fontSize: "1em"
+    };
 
     return (
       <div
@@ -196,7 +183,7 @@ class RightSidebar extends React.Component {
         <Collapser id="locals" title="local variables" content={<Locals />} />
         <Collapser id="expressions" title="expressions" content={<Expressions />} />
         <Collapser
-          title="Tree"
+          title="tree"
           content={
             <div>
               <input
@@ -221,9 +208,10 @@ class RightSidebar extends React.Component {
           title="signals"
           content={<InferiorProgramInfo signals={this.props.signals} />}
         />
-        <Collapser title="registers" collapsed={true} content={<Registers />} />
+        <Collapser title="registers" content={<Registers />} />
 
-        {mi_output}
+        {this.props.debug ? <Collapser title="gdb mi output" content={<GdbMiOutput id="gdb_mi_output" />} />
+        /* otherwise */ : null}
       </div>
     );
   }

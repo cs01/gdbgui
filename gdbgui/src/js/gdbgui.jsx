@@ -128,16 +128,16 @@ class Gdbgui extends React.PureComponent {
     let middle_panes_split_obj = Split(
       ["#folders_view", "#source_code_view", "#controls_sidebar"],
       {
-        gutterSize: 8,
+        gutterSize: 4,
         minSize: 100,
         cursor: "col-resize",
         direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
-        sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29] // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
+        sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 60, 39] // must add to 99
       }
     );
 
     Split(["#middle", "#bottom"], {
-      gutterSize: 8,
+      gutterSize: 4,
       cursor: "row-resize",
       direction: "vertical", // vertical makes a top and bottom pane, and a divider running horizontally
       sizes: [70, 30]

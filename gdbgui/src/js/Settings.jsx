@@ -1,4 +1,4 @@
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import Actions from "./Actions.js";
 import ToolTip from "./ToolTip.jsx";
 import React from "react";
@@ -52,22 +52,29 @@ class Settings extends React.Component {
     return (
       <tr>
         <td>
-          Maximum number of source file lines to display:
-          <input
-            style={{ width: "100px", marginLeft: "10px" }}
-            defaultValue={store.get("max_lines_of_code_to_fetch")}
-            ref={el => (this.max_source_file_lines_input = el)}
-          />
-          <button
-            ref={n => (this.save_button = n)}
-            onClick={() => {
-              let new_value = parseInt(this.max_source_file_lines_input.value);
-              Actions.update_max_lines_of_code_to_fetch(new_value);
-              ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
-            }}
-          >
-            save
-          </button>
+          <div className="form-group">
+            <label className="control-label">Maximum number of source file lines to display</label>
+            <div className="input-group">
+              <span className="input-group-addon">lines</span>
+              <input type="text" className="form-control"
+                     defaultValue={store.get("max_lines_of_code_to_fetch")}
+                     ref={el => (this.max_source_file_lines_input = el)}
+              />
+              <span className="input-group-btn">
+                <button
+                  /*className='btn btn-default btn-xs'*/
+                  className="btn btn-default btn-success"
+                  ref={n => (this.save_button = n)}
+                  onClick={() => {
+                    let new_value = parseInt(this.max_source_file_lines_input.value);
+                    Actions.update_max_lines_of_code_to_fetch(new_value);
+                    ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
+                  }}>
+                  save
+                  </button>
+                </span>
+            </div>
+          </div>
         </td>
       </tr>
     );
@@ -100,8 +107,9 @@ class Settings extends React.Component {
 
           <tr>
             <td>
-              Theme:{" "}
+              Theme:&nbsp;
               <select
+                className='form-control'
                 value={store.get("current_theme")}
                 onChange={function(e) {
                   store.set("current_theme", e.currentTarget.value);
@@ -129,14 +137,14 @@ class Settings extends React.Component {
         }}
       >
         <div id="gdb_settings_modal">
-          <button className="close" onClick={() => Settings.toggle_key("show_settings")}>
+          <button className="btn close" onClick={() => Settings.toggle_key("show_settings")}>
             ×
           </button>
           <h4>Settings</h4>
           {this.get_table()}
           <div className="modal-footer" style={{ marginTop: "20px" }}>
             <button
-              className="btn btn-success"
+              className="btn btn-primary"
               onClick={() => Settings.toggle_key("show_settings")}
               data-dismiss="modal"
             >

@@ -309,9 +309,7 @@ class SourceCode extends React.Component {
     return (
       <tr key={linenum}>
         <td />
-        <td style={{ fontStyle: "italic", paddingLeft: "10px", fontSize: "0.8em" }}>
-          (end of file)
-        </td>
+        <td />
       </tr>
     );
   }

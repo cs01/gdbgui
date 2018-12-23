@@ -19,7 +19,7 @@ class FrameArguments extends React.Component {
     return (
       <ReactTable
         data={frame_args.map(this.render_frame_arg)}
-        style={{ fontSize: "0.9em", borderWidth: "0" }}
+        style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
       />
     );
   }
@@ -78,10 +78,10 @@ class Threads extends React.Component {
       content.push(
         <ReactTable
           data={row_data}
-          style={{ fontSize: "0.9em", marginBottom: 0 }}
+          style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
           key={thread.id}
-          header={["func", "file", "addr", "args"]}
-          classes={["table-bordered", "table-striped"]}
+          header={["fun", "file", "addr", "args"]}
+          classes={["table-striped"]}
         />
       );
       content.push(<br key={thread.id + "br"} />);

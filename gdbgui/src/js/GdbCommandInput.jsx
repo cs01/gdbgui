@@ -40,7 +40,7 @@ class GdbCommandInput extends React.Component {
       clear_console
     } = this.props;
     const interpreter = store.get("interpreter");
-    const message = `enter ${interpreter} command. To interrupt inferior, send SIGINT.`;
+    const message = `enter ${interpreter} command e.g., \`signal SIGINT\``;
     let input_value = current_command_input;
 
     return (
@@ -48,7 +48,7 @@ class GdbCommandInput extends React.Component {
         <table>
           <tbody>
             <tr>
-              <td>({interpreter})</td>
+              <td className='status'>{store.get("gdb_pid")} ({interpreter})</td>
               <td>
                 <input
                   ref={el => {

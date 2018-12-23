@@ -74,13 +74,13 @@ class FoldersView extends React.Component {
           <button className="btn btn-xs btn-default" onClick={this.collapse_all}>
             Collapse all
           </button>
-
-          <button
-            className={"btn btn-xs btn-default " + (can_reveal ? "" : "hidden")}
+          {can_reveal ? <button
+            className={"btn btn-xs btn-default"}
             onClick={() => this.reveal_path(store.get("fullname_to_render"))}
           >
             Reveal current file
-          </button>
+          </button> : null}
+
         </div>
 
         {store.get("source_file_paths").length ? (

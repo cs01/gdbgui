@@ -26,6 +26,10 @@ class FileSystem extends React.Component {
       onClickName = () => {
         this.props.onClickName(node);
       };
+    } else {
+      onClickName = () => {
+        this.props.onToggle(node);
+      };
     }
 
     return (

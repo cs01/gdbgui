@@ -54,8 +54,8 @@
 
 @supports (transform: scale(0)) {
 	.awesomplete > ul {
-		transition: .3s cubic-bezier(.4,.2,.5,1.4);
-		transform-origin: 1.43em -.43em;
+		/*transition: .3s cubic-bezier(.4,.2,.5,1.4);*/
+		/*transform-origin: 1.43em -.43em;*/
 	}
 
 	.awesomplete > ul[hidden],
@@ -63,7 +63,7 @@
 		opacity: 0;
 		transform: scale(0);
 		display: block;
-		transition-timing-function: ease;
+		/*transition-timing-function: ease;*/
 	}
 }
 

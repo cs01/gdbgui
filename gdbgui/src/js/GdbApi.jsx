@@ -251,6 +251,8 @@ const GdbApi = {
   },
   /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
+   no data to display
+   gdb mi output
    * validates command before sending, and updates the gdb console and status bar
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing

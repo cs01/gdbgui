@@ -11,3 +11,5 @@ gdbgui.spec
 *-link.dSYM
 *.pyc
 yarn-error.log
+/v
+.idea/

@@ -245,7 +245,7 @@ class GdbVariable extends React.Component {
     let val;
     if (obj.is_int) {
       val = (
-        <div className="inline">
+        <span className="inline">
           <span className="gdbVarValue">
             {Memory.make_addrs_into_links_react(obj._int_value_to_str_in_radix)}
             <button
@@ -259,7 +259,7 @@ class GdbVariable extends React.Component {
               base {obj._radix}
             </button>
           </span>
-        </div>
+        </span>
       );
     } else {
       val = _.isString(obj.value)
@@ -351,12 +351,12 @@ class GdbVariable extends React.Component {
 
           <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
 
-          <div className="right_help_icon_show_on_hover">
-            <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:
+          <span className="right_help_icon_show_on_hover">
+            <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />
             {tree}
             {plot_button}
             {delete_button}
-          </div>
+          </span>
 
           {plot_content}
         </li>
