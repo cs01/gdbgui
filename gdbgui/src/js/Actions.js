@@ -5,7 +5,22 @@ import Locals from "./Locals.jsx";
 import Memory from "./Memory.jsx";
 import constants from "./constants.js";
 import React from "react";
+import Util from "./Util";
 void React; // using jsx implicity uses React
+
+const parse_bin_and_args = user_input => {
+  let list_of_params = Util.string_to_array_safe_quotes(user_input),
+    binary = "",
+    args = [],
+    len = list_of_params.length;
+  if (len === 1) {
+    binary = list_of_params[0];
+  } else if (len > 1) {
+    binary = list_of_params[0];
+    args = list_of_params.slice(1, len);
+  }
+  return { binary: binary, args: args.join(" ") };
+}
 
 const Actions = {
   clear_program_state: function() {
@@ -125,7 +140,8 @@ const Actions = {
     store.set("modal_body", body);
     store.set("show_modal", true);
   },
-  set_gdb_binary_and_arguments(binary, args) {
+  set_gdb_binary_and_arguments(user_input) {
+    const { binary, args } = parse_bin_and_args(user_input);
     // remove list of source files associated with the loaded binary since we're loading a new one
     store.set("source_file_paths", []);
     store.set("language", "c_family");

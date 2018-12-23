@@ -112,11 +112,9 @@ class Collapser extends React.Component {
       <div className="collapser">
         <div className="pointer titlebar" onClick={this.toggle_visibility.bind(this)}>
           <span
-            className={`glyphicon titlebar glyphicon-chevron-${
+            className={`glyphicon titlebar chevron glyphicon-chevron-${
               this.state.collapsed ? "right" : "down"
-            }`}
-            style={{ margin: "0 4px" }}
-          />
+            }`}/>
           <span>{this.props.title}</span>
         </div>
 

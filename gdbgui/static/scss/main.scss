@@ -1,0 +1,14 @@
+@import "custom";
+$fa-font-path: "/static/fonts";
+@import '~@fortawesome/fontawesome-free/scss/fontawesome';
+@import '~@fortawesome/fontawesome-free/scss/solid';
+
+.modal_content {
+  padding: 20px;
+  background: white;
+  margin: auto;
+  border: 1px solid #888;
+  border-radius: 4px;
+  width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}

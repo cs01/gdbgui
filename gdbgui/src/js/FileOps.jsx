@@ -2,8 +2,8 @@ import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import constants from "./constants.js";
 import Actions from "./Actions.js";
-import React from "react"; // needed for jsx
-void React;
+// eslint-disable-next-line
+import React from "react";
 
 let debug_print;
 if (debug) {

@@ -37,7 +37,7 @@ class FileSystem extends React.Component {
         <li className="pointer">
           {indent}
           <span
-            className={"glyphicon  " + glyph}
+            className={`glyphicon chevron ${glyph}`}
             onClick={() => {
               this.props.onToggle(node);
             }}

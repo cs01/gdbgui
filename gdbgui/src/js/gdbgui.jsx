@@ -1,14 +1,19 @@
 /**
- * This is the entrypoint to the frontend applicaiton.
+ * This is the entrypoint to the frontend application.
  *
  * store (global state) is managed in a single location, and each time the store
  * changes, components are notified and update accordingly.
  *
  */
 
-/* global Split */
 /* global initial_data */
 /* global debug */
+
+import 'bootstrap';
+import 'jquery.flot'
+import Split from 'split.js'
+
+import '../../static/scss/main.scss'
 
 import ReactDOM from "react-dom";
 import React from "react";
@@ -30,6 +35,7 @@ import Settings from "./Settings.jsx";
 import ToolTip from "./ToolTip.jsx";
 import TopBar from "./TopBar.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
+import {step4} from "./TourGuide";
 
 const store_options = {
   immutable: false,
@@ -57,11 +63,12 @@ class Gdbgui extends React.PureComponent {
   }
   render() {
     return (
-      <div className="splitjs_container">
+      <div>
+        <i className="fas fa-igloo"/>
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle" style={{ paddingTop: "60px" }}>
-          <div id="folders_view" className="content" style={{ backgroundColor: "#333" }}>
+        <div id="middle">
+          <div id="folders_view" className="content">
             <FoldersView />
           </div>
 
@@ -74,30 +81,12 @@ class Gdbgui extends React.PureComponent {
           </div>
         </div>
 
-        <div
-          id="bottom"
-          className="split split-horizontal"
-          style={{ width: "100%", height: "100%" }}
-        >
+        <div id="bottom">
           <ToolTipTourguide
             step_num={4}
             position={"topleft"}
-            content={
-              <div>
-                <h5>You can view gdb's output here.</h5>
-                You usually don't need to enter commands here, but you have the option to
-                if there is something you can't do in the UI.
-              </div>
-            }
-          />
-
-          <div
-            id="bottom_content"
-            className="split content"
-            style={{ paddingBottom: "0px" /* for height of input */ }}
-          >
-            <GdbConsoleContainer />
-          </div>
+            content={step4}/>
+          <GdbConsoleContainer />
         </div>
 
         {/* below are elements that are only displayed under certain conditions */}
@@ -124,7 +113,7 @@ class Gdbgui extends React.PureComponent {
     if (debug) {
       console.warn(store.getUnwatchedKeys());
     }
-    // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
+    // Split the body into different panes using split.js (https://github.com/nathancahill/Split.js)
     let middle_panes_split_obj = Split(
       ["#folders_view", "#source_code_view", "#controls_sidebar"],
       {
@@ -172,4 +161,4 @@ class Gdbgui extends React.PureComponent {
   }
 }
 
-ReactDOM.render(<Gdbgui />, document.getElementById("gdbgui"));
+ReactDOM.render(<Gdbgui />, document.getElementById("gdbgui-application"));

@@ -2,7 +2,6 @@
  * A component to show/hide variable exploration when hovering over a variable
  * in the source code
  */
-
 import React from "react";
 import { store } from "statorgfc";
 import constants from "./constants.js";
@@ -16,17 +15,17 @@ class HoverVar extends React.Component {
 
   constructor() {
     super();
-
+    let b = $("body")
     // when hovering over a potential variable
-    $("body").on("mouseover", "#code_table span.n", HoverVar.mouseover_variable);
-    $("body").on("mouseleave", "#code_table span.n", HoverVar.mouseout_variable);
+    b.on("mouseover", "#code_table span.n", HoverVar.mouseover_variable);
+    b.on("mouseleave", "#code_table span.n", HoverVar.mouseout_variable);
 
-    $("body").on("mouseover", "#code_table span.nx", HoverVar.mouseover_variable);
-    $("body").on("mouseleave", "#code_table span.nx", HoverVar.mouseout_variable);
+    b.on("mouseover", "#code_table span.nx", HoverVar.mouseover_variable);
+    b.on("mouseleave", "#code_table span.nx", HoverVar.mouseout_variable);
 
     // when hovering over the hover var "tooltip"-like window
-    $("body").on("mouseenter", "#hovervar", HoverVar.mouseover_hover_window);
-    $("body").on("mouseleave", "#hovervar", HoverVar.mouseout_hover_window);
+    b.on("mouseenter", "#hovervar", HoverVar.mouseover_hover_window);
+    b.on("mouseleave", "#hovervar", HoverVar.mouseout_hover_window);
 
     store.connectComponentState(this, ["expressions"]);
   }

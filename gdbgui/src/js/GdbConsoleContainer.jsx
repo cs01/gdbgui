@@ -167,7 +167,7 @@ class GdbConsoleContainer extends React.Component {
     } = this.state;
 
     return (
-      <div id="console_container">
+      <div id="gdb_console_container">
         <GdbConsole
           console_entries={gdb_console_entries}
           on_sent_command_clicked={this.on_sent_command_clicked}

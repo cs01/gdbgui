@@ -165,8 +165,9 @@ class Memory extends React.Component {
             store.set("bytes_per_line", e.target.value);
           }}/>
         <span className="input-group-btn">
-            <button className="btn btn-primary">save</button>
-          </span>
+          {/*todo wouldn't it be nice if we made a setting for this?*/}
+          <button className="btn btn-primary">save</button>
+        </span>
       </div>
     </div>);
   }

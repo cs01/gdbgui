@@ -14,13 +14,13 @@ class GdbMiOutput extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, ["gdb_mi_output"]);
-    this._debounced_scroll_to_bottom = _.debounce(
-      this._scroll_to_bottom.bind(this),
-      300,
-      {
-        leading: true
-      }
-    );
+    // this._debounced_scroll_to_bottom = _.debounce(  // note this is annoying
+    //   this._scroll_to_bottom.bind(this),
+    //   300,
+    //   {
+    //     leading: true
+    //   }
+    // );
   }
   render() {
     return (
@@ -42,10 +42,10 @@ class GdbMiOutput extends React.Component {
     this.el = document.getElementById("gdb_mi_output");
   }
   componentDidUpdate() {
-    this._debounced_scroll_to_bottom();
+    // this._debounced_scroll_to_bottom(); // note this is annoying
   }
   _scroll_to_bottom() {
-    this.el.scrollTop = this.el.scrollHeight;
+    // this.el.scrollTop = this.el.scrollHeight;
   }
   static add_mi_output(mi_obj) {
     let new_str = JSON.stringify(mi_obj, null, 4)

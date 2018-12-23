@@ -11,6 +11,8 @@ import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import constants from "./constants.js";
 import Util from "./Util.js";
+import {step3} from "./TourGuide.js"
+import {step0} from "./TourGuide";
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -155,16 +157,7 @@ const menu = (
         top={"100%"}
         left={"-300px"}
         step_num={0}
-        content={
-          <div>
-            <h5>Welcome to gdbgui.</h5>
-            <p>
-              This guide can be shown at any time by clicking the menu button,
-              <span className="glyphicon glyphicon-menu-hamburger"> </span>, then clicking
-              "Show Guide".
-            </p>
-          </div>
-        }
+        content={step0}
       />
     </li>
   </ul>
@@ -231,30 +224,12 @@ class TopBar extends React.Component {
     return (
       <div
         role="group"
-        style={{ marginBottom: 6, height: 25, width: 250 }}
-        className="btn-group btn-group"
-      >
+        className="btn-group btn-group">
         <ToolTipTourguide
           step_num={3}
           position={"bottomleft"}
           onClick={e => e.stopPropagation()}
-          content={
-            <div>
-              <h5>
-                These buttons allow you to control execution of the target you are
-                debugging.
-              </h5>
-              <p>
-                Hover over these buttons to see a description of their action. For
-                example, the <span className="glyphicon glyphicon-repeat"/> button starts
-                (or restarts) a program from the beginning.
-              </p>
-              <p>
-                Each button has a keyboard shortcut. For example, you can press "r" to
-                start running.
-              </p>
-            </div>
-          }
+          content={step3}
         />
         <ControlButtons/>
       </div>
@@ -340,19 +315,37 @@ class TopBar extends React.Component {
     }
 
     return (
-      <div
-        id="top"
-        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}>
-        <div className="flexrow">
+      <div id="top-bar">
+        {/*<div className="container-fluid">
+          <div className="row">
+            <div className="col">
+              1 of 2
+            </div>
+            <div className="col">
+              2 of 2
+            </div>
+          </div>
+          <div className="row">
+            <div className="col">
+              1 of 3
+            </div>
+            <div className="col">
+              2 of 3
+            </div>
+            <div className="col">
+              3 of 3
+            </div>
+          </div>
+        </div>*/}
+        <div>
           <BinaryLoader initial_user_input={this.props.initial_user_input}/>
           {spinner}
           {reverse_checkbox}
-
           {this.get_controls()}
           {menu}
         </div>
 
-        <div style={{ marginTop: 3, whitespace: "nowrap" }} className="flexrow">
+        <div>
           <div
             role="group"
             style={{ height: "25px", margin: "0 10px" }}
@@ -415,20 +408,7 @@ class TopBar extends React.Component {
             title="Enter line number, then press enter"
             className="form-control dropdown-input jump-to-line"/>
 
-          <div
-            style={{
-              marginRight: 5,
-              marginLeft: 5,
-              marginTop: 5,
-              whiteSpace: "nowrap",
-              fontFamily: "monospace",
-              fontSize: "0.7em",
-              display: "flex",
-              overflow: "auto"
-            }}
-            className="lighttext">
-            <SourceCodeHeading/>
-          </div>
+          <SourceCodeHeading/>
         </div>
       </div>
     );

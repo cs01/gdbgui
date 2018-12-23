@@ -4,6 +4,7 @@
 
 import constants from "./constants.js";
 import GdbApi from "./GdbApi.jsx";
+import Actions from './Actions'
 
 const GlobalEvents = {
   init: function() {
@@ -38,6 +39,10 @@ const GlobalEvents = {
         GdbApi.click_continue_button(e.shiftKey);
       } else if (e.keyCode === constants.UP_BUTTON_NUM || char === "u") {
         GdbApi.click_return_button();
+      } else if (char === "l") {
+        let past_binaries = _.uniq(JSON.parse(localStorage.getItem("past_binaries")));
+        console.info(past_binaries)
+        Actions.set_gdb_binary_and_arguments(past_binaries[0])
       } else if (char === "r") {
         GdbApi.click_run_button();
       } else if (char === "m") {

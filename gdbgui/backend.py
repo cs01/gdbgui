@@ -7,7 +7,21 @@ https://github.com/cs01/gdbgui
 
 import argparse
 import binascii
+import json
+import logging
+import os
+import platform
+import re
+import shlex
+import signal
+import socket
+import sys
+import traceback
+import webbrowser
 from distutils.spawn import find_executable
+from functools import wraps
+
+import pygdbmi
 from flask import (
     Flask,
     session,
@@ -18,25 +32,11 @@ from flask import (
     redirect,
     abort,
 )
-from flask_socketio import SocketIO, emit
 from flask_compress import Compress
-from functools import wraps
-import json
-import logging
-import os
-import platform
-import pygdbmi
-from pygments.lexers import get_lexer_for_filename
+from flask_socketio import SocketIO, emit
 from pygdbmi.gdbcontroller import NoGdbProcessError
-import re
-import signal
-import shlex
-import sys
-import socket
-import traceback
-import webbrowser
+from pygments.lexers import get_lexer_for_filename
 from werkzeug.security import pbkdf2_hex
-
 
 pyinstaller_env_var_base_dir = "_MEIPASS"
 pyinstaller_base_dir = getattr(sys, "_MEIPASS", None)
@@ -252,7 +252,7 @@ def setup_backend(
                 debug=debug,
                 port=int(port),
                 host=host,
-                extra_files=get_extra_files(),
+                extra_files=get_watched_files(),
                 **kwargs
             )
         except KeyboardInterrupt:
@@ -468,23 +468,21 @@ def client_error(obj):
     return jsonify(obj), 400
 
 
-def get_extra_files():
-    """returns a list of files that should be watched by the Flask server
+def get_watched_files():
+    """
+    returns a list of files that should be watched by the Flask server
     when in debug mode to trigger a reload of the server
     """
-    FILES_TO_SKIP = ["src/gdbgui.js"]
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    extra_dirs = [THIS_DIR]
-    extra_files = []
-    for extra_dir in extra_dirs:
-        for dirname, _, files in os.walk(extra_dir):
-            for filename in files:
-                filepath = os.path.join(dirname, filename)
-                if os.path.isfile(filepath) and filepath not in extra_files:
-                    for skipfile in FILES_TO_SKIP:
-                        if skipfile not in filepath:
-                            extra_files.append(filepath)
-    return extra_files
+    skips = ['src/gdbgui.js', 'static/fonts']
+    cwd = os.path.dirname(os.path.abspath(__file__))
+    file_list_of_lists = [
+        [
+            os.path.join(root, f) for f in files if not any(x in os.path.join(root, f) for x in ['static/fonts'])
+        ]
+        for (root, _, files) in os.walk(cwd)
+    ]
+    # flatten 1-level deep list of lists
+    return [y for x in file_list_of_lists for y in x]
 
 
 def credentials_are_valid(username, password):
@@ -530,7 +528,6 @@ def gdbgui():
     add_csrf_token_to_session()
 
     THEMES = ["monokai", "light"]
-    # fmt: off
     initial_data = {
         "csrf_token": session["csrf_token"],
         "gdbgui_version": __version__,
@@ -548,7 +545,6 @@ def gdbgui():
         "signals": SIGNAL_NAME_TO_OBJ,
         "using_windows": USING_WINDOWS,
     }
-    # fmt: on
 
     return render_template(
         "gdbgui.html",

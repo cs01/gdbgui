@@ -1,5 +1,5 @@
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import FileOps from "./FileOps.jsx";
 import constants from "./constants.js";
 import SourceFileAutocomplete from "./SourceFileAutocomplete.jsx";
@@ -55,17 +55,17 @@ class FoldersView extends React.Component {
 
     return (
       <div>
-        <button
-          className="btn btn-xs btn-primary"
-          onClick={Actions.fetch_source_files}
-          style={{ marginLeft: "5px", marginTop: "5px" }}
-        >
-          Fetch source files
-        </button>
-
-        <div style={{ width: "100%" }}>
-          <SourceFileAutocomplete />
+        <div className="input-group input-group-sm mb-3">
+          <div className="input-group-prepend">
+            <button
+              onClick={Actions.fetch_source_files}
+              className="btn btn-outline-secondary">
+              Fetch files
+            </button>
+          </div>
+          <SourceFileAutocomplete className={'input-group'}/>
         </div>
+
         <div role="group" className="btn-group btn-group" style={{ padding: "4px" }}>
           <button className="btn btn-xs btn-default" onClick={this.expand_all}>
             Expand all
@@ -110,6 +110,7 @@ class FoldersView extends React.Component {
       </div>
     );
   }
+
   onClickName(node) {
     let curnode = node,
       path = [];
@@ -127,6 +128,7 @@ class FoldersView extends React.Component {
       FileOps.user_select_file_to_view(path.join("/"), 1);
     }
   }
+
   reveal_path(path) {
     if (!path) {
       return;
@@ -158,6 +160,7 @@ class FoldersView extends React.Component {
     }
     this.setState({ rootnode: this.state.rootnode, cursor: curnode });
   }
+
   update_filesystem_data(keys) {
     if (keys.indexOf("source_file_paths") === -1) {
       return;
@@ -220,6 +223,7 @@ class FoldersView extends React.Component {
     node.toggled = !node.toggled;
     this.setState({ rootnode: this.state.rootnode });
   }
+
   expand_all() {
     let callback = node => {
       node.toggled = true;
@@ -229,6 +233,7 @@ class FoldersView extends React.Component {
     }
     this.setState({ rootnode: this.state.rootnode });
   }
+
   collapse_all() {
     let callback = node => {
       node.toggled = false;
@@ -238,6 +243,7 @@ class FoldersView extends React.Component {
     }
     this.setState({ rootnode: this.state.rootnode });
   }
+
   _dfs(node, callback) {
     callback(node);
     if (node.children) {

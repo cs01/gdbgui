@@ -14,7 +14,7 @@ const pre_escape = string => {
 
 class GdbConsole extends React.Component {
   componentDidUpdate() {
-    this.scroll_to_bottom();
+    // this.scroll_to_bottom();
   }
   scroll_to_bottom() {
     this.console_end.scrollIntoView({

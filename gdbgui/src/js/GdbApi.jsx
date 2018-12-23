@@ -2,6 +2,7 @@
  * An object to manage the websocket connection to the python server that manages gdb,
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
+import io from 'socket.io-client'
 import { store } from "statorgfc";
 import Registers from "./Registers.jsx";
 import Memory from "./Memory.jsx";
@@ -31,7 +32,6 @@ if (debug) {
 const GdbApi = {
   init: function() {
     const TIMEOUT_MIN = 5;
-    /* global io */
     /* global initial_data */
     GdbApi.socket = io.connect(
       `/gdb_listener`,
@@ -251,8 +251,6 @@ const GdbApi = {
   },
   /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
-   no data to display
-   gdb mi output
    * validates command before sending, and updates the gdb console and status bar
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing

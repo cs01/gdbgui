@@ -7,6 +7,8 @@
     "globals":{
         "initial_data": true,
         "module": true,
+        "require": true,
+        "__dirname": true,
         "_": true,
         "moment": true
     },
