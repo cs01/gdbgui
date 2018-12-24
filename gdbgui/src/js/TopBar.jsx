@@ -361,7 +361,7 @@ class TopBar extends React.Component {
                   className="btn btn-primary"
                   title="Toggle file explorer visibility"
                   onClick={this.toggle_file_explorer}>
-                  {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
+                  {store.get("show_filesystem") ? "Hide filesystem" : "Show filesystem"}
                 </button>
 
                 <button
@@ -369,7 +369,7 @@ class TopBar extends React.Component {
                   type="button"
                   title="fetch disassembly"
                   className="btn btn-primary">
-                  <span>fetch disassembly</span>
+                  <span>Fetch disassembly</span>
                 </button>
 
                 {reload_button}
@@ -380,7 +380,7 @@ class TopBar extends React.Component {
             <div className="col-sm-auto">
               <div className="input-group input-group-sm">
                 <div className="input-group-prepend">
-                  <span className="input-group-text">goto line</span>
+                  <span className="input-group-text">Go to line</span>
                 </div>
                 <input
                   onKeyUp={onkeyup_jump_to_line}

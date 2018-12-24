@@ -45,6 +45,7 @@ class FoldersView extends React.Component {
     this.collapse_all = this.collapse_all.bind(this);
   }
 
+
   render() {
     let source_code_state = this.state.source_code_state,
       file_is_rendered =
@@ -52,6 +53,7 @@ class FoldersView extends React.Component {
         source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED,
       can_reveal = file_is_rendered && this.state.source_file_paths.length,
       hiding_entries = this.state.source_file_paths.length > this.max_filesystem_entries;
+    let known_files = store.get("source_file_paths").length
 
     return (
       <div>
@@ -59,48 +61,42 @@ class FoldersView extends React.Component {
           <div className="input-group-prepend">
             <button
               onClick={Actions.fetch_source_files}
-              className="btn btn-outline-secondary">
+              className="btn btn-primary">
               Fetch files
             </button>
           </div>
           <SourceFileAutocomplete className={'input-group'}/>
+
+          <div className="input-group-append">
+            <span className='input-group-text'>
+              Files found: {known_files}
+            </span>
+
+            <button className="btn btn-primary"
+                    title='expand all folders'
+                    onClick={this.expand_all}>
+              <span className='fa fa-expand'/>
+            </button>
+            <button className="btn btn-primary"
+                    title='collapse all folders'
+                    onClick={this.collapse_all}>
+              <span className='fa fa-compress'/>
+            </button>
+
+            {can_reveal ? <button
+              className={"btn btn-primary"}
+              onClick={() => this.reveal_path(store.get("fullname_to_render"))}>
+              <span className='fa fa-eye'/>
+            </button> : null}
+
+          </div>
         </div>
 
-        <div role="group" className="btn-group btn-group" style={{ padding: "4px" }}>
-          <button className="btn btn-xs btn-default" onClick={this.expand_all}>
-            Expand all
-          </button>
-
-          <button className="btn btn-xs btn-default" onClick={this.collapse_all}>
-            Collapse all
-          </button>
-          {can_reveal ? <button
-            className={"btn btn-xs btn-default"}
-            onClick={() => this.reveal_path(store.get("fullname_to_render"))}
-          >
-            Reveal current file
-          </button> : null}
-
-        </div>
-
-        {store.get("source_file_paths").length ? (
-          <p style={{ color: "white", padding: "4px" }}>
-            {store.get("source_file_paths").length} known files used to compile the
-            inferior program
-          </p>
-        ) : (
-          ""
-        )}
-
-        {hiding_entries ? (
-          <p style={{ color: "black", background: "orange", padding: "4px" }}>
-            Maximum entries in tree below is {this.max_filesystem_entries} (hiding{" "}
-            {store.get("source_file_paths").length - this.max_filesystem_entries}). All
-            files can still be searched for in the input above.
-          </p>
-        ) : (
-          ""
-        )}
+        {hiding_entries ? <p className='alert alert-warning'>
+          Maximum entries in tree below is {this.max_filesystem_entries} (hiding{" "}
+          {store.get("source_file_paths").length - this.max_filesystem_entries}). All
+          files can still be searched for in the input above.
+        </p> : null}
 
         <FileSystem
           rootnode={this.state.rootnode}

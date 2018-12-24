@@ -94,19 +94,9 @@ class Gdbgui extends React.PureComponent {
       <div>
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle">
-          <div id="folders_view" className="content">
-            <FoldersView />
-          </div>
-
-          <div id="source_code_view" className="content">
-            <MiddleLeft />
-          </div>
-
-          <div id="controls_sidebar" className="content" style={{ overflowX: "visible" }}>
-            <RightSidebar signals={initial_data.signals} debug={debug} />
-          </div>
-        </div>
+        <FoldersView />
+        <MiddleLeft />
+        <RightSidebar signals={initial_data.signals} debug={debug} />
 
         <nav className="fixed-bottom bg-light">
           <ToolTipTourguide

@@ -18,8 +18,12 @@ BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --c
 1. register_table_data is 10000 lines long; allow filtering
 1. add that stupid splitter thing back in (console, file explorer, code window, program stats)
 1. the dashboard template is busted
+1. / keymaps to focus load binary input
+1. ; keymaps to focus gdb command input 
 
 # fixed
+1. filesystem style with icons to match mime-types
+1. l keymaps to load binary
 1. nav bars stick on the top
 1. footer (nav bar) sticks to the bottom
 1. beautiful text (source code pro)

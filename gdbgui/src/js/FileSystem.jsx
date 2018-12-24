@@ -1,5 +1,57 @@
 import React from "react";
 
+const mime_types = {
+  // 'file':              /.*/g,
+  'word': /\.(docx?)$/,
+  'video': /\.(mp4|mov)$/,
+  // 'upload':         [/\.()$/],
+  'signature': /\.(pem)$/,
+  'prescription': /\.(rb)$/,
+  'powerpoint': /\.(ptx)$/,
+  'pdf': /\.(pdf)$/,
+  'medical-alt': /\.(log)$/,
+  'medical': /\.(txt)$/,
+  // 'invoice-dollar': [/\.()$/],
+  // 'invoice':        [/\.()$/],
+  // 'import':         [/\.()$/],
+  'image': /\.(jpe?g|png|svg)$/,
+  // 'export':         [/\.()$/],
+  'excel': /\.(xlsx?)$/,
+  'download': /\.()$/,
+  'csv': /\.(csv)$/,
+  // 'contract':       [/\.()$/],
+  'code': /\.(jsx?|html?|py|cp?p?|cxx)$/,
+  'support': /\.(pyc|hp?p?|hxx)$/,
+  'audio': /\.(mp3|ogg|wav)$/,
+  'archive': /\.(zip|tar|gz|xz|rar|bz2?)$/,
+}
+
+const fa_mime_icon = {
+  'file': 'fa-file',
+  'word': 'fa-file-word',
+  'video': 'fa-file-video',
+  'upload': 'fa-file-upload',
+  'signature': 'fa-file-signature',
+  'prescription': 'fa-file-prescription',
+  'powerpoint': 'fa-file-powerpoint',
+  'pdf': 'fa-file-pdf',
+  'medical-alt': 'fa-file-medical-alt',
+  'medical': 'fa-file-medical',
+  'invoice-dollar': 'fa-file-invoice-dollar',
+  'invoice': 'fa-file-invoice',
+  'import': 'fa-file-import',
+  'image': 'fa-file-image',
+  'export': 'fa-file-export',
+  'excel': 'fa-file-excel',
+  'download': 'fa-file-download',
+  'csv': 'fa-file-csv',
+  'contract': 'fa-file-contract',
+  'code': 'fa-file-code',
+  'support': 'fa-chess-rook',
+  'audio': 'fa-file-audio',
+  'archive': 'fa-file-archive',
+}
+
 class FileSystem extends React.Component {
   get_node_jsx(node, depth = 0) {
     if (!node) {
@@ -11,14 +63,21 @@ class FileSystem extends React.Component {
       if (!(node.children && node.toggled)) {
         return null;
       }
-      return <ul>{node.children.map(child => this.get_node_jsx(child, depth + 1))}</ul>;
+      return <ul className='list-unstyled'>{node.children.map(child => this.get_node_jsx(child, depth + 1))}</ul>;
     };
     let indent = "\u00A0\u00A0\u00A0".repeat(depth),
       glyph = null;
     let is_file = !node.children,
       is_dir = !is_file;
     if (is_dir) {
-      glyph = node.toggled ? "glyphicon-chevron-down" : "glyphicon-chevron-right";
+      glyph = node.toggled ? 'fa-chevron-down' : 'fa-chevron-right';
+    } else {
+      let mime_t = _.chain(mime_types)
+        .entries()
+        // eslint-disable-next-line
+        .filter(([_, r]) => node.name.match(r))
+        .value()[0][0]
+      glyph = fa_mime_icon[mime_t] || 'fa-file'
     }
 
     let onClickName = null;
@@ -34,15 +93,13 @@ class FileSystem extends React.Component {
 
     return (
       <React.Fragment key={this.nodecount}>
-        <li className="pointer">
+        <li>
           {indent}
-          <span
-            className={`glyphicon chevron ${glyph}`}
-            onClick={() => {
-              this.props.onToggle(node);
-            }}
-          />
-          <span onClick={onClickName}>{node.name}</span>
+          <span className={`cursor-pointer m-1 fa ${glyph}`}
+                onClick={() => {
+                  this.props.onToggle(node);
+                }}/>
+          <span className='cursor-pointer' onClick={onClickName}>{node.name}</span>
         </li>
         {get_child_jsx_for_node(node)}
       </React.Fragment>
@@ -52,8 +109,8 @@ class FileSystem extends React.Component {
   render() {
     this.nodecount = -1;
     return (
-      <div id="filesystem">
-        <ul style={{ color: "#ccc" }}>{this.get_node_jsx(this.props.rootnode)}</ul>
+      <div id='filesystem'>
+        <ul className='list-unstyled'>{this.get_node_jsx(this.props.rootnode)}</ul>
       </div>
     );
   }

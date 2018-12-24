@@ -1,6 +1,6 @@
 import React from "react";
 
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import constants from "./constants.js";
 
 class GdbCommandInput extends React.Component {
@@ -41,8 +41,6 @@ class GdbCommandInput extends React.Component {
     } = this.props;
     const interpreter = store.get("interpreter");
     const message = `enter ${interpreter} command e.g., \`signal SIGINT\``;
-    let input_value = current_command_input;
-
     return (
       <div className="input-group input-group-sm">
         <div className="input-group-prepend">
@@ -58,11 +56,11 @@ class GdbCommandInput extends React.Component {
           onChange={event => on_current_command_input_change(event.target.value)}
           autoComplete="on"
           placeholder={message}
-          value={input_value}
+          value={current_command_input}
           className="form-control dropdown-input"/>
         <div className="input-group-prepend">
           <button
-            className='btn btn-danger'
+            className='btn btn-outline-primary'
             onClick={clear_console}>
             <span className='fa fa-ban'/>
           </button>

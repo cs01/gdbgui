@@ -16,39 +16,62 @@ const help_text = "Enter file path to view, press enter";
 class SourceFileAutocomplete extends React.Component {
   constructor() {
     super();
-    store.subscribeToKeys(["source_file_paths"], this.store_change_callback.bind(this));
+    this.state = {
+      source_file_paths: [],
+      user_input: ''
+    };
+    store.subscribeToKeys(["source_file_paths"],
+      this.store_change_callback.bind(this));
   }
 
   store_change_callback() {
-    if (!_.isEqual(this.awesomplete_input._list, store.get("source_file_paths"))) {
-      this.awesomplete_input.list = store.get("source_file_paths");
-    }
+    // if (!_.isEqual(this.awesomplete_input._list, store.get("source_file_paths"))) {
+    //   this.awesomplete_input.list = store.get("source_file_paths");
+    // }
+    this.setState({ source_file_paths: store.get("source_file_paths") })
   }
 
 
   render() {
+
     return ([
+      <select
+
+        onKeyUp={this.keyup_source_file_input.bind(this)}
+        onChange={this.onchange_user_input.bind(this)}
+        value={this.state.user_input}
+
+        onClick={this.onclick_dropdown.bind(this)}
+        className="custom-select combobox-select">
+        {
+          this.state.source_file_paths.map((b, i) =>
+            <option key={i} value={b}>{b}</option>)
+        }
+      </select>,
       <input
+        onKeyUp={this.keyup_source_file_input.bind(this)}
+        onChange={this.onchange_user_input.bind(this)}
+        value={this.state.user_input}
+
         key={'multi-render-1'}
         id="source_file_input"
         autoComplete="off"
         placeholder={help_text}
         title={help_text}
-        onKeyUp={this.keyup_source_file_input.bind(this)}
         role="combobox"
         ref={el => (this.html_input = el)}
-        className="form-control"/>,
+        className="form-control"/>
+    ]);
+    /*
       <div
         key={'multi-render-2'}
         className="input-group-append">
         <button
           id="source_file_dropdown_button"
           type="button"
-          className="btn btn-outline-secondary dropdown-toggle"
-          onClick={this.onclick_dropdown.bind(this)}>
+          className="btn btn-outline-secondary dropdown-toggle">
         </button>
-      </div>
-    ]);
+      </div>*/
   }
 
   keyup_source_file_input(e) {
@@ -70,41 +93,49 @@ class SourceFileAutocomplete extends React.Component {
     }
   }
 
+  onchange_user_input(e) {
+    if (initial_data.using_windows) {
+      // replace backslashes with forward slashes when using windows
+      this.setState({ user_input: e.target.value.replace(/\\/g, "/") });
+    } else {
+      this.setState({ user_input: e.target.value });
+    }
+  }
+
   onclick_dropdown() {
     if (store.get("source_file_paths").length === 0) {
       // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
       // request that gdb populate this list.
       Actions.fetch_source_files();
-      return;
-    }
-
-    if (this.awesomplete_input.ul.childNodes.length === 0) {
-      this.awesomplete_input.evaluate();
-    } else if (this.awesomplete_input.ul.hasAttribute("hidden")) {
-      this.awesomplete_input.open();
     } else {
-      this.awesomplete_input.close();
+      // if (this.awesomplete_input.ul.childNodes.length === 0) {
+      //   this.awesomplete_input.evaluate();
+      // } else if (this.awesomplete_input.ul.hasAttribute("hidden")) {
+      //   this.awesomplete_input.open();
+      // } else {
+      //   this.awesomplete_input.close();
+      // }
     }
   }
 
   componentDidMount() {
     // initialize list of source files
     // eslint-disable-next-line
-    this.awesomplete_input = new Garbage_plete("#source_file_input", {
-      minChars: 0,
-      maxItems: 10000,
-      list: [],
-      sort: (a, b) => {
-        return a < b ? -1 : 1;
-      }
-    });
-
+    // this.awesomplete_input = new Garbage_plete("#source_file_input", {
+    //   minChars: 0,
+    //   maxItems: 10000,
+    //   list: [],
+    //   sort: (a, b) => {
+    //     return a < b ? -1 : 1;
+    //   }
+    // });
+    //
     // perform action when an item is selected
-    this.html_input.addEventListener("awesomplete-selectcomplete", function (e) {
-      let fullname = e.currentTarget.value;
-      FileOps.user_select_file_to_view(fullname, 1);
-    });
-    $('.awesomplete').addClass('input-group input-group-sm').css('width','60%')
+    // this.html_input.addEventListener("awesomplete-selectcomplete", function (e) {
+    //   let fullname = e.currentTarget.value;
+    //   FileOps.user_select_file_to_view(fullname, 1);
+    // });
+    // $('.awesomplete').addClass('input-group input-group-sm').css('width','60%')
   }
 }
 

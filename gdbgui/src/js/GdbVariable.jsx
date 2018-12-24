@@ -222,7 +222,7 @@ class GdbVariable extends React.Component {
         }
       }
 
-      child_tree = <ul key={mi_obj.exp}>{content}</ul>;
+      child_tree = <ul className='list-unstyled' key={mi_obj.exp}>{content}</ul>;
     } else {
       child_tree = "";
     }
@@ -341,7 +341,8 @@ class GdbVariable extends React.Component {
     }
 
     return (
-      <ul key={expression} className="varUL">
+      <ul className='list-unstyled'
+          key={expression}>
         <li className="varLI">
           <span className={toggle_classes} onClick={plusminus_click_callback}>
             {plus_or_minus} {expression}&nbsp;
