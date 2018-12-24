@@ -5,6 +5,7 @@ $console-bg: #292929;
 $console-default-font: $gray-600;
 $console-server-font: $cyan;
 $console-user-font: $green;
+$console-error-font: $red;
 
 .menu-item-icon {
   position: absolute;
@@ -48,7 +49,12 @@ select.custom-select.combobox-select {
 .console-line.user-input:hover {
   background-color: $black;
 }
+
 .console-line.user-input {
   color: $console-user-font;
   cursor: pointer;
+}
+
+.console-line.stderr {
+  color: $console-error-font;
 }

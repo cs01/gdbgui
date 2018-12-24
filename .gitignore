@@ -13,3 +13,4 @@ gdbgui.spec
 yarn-error.log
 /v
 .idea/
+gdbgui/static/js/build.js
