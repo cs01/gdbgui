@@ -35,7 +35,7 @@ class Expressions extends React.Component {
     ));
     if (content.length === 0) {
       content.push(
-        <span key="empty" className="placeholder">
+        <span key="empty" className="small text-info">
           no expressions in this context
         </span>
       );

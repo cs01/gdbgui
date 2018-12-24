@@ -231,25 +231,16 @@ class SourceCode extends React.Component {
    * example return value: mov $0x400684,%edi(00) main+8 0x0000000000400585
    */
   static _get_assm_content(key, assm, paused_addr) {
-    let opcodes = assm.opcodes ? (
-        <span className="instrContent">{`(${assm.opcodes})`}</span>
-      ) : (
-        ""
-      ),
+    let opcodes = assm.opcodes ? <span className="instrContent">{`(${assm.opcodes})`}</span> : null,
       instruction = Memory.make_addrs_into_links_react(assm.inst),
       func_name = assm["func-name"],
       offset = assm.offset,
       addr = assm.address,
       on_current_instruction = paused_addr === assm.address,
       cls = on_current_instruction ? "current_assembly_command" : "",
-      asterisk = on_current_instruction ? (
-        <span
-          className="glyphicon glyphicon-chevron-right"
-          style={{ width: "10px", display: "inline-block" }}
-        />
-      ) : (
-        <span style={{ width: "10px", display: "inline-block" }}> </span>
-      );
+      asterisk = <span
+        className="fa fa-chevron-right"
+        style={{visibility: on_current_instruction ? 'hidden' : 'visible'}}/>
     return (
       <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
         {asterisk} <MemoryLink addr={addr} style={{ paddingRight: "5px" }} />

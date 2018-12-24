@@ -97,7 +97,7 @@ const menu = (
       id="dropdownMenuButton"
       data-toggle="dropdown"
       aria-haspopup="true" aria-expanded="false">
-      <span className='fa fa-screwdriver'/>
+      <span className='fa fa-tools'/>
     </button>
     <div className="dropdown-menu">
       <li><a
@@ -284,10 +284,10 @@ class TopBar extends React.Component {
         <button
           onClick={this.toggle_assembly_flavor.bind(this)}
           type="button"
-          title={"Toggle between assembly flavors. The options are att or intel."}
+          title={"Toggle between assembly flavors"}
           className='btn btn-primary'>
           <span title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}>
-            {this.state.assembly_flavor}
+            {this.state.assembly_flavor === "att" ? "AT&T" : "Intel"}
           </span>
         </button>
       );
@@ -307,7 +307,7 @@ class TopBar extends React.Component {
         type="button"
         title="Erase file from local cache and re-fetch it"
         className={"btn btn-primary " + reload_button_disabled}>
-        <span>reload file</span>
+        <span>Reload file</span>
       </button>
     );
 
@@ -315,7 +315,7 @@ class TopBar extends React.Component {
       <div className="input-group input-group-sm"
            title={"when checked, always attempt to send --reverse to gdb commands (shift)"}>
         <div className="input-group-prepend">
-          <span className="input-group-text">reverse</span>
+          <span className="input-group-text">Reverse</span>
         </div>
         <div className="input-group-append">
           <div className="input-group-text">
@@ -330,9 +330,9 @@ class TopBar extends React.Component {
     );
 
     return (
-      <div className="sticky-top navbar-light bg-light">
+      <div className="sticky-top navbar-light bg-light p-2">
 
-        <div className="container-fluid">
+        <div className="container-fluid m-1">
           <div className="row">
             <div className="col-sm-auto">
               {menu}
@@ -353,9 +353,9 @@ class TopBar extends React.Component {
         </div>
 
 
-        <div className="container-fluid">
+        <div className="container-fluid m-1">
           <div className="row">
-            <div className="col-sm-auto">
+            <div className="col-auto">
               <div className="btn-group btn-group-sm">
                 <button
                   className="btn btn-primary"
@@ -377,7 +377,7 @@ class TopBar extends React.Component {
               </div>
             </div>
 
-            <div className="col-sm-auto">
+            <div className="col-auto">
               <div className="input-group input-group-sm">
                 <div className="input-group-prepend">
                   <span className="input-group-text">Go to line</span>
@@ -390,7 +390,7 @@ class TopBar extends React.Component {
               </div>
             </div>
 
-            <div className="col-sm-auto">
+            <div className="col-auto">
               <SourceCodeHeading/>
             </div>
           </div>

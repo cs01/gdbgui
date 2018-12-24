@@ -44,7 +44,7 @@ class Locals extends React.Component {
 
     if (content.length === 0) {
       return (
-        <span key="empty" className="placeholder">
+        <span key="empty" className="small text-info">
           no locals in this context
         </span>
       );

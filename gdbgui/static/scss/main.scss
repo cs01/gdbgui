@@ -26,6 +26,10 @@ select.custom-select.combobox-select {
   width: 6em;
 }
 
+.source-file-input {
+  flex-grow: 0.1;
+}
+
 #console {
   font-family: $font-family-monospace;
   background-color: $console-bg;
@@ -40,6 +44,7 @@ select.custom-select.combobox-select {
   border-collapse: separate;
   font-size: 11px;
 }
+
 
 .console-line {
   padding: 0;

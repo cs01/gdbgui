@@ -16,7 +16,7 @@ class FileLink extends React.Component {
     }
     if (this.props.fullname) {
       onclick = () => Actions.view_file(this.props.fullname, line);
-      cls = "pointer";
+      cls = "small text-info cursor-pointer";
     }
 
     let clipboard_content = null;

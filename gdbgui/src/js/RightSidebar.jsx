@@ -153,6 +153,7 @@ class RightSidebar extends React.Component {
 
     return (
       <div
+        className='col-sm-6'
         onMouseUp={onmouseup_in_parent_callback}
         onMouseMove={onmousemove_in_parent_callback}>
 

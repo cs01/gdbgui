@@ -7,7 +7,7 @@ import FileSystem from "./FileSystem.jsx";
 import Actions from "./Actions.js";
 
 const default_rootnode = {
-  name: 'Load inferior program, then click "Fetch source files" to populate this window',
+  name: 'Load inferior program, then click "Fetch files"',
   children: [],
   toggled: false
 };
@@ -32,7 +32,7 @@ class FoldersView extends React.Component {
     };
     store.connectComponentState(
       this,
-      ["source_code_state", "source_file_paths"],
+      ["source_code_state", "source_file_paths", "show_filesystem"],
       this.update_filesystem_data.bind(this)
     );
 
@@ -55,56 +55,53 @@ class FoldersView extends React.Component {
       hiding_entries = this.state.source_file_paths.length > this.max_filesystem_entries;
     let known_files = store.get("source_file_paths").length
 
-    return (
-      <div>
-        <div className="input-group input-group-sm">
-          <div className="input-group-prepend">
-            <button
-              onClick={Actions.fetch_source_files}
-              className="btn btn-primary">
-              Fetch files
-            </button>
-          </div>
-          <SourceFileAutocomplete className={'input-group'}/>
+    return this.state.show_filesystem ? <div className='col-sm-3'>
+      <div className="input-group input-group-sm">
+        <div className="input-group-prepend">
+          <button
+            onClick={Actions.fetch_source_files}
+            className="btn btn-primary">
+            Fetch files
+          </button>
+        </div>
+        <SourceFileAutocomplete className={'input-group'}/>
+      </div>
 
-          <div className="input-group-append">
+      {hiding_entries ? <p className='alert alert-warning'>
+        Maximum entries in tree below is {this.max_filesystem_entries} (hiding{" "}
+        {store.get("source_file_paths").length - this.max_filesystem_entries}). All
+        files can still be searched for in the input above.
+      </p> : null}
+
+      <div className='input-group input-group-sm'>
+        <div className="input-group-prepend">
             <span className='input-group-text'>
               Files found: {known_files}
             </span>
-
-            <button className="btn btn-primary"
-                    title='expand all folders'
-                    onClick={this.expand_all}>
-              <span className='fa fa-expand'/>
-            </button>
-            <button className="btn btn-primary"
-                    title='collapse all folders'
-                    onClick={this.collapse_all}>
-              <span className='fa fa-compress'/>
-            </button>
-
-            {can_reveal ? <button
-              className={"btn btn-primary"}
-              onClick={() => this.reveal_path(store.get("fullname_to_render"))}>
-              <span className='fa fa-eye'/>
-            </button> : null}
-
-          </div>
         </div>
-
-        {hiding_entries ? <p className='alert alert-warning'>
-          Maximum entries in tree below is {this.max_filesystem_entries} (hiding{" "}
-          {store.get("source_file_paths").length - this.max_filesystem_entries}). All
-          files can still be searched for in the input above.
-        </p> : null}
-
-        <FileSystem
-          rootnode={this.state.rootnode}
-          onToggle={this.onToggle}
-          onClickName={this.onClickName}
-        />
+        <div className="input-group-append">
+          <button className="btn btn-primary"
+                  title='expand all folders'
+                  onClick={this.expand_all}>
+            <span className='fa fa-expand'/>
+          </button>
+          <button className="btn btn-primary"
+                  title='collapse all folders'
+                  onClick={this.collapse_all}>
+            <span className='fa fa-compress'/>
+          </button>
+          {can_reveal ? <button
+            className={"btn btn-primary"}
+            onClick={() => this.reveal_path(store.get("fullname_to_render"))}>
+            <span className='fa fa-eye'/>
+          </button> : null}
+        </div>
       </div>
-    );
+
+      <FileSystem rootnode={this.state.rootnode}
+                  onToggle={this.onToggle}
+                  onClickName={this.onClickName}/>
+    </div> : null;
   }
 
   onClickName(node) {

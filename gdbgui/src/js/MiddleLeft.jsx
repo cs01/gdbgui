@@ -20,11 +20,13 @@ class MiddleLeft extends React.Component {
 
   render() {
     return (
-      <div id="code_container"
-           className={this.state.current_theme}
-           style={{ overflow: "auto", height: "100%" }}
-           ref={el => (this.source_code_container_node = el)}>
-        <SourceCode/>
+      <div className='col-sm-6'>
+        <div id="code_container"
+             className={this.state.current_theme}
+             style={{ overflow: "auto", height: "100%" }}
+             ref={el => (this.source_code_container_node = el)}>
+          <SourceCode/>
+        </div>
       </div>
     );
   }

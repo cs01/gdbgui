@@ -59,7 +59,7 @@ class SourceFileAutocomplete extends React.Component {
           title={help_text}
           role="combobox"
           ref={el => (this.html_input = el)}
-          className="form-control"/>
+          className="form-control source-file-input"/>
       </React.Fragment>);
     /*
       <div

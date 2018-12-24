@@ -1,22 +1,16 @@
-
 .wsp {
   white-space: pre;
 }
 
 div.breakpoint {
-  border: solid;
   cursor: pointer;
-  /* need top and bottom border so when hovering and showing border on row, there is no "jumping" */
-  border-width: 0;
-  border-top-width: 1px;
-  border-right-width: 1px;
-  border-bottom-width: 1px;
-  border-color: #f5f5f5; /* make border color the same as the background color */
+  border: 1px solid #f5f5f5;
+  border-left-width: 0;
 }
 
 .breakpoint td {
-  padding-top: 1px !important;
-  padding-bottom: 1px !important;
+  padding-top: 1px;
+  padding-bottom: 1px;
 }
 
 .breakpoint:hover {
@@ -37,7 +31,6 @@ div.breakpoint:hover div.breakpoint_trashcan,
   border-top-width: 1px;
   border-top-color: transparent;
   border-right-width: 1px;
-  border-bottom-width: 0;
   border-style: solid;
   border-right-color: #c7c7c7;
   padding-left: 10px;
@@ -47,8 +40,8 @@ div.breakpoint:hover div.breakpoint_trashcan,
   cursor: pointer;
 }
 
-/* the line number has its style changed if it has a breakpoint */
-.line_num.breakpoint, .line_num.disabled_breakpoint {
+.line_num.breakpoint,
+.line_num.disabled_breakpoint {
   color: black;
 }
 

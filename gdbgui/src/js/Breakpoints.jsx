@@ -104,7 +104,7 @@ class Breakpoint extends React.Component {
 
     if (b.is_parent_breakpoint) {
       function_jsx = (
-        <span className="placeholder">
+        <span className="small text-info">
           {info_glyph} parent breakpoint on inline, template, or ambiguous location
         </span>
       );
@@ -177,7 +177,7 @@ class Breakpoints extends React.Component {
     if (breakpoints_jsx.length) {
       return breakpoints_jsx;
     } else {
-      return <span className="placeholder">no breakpoints</span>;
+      return <span className="small text-info">no breakpoints</span>;
     }
   }
   static enable_or_disable_bkpt(checked, bkpt_num) {

@@ -67,7 +67,7 @@ class Registers extends React.Component {
       num_register_values = Object.keys(store.get("current_register_values")).length;
 
     if (this.state.inferior_program !== constants.inferior_states.paused) {
-      return <span className="placeholder">no data to display</span>;
+      return <span className="small text-info">no data to display</span>;
     }
 
     if (
@@ -140,7 +140,7 @@ class Registers extends React.Component {
         />
       );
     }
-    return <span className="placeholder">no data to display</span>;
+    return <span className="small text-info">no data to display</span>;
   }
 }
 
