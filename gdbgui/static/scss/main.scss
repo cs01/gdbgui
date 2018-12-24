@@ -1,11 +1,12 @@
 @import "custom";
 @import "typography";
+@import "coding";
 
 $console-bg: #292929;
-$console-default-font: $gray-600;
-$console-server-font: $cyan;
-$console-user-font: $green;
-$console-error-font: $red;
+$console-default-color: $gray-600;
+$console-server-color: $cyan;
+$console-user-color: $green;
+$console-error-color: $red;
 
 .menu-item-icon {
   position: absolute;
@@ -28,10 +29,16 @@ select.custom-select.combobox-select {
 #console {
   font-family: $font-family-monospace;
   background-color: $console-bg;
-  color: $console-default-font;
+  color: $console-default-color;
   overflow: auto;
   padding: 6px;
   height: 10em;
+}
+
+#code_table {
+  font-family: $font-family-monospace;
+  border-collapse: separate;
+  font-size: 11px;
 }
 
 .console-line {
@@ -42,21 +49,20 @@ select.custom-select.combobox-select {
 }
 
 .console-line.server-out {
-  color: $console-server-font;
+  color: $console-server-color;
 }
-
 
 .console-line.user-input:hover {
   background-color: $black;
 }
 
 .console-line.user-input {
-  color: $console-user-font;
+  color: $console-user-color;
   cursor: pointer;
 }
 
 .console-line.stderr {
-  color: $console-error-font;
+  color: $console-error-color;
 }
 
 .cursor-pointer {

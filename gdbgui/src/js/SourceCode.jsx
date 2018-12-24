@@ -49,12 +49,10 @@ class SourceCode extends React.Component {
 
   render() {
     return (
-      <div className={this.state.current_theme} style={{ height: "100%" }}>
+      <div className={this.state.current_theme}>
         <table
           id="code_table"
-          className={this.state.current_theme}
-          style={{ width: "100%" }}
-        >
+          className={this.state.current_theme}>
           <tbody id="code_body">{this.get_body()}</tbody>
         </table>
       </div>
@@ -223,8 +221,7 @@ class SourceCode extends React.Component {
         className={"line_num " + gutter_cls}
         onClick={() => {
           this.click_gutter(linenum);
-        }}
-      >
+        }}>
         <div>{linenum}</div>
       </td>
     );

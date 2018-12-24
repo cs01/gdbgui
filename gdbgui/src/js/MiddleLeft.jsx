@@ -2,7 +2,7 @@
  * The middle left div will be rendered with this content
  */
 
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import React from "react";
 import SourceCode from "./SourceCode.jsx";
 import FileOps from "./FileOps.jsx";
@@ -17,18 +17,18 @@ class MiddleLeft extends React.Component {
     this.onscroll_timeout = null;
     this.fetch_more_at_top_timeout = null;
   }
+
   render() {
     return (
-      <div
-        id="code_container"
-        className={this.state.current_theme}
-        style={{ overflow: "auto", height: "100%" }}
-        ref={el => (this.source_code_container_node = el)}
-      >
-        <SourceCode />
+      <div id="code_container"
+           className={this.state.current_theme}
+           style={{ overflow: "auto", height: "100%" }}
+           ref={el => (this.source_code_container_node = el)}>
+        <SourceCode/>
       </div>
     );
   }
+
   componentDidMount() {
     SourceCode.el_code_container = $("#code_container"); // todo: no jquery
 

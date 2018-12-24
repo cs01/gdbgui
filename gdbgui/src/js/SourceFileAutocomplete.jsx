@@ -33,35 +33,34 @@ class SourceFileAutocomplete extends React.Component {
 
 
   render() {
+    return (
+      <React.Fragment>
+        <select
+          onKeyUp={this.keyup_source_file_input.bind(this)}
+          onChange={this.onchange_user_input.bind(this)}
+          value={this.state.user_input}
 
-    return ([
-      <select
+          onClick={this.onclick_dropdown.bind(this)}
+          className="custom-select combobox-select">
+          {
+            this.state.source_file_paths.map((b, i) =>
+              <option key={i} value={b}>{b}</option>)
+          }
+        </select>
+        <input
+          onKeyUp={this.keyup_source_file_input.bind(this)}
+          onChange={this.onchange_user_input.bind(this)}
+          value={this.state.user_input}
 
-        onKeyUp={this.keyup_source_file_input.bind(this)}
-        onChange={this.onchange_user_input.bind(this)}
-        value={this.state.user_input}
-
-        onClick={this.onclick_dropdown.bind(this)}
-        className="custom-select combobox-select">
-        {
-          this.state.source_file_paths.map((b, i) =>
-            <option key={i} value={b}>{b}</option>)
-        }
-      </select>,
-      <input
-        onKeyUp={this.keyup_source_file_input.bind(this)}
-        onChange={this.onchange_user_input.bind(this)}
-        value={this.state.user_input}
-
-        key={'multi-render-1'}
-        id="source_file_input"
-        autoComplete="off"
-        placeholder={help_text}
-        title={help_text}
-        role="combobox"
-        ref={el => (this.html_input = el)}
-        className="form-control"/>
-    ]);
+          key={'multi-render-1'}
+          id="source_file_input"
+          autoComplete="off"
+          placeholder={help_text}
+          title={help_text}
+          role="combobox"
+          ref={el => (this.html_input = el)}
+          className="form-control"/>
+      </React.Fragment>);
     /*
       <div
         key={'multi-render-2'}
