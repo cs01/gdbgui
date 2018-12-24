@@ -4,10 +4,7 @@
 @import "~bootswatch/dist/darkly/bootswatch";
 
 $enable-shadows: true;
-
-/* customizes garbage-plete awesom(sic)plete */
-@import "~awesomplete/awesomplete.css";
-// todo add garbage plete code fixes here
+$spacer: 0; /* remove extra space, e.g., margin bottom tables */
 
 /* customizes animate css */
 @import "~animate.css/animate.min.css";

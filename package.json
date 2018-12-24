@@ -18,7 +18,6 @@
     "@typopro/web-source-code-pro": "^3.7.5",
     "animate.css": "^3.7.0",
     "autoprefixer": "^9.4.3",
-    "awesomplete": "^1.1.3",
     "babel-core": "^6.26.0",
     "babel-eslint": "^8.2.3",
     "babel-loader": "^7.1.4",

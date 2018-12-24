@@ -115,11 +115,8 @@ class Memory extends React.Component {
       ]);
     }
 
-    return <ReactTable
-      data={data}
-      header={["address", "hex", "char"]}
-      style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
-      classes={["table-striped"]}/>;
+    return <ReactTable data={data}
+                       header={["address", "hex", "char"]}/>;
   }
 
   render() {

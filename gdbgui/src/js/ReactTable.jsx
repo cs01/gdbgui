@@ -16,8 +16,9 @@ class TableRow extends React.Component {
 
 class ReactTable extends React.Component {
   static defaultProps = { header: [] };
+
   render_row(row_data, i) {
-    return <TableRow data={row_data} key={i} />;
+    return <TableRow data={row_data} key={i}/>;
   }
 
   render_head() {
@@ -31,11 +32,15 @@ class ReactTable extends React.Component {
   }
 
   render() {
-    let classes = ["table", "table-condensed"].concat(this.props.classes);
+    let classes = ['table',
+      'table-condensed',
+      'table-striped',
+      'table-hover',
+      'table-sm'].concat(this.props.classes);
     return (
       <table className={classes.join(" ")} style={this.props.style}>
         <thead>
-          <tr>{this.render_head()}</tr>
+        <tr>{this.render_head()}</tr>
         </thead>
         <tbody>{this.props.data.map(this.render_row)}</tbody>
       </table>

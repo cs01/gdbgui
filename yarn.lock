@@ -583,11 +583,6 @@ autoprefixer@^9.4.3:
     postcss "^7.0.6"
     postcss-value-parser "^3.3.1"
 
-awesomplete@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/awesomplete/-/awesomplete-1.1.3.tgz#85a69e76b7384ff877f690799c629dbb8e07fdf3"
-  integrity sha512-QU5vh75Q6CtK59aQd3fuoGMWExFCpiowGFpIOBF8dUSX5jfu/WfHoyESObBaXBSn2x1N9qLbYOtvWG1Ds1vBbg==
-
 aws-sign2@~0.7.0:
   version "0.7.0"
   resolved "https://registry.yarnpkg.com/aws-sign2/-/aws-sign2-0.7.0.tgz#b46e890934a9591f2d2f6f86d7e6a9f1b3fe76a8"

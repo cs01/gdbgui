@@ -1,9 +1,9 @@
 import React from "react";
 import ReactTable from "./ReactTable.jsx";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import Memory from "./Memory.jsx";
-import { FileLink } from "./Links.jsx";
+import {FileLink} from "./Links.jsx";
 import MemoryLink from "./MemoryLink.jsx";
 
 class FrameArguments extends React.Component {
@@ -17,10 +17,7 @@ class FrameArguments extends React.Component {
       frame_args = [];
     }
     return (
-      <ReactTable
-        data={frame_args.map(this.render_frame_arg)}
-        style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
-      />
+      <ReactTable data={frame_args.map(this.render_frame_arg)}/>
     );
   }
 }
@@ -49,7 +46,7 @@ class Threads extends React.Component {
 
   render() {
     if (this.state.threads.length <= 0) {
-      return <span className="placeholder" />;
+      return <span/>;
     }
 
     let content = [];
@@ -76,15 +73,11 @@ class Threads extends React.Component {
       }
       content.push(Threads.get_thread_header(thread, is_current_thread_being_rendered));
       content.push(
-        <ReactTable
-          data={row_data}
-          style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
-          key={thread.id}
-          header={["fun", "file", "addr", "args"]}
-          classes={["table-striped"]}
-        />
+        <ReactTable data={row_data}
+                    key={thread.id}
+                    header={["fun", "file", "addr", "args"]}/>
       );
-      content.push(<br key={thread.id + "br"} />);
+      content.push(<br key={thread.id + "br"}/>);
     }
     return <div>{content}</div>;
   }
@@ -145,6 +138,7 @@ class Threads extends React.Component {
       </span>
     );
   }
+
   static get_frame_row(
     frame,
     is_selected_frame,
@@ -158,7 +152,8 @@ class Threads extends React.Component {
 
     if (is_selected_frame) {
       // current frame, current thread
-      onclick = () => {};
+      onclick = () => {
+      };
       classes.push("bold");
       title = `this is the active frame of the selected thread (frame id ${frame_num})`;
     } else if (is_current_thread_being_rendered) {
@@ -181,9 +176,9 @@ class Threads extends React.Component {
       <span key={key} title={title} className={classes.join(" ")} onClick={onclick}>
         {frame.func}
       </span>,
-      <FileLink fullname={frame.fullname} file={frame.file} line={frame.line} />,
-      <MemoryLink addr={frame.addr} />,
-      <FrameArguments args={frame.args} />
+      <FileLink fullname={frame.fullname} file={frame.file} line={frame.line}/>,
+      <MemoryLink addr={frame.addr}/>,
+      <FrameArguments args={frame.args}/>
     ];
   }
 
@@ -215,6 +210,7 @@ class Threads extends React.Component {
     }
     return row_data;
   }
+
   static update_stack(stack) {
     store.set("stack", stack);
     store.set("paused_on_frame", stack[store.get("selected_frame_num") || 0]);
@@ -226,6 +222,7 @@ class Threads extends React.Component {
     store.set("current_assembly_address", store.get("paused_on_frame").addr);
     store.set("make_current_line_visible", true);
   }
+
   set_thread_id(id) {
     store.set("current_thread_id", parseInt(id));
   }

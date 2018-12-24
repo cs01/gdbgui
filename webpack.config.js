@@ -13,7 +13,6 @@ module.exports = {
   },
   plugins: [
     new webpack.ProvidePlugin({
-      Garbage_plete: 'awesomplete', /*todo remove this immediately*/
       vis: 'vis',
       $: 'jquery',
       jQuery: 'jquery',

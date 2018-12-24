@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import constants from "./constants.js";
 import ReactTable from "./ReactTable.jsx";
 import Memory from "./Memory.jsx";
@@ -25,6 +25,7 @@ class Registers extends React.Component {
       "can_fetch_register_values"
     ]);
   }
+
   static get_update_cmds() {
     let cmds = [];
     if (store.get("can_fetch_register_values") === true) {
@@ -48,20 +49,25 @@ class Registers extends React.Component {
     }
     return cmds;
   }
+
   static cache_register_names(names) {
     // filter out non-empty names
     store.set("register_names", names.filter(name => name));
   }
+
   static clear_register_name_cache() {
     store.set("register_names", []);
   }
+
   static clear_cached_values() {
     store.set("previous_register_values", {});
     store.set("current_register_values", {});
   }
+
   static inferior_program_exited() {
     Registers.clear_cached_values();
   }
+
   render() {
     let num_register_names = store.get("register_names").length,
       num_register_values = Object.keys(store.get("current_register_values")).length;
@@ -132,12 +138,8 @@ class Registers extends React.Component {
         ]);
       }
       return (
-        <ReactTable
-          data={register_table_data}
-          header={["name", "hex", "decimal", "desc"]}
-          style={{ fontSize: "0.9em", borderWidth: "0", marginBottom: 0 }}
-          classes={["table-striped"]}
-        />
+        <ReactTable data={register_table_data}
+                    header={["name", "hex", "decimal", "desc"]}/>
       );
     }
     return <span className="small text-info">no data to display</span>;

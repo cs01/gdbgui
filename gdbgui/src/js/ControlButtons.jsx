@@ -77,30 +77,26 @@ class ControlButtons extends React.Component {
           <span className="fa fa-sign-out-alt fa-rotate-270"/>
         </button>
 
-        <div role="group" className="btn-group btn-group-sm">
-          <button
-            id="next_instruction_button"
-            onClick={() => GdbApi.click_next_instruction_button()}
-            type="button"
-            title={
-              "Next machine instruction over function calls spa(m)" +
-              (initial_data.rr ? ". shift + m for reverse." : "")
-            }
-            className={btn_class}>
-            ni
-          </button>
-          <button
-            id="step_instruction_button"
-            onClick={() => GdbApi.click_step_instruction_button()}
-            type="button"
-            title={
-              "Step one machine instruction; steps into function calls (,)" +
-              (initial_data.rr ? ". shift + , for reverse." : "")
-            }
-            className={btn_class}>
-            <span className='fa fa-shoe-prints'/>
-          </button>
-        </div>
+        <button
+          id="next_instruction_button"
+          onClick={() => GdbApi.click_next_instruction_button()}
+          title={
+            "Next machine instruction over function calls (m)" +
+            (initial_data.rr ? ". shift + m for reverse." : "")
+          }
+          className={btn_class}>
+          <span className='fa fa-robot'/>
+        </button>
+        <button
+          id="step_instruction_button"
+          onClick={() => GdbApi.click_step_instruction_button()}
+          title={
+            "Step one machine instruction; steps into function calls (,)" +
+            (initial_data.rr ? ". shift + , for reverse." : "")
+          }
+          className={btn_class}>
+          <span className='fa fa-shoe-prints'/>
+        </button>
       </div>
     );
   }

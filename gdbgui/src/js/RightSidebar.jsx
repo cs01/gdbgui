@@ -154,6 +154,9 @@ class RightSidebar extends React.Component {
       height: "25px",
       fontSize: "1em"
     };
+    const section_is_visible = {
+      threads: true
+    }
 
     return (
       <div className={`col-${this.state.show_filesystem ? 4 : 6}`}
@@ -165,7 +168,16 @@ class RightSidebar extends React.Component {
           content={step5}
           step_num={5}/>
 
-        <Collapser title="threads" content={<Threads/>}/>
+        <button className="btn btn-primary btn-sm"
+                data-toggle="collapse"
+                data-target="#threads-panel">
+          threads
+        </button>
+        <div className={`collapse ${section_is_visible['threads'] ? "show": ""}`} id="threads-panel">
+          <div className="card card-body">
+            <Threads/>
+          </div>
+        </div>
 
         <Collapser id="locals" title="local variables" content={<Locals/>}/>
         <Collapser id="expressions" title="expressions" content={<Expressions/>}/>

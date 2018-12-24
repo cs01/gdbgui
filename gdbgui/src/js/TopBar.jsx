@@ -330,7 +330,7 @@ class TopBar extends React.Component {
     );
 
     return (
-      <div className="sticky-top navbar-light bg-light p-2">
+      <div className="sticky-top navbar-light bg-light py-1">
 
         <div className="container-fluid m-1">
           <div className="row">
