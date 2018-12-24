@@ -477,7 +477,9 @@ def get_watched_files():
     cwd = os.path.dirname(os.path.abspath(__file__))
     file_list_of_lists = [
         [
-            os.path.join(root, f) for f in files if not any(x in os.path.join(root, f) for x in ['static/fonts'])
+            os.path.join(root, f) for f in files
+            if not any(x in os.path.join(root, f)
+                       for x in ['static/fonts'])
         ]
         for (root, _, files) in os.walk(cwd)
     ]

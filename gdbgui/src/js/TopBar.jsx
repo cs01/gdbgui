@@ -11,8 +11,7 @@ import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import constants from "./constants.js";
 import Util from "./Util.js";
-import {step3} from "./TourGuide.js"
-import {step0} from "./TourGuide";
+import {step3, step0} from "./TourGuide.jsx";
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -83,7 +82,6 @@ let show_session_info = function () {
         <tr>
           <td>gdb version: {store.get("gdb_version")}</td>
         </tr>
-
         <tr>
           <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
         </tr>
@@ -94,17 +92,12 @@ let show_session_info = function () {
 };
 
 const menu = (
-  <ul
-    style={{ height: 25, padding: 0, paddingRight: "15px", fontSize: "1.3em" }}
-    className="nav navbar-nav navbar-right"
-  >
+  <ul className="nav navbar-nav navbar-right">
     <li id="menudropdown" className="dropdown">
-      <a
-        href="#"
-        data-toggle="dropdown"
-        role="button"
-        className="dropdown-toggle"
-      >
+      <a href="#"
+         data-toggle="dropdown"
+         role="button"
+         className="dropdown-toggle">
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
       </a>
       <ul className="dropdown-menu">
@@ -157,8 +150,7 @@ const menu = (
         top={"100%"}
         left={"-300px"}
         step_num={0}
-        content={step0}
-      />
+        content={step0}/>
     </li>
   </ul>
 );
@@ -229,8 +221,7 @@ class TopBar extends React.Component {
           step_num={3}
           position={"bottomleft"}
           onClick={e => e.stopPropagation()}
-          content={step3}
-        />
+          content={step3}/>
         <ControlButtons/>
       </div>
     );
@@ -248,11 +239,8 @@ class TopBar extends React.Component {
           onClick={this.toggle_assembly_flavor.bind(this)}
           type="button"
           title={"Toggle between assembly flavors. The options are att or intel."}
-          className={"btn btn-default btn-xs"}
-        >
-          <span
-            title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}
-          >
+          className={"btn btn-default btn-xs"}>
+          <span title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}>
             {this.state.assembly_flavor}
           </span>
         </button>
@@ -272,8 +260,7 @@ class TopBar extends React.Component {
         onClick={FileOps.refresh_cached_source_files}
         type="button"
         title="Erase file from local cache and re-fetch it"
-        className={"btn btn-default btn-xs " + reload_button_disabled}
-      >
+        className={"btn btn-default btn-xs " + reload_button_disabled}>
         <span>reload file</span>
       </button>
     );
@@ -300,15 +287,13 @@ class TopBar extends React.Component {
             "rr is known to support reverse debugging. Keyboard shortcuts go in " +
             "reverse when pressed with the shift key."
           }
-          style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
-        >
+          style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}>
           <input
             type="checkbox"
             checked={store.get("debug_in_reverse")}
             onChange={e => {
               store.set("debug_in_reverse", e.target.checked);
-            }}
-          />
+            }}/>
           reverse
         </label>
       );
@@ -316,27 +301,6 @@ class TopBar extends React.Component {
 
     return (
       <div id="top-bar">
-        {/*<div className="container-fluid">
-          <div className="row">
-            <div className="col">
-              1 of 2
-            </div>
-            <div className="col">
-              2 of 2
-            </div>
-          </div>
-          <div className="row">
-            <div className="col">
-              1 of 3
-            </div>
-            <div className="col">
-              2 of 3
-            </div>
-            <div className="col">
-              3 of 3
-            </div>
-          </div>
-        </div>*/}
         <div>
           <BinaryLoader initial_user_input={this.props.initial_user_input}/>
           {spinner}
@@ -392,8 +356,7 @@ class TopBar extends React.Component {
               onClick={() => FileOps.fetch_assembly_cur_line()}
               type="button"
               title="fetch disassembly"
-              className="btn btn-default btn-xs"
-            >
+              className="btn btn-default btn-xs">
               <span>fetch disassembly</span>
             </button>
 

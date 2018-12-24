@@ -16,14 +16,15 @@ import Registers from "./Registers.jsx";
 import Tree from "./Tree.js";
 import Threads from "./Threads.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
+import {step5} from "./TourGuide.jsx";
 
 let onmouseup_in_parent_callbacks = [],
   onmousemove_in_parent_callbacks = [];
 
-let onmouseup_in_parent_callback = function() {
+let onmouseup_in_parent_callback = function () {
   onmouseup_in_parent_callbacks.map(fn => fn());
 };
-let onmousemove_in_parent_callback = function(e) {
+let onmousemove_in_parent_callback = function (e) {
   onmousemove_in_parent_callbacks.map(fn => {
     fn(e);
   });
@@ -31,6 +32,7 @@ let onmousemove_in_parent_callback = function(e) {
 
 class Collapser extends React.Component {
   static defaultProps = { collapsed: false, id: "" };
+
   constructor(props) {
     super();
     this.state = {
@@ -48,17 +50,21 @@ class Collapser extends React.Component {
     onmouseup_in_parent_callbacks.push(this.onmouseup_resizer.bind(this));
     onmousemove_in_parent_callbacks.push(this.onmousemove_resizer.bind(this));
   }
+
   toggle_visibility() {
     this.setState({ collapsed: !this.state.collapsed });
   }
+
   onmousedown_resizer(e) {
     this._resizing = true;
     this._page_y_orig = e.pageY;
     this._height_when_clicked = this.collapser_box_node.clientHeight;
   }
+
   onmouseup_resizer() {
     this._resizing = false;
   }
+
   onmousemove_resizer(e) {
     if (this._resizing) {
       let dh = e.pageY - this._page_y_orig;
@@ -68,9 +74,11 @@ class Collapser extends React.Component {
       });
     }
   }
+
   onclick_restore_autosize() {
     this.setState({ autosize: true });
   }
+
   render() {
     let style = {
       height: this.state.autosize ? "auto" : this.state.height_px + "px",
@@ -114,7 +122,7 @@ class Collapser extends React.Component {
           <span
             className={`glyphicon titlebar chevron glyphicon-chevron-${
               this.state.collapsed ? "right" : "down"
-            }`}/>
+              }`}/>
           <span>{this.props.title}</span>
         </div>
 
@@ -145,41 +153,18 @@ class RightSidebar extends React.Component {
 
     return (
       <div
-        className="content"
         onMouseUp={onmouseup_in_parent_callback}
-        onMouseMove={onmousemove_in_parent_callback}
-      >
+        onMouseMove={onmousemove_in_parent_callback}>
+
         <ToolTipTourguide
           position={"topleft"}
-          content={
-            <div>
-              <h5>
-                This sidebar contains a visual, interactive representation of the state of
-                your program
-              </h5>
-              <p>
-                You can see which function the process is stopped in, explore variables,
-                and much more.
-              </p>
-              <p>
-                There is more to discover, but this should be enough to get you started.
-              </p>
-              <p>
-                Something missing? Found a bug?{" "}
-                <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on
-                github.
-              </p>
+          content={step5}
+          step_num={5}/>
 
-              <p>Happy debugging!</p>
-            </div>
-          }
-          step_num={5}
-        />
+        <Collapser title="threads" content={<Threads/>}/>
 
-        <Collapser title="threads" content={<Threads />} />
-
-        <Collapser id="locals" title="local variables" content={<Locals />} />
-        <Collapser id="expressions" title="expressions" content={<Expressions />} />
+        <Collapser id="locals" title="local variables" content={<Locals/>}/>
+        <Collapser id="expressions" title="expressions" content={<Expressions/>}/>
         <Collapser
           title="tree"
           content={
@@ -196,25 +181,27 @@ class RightSidebar extends React.Component {
                 placeholder="height (px)"
                 style={input_style}
               />
-              <div id={constants.tree_component_id} />
+              <div id={constants.tree_component_id}/>
             </div>
           }
         />
-        <Collapser id="memory" title="memory" content={<Memory />} />
-        <Collapser title="breakpoints" content={<Breakpoints />} />
+        <Collapser id="memory" title="memory" content={<Memory/>}/>
+        <Collapser title="breakpoints" content={<Breakpoints/>}/>
         <Collapser
           title="signals"
-          content={<InferiorProgramInfo signals={this.props.signals} />}
+          content={<InferiorProgramInfo signals={this.props.signals}/>}
         />
-        <Collapser title="registers" content={<Registers />} />
+        <Collapser title="registers" content={<Registers/>}/>
 
-        {this.props.debug ? <Collapser title="gdb mi output" content={<GdbMiOutput id="gdb_mi_output" />} />
-        /* otherwise */ : null}
+        {this.props.debug ? <Collapser title="gdb mi output" content={<GdbMiOutput id="gdb_mi_output"/>}/>
+          /* otherwise */ : null}
       </div>
     );
   }
+
   componentDidMount() {
     Tree.init();
   }
 }
+
 export default RightSidebar;

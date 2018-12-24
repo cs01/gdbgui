@@ -35,7 +35,7 @@ import Settings from "./Settings.jsx";
 import ToolTip from "./ToolTip.jsx";
 import TopBar from "./TopBar.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
-import {step4} from "./TourGuide";
+import {step4} from "./TourGuide.jsx";
 
 const store_options = {
   immutable: false,
@@ -64,7 +64,7 @@ class Gdbgui extends React.PureComponent {
   render() {
     return (
       <div>
-        <i className="fas fa-igloo"/>
+        <i className="fas fa-igloo"/> so cool it's ice cold.
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
         <div id="middle">

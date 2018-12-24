@@ -2,7 +2,7 @@ import React from "react";
 import constants from "./constants.js";
 import Actions from "./Actions.js";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
-import {step1, step2} from "./TourGuide";
+import {step1, step2} from "./TourGuide.jsx";
 
 const TARGET_TYPES = {
   file: "file",

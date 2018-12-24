@@ -60,3 +60,24 @@ export const step4 =
     You usually don't need to enter commands here, but you have the option to
     if there is something you can't do in the UI.
   </div>
+
+export const step5 =
+  <div>
+    <h5>
+      This sidebar contains a visual, interactive representation of the state of
+      your program
+    </h5>
+    <p>
+      You can see which function the process is stopped in, explore variables,
+      and much more.
+    </p>
+    <p>
+      There is more to discover, but this should be enough to get you started.
+    </p>
+    <p>
+      Something missing? Found a bug?{" "}
+      <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on
+      github.
+    </p>
+    <p>Happy debugging!</p>
+  </div>

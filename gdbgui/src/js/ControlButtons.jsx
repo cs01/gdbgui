@@ -19,9 +19,9 @@ class ControlButtons extends React.Component {
           id="run_button"
           onClick={() => GdbApi.click_run_button()}
           type="button"
-          title="Start inferior program from the beginning keyboard shortcut: r"
+          title="Restart inferior program (r)"
           className={btn_class}>
-          <span className="glyphicon glyphicon-repeat"/>
+          <span className="fa fa-redo-alt"/>
         </button>
 
         <button
@@ -29,19 +29,19 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_continue_button()}
           type="button"
           title={
-            "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
+            "Continue (c)" +
             (initial_data.rr ? ". shift + c for reverse." : "")
           }
           className={btn_class}>
-          <span className="glyphicon glyphicon-play"/>
+          <span className="fa fa-fighter-jet"/>
         </button>
 
         <button
           onClick={() => Actions.send_signal("SIGINT", this.state.gdb_pid)}
           type="button"
-          title="Send Interrupt signal (SIGINT) to gdb process to pause it and allow interaction with it"
+          title="Pause gdb"
           className={btn_class}>
-          <span className="glyphicon glyphicon-pause"/>
+          <span className="fa fa-pause"/>
         </button>
 
         <button
@@ -49,11 +49,11 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_next_button()}
           type="button"
           title={
-            "Step over next function call keyboard shortcut: n or right arrow" +
+            "Step over next function call (n or right arrow)" +
             (initial_data.rr ? ". shift + n for reverse." : "")
           }
           className={btn_class}>
-          <span className="glyphicon glyphicon-step-forward"/>
+          <span className="fa fa-step-forward"/>
         </button>
 
         <button
@@ -61,28 +61,28 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_step_button()}
           type="button"
           title={
-            "Step into next function call keyboard shortcut: s or down arrow" +
+            "Step into function call (s or down arrow)" +
             (initial_data.rr ? ". shift + s for reverse." : "")
           }
           className={btn_class}>
-          <span className="glyphicon glyphicon-arrow-down"/>
+          <span className="fa fa-sign-in-alt fa-rotate-90"/>
         </button>
 
         <button
           id="return_button"
           onClick={() => GdbApi.click_return_button()}
           type="button"
-          title="Step out of current function keyboard shortcut: u or up arrow"
+          title="Up one function stack frame (u or up arrow)"
           className={btn_class}>
-          <span className="glyphicon glyphicon-arrow-up"/>
+          <span className="fa fa-sign-out-alt fa-rotate-270"/>
         </button>
-        <div role="group" className="btn-group btn-group-xs">
+        <div role="group" className="btn-group btn-group-sm">
           <button
             id="next_instruction_button"
             onClick={() => GdbApi.click_next_instruction_button()}
             type="button"
             title={
-              "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
+              "Next machine instruction over function calls (m)" +
               (initial_data.rr ? ". shift + m for reverse." : "")
             }
             className="btn btn-default">
@@ -93,11 +93,11 @@ class ControlButtons extends React.Component {
             onClick={() => GdbApi.click_step_instruction_button()}
             type="button"
             title={
-              "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +
+              "Step one machine instruction; steps into function calls (,)" +
               (initial_data.rr ? ". shift + , for reverse." : "")
             }
             className="btn btn-default">
-            si
+            <span className='fa fa-shoe-prints'/>
           </button>
         </div>
       </React.Fragment>
