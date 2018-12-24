@@ -55,7 +55,7 @@ class FoldersView extends React.Component {
       hiding_entries = this.state.source_file_paths.length > this.max_filesystem_entries;
     let known_files = store.get("source_file_paths").length
 
-    return this.state.show_filesystem ? <div className='col-sm-3'>
+    return this.state.show_filesystem ? <div className='col-3'>
       <div className="input-group input-group-sm">
         <div className="input-group-prepend">
           <button

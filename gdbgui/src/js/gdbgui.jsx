@@ -95,14 +95,12 @@ class Gdbgui extends React.PureComponent {
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
         <div className="container-fluid">
-          <div className="row">
+          <div className="row no-gutters">
             <FoldersView />
             <MiddleLeft />
             <RightSidebar signals={initial_data.signals} debug={debug} />
           </div>
         </div>
-
-
 
         <nav className="fixed-bottom bg-light">
           <ToolTipTourguide

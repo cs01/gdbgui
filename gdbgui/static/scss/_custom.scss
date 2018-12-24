@@ -3,6 +3,8 @@
 @import "~bootstrap/scss/bootstrap";
 @import "~bootswatch/dist/darkly/bootswatch";
 
+$enable-shadows: true;
+
 /* customizes garbage-plete awesom(sic)plete */
 @import "~awesomplete/awesomplete.css";
 // todo add garbage plete code fixes here

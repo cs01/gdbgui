@@ -11,8 +11,10 @@ class MiddleLeft extends React.Component {
   constructor() {
     super();
     store.connectComponentState(this, [
+      "show_filesystem",
       "current_theme",
     ]);
+
     this.onscroll_container = this.onscroll_container.bind(this);
     this.onscroll_timeout = null;
     this.fetch_more_at_top_timeout = null;
@@ -20,7 +22,7 @@ class MiddleLeft extends React.Component {
 
   render() {
     return (
-      <div className='col-sm-6'>
+      <div className={`col-${this.state.show_filesystem ? 5 : 6}`}>
         <div id="code_container"
              className={this.state.current_theme}
              style={{ overflow: "auto", height: "100%" }}

@@ -64,3 +64,8 @@ td.assembly {
   padding-top: 0;
   white-space: nowrap;
 }
+
+.instruction-line {
+  min-width: 250px;
+  display: inline-block;
+}

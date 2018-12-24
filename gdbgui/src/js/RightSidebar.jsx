@@ -3,6 +3,7 @@
  * in the source code
  */
 
+import {store} from "statorgfc";
 import React from "react";
 
 import Breakpoints from "./Breakpoints.jsx";
@@ -107,8 +108,7 @@ class Collapser extends React.Component {
             className="rowresizer"
             onMouseDown={this.onmousedown_resizer}
             style={{ textAlign: "right" }}
-            title="Click and drag to resize height"
-          >
+            title="Click and drag to resize height">
             {" "}
             {reset_size_button}
           </div>
@@ -130,8 +130,7 @@ class Collapser extends React.Component {
           className={this.state.collapsed ? "hidden" : ""}
           id={this.props.id}
           style={style}
-          ref={n => (this.collapser_box_node = n)}
-        >
+          ref={n => (this.collapser_box_node = n)}>
           {this.props.content}
         </div>
 
@@ -142,6 +141,11 @@ class Collapser extends React.Component {
 }
 
 class RightSidebar extends React.Component {
+  constructor() {
+    super()
+    store.connectComponentState(this, ["show_filesystem"]);
+  }
+
   render() {
     let input_style = {
       display: "inline",
@@ -152,10 +156,9 @@ class RightSidebar extends React.Component {
     };
 
     return (
-      <div
-        className='col-sm-6'
-        onMouseUp={onmouseup_in_parent_callback}
-        onMouseMove={onmousemove_in_parent_callback}>
+      <div className={`col-${this.state.show_filesystem ? 4 : 6}`}
+           onMouseUp={onmouseup_in_parent_callback}
+           onMouseMove={onmousemove_in_parent_callback}>
 
         <ToolTipTourguide
           position={"topleft"}
