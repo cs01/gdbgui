@@ -14,8 +14,9 @@ const pre_escape = string => {
 
 class GdbConsole extends React.Component {
   componentDidUpdate() {
-    // this.scroll_to_bottom();
+    this.scroll_to_bottom();
   }
+
   scroll_to_bottom() {
     this.console_end.scrollIntoView({
       block: "end",
@@ -23,6 +24,7 @@ class GdbConsole extends React.Component {
       behavior: "smooth"
     });
   }
+
   backtrace_button_clicked = event => {
     event.preventDefault();
     GdbApi.backtrace();
@@ -34,7 +36,7 @@ class GdbConsole extends React.Component {
         case constants.console_entry_type.STD_OUT: {
           let escaped_value = pre_escape(entry.value);
           return (
-            <p key={index} className="otpt">
+            <p key={index} className="console-line">
               {escaped_value}
             </p>
           );
@@ -42,7 +44,7 @@ class GdbConsole extends React.Component {
         case constants.console_entry_type.STD_ERR: {
           let escaped_value = pre_escape(entry.value);
           return (
-            <p key={index} className="otpt stderr">
+            <p key={index} className="console-line stderr">
               {escaped_value}
             </p>
           );
@@ -50,14 +52,14 @@ class GdbConsole extends React.Component {
         case constants.console_entry_type.GDBGUI_OUTPUT: {
           let escaped_value = pre_escape(entry.value);
           return (
-            <p key={index} className="gdbguiConsoleOutput" title="gdbgui output">
+            <p key={index} className="console-line server-out" title="gdbgui output">
               {escaped_value}
             </p>
           );
         }
         case constants.console_entry_type.GDBGUI_OUTPUT_RAW: {
           return (
-            <p key={index} className="gdbguiConsoleOutput" title="gdbgui output">
+            <p key={index} className="console-line server-out" title="gdbgui output">
               {entry.value}
             </p>
           );
@@ -65,11 +67,9 @@ class GdbConsole extends React.Component {
         case constants.console_entry_type.SENT_COMMAND: {
           let escaped_value = pre_escape(entry.value);
           return (
-            <p
-              key={index}
-              className="otpt sent_command pointer"
-              onClick={() => this.props.on_sent_command_clicked(entry.value)}
-            >
+            <p key={index}
+               className="console-line user-input"
+               onClick={() => this.props.on_sent_command_clicked(entry.value)}>
               {escaped_value}
             </p>
           );
@@ -79,15 +79,13 @@ class GdbConsole extends React.Component {
           return (
             <p
               key={index}
-              className="otpt autocmplt pointer"
-              onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}
-            >
+              className="console-line"
+              onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}>
               <span>{escaped_value}</span>
               <span> </span>
               <span
                 className="label label-primary"
-                onClick={() => GdbApi.run_gdb_command(`help ${entry.value}`)}
-              >
+                onClick={() => GdbApi.run_gdb_command(`help ${entry.value}`)}>
                 help
               </span>
             </p>
@@ -118,8 +116,7 @@ class GdbConsole extends React.Component {
                 whiteSpace: "pre",
                 fontFamily: "arial",
                 fontSize: "1.2em"
-              }}
-            >
+              }}>
               <span style={{ fontWeight: "bold" }}>
                 Enter gdbgui ad-free license key to support the project and remove this
                 message.{" "}
@@ -127,35 +124,24 @@ class GdbConsole extends React.Component {
               <a
                 className="btn btn-default btn-xs"
                 style={{ color: "black" }}
-                href={constants.gdbgui_upgrade_url}
-              >
+                href={constants.gdbgui_upgrade_url}>
                 upgrade now.
               </a>
               <span> or </span>
               <a
                 className="btn btn-default btn-xs"
                 style={{ color: "black" }}
-                href={constants.gdbgui_donate_url}
-              >
+                href={constants.gdbgui_donate_url}>
                 {" "}
                 donate now.
               </a>
-
-              {/* <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-                                <ins className="adsbygoogle"
-                                     style={{display: 'block'}}
-                                     data-ad-client="ca-pub-9016047663812570"
-                                     data-ad-slot="3732200413"
-                                     data-ad-format="auto"></ins>
-                                <script>
-                                (adsbygoogle = window.adsbygoogle || []).push({});
-                              </script> */}
             </div>
           );
         }
       }
     });
   }
+
   render() {
     const { console_entries } = this.props;
 

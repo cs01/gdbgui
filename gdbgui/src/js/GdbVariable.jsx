@@ -305,7 +305,7 @@ class GdbVariable extends React.Component {
       tree = can_draw_tree ? (
         <span
           style={glyph_style}
-          className="glyphicon glyphicon-tree-deciduous pointer"
+          className="fa fa-seedling"
           onClick={() => GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)}
         />
       ) : (

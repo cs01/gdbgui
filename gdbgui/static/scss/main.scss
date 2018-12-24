@@ -1,18 +1,10 @@
 @import "custom";
+@import "typography";
 
-$fa-font-path: "/static/fonts";
-@import '~@fortawesome/fontawesome-free/scss/fontawesome';
-@import '~@fortawesome/fontawesome-free/scss/solid';
-
-.modal_content {
-  padding: 20px;
-  background: white;
-  margin: auto;
-  border: 1px solid #888;
-  border-radius: 4px;
-  width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
-}
+$console-bg: #292929;
+$console-default-font: $gray-600;
+$console-server-font: $cyan;
+$console-user-font: $green;
 
 .menu-item-icon {
   position: absolute;
@@ -26,4 +18,37 @@ $fa-font-path: "/static/fonts";
 
 select.custom-select.combobox-select {
   flex: 0.001;
+}
+
+.goto-line {
+  width: 6em;
+}
+
+#console {
+  font-family: $font-family-monospace;
+  background-color: $console-bg;
+  color: $console-default-font;
+  overflow: auto;
+  padding: 6px;
+  height: 10em;
+}
+
+.console-line {
+  padding: 0;
+  margin: 0;
+  line-height: 1.1em;
+  font-size: .9em;
+}
+
+.console-line.server-out {
+  color: $console-server-font;
+}
+
+
+.console-line.user-input:hover {
+  background-color: $black;
+}
+.console-line.user-input {
+  color: $console-user-font;
+  cursor: pointer;
 }

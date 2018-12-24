@@ -106,7 +106,6 @@ class BinaryLoader extends React.Component {
             className="form-control"
             placeholder={placeholder}
             list="past_binaries"
-            style={{ fontFamily: "courier" }}
             onKeyUp={this.onkeyup_user_input.bind(this)}
             onChange={this.onchange_user_inpu.bind(this)}
             value={this.state.user_input}/>

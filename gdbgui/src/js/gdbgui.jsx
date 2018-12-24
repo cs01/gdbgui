@@ -11,7 +11,7 @@
 
 import 'bootstrap';
 import 'jquery.flot'
-import Split from 'split.js'
+// import Split from 'split.js'
 
 import '../../static/scss/main.scss'
 
@@ -19,7 +19,6 @@ import ReactDOM from "react-dom";
 import React from "react";
 import { store, middleware } from "statorgfc";
 
-import Actions from "./Actions.js";
 import constants from "./constants.js";
 import GdbApi from "./GdbApi.jsx";
 import FileOps from "./FileOps.jsx";
@@ -56,15 +55,43 @@ if (debug) {
 window.store = store;
 
 class Gdbgui extends React.PureComponent {
+
   componentWillMount() {
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
   }
+
+  componentDidMount() {
+    if (debug) {
+      console.warn(store.getUnwatchedKeys());
+    }
+
+    // // Split the body into different panes using split.js (https://github.com/nathancahill/Split.js)
+    // let middle_panes_split_obj = Split(
+    //   ["#folders_view", "#source_code_view", "#controls_sidebar"],
+    //   {
+    //     gutterSize: 4,
+    //     minSize: 100,
+    //     cursor: "col-resize",
+    //     direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
+    //     sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 60, 39] // must add to 99
+    //   }
+    // );
+    //
+    // Split(["#middle", "#bottom"], {
+    //   gutterSize: 4,
+    //   cursor: "row-resize",
+    //   direction: "vertical", // vertical makes a top and bottom pane, and a divider running horizontally
+    //   sizes: [70, 30]
+    // });
+
+    // store.set("middle_panes_split_obj", middle_panes_split_obj);
+  }
+
   render() {
     return (
       <div>
-        <i className="fas fa-igloo"/> so cool it's ice cold.
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
         <div id="middle">
@@ -81,13 +108,13 @@ class Gdbgui extends React.PureComponent {
           </div>
         </div>
 
-        <div id="bottom">
+        <nav className="fixed-bottom bg-light">
           <ToolTipTourguide
             step_num={4}
             position={"topleft"}
             content={step4}/>
           <GdbConsoleContainer />
-        </div>
+        </nav>
 
         {/* below are elements that are only displayed under certain conditions */}
         <Modal />
@@ -108,56 +135,6 @@ class Gdbgui extends React.PureComponent {
         />
       </div>
     );
-  }
-  componentDidMount() {
-    if (debug) {
-      console.warn(store.getUnwatchedKeys());
-    }
-    // Split the body into different panes using split.js (https://github.com/nathancahill/Split.js)
-    let middle_panes_split_obj = Split(
-      ["#folders_view", "#source_code_view", "#controls_sidebar"],
-      {
-        gutterSize: 4,
-        minSize: 100,
-        cursor: "col-resize",
-        direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
-        sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 60, 39] // must add to 99
-      }
-    );
-
-    Split(["#middle", "#bottom"], {
-      gutterSize: 4,
-      cursor: "row-resize",
-      direction: "vertical", // vertical makes a top and bottom pane, and a divider running horizontally
-      sizes: [70, 30]
-    });
-
-    store.set("middle_panes_split_obj", middle_panes_split_obj);
-
-    // Fetch the latest version only if using in normal mode. If debugging, we tend to
-    // refresh quite a bit, which might make too many requests to github and cause them
-    // to block our ip? Either way it just seems weird to make so many ajax requests.
-    if (!store.get("debug")) {
-      // fetch version
-      $.ajax({
-        url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",
-        cache: false,
-        method: "GET",
-        success: data => {
-          store.set("latest_gdbgui_version", _.trim(data));
-          if (
-            initial_data.show_gdbgui_upgrades &&
-            TopBar.needs_to_update_gdbgui_version()
-          ) {
-            Actions.show_modal(`Update Available`, TopBar.get_upgrade_text());
-          }
-        },
-        error: data => {
-          void data;
-          store.set("latest_gdbgui_version", "(could not contact server)");
-        }
-      });
-    }
   }
 }
 

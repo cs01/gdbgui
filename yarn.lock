@@ -109,6 +109,11 @@
   resolved "https://registry.yarnpkg.com/@types/q/-/q-1.5.1.tgz#48fd98c1561fe718b61733daed46ff115b496e18"
   integrity sha512-eqz8c/0kwNi/OEHQfvIuJVLTst3in0e7uTKeuY+WL/zfKn0xVujOTp42bS/vUUokhK5P2BppLd9JXMOMHcgbjA==
 
+"@typopro/web-source-code-pro@^3.7.5":
+  version "3.7.5"
+  resolved "https://registry.yarnpkg.com/@typopro/web-source-code-pro/-/web-source-code-pro-3.7.5.tgz#c0be4421fa51d5c58554ed3746fbec12ef681c59"
+  integrity sha512-s3PqqgsHDDYJiRbh9Tvsw+jjEJryLqys9zvm0GNScsMVUc64Oo4j3K30iPIVwZND2r2fgGOdm7GX03+tpSIg1w==
+
 "@webassemblyjs/ast@1.5.12":
   version "1.5.12"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.5.12.tgz#a9acbcb3f25333c4edfa1fdf3186b1ccf64e6664"

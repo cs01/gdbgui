@@ -1,0 +1,602 @@
+
+/* customizes split.js */
+.split {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+
+  overflow-y: hidden;
+  overflow-x: hidden;
+}
+
+.content {
+  overflow: auto;
+  float: left;
+  height: 100%;
+  width: 100%;
+}
+
+.gutter {
+  background: #4a4a4a;
+}
+
+.gutter.gutter-horizontal {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+  cursor: col-resize;
+}
+
+.gutter.gutter-vertical {
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAFAQMAAABo7865AAAABlBMVEVHcEzMzMzyAv2sAAAAAXRSTlMAQObYZgAAABBJREFUeF5jOAMEEAIEEFwAn3kMwcB6I2AAAAAASUVORK5CYII=');
+  cursor: row-resize;
+}
+
+.split.split-horizontal, .gutter.gutter-horizontal {
+  height: 100%;
+  float: left;
+}
+
+.gutter {
+  background-color: #eee;
+
+  background-repeat: no-repeat;
+  background-position: 50%;
+}
+
+/* other gdbgui originals */
+
+
+body {
+  background: #f5f6f7;
+  color: grey;
+  border-color: grey;
+  overflow: hidden;
+  padding: 0;
+  height: 100%;
+}
+
+pre {
+  overflow: visible !important;
+}
+
+td {
+  vertical-align: top;
+}
+
+#top-bar {
+  position: absolute;
+}
+
+.flip180 {
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.inline {
+  display: inline;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.pre {
+  white-space: pre;
+}
+
+.stderr {
+  color: #ff3434;
+}
+
+.monospace {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+.memadr, .memadr_react { /* todo - migrate everything to react, then rename memadr_react to memadr  */
+  color: #489ce4;
+  text-decoration: none;
+}
+
+.lighttext {
+  color: #4a4a4a;
+}
+
+.glyphicon {
+  color: #848484;
+  font-size: 10px;
+}
+
+.visibility_toggler {
+  cursor: pointer;
+}
+
+.placeholder {
+  color: #ccc;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-style: italic;
+  font-size: 12px;
+}
+
+.placeholder.reset-height {
+  position: absolute;
+  top: 0;
+  right: 8px;
+  font-size: 8px;
+}
+
+.collapser {
+  position: relative;
+}
+
+.flex {
+  display: flex;
+}
+
+.flexcol {
+  display: flex;
+  flex-direction: column;
+}
+
+.titlebar {
+  font-size: 12px;
+  color: #76b7ff;
+  background-color: #333333;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.collapser:hover .rowresizer {
+  cursor: row-resize;
+  height: 10px;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+}
+
+.collapser .rowresizer {
+  height: 10px;
+  width: 100%;
+}
+
+.sent_command {
+  color: #00d8ff;
+}
+
+.sent_command:hover, .autocmplt:hover {
+  /* lighten background */
+  background-color: rgba(255, 255, 255, 0.1)
+}
+
+.disabled {
+  background-color: lightgrey;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.margin_sm {
+  margin: 2px;
+}
+
+.highlight, .highlight .memadr, .highlight .memadr_react {
+  background: rgb(15, 225, 255);
+  color: black;
+  padding: 2px;
+  border-radius: 3px;
+}
+
+div.breakpoint {
+  border: solid;
+  cursor: pointer;
+  /* need top and bottom border so when hovering and showing border on row, there is no "jumping" */
+  border-width: 0;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-color: #f5f5f5; /* make border color the same as the background color */
+}
+
+.breakpoint td {
+  padding-top: 1px !important;
+  padding-bottom: 1px !important;
+}
+
+.breakpoint:hover {
+  background-color: #3c3c3c;
+}
+
+.breakpoint_trashcan, .right_help_icon_show_on_hover {
+  margin: 0 28px;
+}
+
+div.breakpoint:hover div.breakpoint_trashcan,
+.varLI:hover .right_help_icon_show_on_hover {
+}
+
+.line_num {
+  width: 50px;
+  border-width: 0;
+  border-top-width: 1px;
+  border-top-color: transparent;
+  border-right-width: 1px;
+  border-bottom-width: 0;
+  border-style: solid;
+  border-right-color: #c7c7c7;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 0.9em;
+  color: #ababab;
+  cursor: pointer;
+}
+
+/* the line number has its style changed if it has a breakpoint */
+.line_num.breakpoint, .line_num.disabled_breakpoint {
+  color: black;
+}
+
+.line_num.breakpoint {
+  background: #33cdff !important;
+  border-style: solid;
+  /*border-top-width: 1px;*/
+  border-right-width: 0;
+  /*border-bottom-width: 1px;*/
+  border-left-width: 0;
+  border-color: transparent;
+}
+
+.line_num.disabled_breakpoint {
+  background: #ffd6d7 !important;
+}
+
+td.assembly {
+  padding-bottom: 0;
+  padding-top: 0;
+  white-space: nowrap;
+}
+
+/* instruction content */
+.instrContent {
+  min-width: 250px;
+  display: inline-block;
+}
+
+#code_table {
+  font-family: monospace;
+  border-collapse: separate;
+  font-size: 11px;
+}
+
+.srccode td {
+  padding-left: 3px;
+  padding-bottom: 0;
+  padding-top: 0;
+  border-style: solid;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 0;
+  border-color: transparent;
+}
+
+td.line_num {
+  border-style: solid;
+  border-right-width: 1px;
+  border-top-width: 0;
+  border-bottom-width: 0;
+  border-left-width: 0;
+  border-right-color: #d4d4d4;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+/* wsp == whitespace. Needed to preserve leading whitespace.
+    this span wraps syntax-highlighted source code */
+.wsp {
+  white-space: pre;
+}
+
+.current_assembly_command {
+  font-weight: bold;
+}
+
+.padding_left {
+  padding-left: 5px;
+}
+
+.loc {
+  height: 18px
+}
+
+.paused_on_line {
+  border-width: 0;
+}
+
+.dropdown-btn {
+  vertical-align: top;
+  height: 30px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+#memory table {
+  font-family: monospace;
+}
+
+.memory_char:empty.memory_char:after {
+  content: '?'; /* did you mean for this to be a question mark? */
+  color: blue;
+}
+
+/* specific styling for ids or components */
+#always_on_top {
+  position: fixed;
+  top: 0;
+  margin-top: 0;
+  width: 100%;
+  border-bottom: black;
+  border-style: solid;
+  border-width: 0;
+  z-index: 1000;
+  background: #f1f1f1;
+}
+
+#gdb_console_container {
+}
+
+#filesystem ul,
+#filesystem li {
+  listStyleType: none;
+  padding: 0;
+}
+
+#gdb_command_input, #gdb_command_input .gdb_command_input {
+  height: 30px;
+  border-width: 0;
+  background-color: #3c3c3c;
+  color: #f9f9f9;
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+#gdb_command_input {
+  width: 100%;
+  height: 30px;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+#gdb_command_input .status {
+  background-color: #121212;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+#gdb_command_input tr td:nth-child(2) {
+  width: 100%;
+}
+
+#gdb_command_input tr td:nth-child(3) {
+  width: 15px;
+  vertical-align: middle;
+  padding-right: 10px;
+}
+
+#gdb_command_input .gdb_command_input:focus {
+  outline-color: transparent;
+  box-shadow: none;
+}
+
+.fullscreen_modal {
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.8);
+  overflow: auto;
+}
+
+.blur {
+  filter: blur(3px);
+}
+
+#gdb_settings_modal {
+  width: 800px;
+  padding: 40px;
+  z-index: 120;
+  background: white;
+  max-height: 85%;
+  overflow: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.modal_content {
+  padding: 20px;
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  background: white;
+  margin: auto;
+  border: 1px solid #888;
+  border-radius: 4px;
+  width: 500px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}
+
+#hovervar {
+  background: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  padding: 6px;
+  border: solid 1px #989898;
+  border-radius: 4px;
+  /* http://www.cssmatic.com/box-shadow */
+  -webkit-box-shadow: 9px 10px 31px 0 rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 9px 10px 31px 0 rgba(0, 0, 0, 0.75);
+  box-shadow: 9px 10px 31px 0 rgba(0, 0, 0, 0.75);
+}
+
+.otpt {
+  min-height: 1em;
+  margin: 2px;
+  white-space: pre;
+}
+
+.clear-gdb-mi {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 8px;
+  height: 16px;
+}
+
+.gdbguiConsoleOutput {
+  color: orange;
+  min-height: 1em;
+  margin: 2px;
+  white-space: pre;
+}
+
+#gdb_mi_output {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+  overflow: auto;
+  font-size: 0.9em;
+  height: 300px;
+}
+
+/* styling for "Expressions" component */
+#expressions li, #locals li, #hovervar li {
+  list-style: none;
+}
+
+#expressions, #locals, #hovervar {
+  white-space: nowrap;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+#expressions, #locals {
+  overflow: auto;
+}
+
+.varLI .btn-radix {
+  margin: 0 0 0 5px;
+}
+
+.varLI:hover .btn-radix {
+  display: inline !important;
+}
+
+ul.varUL {
+  padding-left: 0;
+  padding-top: 0;
+  border: 0;
+  margin: 0;
+}
+
+/* Show type of variable in lighter text */
+.var_type {
+  color: #a0a0a0;
+  margin-left: 5px;
+  font-style: italic;
+}
+
+.plot {
+  width: 300px;
+  height: 200px;
+  display: visible;
+}
+
+#plot_coordinate_tooltip {
+  position: fixed;
+  display: none;
+  border: 1px solid #828282;
+  padding: 2px;
+  background-color: #f5f5f5;
+}
+
+#threads ul {
+  list-style: none;
+  padding: 0;
+}
+
+#memory table {
+  font-size: 0.9em;
+}
+
+/* Make refresh icon spin - http://www.bootply.com/128062*/
+.glyphicon-refresh-animate {
+  -animation: spin .7s infinite linear;
+  -webkit-animation: webkit-spin .7s infinite linear;
+}
+
+@-webkit-keyframes webkit-spin {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+.jump-to-line {
+  width: 50px;
+  height: 22px;
+  margin-left: 2px;
+}
+
+.top-bar-text {
+  font-size: 12px;
+  line-height: 25px;
+}
+
+input::-webkit-calendar-picker-indicator {
+  display: none;
+}
+
+.table > tbody > tr > td {
+  border: 0;
+}
+
+label {
+  font-weight: normal;
+}
+
+.le-tooltip {
+  border-radius: 3px;
+}
+
+.open > .dropdown-menu {
+  overflow: auto;
+  max-height: 250px;
+}
+
+.table-striped>tbody>tr:nth-of-type(odd) {
+  background-color: #3c3c3c;
+}
+
+.navbar-nav>li>.dropdown-menu {
+  max-height: initial;
+}
+
+.chevron {
+  margin: 0 4px;
+}

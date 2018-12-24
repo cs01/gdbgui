@@ -44,35 +44,29 @@ class GdbCommandInput extends React.Component {
     let input_value = current_command_input;
 
     return (
-      <div id="gdb_command_input">
-        <table>
-          <tbody>
-            <tr>
-              <td className='status'>{store.get("gdb_pid")} ({interpreter})</td>
-              <td>
-                <input
-                  ref={el => {
-                    this.command_input_element = el;
-                  }}
-                  onKeyDown={this.on_command_input_key_down}
-                  onChange={event => on_current_command_input_change(event.target.value)}
-                  className="form-control dropdown-input gdb_command_input"
-                  type="text"
-                  autoComplete="on"
-                  placeholder={message}
-                  value={input_value}
-                />
-              </td>
-              <td>
-                <span
-                  onClick={clear_console}
-                  className="glyphicon glyphicon-ban-circle clear_console"
-                  title="clear console"
-                />
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div className="input-group input-group-sm">
+        <div className="input-group-prepend">
+            <span className="input-group-text" id="inputGroup-sizing-sm">
+              {store.get("gdb_pid")} ({interpreter})
+            </span>
+        </div>
+        <input
+          ref={el => {
+            this.command_input_element = el;
+          }}
+          onKeyDown={this.on_command_input_key_down}
+          onChange={event => on_current_command_input_change(event.target.value)}
+          autoComplete="on"
+          placeholder={message}
+          value={input_value}
+          className="form-control dropdown-input"/>
+        <div className="input-group-prepend">
+          <button
+            className='btn btn-danger'
+            onClick={clear_console}>
+            <span className='fa fa-ban'/>
+          </button>
+        </div>
       </div>
     );
   }

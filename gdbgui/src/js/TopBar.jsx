@@ -9,7 +9,6 @@ import FileOps from "./FileOps.jsx";
 import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import constants from "./constants.js";
-import Util from "./Util.js";
 import {step0, step3} from "./TourGuide.jsx";
 
 let onkeyup_jump_to_line = e => {
@@ -242,26 +241,26 @@ class TopBar extends React.Component {
   }
 
   toggle_file_explorer() {
-    let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
-      file_explorer_size = middle_pane_sizes[0],
-      source_size = middle_pane_sizes[1],
-      sidebar_size = middle_pane_sizes[2],
-      new_file_explorer_size,
-      new_source_size,
-      new_sidebar_size;
+    // let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
+    //   file_explorer_size = middle_pane_sizes[0],
+    //   source_size = middle_pane_sizes[1],
+    //   sidebar_size = middle_pane_sizes[2],
+    //   new_file_explorer_size,
+    //   new_source_size,
+    //   new_sidebar_size;
 
     if (store.get("show_filesystem")) {
       // hide it since it's shown right now
-      new_file_explorer_size = 0;
-      new_source_size = source_size + file_explorer_size / 2;
-      new_sidebar_size = sidebar_size + file_explorer_size / 2;
+      // new_file_explorer_size = 0;
+      // new_source_size = source_size + file_explorer_size / 2;
+      // new_sidebar_size = sidebar_size + file_explorer_size / 2;
     } else {
-      new_file_explorer_size = 30;
-      new_source_size = Math.max(
-        30,
-        source_size - new_file_explorer_size / 2
-      );
-      new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
+      // new_file_explorer_size = 30;
+      // new_source_size = Math.max(
+      //   30,
+      //   source_size - new_file_explorer_size / 2
+      // );
+      // new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
     }
 
     store.set("show_filesystem", !store.get("show_filesystem"));
@@ -271,7 +270,7 @@ class TopBar extends React.Component {
     ); // save this for next session
     store
       .get("middle_panes_split_obj")
-      .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
+      // .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
   }
 
   render() {
@@ -387,7 +386,7 @@ class TopBar extends React.Component {
                   onKeyUp={onkeyup_jump_to_line}
                   autoComplete="on"
                   title="Enter line number, then press enter"
-                  className="form-control"/>
+                  className="form-control goto-line"/>
               </div>
             </div>
 
@@ -398,19 +397,6 @@ class TopBar extends React.Component {
         </div>
       </div>
     );
-  }
-
-  static needs_to_update_gdbgui_version() {
-    // to actually check each value:
-    try {
-      return Util.is_newer(
-        store.get("latest_gdbgui_version"),
-        store.get("gdbgui_version")
-      );
-    } catch (err) {
-      console.error(err);
-      return true;
-    }
   }
 }
 

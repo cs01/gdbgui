@@ -1,0 +1,22 @@
+
+$fa-font-path: "/static/fonts";
+
+@import '~@fortawesome/fontawesome-free/scss/fontawesome';
+@import '~@fortawesome/fontawesome-free/scss/solid';
+
+
+/* TypoPRO Source Code Pro */
+@font-face {
+  font-family:  'TypoPRO Source Code Pro';
+  src:          url('/static/fonts/TypoPRO-SourceCodePro-Regular.eot');
+  src:          local('*'),
+  url('/static/fonts/TypoPRO-SourceCodePro-Regular.eot?#iefix') format('embedded-opentype'),
+  url('/static/fonts/TypoPRO-SourceCodePro-Regular.woff') format('woff'),
+  url('/static/fonts/TypoPRO-SourceCodePro-Regular.ttf') format('truetype');
+  font-style:   normal;
+  font-weight:  normal;
+  font-stretch: normal;
+  font-variant: normal;
+}
+
+$font-family-monospace: 'TypoPRO Source Code Pro', Menlo, Monaco, Consolas, "Courier New", monospace;
