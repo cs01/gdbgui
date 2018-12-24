@@ -20,7 +20,7 @@ class ToolTipTourguide extends React.Component {
   }
   static dismiss() {
     store.set("show_tour_guide", false);
-    Util.persist_value_for_key("show_tour_guide", false);
+    Util.persist_value_for_key("show_tour_guide");
   }
   static next() {
     store.set("tour_guide_step", store.get("tour_guide_step") + 1);

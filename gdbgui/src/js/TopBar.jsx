@@ -92,9 +92,8 @@ let show_session_info = function () {
 const menu = (
   <div className="dropdown">
     <button
-      className="btn btn-sm btn-secondary dropdown-toggle"
+      className="btn btn-sm btn-secondary dropdown-toggle shadow"
       type="button"
-      id="dropdownMenuButton"
       data-toggle="dropdown"
       aria-haspopup="true" aria-expanded="false">
       <span className='fa fa-tools'/>
@@ -332,7 +331,7 @@ class TopBar extends React.Component {
     return (
       <div className="sticky-top navbar-light bg-light py-1">
 
-        <div className="container-fluid m-1">
+        <div className="container-fluid my-1">
           <div className="row">
             <div className="col-sm-auto">
               {menu}
@@ -353,7 +352,7 @@ class TopBar extends React.Component {
         </div>
 
 
-        <div className="container-fluid m-1">
+        <div className="container-fluid my-1">
           <div className="row">
             <div className="col-auto">
               <div className="btn-group btn-group-sm">

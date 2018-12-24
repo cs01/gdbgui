@@ -32,7 +32,7 @@ class Memory extends React.Component {
     if (Object.keys(store.get("memory_cache")).length === 0) {
       return (
         <span key="nothing" className="small text-info">
-          no memory to display
+          No memory to display
         </span>
       );
     }

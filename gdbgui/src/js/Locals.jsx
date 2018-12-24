@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import GdbVariable from "./GdbVariable.jsx";
 
 class Locals extends React.Component {
@@ -12,6 +12,7 @@ class Locals extends React.Component {
     super();
     store.connectComponentState(this, ["expressions", "locals"]);
   }
+
   render() {
     let content = [];
     let sorted_local_objs = _.sortBy(
@@ -27,8 +28,7 @@ class Locals extends React.Component {
             obj={obj}
             key={obj.expression}
             expression={obj.expression}
-            expr_type="expr"
-          />
+            expr_type="expr"/>
         );
       } else {
         content.push(
@@ -36,8 +36,7 @@ class Locals extends React.Component {
             obj={local}
             key={local.name}
             expression={local.name}
-            expr_type="local"
-          />
+            expr_type="local"/>
         );
       }
     }
@@ -45,13 +44,14 @@ class Locals extends React.Component {
     if (content.length === 0) {
       return (
         <span key="empty" className="small text-info">
-          no locals in this context
+          No locals in this context
         </span>
       );
     } else {
       return content;
     }
   }
+
   get_autocreated_obj_from_expr(expr) {
     for (let obj of store.get("expressions")) {
       if (obj.expression === expr && obj.expr_type === "local") {
@@ -60,24 +60,28 @@ class Locals extends React.Component {
     }
     return null;
   }
+
   static clear_autocreated_exprs() {
     let exprs_objs_to_remove = store
       .get("expressions")
       .filter(obj => obj.expr_type === "local");
     exprs_objs_to_remove.map(obj => GdbVariable.delete_gdb_variable(obj.name));
   }
+
   static clear() {
     store.set("locals", []);
     Locals.clear_autocreated_exprs();
   }
+
   static save_locals(locals) {
     let locals_with_meta = locals.map(local => {
       // add field to local
-      local.can_be_expanded = Locals.can_local_be_expanded(local) ? true : false;
+      local.can_be_expanded = Locals.can_local_be_expanded(local);
       return local;
     });
     store.set("locals", locals_with_meta);
   }
+
   static can_local_be_expanded(local) {
     // gdb returns list of locals. We may want to turn that local into a GdbVariable
     // to explore its children

@@ -3467,6 +3467,11 @@ gaze@^1.0.0:
   dependencies:
     globule "^1.0.0"
 
+gemini-scrollbar@^1.5.3:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/gemini-scrollbar/-/gemini-scrollbar-1.5.3.tgz#7abc916e103e11f983f15856ef8c583cedef95cf"
+  integrity sha512-3Q4SrxkJ+ei+I5PlcRZCfPePv3EduP7xusOWp7Uw0+XywEWred7Nq9hoaP2IQh1vRjoidaVODV3rO3icFH/e5A==
+
 get-caller-file@^1.0.1:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/get-caller-file/-/get-caller-file-1.0.2.tgz#f702e63127e7e231c160a80c1554acb70d5047e5"
@@ -6520,6 +6525,13 @@ react-dom@^16.4:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
     prop-types "^15.6.0"
+
+react-gemini-scrollbar@^2.3.4:
+  version "2.3.4"
+  resolved "https://registry.yarnpkg.com/react-gemini-scrollbar/-/react-gemini-scrollbar-2.3.4.tgz#defd60ddf243dafaa354fc3a4d0ef972b9137732"
+  integrity sha1-3v1g3fJD2vqjVPw6TQ75crkTdzI=
+  dependencies:
+    gemini-scrollbar "^1.5.3"
 
 react@^16.4:
   version "16.4.1"

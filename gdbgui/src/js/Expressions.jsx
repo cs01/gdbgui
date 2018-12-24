@@ -35,8 +35,9 @@ class Expressions extends React.Component {
     ));
     if (content.length === 0) {
       content.push(
-        <span key="empty" className="small text-info">
-          no expressions in this context
+        <span key="empty"
+              className="small text-info">
+          No expressions
         </span>
       );
     }
@@ -45,25 +46,27 @@ class Expressions extends React.Component {
     );
 
     return (
-      <div>
-        <input
-          id="expressions_input"
-          className="form-control"
-          placeholder="expression or variable"
-          style={{
-            display: "inline",
-            padding: "6px 6px",
-            height: "25px",
-            fontSize: "1em",
-            marginTop: "5px"
-          }}
-          onKeyUp={Expressions.keydown_on_input}
-        />
-
-        <p />
-
-        {content}
-      </div>
+      <React.Fragment>
+        <ul className="nav my-1 px-1">
+          <li className="nav-item">
+            <div className='input-group input-group-sm'>
+              <div className='input-group-prepend'>
+                <button className='btn btn-success'>
+                  Create
+                </button>
+              </div>
+              <input
+                className="form-control"
+                placeholder='variable or expression'
+                onKeyUp={Expressions.keydown_on_input}
+              />
+            </div>
+          </li>
+        </ul>
+        <div className="card card-body">
+          {content}
+        </div>
+      </React.Fragment>
     );
   }
   componentDidUpdate() {

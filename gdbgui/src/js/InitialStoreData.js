@@ -1,6 +1,7 @@
 /* global initial_data */
 /* global debug */
 import constants from "./constants.js";
+import Util from './Util'
 
 /**
  * The initial store data. Keys cannot be added after initialization.
@@ -18,6 +19,18 @@ const initial_store_data = {
   gdb_pid: undefined,
   can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
   show_settings: false,
+
+  section_is_visible: {
+    threads: true,
+    locals: false,
+    expressions: false,
+    tree: false,
+    memory: true,
+    breakpoints: true,
+    signals: false,
+    registers: false,
+    debug: false,
+  },
 
   debug_in_reverse: false,
   show_modal: false,
@@ -104,26 +117,11 @@ const initial_store_data = {
   middle_panes_split_obj: {} // todo this thing is trash
 };
 
-function get_stored(key, default_val) {
-  try {
-    if (localStorage.hasOwnProperty(key)) {
-      let cached = JSON.parse(localStorage.getItem(key));
-      if (typeof cached === typeof default_val) {
-        return cached;
-      }
-      return default_val;
-    }
-  } catch (err) {
-    console.error(err);
-  }
-  localStorage.removeItem(key);
-  return default_val;
-}
 
 // restore saved localStorage data
 for (let key in initial_store_data) {
   let default_val = initial_store_data[key];
-  initial_store_data[key] = get_stored(key, default_val);
+  initial_store_data[key] = Util.get_local_storage(key, default_val);
 }
 
 if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {

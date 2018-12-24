@@ -17,7 +17,7 @@ const mime_types = {
   'image': /\.(jpe?g|png|svg)$/,
   // 'export':         [/\.()$/],
   'excel': /\.(xlsx?)$/,
-  'download': /\.()$/,
+  // 'download': /\.()$/,
   'csv': /\.(csv)$/,
   // 'contract':       [/\.()$/],
   'code': /\.(jsx?|html?|py|cp?p?|cxx)$/,
@@ -47,7 +47,7 @@ const fa_mime_icon = {
   'csv': 'fa-file-csv',
   'contract': 'fa-file-contract',
   'code': 'fa-file-code',
-  'support': 'fa-chess-rook',
+  'support': 'fa-chess-knight',
   'audio': 'fa-file-audio',
   'archive': 'fa-file-archive',
 }
@@ -72,12 +72,14 @@ class FileSystem extends React.Component {
     if (is_dir) {
       glyph = node.toggled ? 'fa-chevron-down' : 'fa-chevron-right';
     } else {
-      let mime_t = _.chain(mime_types)
+      // find the key in mime_types that node.name matched with the regex in value of mime_types[key]
+      let mime_key = _.chain(mime_types)
         .entries()
         // eslint-disable-next-line
         .filter(([_, r]) => node.name.match(r))
-        .value()[0][0]
-      glyph = fa_mime_icon[mime_t] || 'fa-file'
+        .flatten()
+        .value()[0]
+      glyph = fa_mime_icon[mime_key] || 'fa-file'
     }
 
     let onClickName = null;
@@ -109,7 +111,7 @@ class FileSystem extends React.Component {
   render() {
     this.nodecount = -1;
     return (
-      <div id='filesystem'>
+      <div id='filesystem' className='m-1'>
         <ul className='list-unstyled'>{this.get_node_jsx(this.props.rootnode)}</ul>
       </div>
     );

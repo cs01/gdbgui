@@ -1,11 +1,9 @@
-.wsp {
-  white-space: pre;
+#code_container {
+  height: 100%;
 }
 
-div.breakpoint {
-  cursor: pointer;
-  border: 1px solid #f5f5f5;
-  border-left-width: 0;
+.wsp {
+  white-space: pre;
 }
 
 .breakpoint td {
@@ -28,11 +26,9 @@ div.breakpoint:hover div.breakpoint_trashcan,
 .line_num {
   width: 50px;
   border-width: 0;
-  border-top-width: 1px;
-  border-top-color: transparent;
   border-right-width: 1px;
   border-style: solid;
-  border-right-color: #c7c7c7;
+  border-right-color: $code-gutter-color;
   padding-left: 10px;
   padding-right: 10px;
   font-size: 0.9em;

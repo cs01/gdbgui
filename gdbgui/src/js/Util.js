@@ -1,10 +1,26 @@
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 
 /**
  * Some general utility methods
  */
 const Util = {
-  persist_value_for_key: function(key) {
+  get_local_storage(key, default_val) {
+    try {
+      if (localStorage.hasOwnProperty(key)) {
+        let cached = JSON.parse(localStorage.getItem(key));
+        if (typeof cached === typeof default_val) {
+          return cached;
+        }
+        return default_val;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    localStorage.removeItem(key);
+    return default_val;
+  },
+
+  persist_value_for_key: function (key) {
     try {
       let value = store.get(key);
       localStorage.setItem(key, JSON.stringify(value));
@@ -13,43 +29,10 @@ const Util = {
     }
   },
   /**
-   * Get html table
-   * @param columns: array of strings
-   * @param data: array of arrays of data
-   */
-  get_table: function(columns, data, style = "") {
-    var result = [
-      `<table class='table table-bordered table-condensed' style="${style}">`
-    ];
-    if (columns) {
-      result.push("<thead>");
-      result.push("<tr>");
-      for (let h of columns) {
-        result.push(`<th>${h}</th>`);
-      }
-      result.push("</tr>");
-      result.push("</thead>");
-    }
-
-    if (data) {
-      result.push("<tbody>");
-      for (let row of data) {
-        result.push("<tr>");
-        for (let cell of row) {
-          result.push(`<td>${cell}</td>`);
-        }
-        result.push("</tr>");
-      }
-    }
-    result.push("</tbody>");
-    result.push("</table>");
-    return result.join("\n");
-  },
-  /**
    * Escape gdb's output to be browser compatible
    * @param s: string to mutate
    */
-  escape: function(s) {
+  escape: function (s) {
     return s
       .replace(/>/g, "&gt;")
       .replace(/</g, "&lt;")
@@ -62,7 +45,7 @@ const Util = {
    * take a string of html in JavaScript and strip out the html
    * http://stackoverflow.com/a/822486/2893090
    */
-  get_text_from_html: function(html) {
+  get_text_from_html: function (html) {
     var tmp = document.createElement("DIV");
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || "";
@@ -72,7 +55,7 @@ const Util = {
    * @param default_line_if_not_found: i.e. 0
    * @return: Array, with 0'th element == path, 1st element == line
    */
-  parse_fullname_and_line: function(
+  parse_fullname_and_line: function (
     fullname_and_line,
     default_line_if_not_found = undefined
   ) {

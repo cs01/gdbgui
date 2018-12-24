@@ -4,7 +4,13 @@
 @import "~bootswatch/dist/darkly/bootswatch";
 
 $enable-shadows: true;
-$spacer: 0; /* remove extra space, e.g., margin bottom tables */
 
+.card-body {
+  padding: .5em;
+}
+
+table.table-sm {
+  margin-bottom: 0;
+}
 /* customizes animate css */
 @import "~animate.css/animate.min.css";

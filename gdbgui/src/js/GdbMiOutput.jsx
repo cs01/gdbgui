@@ -24,15 +24,19 @@ class GdbMiOutput extends React.Component {
   }
   render() {
     return (
-      <div>
-        <button
-          title="clear all mi output"
-          className="btn btn-default btn-sm clear-gdb-mi"
-          onClick={() => store.set("gdb_mi_output", [])}>
-          <span className="fa fa-ban" />
-        </button>
-        <div id="gdb_mi_output" className="otpt" style={{ fontSize: "0.8em" }}>
-          {this.state.gdb_mi_output}
+      <div className='card'>
+        <div className="card-header">
+          <button
+            title="clear all mi output"
+            className="btn btn-outline-primary btn-sm"
+            onClick={() => store.set("gdb_mi_output", [])}>
+            <span className="fa fa-ban" />
+          </button>
+        </div>
+        <div className="card-body">
+          <div id="gdb_mi_output" className="otpt" style={{ fontSize: "0.8em" }}>
+            {this.state.gdb_mi_output}
+          </div>
         </div>
       </div>
     );

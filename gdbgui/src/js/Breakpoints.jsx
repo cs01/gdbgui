@@ -177,7 +177,7 @@ class Breakpoints extends React.Component {
     if (breakpoints_jsx.length) {
       return breakpoints_jsx;
     } else {
-      return <span className="small text-info">no breakpoints</span>;
+      return <span className="small text-info">No breakpoints</span>;
     }
   }
   static enable_or_disable_bkpt(checked, bkpt_num) {

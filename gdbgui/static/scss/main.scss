@@ -1,13 +1,8 @@
 @import "reset";
 @import "custom";
+@import "variables";
 @import "typography";
 @import "coding";
-
-$console-bg: #292929;
-$console-default-color: $gray-600;
-$console-server-color: $cyan;
-$console-user-color: $green;
-$console-error-color: $red;
 
 .menu-item-icon {
   position: absolute;

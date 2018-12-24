@@ -44,7 +44,9 @@ class BinaryLoader extends React.Component {
     if (this.state.target_type === TARGET_TYPES.file) {
       button_text = "Load binary";
       title =
-        "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes.";
+        "Loads the binary as executed with the arguments. Backslashes are treated as " +
+        "escape characters. Windows users can either use two backslashes in paths, or " +
+        "forward slashes. (l)"
       placeholder = "/path/to/target/executable -and -flags";
     } else if (this.state.target_type === TARGET_TYPES.server) {
       // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
@@ -56,7 +58,9 @@ class BinaryLoader extends React.Component {
       // -target-attach
       button_text = "Attach process";
       title =
-        "Attach to a process pid or a file file outside of GDB, or a thread group gid. If attaching to a thread group, the id previously returned by ‘-list-thread-groups --available’ must be used. Note: to do this, you usually need to run gdbgui as sudo.";
+        "Attach to a process pid or a file file outside of GDB, or a thread group gid. If " +
+        "attaching to a thread group, the id previously returned by ‘-list-thread-groups " +
+        "--available’ must be used. Note: to do this, you usually need to run gdbgui as sudo.";
       placeholder = "pid | gid | file";
     }
 
