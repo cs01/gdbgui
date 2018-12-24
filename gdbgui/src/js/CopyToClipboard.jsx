@@ -8,18 +8,18 @@ class CopyToClipboard extends React.Component {
     }
     return (
       <button
-        className='btn btn-secondary btn-sm'
+        className='btn btn-outline-default btn-sm'
         ref={node => (this.node = node)}
         data-toggle="tooltip"
         data-placement="top"
-        title="Tooltip on top"
+        title="Copy to clipboard"
         onClick={() => {
           let textarea = store.get("textarea_to_copy_to_clipboard");
           textarea.value = this.props.content;
           textarea.select();
           document.execCommand("copy") || console.error('failed to copy');
         }}>
-        <span className=' fa fa-copy'/>
+        <span className='fa fa-copy'/>
       </button>
     );
   }

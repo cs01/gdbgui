@@ -181,19 +181,19 @@ class GdbVariable extends React.Component {
     let can_be_expanded = local.can_be_expanded,
       value = _.isString(local.value)
         ? Memory.make_addrs_into_links_react(local.value)
-        : local.value,
-      onclick = can_be_expanded
-        ? () => GdbVariable.create_variable(local.name, "local")
-        : () => {
-        };
+        : local.value
 
     return (
       <div>
-        <span onClick={onclick} className={can_be_expanded ? "cursor-pointer" : ""}>
-          {can_be_expanded ? "+" : ""} {local.name}&nbsp;
+        <span onClick={() => can_be_expanded && GdbVariable.create_variable(local.name, "local")}
+              className={can_be_expanded ? "cursor-pointer" : ""}>
+          {can_be_expanded ? <span className='fa fa-plus-circle'/>
+            /* otherwise, show nothing */ : <span className='fa fa-plus-circle invisible'/>}
         </span>
-        {value}
-        <span className="var_type">{_.trim(local.type)}</span>
+        <span className="mx-1 text-primary">{_.trim(local.type)}</span>
+        <span className='mx-1 text-default'>{local.name}</span>
+        <span className='mx-1 small'>=</span>
+        <span className='mx-1 text-info'>{value}</span>
       </div>
     );
   }
@@ -229,13 +229,12 @@ class GdbVariable extends React.Component {
       child_tree = "";
     }
 
-    let plus_or_minus = mi_obj.show_children_in_ui ? "-" : "+";
     return this._get_ul_for_var(
       expression,
       mi_obj,
       expr_type,
       is_root,
-      plus_or_minus,
+      mi_obj.show_children_in_ui,
       child_tree,
       mi_obj.numchild
     );
@@ -289,68 +288,27 @@ class GdbVariable extends React.Component {
     mi_obj,
     expr_type,
     is_root,
-    plus_or_minus = "",
+    show_children = null,
     child_tree = "",
     numchild = 0
   ) {
-    let glyph_style = { fontSize: "0.8em", paddingLeft: "5px" },
-      delete_button =
-        is_root && expr_type === "expr" ? (
-          <span
-            style={glyph_style}
-            className="glyphicon glyphicon-trash pointer"
-            onClick={() => GdbVariable.delete_gdb_variable(mi_obj.name)}
-          />
-        ) : (
-          ""
-        ),
+    let
       has_children = numchild > 0,
-      can_draw_tree = has_children && (expr_type === "expr" || expr_type === "local"), // hover var can't draw tree
-      tree = can_draw_tree ? (
-        <span
-          style={glyph_style}
-          className="fa fa-seedling"
-          onClick={() => GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)}
-        />
-      ) : (
-        ""
-      ),
+      // hover var can't draw tree
       toggle_classes = has_children ? "pointer" : "",
-      plot_content = "",
-      plot_button = "",
       plusminus_click_callback = has_children
         ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name)
         : () => {
         };
-    if (mi_obj.can_plot && mi_obj.show_plot) {
-      // dots are not allowed in the dom as id's. replace with '-'.
-      let id = mi_obj.dom_id_for_plot;
-      plot_button = (
-        <span
-          style={glyph_style}
-          className="pointer glyphicon glyphicon-ban-circle"
-          onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
-          title="remove x/y plot"
-        />
-      );
-      plot_content = <div id={id} className="plot"/>;
-    } else if (mi_obj.can_plot && !mi_obj.show_plot) {
-      plot_button = (
-        <span
-          style={glyph_style}
-          className="glyphicon glyphicon glyphicon-equalizer pointer"
-          onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
-          title="show x/y plot"
-        />
-      );
-    }
 
     return (
       <ul className='list-unstyled'
           key={expression}>
-        <li className="varLI">
+        <li>
           <span className={toggle_classes} onClick={plusminus_click_callback}>
-            {plus_or_minus} {expression}&nbsp;
+            {show_children === null ? null
+              /* otherwise, show the state */ : show_children ? <span className='fa fa-chevron-down'/>
+                /* otherwise, show affordance */ : <span className='fa fa-chevron-right'/>} {expression}&nbsp;
           </span>
 
           {GdbVariable._get_value_jsx(mi_obj)}
@@ -359,12 +317,31 @@ class GdbVariable extends React.Component {
 
           <span className="right_help_icon_show_on_hover">
             <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)}/>
-            {tree}
-            {plot_button}
-            {delete_button}
+            {has_children && (expr_type === "expr" || expr_type === "local") ?
+              <button
+                className='btn btn-sm btn-outline-default'
+                onClick={() => GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)}>
+                <span className='fa fa-seedling'/>
+              </button> : null}
+            {mi_obj.can_plot ?
+              <button className='btn btn-sm btn-outline-default'
+                      title={`${mi_obj.show_plot ? 'delete' : 'create'} x/y plot`}
+                      onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}>
+                <span className={`fa ${mi_obj.show_plot ? 'fa-trash' : 'fa-line-chart'}`}/>
+              </button>
+              /* otherwise */ : null}
+            {is_root && expr_type === "expr" ? <button
+                className='btn btn-sm btn-outline-default'
+                title='Clear expansion'
+                onClick={() => GdbVariable.delete_gdb_variable(mi_obj.name)}>
+                <span className="fa fa-ban"/>
+              </button>
+              /* otherwise */ : null}
           </span>
-
-          {plot_content}
+          {mi_obj.can_plot ?
+            <div id={mi_obj.dom_id_for_plot}
+                 className={`plot-container ${mi_obj.show_plot ? 'visible' : 'hidden'}`}/>
+            /* otherwise */ : null}
         </li>
         {child_tree}
       </ul>
@@ -571,6 +548,7 @@ class GdbVariable extends React.Component {
     let plot_element = $("#" + obj.dom_id_for_plot),
       data = [],
       i = 0;
+    // plot_element.addClass('visible').removeClass('hidden')
 
     // collect data
     for (let val of obj.values) {

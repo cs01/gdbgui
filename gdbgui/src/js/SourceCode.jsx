@@ -239,8 +239,7 @@ class SourceCode extends React.Component {
       on_current_instruction = paused_addr === assm.address,
       cls = on_current_instruction ? "current_assembly_command" : "",
       asterisk = <span
-        className="fa fa-chevron-right"
-        style={{visibility: on_current_instruction ? 'visible' : 'hidden'}}/>
+        className={`fa fa-chevron-right ${on_current_instruction ? 'visible' : 'invisible'}`}/>
     return (
       <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
         {asterisk} <MemoryLink addr={addr} style={{ paddingRight: "5px" }} />

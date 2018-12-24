@@ -26,6 +26,15 @@ select.custom-select.combobox-select {
   flex-grow: 0.1;
 }
 
+.plot-container {
+  height: 200px;
+  width: 300px;
+
+  &.hidden {
+    display: none;
+  }
+}
+
 #console {
   font-family: $font-family-monospace;
   background-color: $console-bg;
