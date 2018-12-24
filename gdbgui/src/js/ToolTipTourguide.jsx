@@ -20,19 +20,14 @@ class ToolTipTourguide extends React.Component {
   }
   static dismiss() {
     store.set("show_tour_guide", false);
-    store.set("tour_guide_step", 0);
-    Util.persist_value_for_key("show_tour_guide");
+    Util.persist_value_for_key("show_tour_guide", false);
   }
   static next() {
     store.set("tour_guide_step", store.get("tour_guide_step") + 1);
   }
-  guide_finshed() {
-    store.set("tour_guide_step", 0);
-  }
   static start_guide() {
     store.set("tour_guide_step", 0);
     store.set("show_tour_guide", true);
-    Util.persist_value_for_key("show_tour_guide");
   }
   componentDidUpdate() {
     if (this.state.show_tour_guide && this.ref.current) {

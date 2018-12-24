@@ -1,5 +1,4 @@
 import React from "react";
-import ToolTip from "./ToolTip.jsx";
 import { store } from "statorgfc";
 
 class CopyToClipboard extends React.Component {
@@ -8,29 +7,20 @@ class CopyToClipboard extends React.Component {
       return null;
     }
     return (
-      <span
-        className={"pointer glyphicon glyphicon-book"}
-        style={{ color: "#ccc", display: "inline" }}
+      <button
+        className='btn btn-secondary btn-sm'
         ref={node => (this.node = node)}
-        onMouseOver={() => {
-          ToolTip.show_tooltip_on_node("copy to clipboard", this.node);
-        }}
-        onMouseLeave={ToolTip.hide_tooltip}
+        data-toggle="tooltip"
+        data-placement="top"
+        title="Tooltip on top"
         onClick={() => {
-          try {
-            let textarea = store.get("textarea_to_copy_to_clipboard");
-            textarea.value = this.props.content;
-            textarea.select();
-            if (document.execCommand("copy") === true) {
-              ToolTip.show_copied_tooltip_on_node(this.node);
-            } else {
-              ToolTip.show_tooltip_on_node("unable to copy", this.node);
-            }
-          } catch (err) {
-            ToolTip.show_tooltip_on_node("unable to copy", this.node);
-          }
-        }}
-      />
+          let textarea = store.get("textarea_to_copy_to_clipboard");
+          textarea.value = this.props.content;
+          textarea.select();
+          document.execCommand("copy") || console.error('failed to copy');
+        }}>
+        <span className=' fa fa-copy'/>
+      </button>
     );
   }
 }

@@ -1,4 +1,5 @@
 @import "custom";
+
 $fa-font-path: "/static/fonts";
 @import '~@fortawesome/fontawesome-free/scss/fontawesome';
 @import '~@fortawesome/fontawesome-free/scss/solid';
@@ -11,4 +12,18 @@ $fa-font-path: "/static/fonts";
   border-radius: 4px;
   width: 500px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, .5);
+}
+
+.menu-item-icon {
+  position: absolute;
+  left: 4px;
+  top: 8px;
+}
+
+.menu-item-has-icon {
+  position: relative;
+}
+
+select.custom-select.combobox-select {
+  flex: 0.001;
 }

@@ -61,19 +61,12 @@ class BinaryLoader extends React.Component {
     }
 
     return (
-      <form>
-        <div className="input-group input-group-sm mb-3">
+      <div>
+        <div className="input-group input-group-sm">
           <div className="input-group-prepend">
             <button
               type="button"
-              className="btn btn-outline-primary"
-              onClick={this.click_set_target_app.bind(this)}
-              title={title}>
-              {button_text}
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-primary dropdown-toggle dropdown-toggle-split"
+              className="btn btn-primary dropdown-toggle dropdown-toggle-split"
               data-toggle="dropdown">
             </button>
             <div className="dropdown-menu">
@@ -89,10 +82,25 @@ class BinaryLoader extends React.Component {
                  onClick={() => this.setState({ target_type: TARGET_TYPES.process })}>
                 Attach process
               </a>
-              {/*<div role="separator" className="dropdown-divider"/>*/}
-              {/*<a className="dropdown-item" href="#">Separated link</a>*/}
             </div>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={this.click_set_target_app.bind(this)}
+              title={title}>
+              {button_text}
+            </button>
           </div>
+
+          <select className="custom-select combobox-select"
+                  onKeyUp={this.onkeyup_user_input.bind(this)}
+                  onChange={this.onchange_user_inpu.bind(this)}
+                  value={this.state.user_input}>
+            {
+              this.state.past_binaries.map((b, i) =>
+                <option key={i} value={b}>{b}</option>)
+            }
+          </select>
           <input
             type="text"
             className="form-control"
@@ -102,22 +110,24 @@ class BinaryLoader extends React.Component {
             onKeyUp={this.onkeyup_user_input.bind(this)}
             onChange={this.onchange_user_inpu.bind(this)}
             value={this.state.user_input}/>
+
+          <div className="input-group-append ">
+            <button onClick={this.onclick_clear.bind(this)}
+                    className='btn btn-outline-primary'>
+              <span className='fa fa-ban'/>
+            </button>
+          </div>
         </div>
 
         <ToolTipTourguide
           step_num={1}
           position={"bottomcenter"}
-          content={step1}
-        />
+          content={step1}/>
         <ToolTipTourguide
           step_num={2}
           position={"bottomleft"}
-          content={step2}
-        />
-        <datalist id="past_binaries">
-          {this.state.past_binaries.map((b, i) => <option key={i}>{b}</option>)}
-        </datalist>
-      </form>
+          content={step2}/>
+      </div>
     );
   }
 
@@ -132,6 +142,12 @@ class BinaryLoader extends React.Component {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
       this.set_target_app();
     }
+  }
+
+  onclick_clear() {
+    this.state.past_binaries = [];
+    this.setState({ past_binaries: this.state.past_binaries });
+    localStorage.setItem("past_binaries", JSON.stringify(this.state.past_binaries));
   }
 
   onchange_user_inpu(e) {

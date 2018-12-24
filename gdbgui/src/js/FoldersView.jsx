@@ -55,7 +55,7 @@ class FoldersView extends React.Component {
 
     return (
       <div>
-        <div className="input-group input-group-sm mb-3">
+        <div className="input-group input-group-sm">
           <div className="input-group-prepend">
             <button
               onClick={Actions.fetch_source_files}

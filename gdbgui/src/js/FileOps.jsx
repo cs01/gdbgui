@@ -562,6 +562,7 @@ const FileOps = {
     }
     FileOps.fetch_disassembly(fullname, line, mi_response_format);
   },
+
   fetch_disassembly: function(fullname, start_line, mi_response_format) {
     let cmd = FileOps.get_fetch_disassembly_command(
       fullname,

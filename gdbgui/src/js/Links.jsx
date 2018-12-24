@@ -24,13 +24,11 @@ class FileLink extends React.Component {
       clipboard_content = (this.props.fullname || this.props.file) + sep + line;
     }
     return (
-      <div style={{ display: "inline-block", whitespace: "nowrap" }}>
+      <div>
         <span
           onClick={onclick}
           className={cls}
-          title={`click to view ${this.props.fullname}`}
-          style={{ display: "inline" }}
-        >
+          title={`click to view ${this.props.fullname}`}>
           {this.props.file}
           {sep}
           {line}

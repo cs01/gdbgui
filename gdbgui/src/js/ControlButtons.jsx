@@ -11,10 +11,10 @@ class ControlButtons extends React.Component {
   }
 
   render() {
-    let btn_class = "btn btn-default btn-sm";
+    let btn_class = "btn btn-default";
 
     return (
-      <React.Fragment>
+      <div className='btn-group btn-group-sm'>
         <button
           id="run_button"
           onClick={() => GdbApi.click_run_button()}
@@ -76,16 +76,17 @@ class ControlButtons extends React.Component {
           className={btn_class}>
           <span className="fa fa-sign-out-alt fa-rotate-270"/>
         </button>
+
         <div role="group" className="btn-group btn-group-sm">
           <button
             id="next_instruction_button"
             onClick={() => GdbApi.click_next_instruction_button()}
             type="button"
             title={
-              "Next machine instruction over function calls (m)" +
+              "Next machine instruction over function calls spa(m)" +
               (initial_data.rr ? ". shift + m for reverse." : "")
             }
-            className="btn btn-default">
+            className={btn_class}>
             ni
           </button>
           <button
@@ -96,11 +97,11 @@ class ControlButtons extends React.Component {
               "Step one machine instruction; steps into function calls (,)" +
               (initial_data.rr ? ". shift + , for reverse." : "")
             }
-            className="btn btn-default">
+            className={btn_class}>
             <span className='fa fa-shoe-prints'/>
           </button>
         </div>
-      </React.Fragment>
+      </div>
     );
   }
 }

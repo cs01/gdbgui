@@ -3,7 +3,6 @@ import React from "react";
 import {store} from "statorgfc";
 import BinaryLoader from "./BinaryLoader.jsx";
 import ControlButtons from "./ControlButtons.jsx";
-import Settings from "./Settings.jsx";
 import SourceCodeHeading from "./SourceCodeHeading.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
 import FileOps from "./FileOps.jsx";
@@ -11,7 +10,7 @@ import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import constants from "./constants.js";
 import Util from "./Util.js";
-import {step3, step0} from "./TourGuide.jsx";
+import {step0, step3} from "./TourGuide.jsx";
 
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
@@ -92,67 +91,84 @@ let show_session_info = function () {
 };
 
 const menu = (
-  <ul className="nav navbar-nav navbar-right">
-    <li id="menudropdown" className="dropdown">
-      <a href="#"
-         data-toggle="dropdown"
-         role="button"
-         className="dropdown-toggle">
-        <span className="glyphicon glyphicon-menu-hamburger"> </span>
-      </a>
-      <ul className="dropdown-menu">
-        <li><a title="settings"
-               onClick={() => Settings.toggle_key("show_settings")}>
-          Settings
-        </a></li>
-        <li><a title="dashboard" className="pointer" href="/dashboard">
-          Dashboard
-        </a></li>
-        <li><a title="show guide"
-               className="pointer"
-               onClick={ToolTipTourguide.start_guide}>
-          Show Guide
-        </a></li>
-        <li><a onClick={show_session_info} className="pointer">
-          Session Information
-        </a></li>
-        <li><a title="shutdown" className="pointer" onClick={click_shutdown_button}>
-          Shutdown gdbgui server
-        </a></li>
+  <div className="dropdown">
+    <button
+      className="btn btn-sm btn-secondary dropdown-toggle"
+      type="button"
+      id="dropdownMenuButton"
+      data-toggle="dropdown"
+      aria-haspopup="true" aria-expanded="false">
+      <span className='fa fa-screwdriver'/>
+    </button>
+    <div className="dropdown-menu">
+      <li><a
+        className="dropdown-item"
+        title="dashboard"
+        href="/dashboard">
+        Dashboard
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        title="show guide"
+        onClick={ToolTipTourguide.start_guide}>
+        Show Guide
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        onClick={show_session_info}>
+        Session Information
+      </a></li>
 
-        <li role="separator" className="divider"/>
-        <li><a href={constants.gdbgui_donate_url} className="pointer">
-          Donate
-        </a></li>
-        <li><a href="https://gitter.im/gdbgui/Lobby" className="pointer">
-          Chat room
-        </a></li>
-        <li><a href="https://github.com/cs01/gdbgui" className="pointer">
-          GitHub
-        </a></li>
-        <li><a href="http://gdbgui.com" className="pointer">
-          Homepage
-        </a></li>
-        <li><a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
-          YouTube Channel
-        </a></li>
+      <div className="dropdown-divider"/>
+      <li><a
+        className="dropdown-item"
+        href={constants.gdbgui_donate_url}>
+        Donate
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        href="https://gitter.im/gdbgui/Lobby">
+        Chat room
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        href="https://github.com/cs01/gdbgui">
+        GitHub
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        href="http://gdbgui.com">
+        Homepage
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">
+        YouTube Channel
+      </a></li>
 
-        <li role="separator" className="divider"/>
-        <li><a onClick={show_license} className="pointer">
-          License
-        </a></li>
-        <li><a onClick={About.show_about} className="pointer">
-          About gdbgui
-        </a></li>
-      </ul>
-
-      <ToolTipTourguide
-        top={"100%"}
-        left={"-300px"}
-        step_num={0}
-        content={step0}/>
-    </li>
-  </ul>
+      <div className="dropdown-divider"/>
+      <li><a
+        className="dropdown-item"
+        onClick={show_license}>
+        License
+      </a></li>
+      <li><a
+        className="dropdown-item"
+        onClick={About.show_about}>
+        About gdbgui
+      </a></li>
+      <li><a
+        className="dropdown-item menu-item-has-icon"
+        title="shutdown" onClick={click_shutdown_button}>
+        <span className='fa fa-skull menu-item-icon'/> Shutdown `gdbgui` server
+      </a></li>
+    </div>
+    <ToolTipTourguide
+      top={"100%"}
+      left={"-300px"}
+      step_num={0}
+      content={step0}/>
+  </div>
 );
 
 class TopBar extends React.Component {
@@ -214,17 +230,48 @@ class TopBar extends React.Component {
 
   get_controls() {
     return (
-      <div
-        role="group"
-        className="btn-group btn-group">
+      <div>
+        <ControlButtons/>
         <ToolTipTourguide
           step_num={3}
           position={"bottomleft"}
           onClick={e => e.stopPropagation()}
           content={step3}/>
-        <ControlButtons/>
       </div>
     );
+  }
+
+  toggle_file_explorer() {
+    let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
+      file_explorer_size = middle_pane_sizes[0],
+      source_size = middle_pane_sizes[1],
+      sidebar_size = middle_pane_sizes[2],
+      new_file_explorer_size,
+      new_source_size,
+      new_sidebar_size;
+
+    if (store.get("show_filesystem")) {
+      // hide it since it's shown right now
+      new_file_explorer_size = 0;
+      new_source_size = source_size + file_explorer_size / 2;
+      new_sidebar_size = sidebar_size + file_explorer_size / 2;
+    } else {
+      new_file_explorer_size = 30;
+      new_source_size = Math.max(
+        30,
+        source_size - new_file_explorer_size / 2
+      );
+      new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
+    }
+
+    store.set("show_filesystem", !store.get("show_filesystem"));
+    localStorage.setItem(
+      "show_filesystem",
+      JSON.stringify(store.get("show_filesystem"))
+    ); // save this for next session
+    store
+      .get("middle_panes_split_obj")
+      .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
   }
 
   render() {
@@ -239,7 +286,7 @@ class TopBar extends React.Component {
           onClick={this.toggle_assembly_flavor.bind(this)}
           type="button"
           title={"Toggle between assembly flavors. The options are att or intel."}
-          className={"btn btn-default btn-xs"}>
+          className='btn btn-primary'>
           <span title={`Currently displaying ${this.state.assembly_flavor}. Click to toggle.`}>
             {this.state.assembly_flavor}
           </span>
@@ -260,118 +307,94 @@ class TopBar extends React.Component {
         onClick={FileOps.refresh_cached_source_files}
         type="button"
         title="Erase file from local cache and re-fetch it"
-        className={"btn btn-default btn-xs " + reload_button_disabled}>
+        className={"btn btn-primary " + reload_button_disabled}>
         <span>reload file</span>
       </button>
     );
 
-    let spinner = (
-      <span className="" style={{ height: "100%", margin: "5px", width: "14px" }}/>
+    let reverse_checkbox = (
+      <div className="input-group input-group-sm"
+           title={"when checked, always attempt to send --reverse to gdb commands (shift)"}>
+        <div className="input-group-prepend">
+          <span className="input-group-text">reverse</span>
+        </div>
+        <div className="input-group-append">
+          <div className="input-group-text">
+            <input type="checkbox"
+                   checked={store.get("debug_in_reverse")}
+                   onChange={e => {
+                     store.set("debug_in_reverse", e.target.checked);
+                   }}/>
+          </div>
+        </div>
+      </div>
     );
-    if (this.state.show_spinner) {
-      spinner = (
-        <span
-          className="glyphicon glyphicon-refresh glyphicon-refresh-animate"
-          style={{ height: "100%", margin: "5px", width: "14px" }}
-        />
-      );
-    }
-
-    let reverse_checkbox = null;
-    if (initial_data.rr) {
-      reverse_checkbox = (
-        <label
-          title={
-            "when clicking buttons to the right, pass the `--reverse` " +
-            "flag to gdb in an attempt to debug in reverse. This is not always supported. " +
-            "rr is known to support reverse debugging. Keyboard shortcuts go in " +
-            "reverse when pressed with the shift key."
-          }
-          style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}>
-          <input
-            type="checkbox"
-            checked={store.get("debug_in_reverse")}
-            onChange={e => {
-              store.set("debug_in_reverse", e.target.checked);
-            }}/>
-          reverse
-        </label>
-      );
-    }
 
     return (
       <div id="top-bar">
-        <div>
-          <BinaryLoader initial_user_input={this.props.initial_user_input}/>
-          {spinner}
-          {reverse_checkbox}
-          {this.get_controls()}
-          {menu}
+
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-sm-auto">
+              {menu}
+            </div>
+            <div className="col-sm">
+              <BinaryLoader initial_user_input={this.props.initial_user_input}/>
+            </div>
+            <div className="col-sm-auto">
+              {this.state.show_spinner ? <span className="fa fa-sync-alt fa-spin"/> : null}
+            </div>
+            <div className="col-sm-auto">
+              {initial_data.rr ? reverse_checkbox : null}
+            </div>
+            <div className="col-sm-auto">
+              {this.get_controls()}
+            </div>
+          </div>
         </div>
 
-        <div>
-          <div
-            role="group"
-            style={{ height: "25px", margin: "0 10px" }}
-            className="btn-group btn-group">
-            <button
-              className="btn btn-default btn-xs"
-              title="Toggle file explorer visibility"
-              onClick={() => {
-                let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
-                  file_explorer_size = middle_pane_sizes[0],
-                  source_size = middle_pane_sizes[1],
-                  sidebar_size = middle_pane_sizes[2],
-                  new_file_explorer_size,
-                  new_source_size,
-                  new_sidebar_size;
 
-                if (store.get("show_filesystem")) {
-                  // hide it since it's shown right now
-                  new_file_explorer_size = 0;
-                  new_source_size = source_size + file_explorer_size / 2;
-                  new_sidebar_size = sidebar_size + file_explorer_size / 2;
-                } else {
-                  new_file_explorer_size = 30;
-                  new_source_size = Math.max(
-                    30,
-                    source_size - new_file_explorer_size / 2
-                  );
-                  new_sidebar_size = 99 - new_file_explorer_size - new_source_size;
-                }
+        <div className="container-fluid">
+          <div className="row">
+            <div className="col-sm-auto">
+              <div className="btn-group btn-group-sm">
+                <button
+                  className="btn btn-primary"
+                  title="Toggle file explorer visibility"
+                  onClick={this.toggle_file_explorer}>
+                  {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
+                </button>
 
-                store.set("show_filesystem", !store.get("show_filesystem"));
-                localStorage.setItem(
-                  "show_filesystem",
-                  JSON.stringify(store.get("show_filesystem"))
-                ); // save this for next session
-                store
-                  .get("middle_panes_split_obj")
-                  .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
-              }}>
-              {store.get("show_filesystem") ? "hide filesystem" : "show filesystem"}
-            </button>
+                <button
+                  onClick={() => FileOps.fetch_assembly_cur_line()}
+                  type="button"
+                  title="fetch disassembly"
+                  className="btn btn-primary">
+                  <span>fetch disassembly</span>
+                </button>
 
-            <button
-              onClick={() => FileOps.fetch_assembly_cur_line()}
-              type="button"
-              title="fetch disassembly"
-              className="btn btn-default btn-xs">
-              <span>fetch disassembly</span>
-            </button>
+                {reload_button}
+                {toggle_assm_button}
+              </div>
+            </div>
 
-            {reload_button}
-            {toggle_assm_button}
+            <div className="col-sm-auto">
+              <div className="input-group input-group-sm">
+                <div className="input-group-prepend">
+                  <span className="input-group-text">goto line</span>
+                </div>
+                <input
+                  onKeyUp={onkeyup_jump_to_line}
+                  autoComplete="on"
+                  title="Enter line number, then press enter"
+                  className="form-control"/>
+              </div>
+            </div>
+
+            <div className="col-sm-auto">
+              <SourceCodeHeading/>
+            </div>
           </div>
-
-          <span className='top-bar-text'>goto line</span>
-          <input
-            onKeyUp={onkeyup_jump_to_line}
-            autoComplete="on"
-            title="Enter line number, then press enter"
-            className="form-control dropdown-input jump-to-line"/>
-
-          <SourceCodeHeading/>
         </div>
       </div>
     );
