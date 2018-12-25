@@ -34,12 +34,9 @@ const Tree = {
   _render: function() {
     let gdbvar = store.get("root_gdb_tree_var");
     if (!gdbvar) {
-      Tree.el.innerHTML = `
-            <span class=placeholder>
-                create an Expression, then click <span class='glyphicon glyphicon-tree-deciduous'></span>
-                when viewing a variable with children to interactively explore a tree view. You can click nodes to
-                expand/collapse them.
-            </span>`;
+      Tree.el.innerHTML = `<span class='small text-info'>
+        Create an expression and click the <span class='fa fa-seedling'/> button
+      </span>`;
       return;
     }
 

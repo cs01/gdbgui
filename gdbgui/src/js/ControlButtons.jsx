@@ -11,7 +11,7 @@ class ControlButtons extends React.Component {
   }
 
   render() {
-    let btn_class = "btn btn-default";
+    let btn_class = "btn";
 
     return (
       <div className='btn-group btn-group-sm'>

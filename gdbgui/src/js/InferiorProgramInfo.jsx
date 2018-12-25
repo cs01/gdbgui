@@ -48,8 +48,7 @@ class InferiorProgramInfo extends React.Component {
   get_dropdown() {
     return (<span className="input-group-btn">
           <button
-            className="btn btn-default dropdown-toggle"
-            type="button"
+            className="btn dropdown-toggle"
             data-toggle="dropdown">
             {this.state.selected_signal}
             <span className="caret">
@@ -65,10 +64,7 @@ class InferiorProgramInfo extends React.Component {
   render() {
     let gdb_button = (
       <button
-        className="btn btn-default"
-        // id="step_instruction_button"
-        // style={{marginLeft: '5px'}}
-        type="button"
+        className="btn"
         title={`send ${this.state.selected_signal} to ${this.state.gdb_pid}`}
         onClick={() =>
           Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
@@ -81,8 +77,7 @@ class InferiorProgramInfo extends React.Component {
     if (this.state.inferior_pid) {
       inferior_button = (
         <button
-          className="btn btn-default"
-          type="button"
+          className="btn"
           title={`send ${this.state.selected_signal} to ${this.state.inferior_pid}`}
           onClick={() =>
             Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
@@ -95,8 +90,7 @@ class InferiorProgramInfo extends React.Component {
     let pid_button = (
       <button
         disabled={!this.state.other_pid}
-        className="btn btn-default btn-xs"
-        type="button"
+        className="btn btn-tiny"
         title={`send ${this.state.selected_signal} to ${this.state.other_pid}`}
         onClick={() => Actions.send_signal(this.state.selected_signal, this.state.other_pid)}>
         pid

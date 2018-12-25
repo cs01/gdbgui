@@ -62,8 +62,7 @@ class Settings extends React.Component {
               />
               <span className="input-group-btn">
                 <button
-                  /*className='btn btn-default btn-xs'*/
-                  className="btn btn-default btn-success"
+                  className="btn btn-success"
                   ref={n => (this.save_button = n)}
                   onClick={() => {
                     let new_value = parseInt(this.max_source_file_lines_input.value);

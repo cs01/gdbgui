@@ -13,6 +13,11 @@ html {
   overflow: auto;
 }
 
+#folders-view {
+  height: 60vh; /*todo figure out heights*/
+
+}
+
 .menu-item-icon {
   position: absolute;
   left: 4px;
@@ -23,16 +28,8 @@ html {
   position: relative;
 }
 
-select.custom-select.combobox-select {
-  flex: 0.001;
-}
-
 .goto-line {
   width: 6em;
-}
-
-.source-file-input {
-  flex-grow: 0.1;
 }
 
 .plot-container {
@@ -49,7 +46,6 @@ select.custom-select.combobox-select {
   background-color: $console-bg;
   color: $console-default-color;
   overflow: auto;
-  padding: 6px;
   height: 10em;
 }
 

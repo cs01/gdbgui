@@ -11,6 +11,8 @@ import Actions from "./Actions.js";
 import constants from "./constants.js";
 import {step0, step3} from "./TourGuide.jsx";
 
+import Settings from "./Settings.jsx";
+
 let onkeyup_jump_to_line = e => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
     Actions.set_line_state(e.currentTarget.value);
@@ -99,6 +101,12 @@ const menu = (
       <span className='fa fa-tools'/>
     </button>
     <div className="dropdown-menu">
+      <li><a
+        className="dropdown-item"
+        title="settings"
+        onClick={() => Settings.toggle_key("show_settings")}>
+        Settings
+      </a></li>
       <li><a
         className="dropdown-item"
         title="dashboard"
@@ -269,7 +277,7 @@ class TopBar extends React.Component {
     ); // save this for next session
     store
       .get("middle_panes_split_obj")
-      // .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
+    // .setSizes([new_file_explorer_size, new_source_size, new_sidebar_size]);
   }
 
   render() {

@@ -50,10 +50,8 @@ class Memory extends React.Component {
     data.push([
       <span
         key="moretop"
-        className="pointer"
-        style={{ fontStyle: "italic", fontSize: "0.8em" }}
-        onClick={Memory.click_read_preceding_memory}
-      >
+        className="cursor-pointer small text-warning"
+        onClick={Memory.click_read_preceding_memory}>
         more
       </span>,
       "",
@@ -69,7 +67,7 @@ class Memory extends React.Component {
         // begin new row
         data.push([
           Memory.make_addrs_into_links_react(hex_addr_to_display),
-          hex_vals_for_this_addr.join(" "),
+          <span className='small monospace'>{hex_vals_for_this_addr.join(" ")}</span>,
           char_vals_for_this_addr
         ]);
 
@@ -83,7 +81,7 @@ class Memory extends React.Component {
       hex_vals_for_this_addr.push(hex_value);
       let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, ".");
       char_vals_for_this_addr.push(
-        <span key={i} className="memory_char">
+        <span key={i} className='small monospace'>
           {char}
         </span>
       );
@@ -95,7 +93,7 @@ class Memory extends React.Component {
       // add the remaining memory
       data.push([
         Memory.make_addrs_into_links_react(hex_addr_to_display),
-        hex_vals_for_this_addr.join(" "),
+        <span className='small monospace'>{hex_vals_for_this_addr.join(" ")}</span>,
         char_vals_for_this_addr
       ]);
     }
@@ -104,10 +102,8 @@ class Memory extends React.Component {
       data.push([
         <span
           key="morebottom"
-          className="pointer"
-          style={{ fontStyle: "italic", fontSize: "0.8em" }}
-          onClick={Memory.click_read_more_memory}
-        >
+          className="cursor-pointer small text-warning"
+          onClick={Memory.click_read_more_memory}>
           more
         </span>,
         "",
@@ -122,49 +118,55 @@ class Memory extends React.Component {
   render() {
     let content = this.get_memory_component_jsx_content();
     return (<div>
-      <div className="form-group">
-        <div className="input-group input-group-sm">
-          <span className="input-group-addon">start</span>
-          <input
-            id="memory_start_address"
-            className="form-control monospace"
-            placeholder="hex addr"
-            value={this.state.start_addr}
-            onKeyUp={Memory.keypress_on_input}
-            onChange={e => {
-              store.set("start_addr", e.target.value);
-            }}
-          />
-          <span className="input-group-addon" style={{ borderWidth: "1px 0" }}>end</span>
-          <input
-            id="memory_end_address"
-            className="form-control monospace"
-            placeholder="hex addr"
-            value={this.state.end_addr}
-            onKeyUp={Memory.keypress_on_input}
-            onChange={e => {
-              store.set("end_addr", e.target.value);
-            }}
-          />
+      <div className="input-group input-group-sm">
+        <div className="input-group-prepend">
+          <span className="input-group-text">
+            start
+          </span>
         </div>
-      </div>
-      <div>
-        {content}
-      </div>
-      <div className='input-group input-group-sm'>
-        <span className="input-group-addon">bytes per line</span>
+        <input
+          id="memory_start_address"
+          className="form-control monospace"
+          placeholder="hex address"
+          value={this.state.start_addr}
+          onKeyUp={Memory.keypress_on_input}
+          onChange={e => {
+            store.set("start_addr", e.target.value);
+          }}/>
+        <div className="input-group-prepend">
+          <span className="input-group-text">
+            end
+          </span>
+        </div>
+        <input
+          id="memory_end_address"
+          className="form-control monospace"
+          placeholder="hex addr"
+          value={this.state.end_addr}
+          onKeyUp={Memory.keypress_on_input}
+          onChange={e => {
+            store.set("end_addr", e.target.value);
+          }}
+        />
+        <div className="input-group-prepend">
+          <span className="input-group-text">
+            bytes per line
+          </span>
+        </div>
         <input
           id="memory_bytes_per_line"
-          className="form-control"
+          className="form-control lo-grow"
           value={this.state.bytes_per_line}
           onKeyUp={Memory.keypress_on_input}
           onChange={e => {
             store.set("bytes_per_line", e.target.value);
           }}/>
-        <span className="input-group-btn">
-          {/*todo wouldn't it be nice if we made a setting for this?*/}
+        <div className='input-group-append'>
           <button className="btn btn-primary">save</button>
-        </span>
+        </div>
+      </div>
+      <div>
+        {content}
       </div>
     </div>);
   }
@@ -258,9 +260,9 @@ class Memory extends React.Component {
    * return react component
    */
   static make_addrs_into_links_react(text) {
-    let matches = text.match(/(0x[\d\w]+)/g);
-    if (text && matches && matches.length) {
-      let addr = matches[0];
+    let is_hex = text.match(/(0x[\d\w]+)/g);
+    if (is_hex && is_hex.length) {
+      let addr = is_hex[0];
       let leading_text = text.slice(0, text.indexOf(addr));
       let trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length);
       let suffix_component = trailing_text;
@@ -276,7 +278,7 @@ class Memory extends React.Component {
         </React.Fragment>
       );
     } else {
-      return text;
+      return <span className='mx-1 text-info'>{text}</span>; /* goddammit */
     }
   }
 

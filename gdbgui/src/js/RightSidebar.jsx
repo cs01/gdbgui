@@ -43,11 +43,10 @@ class RightSidebar extends React.Component {
     const section_is_visible = this.state.section_is_visible
     return (
       <div id='right-sidebar'
-          className={`col-${this.state.show_filesystem ? 4 : 6}`}
+           className={`col-${this.state.show_filesystem ? 4 : 6}`}
            onMouseUp={onmouseup_in_parent_callback}
            onMouseMove={onmousemove_in_parent_callback}>
         <GeminiScrollbar>
-
           <button className="btn btn-primary btn-sm m-1"
                   data-toggle="collapse"
                   data-target="#threads-panel">
@@ -55,7 +54,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['threads'] ? "show" : ""}`}
                id="threads-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <Threads/>
             </div>
           </div>
@@ -67,7 +66,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['locals'] ? "show" : ""}`}
                id="locals-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <Locals/>
             </div>
           </div>
@@ -89,8 +88,8 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['tree'] ? "show" : ""}`}
                id="tree-panel">
-            <div className="card card-body">
-              <div>
+            <ul className="nav my-1 px-1">
+              <li className="nav-item">
                 <div className='input-group input-group-sm'>
                   <input id="tree_width"
                          className="form-control"
@@ -99,8 +98,11 @@ class RightSidebar extends React.Component {
                          className="form-control"
                          placeholder="height (px)"/>
                 </div>
-                <div id={constants.tree_component_id}/>
-              </div>
+              </li>
+            </ul>
+            <div className="card card-body m-2">
+              <div className='shadow-lg'
+                   id={constants.tree_component_id}/>
             </div>
           </div>
 
@@ -111,7 +113,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['memory'] ? "show" : ""}`}
                id="memory-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <Memory/>
             </div>
           </div>
@@ -123,7 +125,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['breakpoints'] ? "show" : ""}`}
                id="breakpoints-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <Breakpoints/>
             </div>
           </div>
@@ -135,7 +137,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['signals'] ? "show" : ""}`}
                id="signals-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <InferiorProgramInfo signals={this.props.signals}/>
             </div>
           </div>
@@ -147,7 +149,7 @@ class RightSidebar extends React.Component {
           </button>
           <div className={`collapse ${section_is_visible['registers'] ? "show" : ""}`}
                id="registers-panel">
-            <div className="card card-body">
+            <div className="card card-body m-2">
               <Registers/>
             </div>
           </div>

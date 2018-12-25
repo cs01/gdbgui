@@ -96,7 +96,7 @@ class BinaryLoader extends React.Component {
             </button>
           </div>
 
-          <select className="custom-select combobox-select"
+          <select className="custom-select no-grow"
                   onKeyUp={this.onkeyup_user_input.bind(this)}
                   onChange={this.onchange_user_inpu.bind(this)}
                   value={this.state.user_input}>

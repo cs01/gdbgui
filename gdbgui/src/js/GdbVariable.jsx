@@ -12,6 +12,14 @@ import GdbApi from "./GdbApi.jsx";
 import CopyToClipboard from "./CopyToClipboard.jsx";
 import Actions from "./Actions.js";
 
+
+/* note: these
+  <span className='mx-1 text-default'>name</span>
+  <span className='mx-1 small'>=</span>
+  <span className='mx-1 text-primary'>type</span>
+  <span className='mx-1 text-info'>value</span>
+*/
+
 /**
  * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
  * to fetch children for, and fetches them in serial.
@@ -190,9 +198,9 @@ class GdbVariable extends React.Component {
           {can_be_expanded ? <span className='fa fa-plus-circle'/>
             /* otherwise, show nothing */ : <span className='fa fa-plus-circle invisible'/>}
         </span>
-        <span className="mx-1 text-primary">{_.trim(local.type)}</span>
         <span className='mx-1 text-default'>{local.name}</span>
         <span className='mx-1 small'>=</span>
+        <span className="mx-1 text-primary">{_.trim(local.type)}</span>
         <span className='mx-1 text-info'>{value}</span>
       </div>
     );
@@ -203,31 +211,17 @@ class GdbVariable extends React.Component {
    * @return unordered list, expanded or collapsed based on the key "show_children_in_ui"
    */
   get_ul_for_var_with_children(expression, mi_obj, expr_type, is_root = false) {
-    let child_tree;
-    if (mi_obj.show_children_in_ui) {
-      let content = [];
-      if (mi_obj.children.length > 0) {
-        for (let child of mi_obj.children) {
-          if (child.numchild > 0) {
-            content.push(
-              <li key={child.exp}>
-                {this.get_ul_for_var_with_children(child.exp, child, expr_type)}
-              </li>
-            );
-          } else {
-            content.push(
-              <li key={child.exp}>
-                {this.get_ul_for_var_without_children(child.exp, child, expr_type)}
-              </li>
-            );
-          }
-        }
-      }
-
-      child_tree = <ul className='list-unstyled' key={mi_obj.exp}>{content}</ul>;
-    } else {
-      child_tree = "";
-    }
+    let child_tree = mi_obj.show_children_in_ui ?
+      <ul className='list-unstyled list-unstyled-pad'
+          key={mi_obj.exp}>{mi_obj.children.map(child => child.numchild > 0 ?
+        <li key={child.exp}>
+          {this.get_ul_for_var_with_children(child.exp, child, expr_type)}
+        </li>
+        /* otherwise, this child has no children */ : <li key={child.exp}>
+          {this.get_ul_for_var_without_children(child.exp, child, expr_type)}
+        </li>)
+      }</ul>
+      /* otherwise don't show children */ : null;
 
     return this._get_ul_for_var(
       expression,
@@ -245,29 +239,20 @@ class GdbVariable extends React.Component {
   }
 
   static _get_value_jsx(obj) {
-    let val;
-    if (obj.is_int) {
-      val = (
-        <span className="inline">
-          <span className="gdbVarValue">
-            {Memory.make_addrs_into_links_react(obj._int_value_to_str_in_radix)}
-            <button
-              className="btn btn-default btn-xs btn-radix"
-              onClick={() => {
-                GdbVariable.change_radix(obj);
-              }}
-              title="click to change radix">
+    return obj.is_int ? <span className='mx-1 text-info'>
+        {Memory.make_addrs_into_links_react(obj._int_value_to_str_in_radix)}
+        <button
+          className="btn btn-tiny btn-outline-primary mx-1"
+          onClick={() => {
+            GdbVariable.change_radix(obj);
+          }}
+          title="click to change radix">
               base {obj._radix}
             </button>
-          </span>
         </span>
-      );
-    } else {
-      val = _.isString(obj.value)
-        ? Memory.make_addrs_into_links_react(obj.value)
-        : obj.value;
-    }
-    return val;
+      /* otherwise, when not an int */ : _.isString(obj.value) ?
+        Memory.make_addrs_into_links_react(obj.value)
+        /* otherwise, when not a string */ : <span className='mx-1 text-info'>{obj.value}</span>;
   }
 
   static change_radix(obj) {
@@ -292,46 +277,39 @@ class GdbVariable extends React.Component {
     child_tree = "",
     numchild = 0
   ) {
-    let
-      has_children = numchild > 0,
-      // hover var can't draw tree
-      toggle_classes = has_children ? "pointer" : "",
-      plusminus_click_callback = has_children
-        ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name)
-        : () => {
-        };
-
+    let has_children = numchild > 0
     return (
-      <ul className='list-unstyled'
+      <ul className='list-unstyled list-unstyled'
           key={expression}>
         <li>
-          <span className={toggle_classes} onClick={plusminus_click_callback}>
+          <span className={has_children ? "cursor-pointer" : ""}
+                onClick={() => has_children && GdbVariable.click_toggle_children_visibility(mi_obj.name)}>
             {show_children === null ? null
               /* otherwise, show the state */ : show_children ? <span className='fa fa-chevron-down'/>
-                /* otherwise, show affordance */ : <span className='fa fa-chevron-right'/>} {expression}&nbsp;
+                /* otherwise, show affordance */ : <span className='fa fa-chevron-right'/>} {expression}
           </span>
 
           {GdbVariable._get_value_jsx(mi_obj)}
 
-          <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
+          <span className='mx-1 text-primary'>{_.trim(mi_obj.type) || ""}</span>
 
-          <span className="right_help_icon_show_on_hover">
+          <span>
             <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)}/>
             {has_children && (expr_type === "expr" || expr_type === "local") ?
               <button
-                className='btn btn-sm btn-outline-default'
+                className='btn btn-tiny'
                 onClick={() => GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)}>
                 <span className='fa fa-seedling'/>
               </button> : null}
             {mi_obj.can_plot ?
-              <button className='btn btn-sm btn-outline-default'
+              <button className='btn btn-tiny'
                       title={`${mi_obj.show_plot ? 'delete' : 'create'} x/y plot`}
                       onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}>
                 <span className={`fa ${mi_obj.show_plot ? 'fa-trash' : 'fa-line-chart'}`}/>
               </button>
               /* otherwise */ : null}
             {is_root && expr_type === "expr" ? <button
-                className='btn btn-sm btn-outline-default'
+                className='btn btn-tiny'
                 title='Clear expansion'
                 onClick={() => GdbVariable.delete_gdb_variable(mi_obj.name)}>
                 <span className="fa fa-ban"/>

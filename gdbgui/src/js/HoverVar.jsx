@@ -3,7 +3,7 @@
  * in the source code
  */
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import constants from "./constants.js";
 import GdbVariable from "./GdbVariable.jsx";
 
@@ -29,6 +29,7 @@ class HoverVar extends React.Component {
 
     store.connectComponentState(this, ["expressions"]);
   }
+
   render() {
     let hover_objs = store.get("expressions").filter(o => o.expr_type === "hover"),
       obj;
@@ -37,26 +38,26 @@ class HoverVar extends React.Component {
     }
     this.obj = obj;
     if (obj) {
-      let style = {
-        position: "absolute",
+      let position = {
         left: HoverVar.left + "px",
         top: HoverVar.top + "px",
-        backgroundColor: "white"
       };
       return (
-        <div style={style} id="hovervar">
+        <div id="hovervar"
+             className='bg-light position-absolute'
+             style={position}>
           <GdbVariable
             obj={obj}
             key={obj.expression}
             expression={obj.expression}
-            expr_type="hover"
-          />
+            expr_type="hover"/>
         </div>
       );
     } else {
-      return <div className="hidden">no variable hovered</div>;
+      return <div className="small text-info">No variable hovered</div>;
     }
   }
+
   static mouseover_variable(e) {
     HoverVar.clear_hover_state();
 
@@ -75,6 +76,7 @@ class HoverVar extends React.Component {
       }
     }, WAIT_TIME_SEC * 1000);
   }
+
   static mouseout_variable(e) {
     void e;
     const WAIT_TIME_SEC = 0.1;
@@ -82,6 +84,7 @@ class HoverVar extends React.Component {
       HoverVar.clear_hover_state();
     }, WAIT_TIME_SEC * 1000);
   }
+
   static mouseover_hover_window(e) {
     void e;
     // Mouse went from hovering over variable name in source code to
@@ -89,10 +92,12 @@ class HoverVar extends React.Component {
     // Don't remove the window in this case.
     clearTimeout(HoverVar.exit_timeout);
   }
+
   static mouseout_hover_window(e) {
     void e;
     HoverVar.clear_hover_state();
   }
+
   static clear_hover_state() {
     clearTimeout(HoverVar.enter_timeout);
     clearTimeout(HoverVar.exit_timeout);

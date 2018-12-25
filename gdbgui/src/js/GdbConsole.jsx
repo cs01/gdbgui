@@ -18,7 +18,7 @@ class GdbConsole extends React.Component {
   }
 
   scroll_to_bottom() {
-    this.console_end.scrollIntoView({
+    this.console_end_element.scrollIntoView({
       block: "end",
       inline: "nearest",
       behavior: "smooth"
@@ -95,11 +95,9 @@ class GdbConsole extends React.Component {
           let escaped_value = pre_escape(entry.value);
           return (
             <div key={index}>
-              <a
-                onClick={this.backtrace_button_clicked}
-                style={{ fontFamily: "arial", marginLeft: "10px" }}
-                className="btn btn-success backtrace btn-xs"
-              >
+              <a onClick={this.backtrace_button_clicked}
+                 style={{ fontFamily: "arial", marginLeft: "10px" }}
+                 className="btn btn-success backtrace btn-sm">
                 {escaped_value}
               </a>
             </div>
@@ -119,21 +117,21 @@ class GdbConsole extends React.Component {
               }}>
               <span style={{ fontWeight: "bold" }}>
                 Enter gdbgui ad-free license key to support the project and remove this
-                message.{" "}
-              </span>
+                message
+              </span>&nbsp;
               <a
-                className="btn btn-default btn-xs"
+                className="btn btn-success btn-sm"
                 style={{ color: "black" }}
                 href={constants.gdbgui_upgrade_url}>
-                upgrade now.
+                upgrade
               </a>
               <span> or </span>
               <a
-                className="btn btn-default btn-xs"
+                className="btn btn-success btn-sm"
                 style={{ color: "black" }}
                 href={constants.gdbgui_donate_url}>
                 {" "}
-                donate now.
+                donate
               </a>
             </div>
           );
@@ -146,12 +144,9 @@ class GdbConsole extends React.Component {
     const { console_entries } = this.props;
 
     return (
-      <GeminiScrollbar id='console'
-                       ref={el => (this.console = el)}>
+      <GeminiScrollbar id='console'>
         {this.render_entries(console_entries)}
-        <div ref={el => {
-          this.console_end = el;
-        }}/>
+        <div ref={el => this.console_end_element = el}/>
       </GeminiScrollbar>
     );
   }

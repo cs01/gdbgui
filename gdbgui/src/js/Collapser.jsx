@@ -60,7 +60,7 @@ class Collapser extends React.Component {
       reset_size_button = (
         <button
           onClick={this.onclick_restore_autosize}
-          className="placeholder reset-height btn btn-default btn-xs"
+          className="placeholder reset-height btn btn-xs"
           title={
             "Height frozen at " + this.state.height_px + "px"
           }>

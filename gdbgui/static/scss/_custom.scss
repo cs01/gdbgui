@@ -1,36 +1,36 @@
 /* customizes bootstrap */
 
-$white:               #fff;
-$gray-100:            #f8f9fa;
-$gray-200:            #ebebeb;
-$gray-300:            #dee2e6;
-$gray-400:            #ced4da;
-$gray-500:            #adb5bd;
-$gray-600:            #999;
-$gray-700:            #444;
-$gray-800:            #303030;
-$gray-900:            #222;
-$black:               #000;
-$blue:                #3c6688;
-$blue-text:           #7fa2bd;
-$indigo:              #6610f2;
-$purple:              #6f42c1;
-$pink:                #e83e8c;
-$red:                 #E74C3C;
-$orange:              #fd7e14;
-$yellow:              #F39C12;
-$green:               #00bc8c;
-$teal:                #20c997;
-$cyan:                #3498DB;
+$white: #fff;
+$gray-100: #f8f9fa;
+$gray-200: #ebebeb;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #999;
+$gray-700: #444;
+$gray-800: #303030;
+$gray-900: #222;
+$black: #000;
+$blue: #3c6688;
+$blue-text: #7fa2bd;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #e83e8c;
+$red: #E74C3C;
+$orange: #fd7e14;
+$yellow: #F39C12;
+$green: #00bc8c;
+$teal: #20c997;
+$cyan: #3498DB;
 
-$primary:             $blue;
-$secondary:           $gray-700;
-$success:             $green;
-$info:                $cyan;
-$warning:             $yellow;
-$danger:              $red;
-$light:               $gray-800;
-$dark:                $gray-800;
+$primary: $blue;
+$secondary: $gray-700;
+$success: $green;
+$info: $cyan;
+$warning: $yellow;
+$danger: $red;
+$light: $gray-800;
+$dark: $gray-800;
 @import "~bootswatch/dist/darkly/variables";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootswatch/dist/darkly/bootswatch";
@@ -41,7 +41,7 @@ $enable-shadows: true;
   padding: .5em;
 }
 
-table.table-sm {
+table.table.table-condensed {
   margin-bottom: 0;
 }
 
@@ -49,13 +49,29 @@ table.table-sm {
   color: $blue-text !important; /* goddammit bootstrap why */
 }
 
-/* customizes animate css */
-@import "~animate.css/animate.min.css";
-
-ol, ul, dl {
+.list-unstyled.list-unstyled-pad {
   margin-top: 0;
-  margin-bottom: 1rem;
+  padding-left: 1.9rem;
 }
 
+.btn-tiny, .btn-group-tiny > .btn {
+  padding: 0.20rem 0.4rem;
+  font-size: 0.82031rem;
+  line-height: 1.1;
+  border-radius: 0.2rem;
+}
+
+select.custom-select.no-grow,
+.input-group > .form-control.no-grow {
+  flex-grow: 0.001;
+}
+
+select.custom-select.lo-grow,
+.input-group > .form-control.lo-grow {
+  flex-grow: 0.1;
+}
+
+/* customizes animate css */
+@import "~animate.css/animate.min.css";
 
 @import '~gemini-scrollbar/gemini-scrollbar.css';

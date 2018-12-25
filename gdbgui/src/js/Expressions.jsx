@@ -57,13 +57,13 @@ class Expressions extends React.Component {
               </div>
               <input
                 className="form-control"
-                placeholder='variable or expression'
+                placeholder='a variable or expression'
                 onKeyUp={Expressions.keydown_on_input}
               />
             </div>
           </li>
         </ul>
-        <div className="card card-body">
+        <div className="card card-body m-2">
           {content}
         </div>
       </React.Fragment>

@@ -21,3 +21,7 @@ $fa-font-path: "/static/fonts";
 }
 
 $font-family-monospace: 'TypoPRO Source Code Pro', Menlo, Monaco, Consolas, "Courier New", monospace;
+
+.monospace {
+  font-family: $font-family-monospace;
+}

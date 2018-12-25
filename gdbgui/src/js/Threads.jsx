@@ -77,7 +77,6 @@ class Threads extends React.Component {
                     key={thread.id}
                     header={["fun", "file", "addr", "args"]}/>
       );
-      content.push(<br key={thread.id + "br"}/>);
     }
     return <div>{content}</div>;
   }
@@ -107,7 +106,7 @@ class Threads extends React.Component {
       );
     } else {
       selected = (
-        <button className="small btn btn-default btn-sm"
+        <button className="btn btn-tiny"
                 onClick={() => {
                   Threads.select_thread_id(thread.id);
                 }}

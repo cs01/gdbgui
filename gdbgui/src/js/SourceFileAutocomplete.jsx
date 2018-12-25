@@ -41,7 +41,7 @@ class SourceFileAutocomplete extends React.Component {
           value={this.state.user_input}
 
           onClick={this.onclick_dropdown.bind(this)}
-          className="custom-select combobox-select">
+          className="custom-select no-grow">
           {
             this.state.source_file_paths.map((b, i) =>
               <option key={i} value={b}>{b}</option>)
@@ -59,7 +59,7 @@ class SourceFileAutocomplete extends React.Component {
           title={help_text}
           role="combobox"
           ref={el => (this.html_input = el)}
-          className="form-control source-file-input"/>
+          className="form-control"/>
       </React.Fragment>);
     /*
       <div

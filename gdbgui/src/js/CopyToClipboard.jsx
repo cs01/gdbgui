@@ -8,7 +8,7 @@ class CopyToClipboard extends React.Component {
     }
     return (
       <button
-        className='btn btn-outline-default btn-sm'
+        className='btn btn-tiny'
         ref={node => (this.node = node)}
         data-toggle="tooltip"
         data-placement="top"
