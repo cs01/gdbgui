@@ -20,11 +20,12 @@ BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --c
 1. the dashboard template is busted
 1. / keymaps to focus load binary input
 1. ; keymaps to focus gdb command input 
-1. pretty scrollbars
 1. stylize white input backgrounds 
 1. asm doesn't switch from at&t to intel until you click twice
+1. fix scrolling
 
 # fixed
+1. pretty scrollbars
 1. filesystem style with icons to match mime-types
 1. l keymaps to load binary
 1. nav bars stick on the top

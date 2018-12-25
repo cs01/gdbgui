@@ -1,14 +1,14 @@
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import Util from "./Util.js";
 import FileOps from "./FileOps.jsx";
-import { FileLink } from "./Links.jsx";
+import {FileLink} from "./Links.jsx";
 
 const BreakpointSourceLineCache = {
   _cache: {},
-  get_line: function(fullname, linenum) {
+  get_line: function (fullname, linenum) {
     if (
       BreakpointSourceLineCache._cache["fullname"] !== undefined &&
       _.isString(BreakpointSourceLineCache._cache["fullname"][linenum])
@@ -17,7 +17,7 @@ const BreakpointSourceLineCache = {
     }
     return null;
   },
-  add_line: function(fullname, linenum, escaped_text) {
+  add_line: function (fullname, linenum, escaped_text) {
     if (!_.isObject(BreakpointSourceLineCache._cache["fullname"])) {
       BreakpointSourceLineCache._cache["fullname"] = {};
     }
@@ -42,30 +42,23 @@ class Breakpoint extends React.Component {
       BreakpointSourceLineCache.add_line(fullname, linenum, line);
     }
 
-    if (line) {
-      return (
-        <span className="monospace" style={{ whiteSpace: "nowrap", fontSize: "0.9em" }}>
-          {line || <br />}
-        </span>
-      );
-    }
-    return "(file not cached)";
+    return line ? <span className="small monospace">{line}</span>
+      /* otherwise */ : <span className='small text-danger'>(file not cached)</span>
   }
+
   get_delete_jsx(bkpt_num_to_delete) {
     return (
-      <div
-        style={{ width: "10px", display: "inline" }}
-        className="pointer breakpoint_trashcan"
-        onClick={e => {
-          e.stopPropagation();
-          Breakpoints.delete_breakpoint(bkpt_num_to_delete);
-        }}
-        title={`Delete breakpoint ${bkpt_num_to_delete}`}
-      >
-        <span className="glyphicon glyphicon-trash"> </span>
-      </div>
+      <button className="btn btn-sm"
+              onClick={e => {
+                e.stopPropagation();
+                Breakpoints.delete_breakpoint(bkpt_num_to_delete);
+              }}
+              title={`Delete breakpoint ${bkpt_num_to_delete}`}>
+        <span className="fa fa-trash"/>
+      </button>
     );
   }
+
   render() {
     let b = this.props.bkpt,
       checked = b.enabled === "y" ? "checked" : "",
@@ -76,14 +69,14 @@ class Breakpoint extends React.Component {
       bkpt_num_to_delete = b.parent_breakpoint_number;
       info_glyph = (
         <span
-          className="glyphicon glyphicon-th-list"
+          className="fa fa-th-list"
           title="Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
         />
       );
     } else if (b.is_parent_breakpoint) {
       info_glyph = (
         <span
-          className="glyphicon glyphicon-th-list"
+          className="fa fa-th-list"
           title="Parent breakpoint with one or more child breakpoints. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
         />
       );
@@ -124,38 +117,36 @@ class Breakpoint extends React.Component {
     }
 
     return (
-      <div
-        className="breakpoint"
-        onClick={() => Actions.view_file(b.fullname_to_display, b.line)}
-      >
-        <table
-          style={{
-            width: "100%",
-            fontSize: "0.9em",
-            borderWidth: "1px",
-            borderColor: "black"
-          }}
-          className="lighttext table-condensed"
-        >
+      <div className="breakpoint"
+           onClick={() => Actions.view_file(b.fullname_to_display, b.line)}>
+        <table className="table-condensed">
           <tbody>
-            <tr>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => Breakpoints.enable_or_disable_bkpt(checked, b.number)}
-                />
-                {function_jsx} {delete_jsx}
-              </td>
-            </tr>
+          <tr>
+            <td>
+              <div className="input-group input-group-sm">
+                <div className="input-group-prepend">
+                  <div className="input-group-text">
+                    <input type="checkbox"
+                           checked={checked}
+                           onChange={() => Breakpoints.enable_or_disable_bkpt(checked, b.number)}/>
+                  </div>
+                </div>
+                <div className='input-group-append'>
+                  <div className="input-group-text cursor-pointer">
+                    {function_jsx} {delete_jsx}
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
 
-            <tr>
-              <td>{location_jsx}</td>
-            </tr>
+          <tr>
+            <td>{location_jsx}</td>
+          </tr>
 
-            <tr>
-              <td>{source_line}</td>
-            </tr>
+          <tr>
+            <td>{source_line}</td>
+          </tr>
           </tbody>
         </table>
       </div>
@@ -168,10 +159,11 @@ class Breakpoints extends React.Component {
     super();
     store.connectComponentState(this, ["breakpoints"]);
   }
+
   render() {
     let breakpoints_jsx = [];
     for (let b of store.get("breakpoints")) {
-      breakpoints_jsx.push(<Breakpoint bkpt={b} key={b.number} />);
+      breakpoints_jsx.push(<Breakpoint bkpt={b} key={b.number}/>);
     }
 
     if (breakpoints_jsx.length) {
@@ -180,6 +172,7 @@ class Breakpoints extends React.Component {
       return <span className="small text-info">No breakpoints</span>;
     }
   }
+
   static enable_or_disable_bkpt(checked, bkpt_num) {
     if (checked) {
       GdbApi.run_gdb_command([`-break-disable ${bkpt_num}`, GdbApi.get_break_list_cmd()]);
@@ -187,6 +180,7 @@ class Breakpoints extends React.Component {
       GdbApi.run_gdb_command([`-break-enable ${bkpt_num}`, GdbApi.get_break_list_cmd()]);
     }
   }
+
   static remove_breakpoint_if_present(fullname, line) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
       let number = Breakpoints.get_breakpoint_number(fullname, line);
@@ -194,6 +188,7 @@ class Breakpoints extends React.Component {
       GdbApi.run_gdb_command(cmd);
     }
   }
+
   static add_or_remove_breakpoint(fullname, line) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
       Breakpoints.remove_breakpoint_if_present(fullname, line);
@@ -201,9 +196,11 @@ class Breakpoints extends React.Component {
       Breakpoints.add_breakpoint(fullname, line);
     }
   }
+
   static add_breakpoint(fullname, line) {
     GdbApi.run_gdb_command(GdbApi.get_insert_break_cmd(fullname, line));
   }
+
   static has_breakpoint(fullname, line) {
     let bkpts = store.get("breakpoints");
     for (let b of bkpts) {
@@ -213,6 +210,7 @@ class Breakpoints extends React.Component {
     }
     return false;
   }
+
   static get_breakpoint_number(fullname, line) {
     let bkpts = store.get("breakpoints");
     for (let b of bkpts) {
@@ -222,24 +220,28 @@ class Breakpoints extends React.Component {
     }
     console.error(`could not find breakpoint for ${fullname}:${line}`);
   }
+
   static delete_breakpoint(breakpoint_number) {
     GdbApi.run_gdb_command([
       GdbApi.get_delete_break_cmd(breakpoint_number),
       GdbApi.get_break_list_cmd()
     ]);
   }
+
   static get_breakpoint_lines_for_file(fullname) {
     return store
       .get("breakpoints")
       .filter(b => b.fullname_to_display === fullname && b.enabled === "y")
       .map(b => parseInt(b.line));
   }
+
   static get_disabled_breakpoint_lines_for_file(fullname) {
     return store
       .get("breakpoints")
       .filter(b => b.fullname_to_display === fullname && b.enabled !== "y")
       .map(b => parseInt(b.line));
   }
+
   static save_breakpoints(payload) {
     store.set("breakpoints", []);
     if (payload && payload.BreakpointTable && payload.BreakpointTable.body) {
@@ -248,6 +250,7 @@ class Breakpoints extends React.Component {
       }
     }
   }
+
   static save_breakpoint(breakpoint) {
     let bkpt = Object.assign({}, breakpoint);
 
