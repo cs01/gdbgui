@@ -18,6 +18,7 @@ module.exports = {
       jQuery: 'jquery',
       Split: 'split.js',
       moment: 'moment',
+      GeminiScrollbar: 'react-gemini-scrollbar',
       _: 'lodash',
     })
   ],

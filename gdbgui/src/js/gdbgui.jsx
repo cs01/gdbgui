@@ -18,7 +18,6 @@ import '../../static/scss/main.scss'
 import ReactDOM from "react-dom";
 import React from "react";
 import { store, middleware } from "statorgfc";
-
 import constants from "./constants.js";
 import GdbApi from "./GdbApi.jsx";
 import FileOps from "./FileOps.jsx";
@@ -88,6 +87,8 @@ class Gdbgui extends React.PureComponent {
 
     // store.set("middle_panes_split_obj", middle_panes_split_obj);
   }
+
+
 
   render() {
     return (

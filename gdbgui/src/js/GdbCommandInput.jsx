@@ -57,7 +57,7 @@ class GdbCommandInput extends React.Component {
           autoComplete="on"
           placeholder={message}
           value={current_command_input}
-          className="form-control dropdown-input"/>
+          className="form-control dropdown-input command-prompt purple"/>
         <div className="input-group-prepend">
           <button
             className='btn btn-outline-primary'

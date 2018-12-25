@@ -4,6 +4,15 @@
 @import "typography";
 @import "coding";
 
+html {
+  overflow: hidden;
+}
+
+#right-sidebar {
+  height: 60vh; /*todo figure out heights*/
+  overflow: auto;
+}
+
 .menu-item-icon {
   position: absolute;
   left: 4px;
@@ -44,13 +53,6 @@ select.custom-select.combobox-select {
   height: 10em;
 }
 
-#code_table {
-  font-family: $font-family-monospace;
-  border-collapse: separate;
-  font-size: 11px;
-}
-
-
 .console-line {
   padding: 0;
   margin: 0;
@@ -68,6 +70,7 @@ select.custom-select.combobox-select {
 
 .console-line.user-input {
   color: $console-user-color;
+  background-color: $console-user-bg;
   cursor: pointer;
 }
 
@@ -77,4 +80,11 @@ select.custom-select.combobox-select {
 
 .cursor-pointer {
   cursor: pointer;
+}
+
+.command-prompt {
+  &.purple {
+    color: $console-command-prompt-text;
+    background-color: $console-command-prompt-bg;
+  }
 }

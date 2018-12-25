@@ -2,6 +2,8 @@
  * The middle left div will be rendered with this content
  */
 
+/* global GeminiScrollbar */
+
 import {store} from "statorgfc";
 import React from "react";
 import SourceCode from "./SourceCode.jsx";
@@ -23,11 +25,11 @@ class MiddleLeft extends React.Component {
   render() {
     return (
       <div className={`col-${this.state.show_filesystem ? 5 : 6}`}>
-        <div id="code_container"
-             className={`${this.state.current_theme} p-1`}
-             ref={el => (this.source_code_container_node = el)}>
+        <GeminiScrollbar ref={el => (this.source_code_container_node = el)}
+                         className={`${this.state.current_theme}`}
+                         id="code_container">
           <SourceCode/>
-        </div>
+        </GeminiScrollbar>
       </div>
     );
   }

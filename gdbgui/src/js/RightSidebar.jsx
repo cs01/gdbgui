@@ -2,6 +2,7 @@
  * A component to show/hide variable exploration when hovering over a variable
  * in the source code
  */
+/* global GeminiScrollbar */
 
 import {store} from "statorgfc";
 import React from "react";
@@ -41,132 +42,134 @@ class RightSidebar extends React.Component {
   render() {
     const section_is_visible = this.state.section_is_visible
     return (
-      <div className={`col-${this.state.show_filesystem ? 4 : 6}`}
+      <div id='right-sidebar'
+          className={`col-${this.state.show_filesystem ? 4 : 6}`}
            onMouseUp={onmouseup_in_parent_callback}
            onMouseMove={onmousemove_in_parent_callback}>
+        <GeminiScrollbar>
 
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#threads-panel">
+            Threads
+          </button>
+          <div className={`collapse ${section_is_visible['threads'] ? "show" : ""}`}
+               id="threads-panel">
+            <div className="card card-body">
+              <Threads/>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#locals-panel">
+            Locals
+          </button>
+          <div className={`collapse ${section_is_visible['locals'] ? "show" : ""}`}
+               id="locals-panel">
+            <div className="card card-body">
+              <Locals/>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#expressions-panel">
+            Expressions
+          </button>
+          <div className={`collapse ${section_is_visible['expressions'] ? "show" : ""}`}
+               id="expressions-panel">
+            <Expressions/>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#tree-panel">
+            Tree
+          </button>
+          <div className={`collapse ${section_is_visible['tree'] ? "show" : ""}`}
+               id="tree-panel">
+            <div className="card card-body">
+              <div>
+                <div className='input-group input-group-sm'>
+                  <input id="tree_width"
+                         className="form-control"
+                         placeholder="width (px)"/>
+                  <input id="tree_height"
+                         className="form-control"
+                         placeholder="height (px)"/>
+                </div>
+                <div id={constants.tree_component_id}/>
+              </div>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#memory-panel">
+            Memory
+          </button>
+          <div className={`collapse ${section_is_visible['memory'] ? "show" : ""}`}
+               id="memory-panel">
+            <div className="card card-body">
+              <Memory/>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#breakpoints-panel">
+            Breakpoints
+          </button>
+          <div className={`collapse ${section_is_visible['breakpoints'] ? "show" : ""}`}
+               id="breakpoints-panel">
+            <div className="card card-body">
+              <Breakpoints/>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#signals-panel">
+            Signals
+          </button>
+          <div className={`collapse ${section_is_visible['signals'] ? "show" : ""}`}
+               id="signals-panel">
+            <div className="card card-body">
+              <InferiorProgramInfo signals={this.props.signals}/>
+            </div>
+          </div>
+
+          <button className="btn btn-primary btn-sm m-1"
+                  data-toggle="collapse"
+                  data-target="#registers-panel">
+            Registers
+          </button>
+          <div className={`collapse ${section_is_visible['registers'] ? "show" : ""}`}
+               id="registers-panel">
+            <div className="card card-body">
+              <Registers/>
+            </div>
+          </div>
+
+          {this.props.debug ? (
+            <React.Fragment>
+              <button className="btn btn-primary btn-sm m-1"
+                      data-toggle="collapse"
+                      data-target="#debug-panel">
+                Debug
+              </button>
+              <div className={`collapse ${section_is_visible['debug'] ? "show" : ""}`}
+                   id="debug-panel">
+                <GdbMiOutput id="gdb_mi_output"/>
+              </div>
+            </React.Fragment>
+          ) /* otherwise */ : null}
+        </GeminiScrollbar>
         <ToolTipTourguide
           position={"topleft"}
           content={step5}
           step_num={5}/>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#threads-panel">
-          Threads
-        </button>
-        <div className={`collapse ${section_is_visible['threads'] ? "show" : ""}`}
-             id="threads-panel">
-          <div className="card card-body">
-            <Threads/>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#locals-panel">
-          Locals
-        </button>
-        <div className={`collapse ${section_is_visible['locals'] ? "show" : ""}`}
-             id="locals-panel">
-          <div className="card card-body">
-            <Locals/>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#expressions-panel">
-          Expressions
-        </button>
-        <div className={`collapse ${section_is_visible['expressions'] ? "show" : ""}`}
-             id="expressions-panel">
-          <Expressions/>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#tree-panel">
-          Tree
-        </button>
-        <div className={`collapse ${section_is_visible['tree'] ? "show" : ""}`}
-             id="tree-panel">
-          <div className="card card-body">
-            <div>
-              <div className='input-group input-group-sm'>
-                <input id="tree_width"
-                       className="form-control"
-                       placeholder="width (px)"/>
-                <input id="tree_height"
-                       className="form-control"
-                       placeholder="height (px)"/>
-              </div>
-              <div id={constants.tree_component_id}/>
-            </div>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#memory-panel">
-          Memory
-        </button>
-        <div className={`collapse ${section_is_visible['memory'] ? "show" : ""}`}
-             id="memory-panel">
-          <div className="card card-body">
-            <Memory/>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#breakpoints-panel">
-          Breakpoints
-        </button>
-        <div className={`collapse ${section_is_visible['breakpoints'] ? "show" : ""}`}
-             id="breakpoints-panel">
-          <div className="card card-body">
-            <Breakpoints/>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#signals-panel">
-          Signals
-        </button>
-        <div className={`collapse ${section_is_visible['signals'] ? "show" : ""}`}
-             id="signals-panel">
-          <div className="card card-body">
-            <InferiorProgramInfo signals={this.props.signals}/>
-          </div>
-        </div>
-
-        <button className="btn btn-primary btn-sm m-1"
-                data-toggle="collapse"
-                data-target="#registers-panel">
-          Registers
-        </button>
-        <div className={`collapse ${section_is_visible['registers'] ? "show" : ""}`}
-             id="registers-panel">
-          <div className="card card-body">
-            <Registers/>
-          </div>
-        </div>
-
-        {this.props.debug ? (
-          <React.Fragment>
-            <button className="btn btn-primary btn-sm m-1"
-                    data-toggle="collapse"
-                    data-target="#debug-panel">
-              Debug
-            </button>
-            <div className={`collapse ${section_is_visible['debug'] ? "show" : ""}`}
-                 id="debug-panel">
-              <GdbMiOutput id="gdb_mi_output"/>
-            </div>
-          </React.Fragment>
-        ) /* otherwise */ : null}
       </div>
     );
   }

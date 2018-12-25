@@ -23,14 +23,6 @@ BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --c
 1. pretty scrollbars
 1. stylize white input backgrounds 
 1. asm doesn't switch from at&t to intel until you click twice
-```jsx harmony
-const GeminiScrollbar = require('react-gemini-scrollbar');
-
-<GeminiScrollbar>
-    <h1>The content.</h1>
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-</GeminiScrollbar>
-```
 
 # fixed
 1. filesystem style with icons to match mime-types

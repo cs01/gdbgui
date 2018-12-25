@@ -1,9 +1,43 @@
 
 $code-gutter-color: #c7c7c7;
+$console-command-prompt-text: white;
+$console-command-prompt-bg: $purple;
 
 $console-bg: #292929;
 $console-default-color: $gray-600;
 $console-server-color: $cyan;
-$console-user-color: $green;
+$console-user-color: lighten($purple, 10);
+$console-user-bg: $gray-900;
 $console-error-color: $red;
 
+$white:    #fff;
+$gray-100: #f8f9fa;
+$gray-200: #ebebeb;
+$gray-300: #dee2e6;
+$gray-400: #ced4da;
+$gray-500: #adb5bd;
+$gray-600: #999;
+$gray-700: #444;
+$gray-800: #303030;
+$gray-900: #222;
+$black:    #000;
+ $wtf: #375a7f;
+ $blue:    #41799c;
+$indigo:  #6610f2;
+$purple:  #6f42c1;
+$pink:    #e83e8c;
+$red:     #E74C3C;
+$orange:  #fd7e14;
+$yellow:  #F39C12;
+$green:   #00bc8c;
+$teal:    #20c997;
+$cyan:    #3498DB;
+
+$primary:       $blue;
+$secondary:     $gray-700;
+$success:       $green;
+$info:          $cyan;
+$warning:       $yellow;
+$danger:        $red;
+$light:         $gray-800;
+$dark:          $gray-800;
