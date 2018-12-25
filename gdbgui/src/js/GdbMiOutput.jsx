@@ -7,10 +7,11 @@
  * message in gdbgui.
  */
 import React from "react";
-import { store } from "statorgfc";
+import {store} from "statorgfc";
 
 class GdbMiOutput extends React.Component {
   static MAX_OUTPUT_ENTRIES = 500;
+
   constructor() {
     super();
     store.connectComponentState(this, ["gdb_mi_output"]);
@@ -22,34 +23,44 @@ class GdbMiOutput extends React.Component {
     //   }
     // );
   }
+
   render() {
     return (
-      <div className='card'>
-        <div className="card-header">
-          <button
-            title="clear all mi output"
-            className="btn btn-outline-primary btn-sm"
-            onClick={() => store.set("gdb_mi_output", [])}>
-            <span className="fa fa-ban" />
-          </button>
-        </div>
-        <div className="card-body">
-          <div id="gdb_mi_output" className="otpt" style={{ fontSize: "0.8em" }}>
+      <React.Fragment>
+        <ul className="nav my-1 px-1">
+          <li className="nav-item">
+            <div className='input-group input-group-sm'>
+              <button
+                title="clear all mi output"
+                className="btn btn-outline-primary btn-sm"
+                onClick={() => store.set("gdb_mi_output", [])}>
+                <span className="fa fa-ban"/>
+              </button>
+            </div>
+          </li>
+        </ul>
+        <div className="card card-body m-2">
+          <GeminiScrollbar id="gdb_mi_output"
+               className='small'>
             {this.state.gdb_mi_output}
-          </div>
+          </GeminiScrollbar>
         </div>
-      </div>
+      </React.Fragment>
     );
   }
+
   componentDidMount() {
     this.el = document.getElementById("gdb_mi_output");
   }
+
   componentDidUpdate() {
     // this._debounced_scroll_to_bottom(); // note this is annoying
   }
+
   _scroll_to_bottom() {
     // this.el.scrollTop = this.el.scrollHeight;
   }
+
   static add_mi_output(mi_obj) {
     let new_str = JSON.stringify(mi_obj, null, 4)
         .replace(/[^(\\)]\\n/g)

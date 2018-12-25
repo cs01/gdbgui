@@ -15,7 +15,10 @@ html {
 
 #folders-view {
   height: 60vh; /*todo figure out heights*/
+}
 
+#gdb_mi_output {
+  max-height: 400px;
 }
 
 .menu-item-icon {

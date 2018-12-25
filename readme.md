@@ -22,7 +22,8 @@ BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --c
 1. ; keymaps to focus gdb command input 
 1. stylize white input backgrounds 
 1. asm doesn't switch from at&t to intel until you click twice
-1. fix scrolling
+1. fix scrolling in code window and in gdb console
+1. dialogs
 
 # fixed
 1. pretty scrollbars
