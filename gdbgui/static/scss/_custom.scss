@@ -57,7 +57,7 @@ table.table.table-condensed {
 .btn-tiny, .btn-group-tiny > .btn {
   padding: 0.20rem 0.4rem;
   font-size: 0.82031rem;
-  line-height: 1.1;
+  line-height: 1;
   border-radius: 0.2rem;
 }
 
@@ -69,6 +69,11 @@ select.custom-select.no-grow,
 select.custom-select.lo-grow,
 .input-group > .form-control.lo-grow {
   flex-grow: 0.1;
+}
+
+select.custom-select.md-grow,
+.input-group > .form-control.md-grow {
+  flex-grow: 0.3;
 }
 
 /* customizes animate css */

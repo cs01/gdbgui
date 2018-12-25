@@ -6,8 +6,7 @@ import {store} from "statorgfc";
 class InferiorProgramInfo extends React.Component {
   constructor() {
     super();
-    this.get_li_for_signal = this.get_li_for_signal.bind(this);
-    this.get_dropdown = this.get_dropdown.bind(this);
+    this.get_signal_item = this.get_signal_item.bind(this);
     this.state = {
       selected_signal: "SIGINT",
       other_pid: ""
@@ -15,17 +14,17 @@ class InferiorProgramInfo extends React.Component {
     store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
 
-  get_li_for_signal(s, signal_key) {
-    let onclick = function () {
+  get_signal_item(s, signal_key) {
+    let onclick = function (xignal) {
       let obj = {};
-      obj[signal_key] = s;
+      obj[signal_key] = xignal;
       this.setState(obj);
     }.bind(this);
 
     return (
-      <li key={s} className="pointer" value={s} onClick={onclick}>
-        <a>{`${s} (${this.props.signals[s]})`}</a>
-      </li>
+      <a className="dropdown-item"
+         key={s}
+         onClick={() => onclick(s)}>{`${s} (${this.props.signals[s]})`}</a>
     );
   }
 
@@ -34,88 +33,70 @@ class InferiorProgramInfo extends React.Component {
     // push SIGINT and SIGKILL to top
     for (let s in this.props.signals) {
       if (s === "SIGKILL" || s === "SIGINT") {
-        signals.push(this.get_li_for_signal(s, signal_key));
+        signals.push(this.get_signal_item(s, signal_key));
       }
     }
     for (let s in this.props.signals) {
       if (s !== "SIGKILL" && s !== "SIGINT") {
-        signals.push(this.get_li_for_signal(s, signal_key));
+        signals.push(this.get_signal_item(s, signal_key));
       }
     }
     return signals;
   }
 
-  get_dropdown() {
-    return (<span className="input-group-btn">
-          <button
-            className="btn dropdown-toggle"
-            data-toggle="dropdown">
-            {this.state.selected_signal}
-            <span className="caret">
-                &nbsp;
-            </span>
-          </button>
-          <ul className="dropdown-menu">
-            {this.get_signal_choices("selected_signal")}
-          </ul>
-      </span>);
-  }
-
   render() {
-    let gdb_button = (
-      <button
-        className="btn"
-        title={`send ${this.state.selected_signal} to ${this.state.gdb_pid}`}
-        onClick={() =>
-          Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
-        }>
-        gdb
-      </button>
-    );
+    return (
+      <div className="input-group input-group-sm">
+        <div className="input-group-prepend">
+          <div className="input-group-text">
+            Send
+          </div>
 
-    let inferior_button = null;
-    if (this.state.inferior_pid) {
-      inferior_button = (
-        <button
-          className="btn"
-          title={`send ${this.state.selected_signal} to ${this.state.inferior_pid}`}
-          onClick={() =>
-            Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
-          }>
-          this
-        </button>
-      );
-    }
 
-    let pid_button = (
-      <button
-        disabled={!this.state.other_pid}
-        className="btn btn-tiny"
-        title={`send ${this.state.selected_signal} to ${this.state.other_pid}`}
-        onClick={() => Actions.send_signal(this.state.selected_signal, this.state.other_pid)}>
-        pid
-      </button>
-    );
+          <button className="btn btn-outline-secondary dropdown-toggle"
+                  data-toggle="dropdown">
+            {this.state.selected_signal}
+          </button>
+          <div className="dropdown-menu">
+            {this.get_signal_choices("selected_signal")}
+          </div>
+          <div className="input-group-text">
+            to
+          </div>
+          <button
+            className="btn btn-primary"
+            title={`Send ${this.state.selected_signal} to ${this.state.gdb_pid}`}
+            onClick={() =>
+              Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
+            }>
+            gdb
+          </button>
+          {this.state.inferior_pid ?
+            <button className="btn btn-primary"
+                    title={`Send ${this.state.selected_signal} to ${this.state.inferior_pid}`}
+                    onClick={() =>
+                      Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
+                    }>
+              this program
+            </button>
+            /* otherwise */ : null}
+        </div>
 
-    return (<div>
-        <div className="input-group input-group-sm">
-          <span className="input-group-addon">send</span>
-          {this.get_dropdown()}
-          <span className="input-group-addon">to</span>
-          <span className="input-group-btn">
-            {gdb_button}
-            {inferior_button}
-          </span>
-          <input
-            placeholder="pid"
-            className="form-control"
-            onChange={e => {
-              this.setState({ other_pid: e.currentTarget.value });
-            }}
-            value={this.state.other_pid}/>
-          <span className="input-group-btn">
-            {pid_button}
-          </span>
+        <input
+          placeholder="pid"
+          className="form-control md-grow"
+          onChange={e => {
+            this.setState({ other_pid: e.currentTarget.value });
+          }}
+          value={this.state.other_pid}/>
+        <div className="input-group-append">
+          <button
+            disabled={!this.state.other_pid}
+            className="btn btn-primary"
+            title={`Send ${this.state.selected_signal} to pid ${this.state.other_pid}`}
+            onClick={() => Actions.send_signal(this.state.selected_signal, this.state.other_pid)}>
+            pid
+          </button>
         </div>
       </div>
     );

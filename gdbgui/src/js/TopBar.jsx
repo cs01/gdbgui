@@ -96,8 +96,7 @@ const menu = (
     <button
       className="btn btn-sm btn-secondary dropdown-toggle shadow"
       type="button"
-      data-toggle="dropdown"
-      aria-haspopup="true" aria-expanded="false">
+      data-toggle="dropdown">
       <span className='fa fa-tools'/>
     </button>
     <div className="dropdown-menu">

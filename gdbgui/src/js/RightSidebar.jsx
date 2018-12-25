@@ -47,7 +47,7 @@ class RightSidebar extends React.Component {
            onMouseUp={onmouseup_in_parent_callback}
            onMouseMove={onmousemove_in_parent_callback}>
         <GeminiScrollbar>
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#threads-panel">
             Threads
@@ -59,7 +59,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#locals-panel">
             Locals
@@ -71,7 +71,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#expressions-panel">
             Expressions
@@ -81,7 +81,7 @@ class RightSidebar extends React.Component {
             <Expressions/>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#tree-panel">
             Tree
@@ -106,7 +106,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#memory-panel">
             Memory
@@ -118,7 +118,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#breakpoints-panel">
             Breakpoints
@@ -130,7 +130,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#signals-panel">
             Signals
@@ -142,7 +142,7 @@ class RightSidebar extends React.Component {
             </div>
           </div>
 
-          <button className="btn btn-primary btn-sm m-1"
+          <button className="btn btn-primary btn-tiny m-1"
                   data-toggle="collapse"
                   data-target="#registers-panel">
             Registers
@@ -156,7 +156,7 @@ class RightSidebar extends React.Component {
 
           {this.props.debug ? (
             <React.Fragment>
-              <button className="btn btn-primary btn-sm m-1"
+              <button className="btn btn-primary btn-tiny m-1"
                       data-toggle="collapse"
                       data-target="#debug-panel">
                 Debug
