@@ -1,49 +1,40 @@
 import React from "react";
-import Actions from "./Actions.js";
 import {store} from "statorgfc";
+import Actions from "./Actions";
 
 class Modal extends React.Component {
   constructor() {
     super();
-    store.connectComponentState(this, ["show_modal", "modal_body", "modal_header"]);
+    store.connectComponentState(this, ["modal_body", "modal_header"]);
   }
 
   render() {
     return (
-      <div
-        className={this.state.show_modal ? "fullscreen_modal" : "hidden"}
-        ref={el => (this.fullscreen_node = el)}
-        onClick={e => {
-          if (e.target === this.fullscreen_node) {
-            Actions.toggle_modal_visibility();
-          }
-        }}>
-        <div className="modal_content">
-          <div>
-            <button
-              type="button"
-              className="close"
-              onClick={Actions.toggle_modal_visibility}>
-              ×
-            </button>
+      <div id="modal-dialog"
+           className="modal modal-md"
+           tabIndex="-1">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">{this.state.modal_header}</h5>
+              <button onClick={Actions.dismiss_modal}
+                      className="close">
+                <span className='fa fa-close'/>
+              </button>
+            </div>
+            <div className="modal-body">
+              {this.state.modal_body}
+            </div>
+            <div className="modal-footer">
+              <button onClick={Actions.dismiss_modal}
+                      className="btn btn-secondary">Close</button>
+            </div>
           </div>
-
-          <h4>{this.state.modal_header}</h4>
-
-          <div style={{ paddingBottom: "20px" }}>{this.state.modal_body}</div>
-
-          <button
-            style={{ float: "right" }}
-            type="button"
-            className="btn btn-success"
-            onClick={Actions.toggle_modal_visibility}>
-            Close
-          </button>
-          <div style={{ paddingBottom: "30px" }}/>
         </div>
       </div>
     );
   }
 }
+
 
 export default Modal;

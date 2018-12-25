@@ -76,6 +76,13 @@ select.custom-select.md-grow,
   flex-grow: 0.3;
 }
 
+.modal {
+  background-color: transparentize($primary, .92);
+}
+
+.modal.modal-md > .modal-dialog {
+  max-width: 700px;
+}
 /* customizes animate css */
 @import "~animate.css/animate.min.css";
 

@@ -26,131 +26,98 @@ class Settings extends React.Component {
       this
     );
   }
+
   static toggle_key(key) {
     store.set(key, !store.get(key));
     localStorage.setItem(key, JSON.stringify(store.get(key)));
   }
+
   static get_checkbox_row(store_key, text) {
     return (
-      <tr>
-        <td>
-          <div className="checkbox">
-            <label>
-              <input
-                type="checkbox"
-                checked={store.get(store_key)}
-                onChange={() => Settings.toggle_key(store_key)}
-              />
-              {text}
-            </label>
-          </div>
-        </td>
-      </tr>
+      <div className="custom-control custom-checkbox">
+        <input className="custom-control-input" id={`check_for_${store_key}`}
+               type="checkbox"
+               checked={store.get(store_key)}
+               onChange={() => Settings.toggle_key(store_key)}/>
+        <label className="custom-control-label" htmlFor={`check_for_${store_key}`}>
+          {text}
+        </label>
+      </div>
     );
   }
+
   get_update_max_lines_of_code_to_fetch() {
     return (
-      <tr>
-        <td>
-          <div className="form-group">
-            <label className="control-label">Maximum number of source file lines to display</label>
-            <div className="input-group">
-              <span className="input-group-addon">lines</span>
-              <input type="text" className="form-control"
-                     defaultValue={store.get("max_lines_of_code_to_fetch")}
-                     ref={el => (this.max_source_file_lines_input = el)}
-              />
-              <span className="input-group-btn">
-                <button
-                  className="btn btn-success"
-                  ref={n => (this.save_button = n)}
-                  onClick={() => {
-                    let new_value = parseInt(this.max_source_file_lines_input.value);
-                    Actions.update_max_lines_of_code_to_fetch(new_value);
-                    ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
-                  }}>
-                  save
-                  </button>
-                </span>
-            </div>
+      <div className="form-inline">
+        <label htmlFor="max-lines-input" className='mr-1'>Maximum displayed number of source</label>
+        <div className="input-group input-group-sm">
+          <div className="input-group-prepend">
+            <div className="input-group-text">lines</div>
           </div>
-        </td>
-      </tr>
-    );
-  }
-  get_table() {
-    return (
-      <table className="table table-condensed">
-        <tbody>
-          {Settings.get_checkbox_row(
-            "auto_add_breakpoint_to_main",
-            "Add breakpoint to main after loading executable"
-          )}
-          {this.get_update_max_lines_of_code_to_fetch()}
-          {Settings.get_checkbox_row(
-            "pretty_print",
-            "Pretty print dynamic variables (requires restart)"
-          )}
-          {Settings.get_checkbox_row(
-            "refresh_state_after_sending_console_command",
-            "Refresh all components when a command is sent from the console"
-          )}
-          {Settings.get_checkbox_row(
-            "show_all_sent_commands_in_console",
-            "Print all sent commands in console, including those sent automatically by gdbgui"
-          )}
-          {Settings.get_checkbox_row(
-            "highlight_source_code",
-            "Add syntax highlighting to source files"
-          )}
+          <input type="text" className="form-control md-grow"
+                 id="max-lines-input"
+                 placeholder="Username"
+                 defaultValue={store.get("max_lines_of_code_to_fetch")}
+                 ref={el => (this.max_source_file_lines_input = el)}/>
+          <div className="input-group-append">
+            <button
+              className="btn btn-success"
+              ref={n => (this.save_button = n)}
+              onClick={() => {
+                let new_value = parseInt(this.max_source_file_lines_input.value);
+                Actions.update_max_lines_of_code_to_fetch(new_value);
+                ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
+              }}>
+              save
+            </button>
+          </div>
+        </div>
 
-          <tr>
-            <td>
-              Theme:&nbsp;
-              <select
-                className='form-control'
-                value={store.get("current_theme")}
-                onChange={function(e) {
-                  store.set("current_theme", e.currentTarget.value);
-                  localStorage.setItem("theme", e.currentTarget.value);
-                }}
-              >
-                {store.get("themes").map(t => <option key={t}>{t}</option>)}
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    );
+      </div>);
   }
 
   render() {
     return (
-      <div
-        className={store.get("show_settings") ? "fullscreen_modal" : "hidden"}
-        ref={el => (this.settings_node = el)}
-        onClick={e => {
-          if (e.target === this.settings_node) {
-            Settings.toggle_key("show_settings");
-          }
-        }}
-      >
-        <div id="gdb_settings_modal">
-          <button className="btn close" onClick={() => Settings.toggle_key("show_settings")}>
-            ×
-          </button>
-          <h4>Settings</h4>
-          {this.get_table()}
-          <div className="modal-footer" style={{ marginTop: "20px" }}>
-            <button
-              className="btn btn-primary"
-              onClick={() => Settings.toggle_key("show_settings")}
-              data-dismiss="modal"
-            >
-              Close
-            </button>
+      <div>
+
+        {Settings.get_checkbox_row(
+          "auto_add_breakpoint_to_main",
+          "Add breakpoint to main after loading executable"
+        )}
+        {this.get_update_max_lines_of_code_to_fetch()}
+        {Settings.get_checkbox_row(
+          "pretty_print",
+          "Pretty print dynamic variables (requires restart)"
+        )}
+        {Settings.get_checkbox_row(
+          "refresh_state_after_sending_console_command",
+          "Refresh all components when a command is sent from the console"
+        )}
+        {Settings.get_checkbox_row(
+          "show_all_sent_commands_in_console",
+          "Print all sent commands in console, including those sent automatically by gdbgui"
+        )}
+        {Settings.get_checkbox_row(
+          "highlight_source_code",
+          "Add syntax highlighting to source files"
+        )}
+
+        <form className="form-inline">
+          <label htmlFor="settings-theme-input"
+                 className='mr-1'>Theme</label>
+          <div className="input-group input-group-sm">
+            <select
+              id='settings-theme-input'
+              className='form-control'
+              value={store.get("current_theme")}
+              onChange={function (e) {
+                store.set("current_theme", e.currentTarget.value);
+                localStorage.setItem("theme", e.currentTarget.value);
+              }}>
+              {store.get("themes").map(t => <option key={t}>{t}</option>)}
+            </select>
           </div>
-        </div>
+        </form>
       </div>
     );
   }

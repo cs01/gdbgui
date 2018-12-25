@@ -29,7 +29,6 @@ import initial_store_data from "./InitialStoreData.js";
 import MiddleLeft from "./MiddleLeft.jsx";
 import Modal from "./GdbguiModal.jsx";
 import RightSidebar from "./RightSidebar.jsx";
-import Settings from "./Settings.jsx";
 import ToolTip from "./ToolTip.jsx";
 import TopBar from "./TopBar.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
@@ -112,7 +111,7 @@ class Gdbgui extends React.PureComponent {
         {/* below are elements that are only displayed under certain conditions */}
         <Modal />
         <HoverVar />
-        <Settings />
+        {/*<Settings />*/}
         <ToolTip />
         <textarea
           style={{

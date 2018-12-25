@@ -9,12 +9,15 @@ html {
 }
 
 #right-sidebar {
-  height: 60vh; /*todo figure out heights*/
-  overflow: auto;
+  height: calc(100vh - 179px - 79.38px);
 }
 
 #folders-view {
-  height: 60vh; /*todo figure out heights*/
+  height: calc(100vh - 179px - 79.38px);
+}
+
+#code_container {
+  height: calc(100vh - 179px - 79.38px);
 }
 
 #gdb_mi_output {
@@ -29,10 +32,6 @@ html {
 
 .menu-item-has-icon {
   position: relative;
-}
-
-.goto-line {
-  width: 6em;
 }
 
 .plot-container {

@@ -97,7 +97,7 @@ const GdbApi = {
 
       // show modal
       Actions.show_modal(
-        "",
+        "Shutdown",
         <span>
           The gdbgui server has shutdown. This tab will no longer function as expected.
         </span>

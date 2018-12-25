@@ -132,13 +132,13 @@ const Actions = {
       : constants.console_entry_type.STD_OUT;
     Actions.add_console_entries(entries, type);
   },
-  toggle_modal_visibility() {
-    store.set("show_modal", !store.get("show_modal"));
+  dismiss_modal() {
+    $('#modal-dialog').hide();
   },
   show_modal(header, body) {
     store.set("modal_header", header);
     store.set("modal_body", body);
-    store.set("show_modal", true);
+    $('#modal-dialog').show();
   },
   set_gdb_binary_and_arguments(user_input) {
     const { binary, args } = parse_bin_and_args(user_input);

@@ -103,7 +103,7 @@ const menu = (
       <li><a
         className="dropdown-item"
         title="settings"
-        onClick={() => Settings.toggle_key("show_settings")}>
+        onClick={() => Actions.show_modal("Settings", <Settings/>)}>
         Settings
       </a></li>
       <li><a
@@ -392,7 +392,7 @@ class TopBar extends React.Component {
                   onKeyUp={onkeyup_jump_to_line}
                   autoComplete="on"
                   title="Enter line number, then press enter"
-                  className="form-control goto-line"/>
+                  className="form-control md-grow"/>
               </div>
             </div>
 
