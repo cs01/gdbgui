@@ -1,3 +1,3 @@
-from gdbgui import backend
+from . import backend
 
 backend.main()

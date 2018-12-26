@@ -11,6 +11,5 @@ gdbgui.spec
 *-link.dSYM
 *.pyc
 yarn-error.log
-/v
+v/
 .idea/
-gdbgui/static/js/build.js
