@@ -83,6 +83,11 @@ select.custom-select.md-grow,
 .modal.modal-md > .modal-dialog {
   max-width: 700px;
 }
+
+.table.table-hover {
+  cursor: pointer;
+}
+
 /* customizes animate css */
 @import "~animate.css/animate.min.css";
 

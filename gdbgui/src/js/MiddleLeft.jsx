@@ -35,7 +35,7 @@ class MiddleLeft extends React.Component {
   }
 
   componentDidMount() {
-    SourceCode.el_code_container = $("#code_container"); // todo: no jquery
+    SourceCode.el_code_container = $("#code_container .gm-scroll-view");
 
     if (this.source_code_container_node) {
       this.source_code_container_node.onscroll = this.onscroll_container.bind(this);

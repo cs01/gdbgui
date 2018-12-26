@@ -30,6 +30,7 @@
     "eslint-loader": "^2.0.0",
     "eslint-plugin-prettier": "^2.6.0",
     "eslint-plugin-react": "^7.7.0",
+    "expose-loader": "^0.7.5",
     "file-loader": "^3.0.1",
     "gemini-scrollbar": "^1.5.3",
     "image-webpack-loader": "^4.6.0",

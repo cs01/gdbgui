@@ -21,7 +21,12 @@ $fa-font-path: "/static/fonts";
 }
 
 $font-family-monospace: 'TypoPRO Source Code Pro', Menlo, Monaco, Consolas, "Courier New", monospace;
+$font-family-sans-serif: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
 
 .monospace {
   font-family: $font-family-monospace;
+}
+
+.sans-serif {
+  font-family: $font-family-sans-serif;
 }

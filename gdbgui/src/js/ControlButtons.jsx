@@ -11,8 +11,6 @@ class ControlButtons extends React.Component {
   }
 
   render() {
-    let btn_class = "btn";
-
     return (
       <div className='btn-group btn-group-sm'>
         <button
@@ -20,8 +18,17 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_run_button()}
           type="button"
           title="Restart inferior program (r)"
-          className={btn_class}>
+          className='btn'>
           <span className="fa fa-redo-alt"/>
+        </button>
+
+        <button
+          id="run_button"
+          onClick={() => GdbApi.click_record_button()}
+          type="button"
+          title="Record program execution for playback and reverse actions"
+          className='btn'>
+          <span className="fa fa-camera-retro"/>
         </button>
 
         <button
@@ -32,7 +39,7 @@ class ControlButtons extends React.Component {
             "Continue (c)" +
             (initial_data.rr ? ". shift + c for reverse." : "")
           }
-          className={btn_class}>
+          className='btn'>
           <span className="fa fa-fighter-jet"/>
         </button>
 
@@ -40,7 +47,7 @@ class ControlButtons extends React.Component {
           onClick={() => Actions.send_signal("SIGINT", this.state.gdb_pid)}
           type="button"
           title="Pause gdb"
-          className={btn_class}>
+          className='btn'>
           <span className="fa fa-pause"/>
         </button>
 
@@ -49,10 +56,10 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_next_button()}
           type="button"
           title={
-            "Step over next function call (n or right arrow)" +
+            "Step over next function call (n or right-arrow)" +
             (initial_data.rr ? ". shift + n for reverse." : "")
           }
-          className={btn_class}>
+          className='btn'>
           <span className="fa fa-step-forward"/>
         </button>
 
@@ -61,10 +68,10 @@ class ControlButtons extends React.Component {
           onClick={() => GdbApi.click_step_button()}
           type="button"
           title={
-            "Step into function call (s or down arrow)" +
+            "Step into function call (s or down-arrow)" +
             (initial_data.rr ? ". shift + s for reverse." : "")
           }
-          className={btn_class}>
+          className='btn'>
           <span className="fa fa-sign-in-alt fa-rotate-90"/>
         </button>
 
@@ -72,8 +79,8 @@ class ControlButtons extends React.Component {
           id="return_button"
           onClick={() => GdbApi.click_return_button()}
           type="button"
-          title="Up one function stack frame (u or up arrow)"
-          className={btn_class}>
+          title="Up one function stack frame (u or up-arrow)"
+          className='btn'>
           <span className="fa fa-sign-out-alt fa-rotate-270"/>
         </button>
 
@@ -84,7 +91,7 @@ class ControlButtons extends React.Component {
             "Next machine instruction over function calls (m)" +
             (initial_data.rr ? ". shift + m for reverse." : "")
           }
-          className={btn_class}>
+          className='btn'>
           <span className='fa fa-robot'/>
         </button>
         <button
@@ -94,7 +101,7 @@ class ControlButtons extends React.Component {
             "Step one machine instruction; steps into function calls (,)" +
             (initial_data.rr ? ". shift + , for reverse." : "")
           }
-          className={btn_class}>
+          className='btn'>
           <span className='fa fa-shoe-prints'/>
         </button>
       </div>

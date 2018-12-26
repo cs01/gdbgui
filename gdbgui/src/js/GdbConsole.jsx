@@ -95,11 +95,11 @@ class GdbConsole extends React.Component {
           let escaped_value = pre_escape(entry.value);
           return (
             <div key={index}>
-              <a onClick={this.backtrace_button_clicked}
-                 style={{ fontFamily: "arial", marginLeft: "10px" }}
-                 className="btn btn-success backtrace btn-sm">
-                {escaped_value}
-              </a>
+              {escaped_value}
+              <button onClick={this.backtrace_button_clicked}
+                 className="btn btn-success btn-sm sans-serif">
+                Re-enter
+              </button>
             </div>
           );
         }

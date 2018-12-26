@@ -113,6 +113,9 @@ const GdbApi = {
     Actions.inferior_program_starting();
     GdbApi.run_gdb_command("-exec-run");
   },
+  click_record_button: function() {
+    GdbApi.run_gdb_command("record");
+  },
   run_initial_commands: function() {
     const cmds = ["set breakpoint pending on"];
     for (const src in initial_data.remap_sources) {

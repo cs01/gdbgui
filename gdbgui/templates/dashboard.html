@@ -3,16 +3,9 @@
   <head>
     <title>gdbgui - dashboard</title>
     <base target="_blank">
-    <link href="static/vendor/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="static/vendor/js/jquery.min.js"></script>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   </head>
-  <style>
-    html{
-        background: linear-gradient(165deg,#6e60cc 0%,#484389 100%);
-    }
-  </style>
-  <body style="position: fixed; width: 100%; height: 100%;">
+  <body>
     <div class="container-fluid">
       <h3>active gdb processes managed by gdbgui</h3>
       <table class="table table-condensed">
@@ -40,9 +33,13 @@
         </tr>
       {% endfor %}
 
-      </table><a onClick="window.new_gdbgui_instance()" class="btn btn-xs btn-success"><span class="glyphicon glyphicon-plus"></span>  open tab with new gdb process</a>
+      </table><a onClick="window.new_gdbgui_instance()"
+                 class="btn btn-xs btn-success">
+      <span class="fa fa-plus"></span> open tab with new gdb process</a>
     </div>
   </body>
+
+  <script type="text/javascript" src="static/js/build.js?_={{version}}"></script>
   <script>
     function remove_gdb_controller(gdbpid){
         $.ajax({

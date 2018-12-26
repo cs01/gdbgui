@@ -312,7 +312,7 @@ const process_gdb_response = function(response_array) {
             );
 
             Actions.add_console_entries(
-              "Re-Enter Program (backtrace)",
+              "Re-enter program (backtrace)",
               constants.console_entry_type.BACKTRACE_LINK
             );
           }

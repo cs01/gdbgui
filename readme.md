@@ -3,30 +3,33 @@
 python -m gdbgui --debug
 BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --config webpack.config.js
 
-# todo
-1. re-layout the whole gui top-to-bottom, bootstrap it!
-1. side panel scrolls annoyingly during use
-1. hovervar action that adds expression
-1. fetch disass key shortcut or do it automatically and as setting
+# todo mvp
+1. hovervar is busted after bootstrap 4 update
+1. weird visual artifact in threads, why is that?
+
+# todo nicities
+1. do tooltips the bootstrap way
+1. side panel scrolls annoyingly during use (it's the memory or registers tables. refactor to use react and state.)
+1. hovervar action that adds expression automatically
+1. theme hovervar as code
 1. new setting for memory width in bytes (8, but could be nicer as 16)
 1. new settings to remember memory distance from selected address
-1. theme hovervar as code
-1. do tooltips the bootstrap way
-1. remember collapse state of right sidebar collapse-ers
 1. make load binary understand file:/// scheme uris
 1. tree thing needs his own window he's annoying as shit to work with
 1. register_table_data is 10000 lines long; allow filtering
-1. add that stupid splitter thing back in (console, file explorer, code window, program stats)
-1. the dashboard template is busted
 1. / keymaps to focus load binary input
 1. ; keymaps to focus gdb command input 
-1. stylize white input backgrounds 
+1. f keymaps to fetch disass -- or do it automatically and as setting? hmm?
+1. stylize white input backgrounds
 1. asm doesn't switch from at&t to intel until you click twice
-1. fix scrolling in code window and in gdb console
-1. dialogs
 
 # fixed
+1. re-layout the whole gui top-to-bottom, bootstrap it!
+1. the dashboard template is busted after the bootstrap 4 update
+1. fix scrolling in code window and in gdb console
+1. remember collapse state of right sidebar collapse-ers
 1. pretty scrollbars
+1. pretty dialogs
 1. filesystem style with icons to match mime-types
 1. l keymaps to load binary
 1. nav bars stick on the top
