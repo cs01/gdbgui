@@ -1,36 +1,6 @@
 /* customizes bootstrap */
 
-$white: #fff;
-$gray-100: #f8f9fa;
-$gray-200: #ebebeb;
-$gray-300: #dee2e6;
-$gray-400: #ced4da;
-$gray-500: #adb5bd;
-$gray-600: #999;
-$gray-700: #444;
-$gray-800: #303030;
-$gray-900: #222;
-$black: #000;
-$blue: #3c6688;
-$blue-text: #7fa2bd;
-$indigo: #6610f2;
-$purple: #6f42c1;
-$pink: #e83e8c;
-$red: #E74C3C;
-$orange: #fd7e14;
-$yellow: #F39C12;
-$green: #00bc8c;
-$teal: #20c997;
-$cyan: #3498DB;
 
-$primary: $blue;
-$secondary: $gray-700;
-$success: $green;
-$info: $cyan;
-$warning: $yellow;
-$danger: $red;
-$light: $gray-800;
-$dark: $gray-800;
 @import "~bootswatch/dist/darkly/variables";
 @import "~bootstrap/scss/bootstrap";
 @import "~bootswatch/dist/darkly/bootswatch";
@@ -49,9 +19,11 @@ table.table.table-condensed {
   color: $blue-text !important; /* goddammit bootstrap why */
 }
 
-.list-unstyled.list-unstyled-pad {
-  margin-top: 0;
-  padding-left: 1.9rem;
+.list-unstyled {
+  margin-bottom: 0;
+  &.list-unstyled-pad {
+    padding-left: 1.9rem;
+  }
 }
 
 .btn-tiny, .btn-group-tiny > .btn {
@@ -86,6 +58,15 @@ select.custom-select.md-grow,
 
 .table.table-hover {
   cursor: pointer;
+}
+
+.dropdown-menu.dropdown-menu-sm {
+  max-height: 20em;
+  overflow: auto;
+}
+
+.bg-dark {
+  background-color: $gray-900;
 }
 
 /* customizes animate css */

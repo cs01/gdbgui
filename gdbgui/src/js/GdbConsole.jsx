@@ -83,11 +83,11 @@ class GdbConsole extends React.Component {
               onClick={() => this.props.on_autocomplete_text_clicked(entry.value)}>
               <span>{escaped_value}</span>
               <span> </span>
-              <span
-                className="label label-primary"
+              <btn
+                className="badge badge-success sans-serif"
                 onClick={() => GdbApi.run_gdb_command(`help ${entry.value}`)}>
                 help
-              </span>
+              </btn>
             </p>
           );
         }

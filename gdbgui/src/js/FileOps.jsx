@@ -1,3 +1,4 @@
+/* global debug */
 import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import constants from "./constants.js";
@@ -6,13 +7,10 @@ import Actions from "./Actions.js";
 import React from "react";
 
 let debug_print;
-if (debug) {
-  /* global debug */
-  debug_print = console.info;
-} else {
-  debug_print = function() {
-    // stubbed out
-  };
+try {
+  debug_print = debug ? console.info : _.noop
+} catch (e) {
+  debug_print = _.noop
 }
 
 let FileFetcher = {

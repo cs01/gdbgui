@@ -1,6 +1,6 @@
 @import "reset";
-@import "custom";
 @import "variables";
+@import "custom";
 @import "typography";
 @import "coding";
 
@@ -52,6 +52,7 @@ html {
 }
 
 .console-line {
+  white-space: pre;
   padding: 0;
   margin: 0;
   line-height: 1.1em;

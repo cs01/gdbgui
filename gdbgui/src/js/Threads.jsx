@@ -152,14 +152,14 @@ class Threads extends React.Component {
       onclick = () => {
         Threads.select_frame(frame_num);
       };
-      classes.push("pointer");
+      classes.push("cursor-pointer");
       title = `click to select this frame (frame id ${frame_num})`;
     } else {
       // different thread, allow user to switch threads
       onclick = () => {
         Threads.select_thread_id(thread_id);
       };
-      classes.push("pointer");
+      classes.push("cursor-pointer");
       title = `click to select this thead (thread id ${thread_id})`;
     }
     let key = thread_id + frame_num;

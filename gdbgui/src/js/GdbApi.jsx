@@ -17,12 +17,10 @@ void React; // needed when using JSX, but not marked as used
 
 // print to console if debug is true
 let debug_print;
-if (debug) {
-  debug_print = console.info;
-} else {
-  debug_print = function() {
-    // stubbed out
-  };
+try {
+  debug_print = debug ? console.info : _.noop
+} catch (e) {
+  debug_print = _.noop
 }
 
 /**

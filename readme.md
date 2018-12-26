@@ -4,14 +4,14 @@ python -m gdbgui --debug
 BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --config webpack.config.js
 
 # todo mvp
-1. hovervar is busted after bootstrap 4 update
-1. weird visual artifact in threads, why is that?
+1. weird visual artifact in threads when args are present in frames
 
 # todo nicities
 1. do tooltips the bootstrap way
-1. side panel scrolls annoyingly during use (it's the memory or registers tables. refactor to use react and state.)
+1. side panel scrolls annoyingly during use 
+  (it's the memory or registers tables. 
+   refactor to use react and state.)
 1. hovervar action that adds expression automatically
-1. theme hovervar as code
 1. new setting for memory width in bytes (8, but could be nicer as 16)
 1. new settings to remember memory distance from selected address
 1. make load binary understand file:/// scheme uris
@@ -26,6 +26,7 @@ BABEL_ENV=development ./node_modules/.bin/webpack --mode development --watch --c
 # fixed
 1. re-layout the whole gui top-to-bottom, bootstrap it!
 1. the dashboard template is busted after the bootstrap 4 update
+1. hovervar is busted after bootstrap 4 update
 1. fix scrolling in code window and in gdb console
 1. remember collapse state of right sidebar collapse-ers
 1. pretty scrollbars

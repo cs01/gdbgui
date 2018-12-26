@@ -26,21 +26,21 @@
   border-width: 0;
   border-right-width: 1px;
   border-style: solid;
-  border-right-color: $code-gutter-color;
+  border-right-color: $code-gutter-border-color;
   padding-left: 10px;
   padding-right: 10px;
   font-size: 0.9em;
-  color: #ababab;
+  color: $gray-600;
   cursor: pointer;
 }
 
 .line_num.breakpoint,
 .line_num.disabled_breakpoint {
-  color: black;
+  color: $gray-900;
 }
 
 .line_num.breakpoint {
-  background: #33cdff !important;
+  background: $cyan !important;
   border-style: solid;
   /*border-top-width: 1px;*/
   border-right-width: 0;
@@ -50,7 +50,7 @@
 }
 
 .line_num.disabled_breakpoint {
-  background: #ffd6d7 !important;
+  background: $secondary !important;
 }
 
 td.assembly {

@@ -44,7 +44,7 @@ class HoverVar extends React.Component {
       };
       return (
         <div id="hovervar"
-             className='bg-light position-absolute'
+             className='small bg-secondary position-absolute rounded p-1 shadow-lg'
              style={position}>
           <GdbVariable
             obj={obj}

@@ -48,18 +48,18 @@ class InferiorProgramInfo extends React.Component {
     return (
       <div className="input-group input-group-sm">
         <div className="input-group-prepend">
+
           <div className="input-group-text">
             Send
           </div>
-
-
           <button className="btn btn-outline-secondary dropdown-toggle"
                   data-toggle="dropdown">
             {this.state.selected_signal}
           </button>
-          <div className="dropdown-menu">
+          <div className="dropdown-menu dropdown-menu-sm">
             {this.get_signal_choices("selected_signal")}
           </div>
+
           <div className="input-group-text">
             to
           </div>
@@ -71,6 +71,7 @@ class InferiorProgramInfo extends React.Component {
             }>
             gdb
           </button>
+
           {this.state.inferior_pid ?
             <button className="btn btn-primary"
                     title={`Send ${this.state.selected_signal} to ${this.state.inferior_pid}`}

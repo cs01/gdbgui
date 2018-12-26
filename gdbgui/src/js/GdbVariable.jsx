@@ -279,7 +279,7 @@ class GdbVariable extends React.Component {
   ) {
     let has_children = numchild > 0
     return (
-      <ul className='list-unstyled list-unstyled'
+      <ul className='list-unstyled'
           key={expression}>
         <li>
           <span className={has_children ? "cursor-pointer" : ""}
