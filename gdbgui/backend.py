@@ -473,13 +473,13 @@ def get_watched_files():
     returns a list of files that should be watched by the Flask server
     when in debug mode to trigger a reload of the server
     """
-    skips = ['src/gdbgui.js', 'static/fonts']
+    skips = ['static/fonts']
     cwd = os.path.dirname(os.path.abspath(__file__))
     file_list_of_lists = [
         [
             os.path.join(root, f) for f in files
             if not any(x in os.path.join(root, f)
-                       for x in ['static/fonts'])
+                       for x in skips)
         ]
         for (root, _, files) in os.walk(cwd)
     ]
