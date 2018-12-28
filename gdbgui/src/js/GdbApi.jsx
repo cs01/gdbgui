@@ -119,6 +119,9 @@ const GdbApi = {
       const dst = initial_data.remap_sources[src];
       cmds.push(`set substitute-path "${src}" "${dst}"`);
     }
+    if (initial_data.init_cmd) {
+      cmds.push(initial_data.init_cmd);
+    }
     GdbApi.run_gdb_command(cmds);
   },
   inferior_is_paused: function() {
