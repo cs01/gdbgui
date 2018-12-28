@@ -526,6 +526,7 @@ def gdbgui():
     """Render the main gdbgui interface"""
     interpreter = "lldb" if app.config["LLDB"] else "gdb"
     gdbpid = request.args.get("gdbpid", 0)
+    initial_gdb_user_command = request.args.get("initial_gdb_user_command", "")
 
     add_csrf_token_to_session()
 
@@ -535,6 +536,7 @@ def gdbgui():
         "csrf_token": session["csrf_token"],
         "gdbgui_version": __version__,
         "gdbpid": gdbpid,
+        "initial_gdb_user_command": initial_gdb_user_command,
         "interpreter": interpreter,
         "initial_binary_and_args": app.config["initial_binary_and_args"],
         "p": pbkdf2_hex(str(app.config.get("l")), "Feo8CJol")
