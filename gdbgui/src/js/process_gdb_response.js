@@ -297,7 +297,7 @@ const process_gdb_response = function(response_array) {
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
-              `gdbgui noticed a signal was recieved (${r.payload["signal-meaning"]}, ${
+              `gdbgui noticed a signal was received (${r.payload["signal-meaning"]}, ${
                 r.payload["signal-name"]
               }).`,
               constants.console_entry_type.GDBGUI_OUTPUT
