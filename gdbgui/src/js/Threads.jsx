@@ -3,7 +3,7 @@ import ReactTable from "./ReactTable.jsx";
 import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import Memory from "./Memory.jsx";
-import { FileLink } from "./Links.jsx";
+import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink.jsx";
 
 class FrameArguments extends React.Component {
