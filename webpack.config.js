@@ -11,21 +11,18 @@ module.exports = {
     filename: 'build.js'
   },
   module: {
-    rules: [
-      { test: /\.js$/,
-        use: [
-        'babel-loader',
-        'eslint-loader',
-        ],
-        exclude: /node_modules/
-      },
-      { test: /\.jsx$/,
-        use: [
-          'babel-loader',
-          'eslint-loader',
-        ],
-        exclude: /node_modules/
-      }
-    ]
+    rules: [{
+      test: /\.(j|t)sx?$/,
+      use: ['ts-loader', {
+        loader: 'tslint-loader',
+        options: {
+          typeCheck: true
+        }
+      }],
+      exclude: /node_modules/
+    }]
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js']
   }
 }
