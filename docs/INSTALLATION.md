@@ -1,17 +1,18 @@
 # gdbgui installation
 
 ## Try Without Installing
-By using [pipx](https://github.com/cs01/pipx), you can run Python CLI programs in ephemeral one-time virtual environments.
+By using [pipx](https://github.com/pipxproject/pipx-app), you can run Python CLI programs in ephemeral one-time virtual environments.
 ```
-pipx gdbgui
+pipx run gdbgui
 ```
 A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
 
 
 ## Recommended Installation Instructions
-gdbgui recommends using [pipx](https://github.com/cs01/pipx), a program to run Python CLI binaries in isolated environments. You can install pipx like this:
+gdbgui recommends using [pipx](https://github.com/pipxproject/pipx-app), a program to run Python CLI binaries in isolated environments. You can install pipx like this:
 ```
-curl https://raw.githubusercontent.com/cs01/pipx/master/get-pipx.py | python3
+python3 -m pip install --user pipx-bootstrap
+pipx-bootstrap
 ```
 
 Then install gdbgui with pipx:
