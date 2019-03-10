@@ -9,7 +9,7 @@ import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import constants from "./constants.js";
 import ReactTable from "./ReactTable.jsx";
-import MemoryLink from "./MemoryLink.jsx";
+import MemoryLink from "./MemoryLink.tsx";
 import Actions from "./Actions";
 import React from "react";
 

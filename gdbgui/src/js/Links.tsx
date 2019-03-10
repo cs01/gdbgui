@@ -1,14 +1,14 @@
 import Actions from "./Actions.js";
-import React from "react";
-import CopyToClipboard from "./CopyToClipboard.jsx";
-import MemoryLink from "./MemoryLink.jsx"
+import * as React from "react";
+import CopyToClipboard from "./CopyToClipboard";
+import MemoryLink from "./MemoryLink";
 
 type Props = {
   file?: string
   fullname?: string
   line: string
   num_lines?: number
-}
+};
 
 export class FileLink extends React.Component<Props> {
   render() {
@@ -56,7 +56,7 @@ type FrameLinkProps = {
   file?: string
   fullname?: string
   line: string
-}
+};
 
 export class FrameLink extends React.Component<FrameLinkProps> {
   render() {
