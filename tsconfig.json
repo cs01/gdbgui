@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "allowJs": true,
-    "allowSyntheticDefaultImports": true,
     "downlevelIteration": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
@@ -16,5 +15,8 @@
     "sourceMap": true,
     "strict": true,
     "target": "es5"
-  }
+  },
+  "include": [
+    "./gdbgui/src/js"
+  ]
 }
