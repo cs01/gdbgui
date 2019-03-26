@@ -1,5 +1,5 @@
 # run pip install -r dev_requirements.txt before running make test
-.PHONY: test publish executable
+.PHONY: test publish executable build
 test:
 	python -m tests
 	yarn test
@@ -13,11 +13,14 @@ testpublish: test clean
 	python setup.py sdist bdist_wheel --universal
 	twine upload dist/* -r pypitest
 
-publish: test clean
-	python setup.py sdist bdist_wheel --universal
+
+build: clean
+	python -m pip install --upgrade --quiet setuptools wheel twine
+	python setup.py --quiet sdist bdist_wheel
+	twine check dist/*
+
+publish: test clean build
 	twine upload dist/*
-
-
 
 docker_executables:
 	# window

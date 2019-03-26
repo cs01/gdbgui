@@ -18,7 +18,7 @@ A modern, browser-based frontend to gdb (gnu debugger)
 <img src="https://travis-ci.org/cs01/gdbgui.svg?branch=master" alt="image" /></a>
 
 <a href="https://pypi.python.org/pypi/gdbgui/">
-<img src="https://img.shields.io/badge/pypi-0.13.1.1-blue.svg" alt="image" />
+<img src="https://img.shields.io/badge/pypi-0.13.1.2-blue.svg" alt="image" />
 </a>
 
 <img src="https://pepy.tech/badge/gdbgui" alt="image" />
