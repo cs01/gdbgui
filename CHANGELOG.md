@@ -1,5 +1,11 @@
 # gdbgui release history
 
+## 0.13.1.2
+* Exclude "tests" directory from Python package
+
+## 0.13.1.1
+* Add `__main__` entrypoint
+
 ## 0.13.1.0
 * Remove automatic flushing of stdout and require newer version of pygdbmi
 * Add flake8 tests to CI build

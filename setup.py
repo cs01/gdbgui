@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
-EXCLUDE_FROM_PACKAGES = []
+EXCLUDE_FROM_PACKAGES = ["tests"]
 REQUIRED = [
     "Flask>=0.12.2, <1.0",  # http server
     "Flask-Compress>=1.4.0, <2.0",  # to compress flask responses
