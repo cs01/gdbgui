@@ -1,22 +1,14 @@
 # gdbgui installation
 
-There are a few ways to install gdbgui on your machine. In fact there is even a way to run gdbgui without installing it!
-
-Check out the various ways to install to find the one that's right for you.
+There are a few ways to install gdbgui on your machine. There is even a way to run gdbgui without installing it. Read on to to find the one that's right for you.
 
 
 ## Method 1: Using `pipx` (recommended)
 
-### Try Without Installing
-By using [pipx](https://github.com/pipxproject/pipx), you can run Python CLI programs in ephemeral one-time virtual environments. pipx is installed with pip.
-```
-pipx run gdbgui
-```
-A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
-
 ### Install With pipx
-## Recommended Installation Instructions
-gdbgui recommends using [pipx](https://github.com/pipxproject/pipx), a program to run Python CLI binaries in isolated environments. You can install pipx like this:
+gdbgui recommends using [pipx](https://github.com/pipxproject/pipx), a program to run Python CLI binaries in isolated environments.
+
+You can install pipx like this:
 ```
 python3 -m pip install --user pipx
 pipx ensurepath
@@ -39,6 +31,13 @@ To uninstall, run
 pipx uninstall gdbgui
 ```
 
+### Try Without Installing
+By using [pipx](https://github.com/pipxproject/pipx), you can run Python CLI programs in ephemeral one-time virtual environments.
+```
+pipx run gdbgui
+```
+A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
+
 ## Method 2: Using `pip`
 `pip` is a popular installer for Python packages. gdbgui is a Python package and as such can be installed with pip, though we recommend using `pipx` rather than `pip` if possible.
 
@@ -58,10 +57,11 @@ pip uninstall gdbgui
 ```
 
 ## Method 3: Download and Run Binary Executable
-Download and run the binary executable for your system on [gdbgui.com](http://gdbgui.com). Please note that these binaries may not always have the latest version of gdbgui available.
+Download and run the binary executable for your system from [https://github.com/cs01/gdbgui/tree/master/downloads](https://github.com/cs01/gdbgui/tree/master/downloads).
 
+!!! Note
 
-**Please create an issue or pull request if any of this information is out of date, incomplete, or incorrect.**
+    These binaries may not always have the latest version of gdbgui available since their builds are not automatic. The latest version will always be available on PyPI.
 
 ## System Dependencies
 Note that this only applies if you are installing the Python package, and not using the binary executable.
@@ -96,14 +96,17 @@ Ensure this MinGW binary directory (i.e. `C:\MinGW\bin\`) is on your "Path" envi
 
 ##### Cygwin
 Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works with it as well.
+
 * Install [cygwin](https://cygwin.com/install.html)
-* When installing cygwin packages, add the following:
-** python3
-** python3-pip
-** python3-devel
-** gdb
-** gcc-core
-** gcc-g++
+
+When installing cygwin packages, add the following:
+
+* python3
+* python3-pip
+* python3-devel
+* gdb
+* gcc-core
+* gcc-g++
 
 
 ### Running from Source

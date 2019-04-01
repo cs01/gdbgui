@@ -1,5 +1,3 @@
-# Frequently Asked Questions
-
 ## How can I see what commands are being sent to gdb?
 Go to Settings and check the box that says `Print all sent commands in console, including those sent automatically by gdbgui`
 
@@ -22,7 +20,7 @@ On linux terminals are named. You can get a terminal's name by running `tty` whi
 gdbgui --gdb-args="--tty=$(tty)"
 ```
 
-of if you want to set it from the UI after gdbgui has been opened, run
+or if you want to set it from the UI after gdbgui has been opened, run
 
 ```bash
 set inferior-tty /dev/ttys3  # replace /dev/ttys3 with desired tty name

@@ -1,0 +1,1 @@
+Downloads are available at [https://github.com/cs01/gdbgui/tree/master/downloads](https://github.com/cs01/gdbgui/tree/master/downloads).
