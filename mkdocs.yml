@@ -1,0 +1,21 @@
+site_name: gdbgui
+site_description: A modern, browser-based frontend to gdb (gnu debugger)
+
+theme:
+  name: "material"
+
+repo_name: cs01/gdbgui
+repo_url: https://github.com/cs01/gdbgui
+
+nav:
+  - Overview: "index.md"
+  - Installation: "installation.md"
+  - Getting Started: "gettingstarted.md"
+  - FAQ: "faq.md"
+  - Contributing: "contributing.md"
+  - Roadmap: "roadmap.md"
+  - Changelog: "changelog.md"
+
+markdown_extensions:
+  - markdown.extensions.codehilite:
+      guess_lang: false
