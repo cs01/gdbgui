@@ -25,5 +25,5 @@ A modern, browser-based frontend to gdb (gnu debugger)
 
 </p>
 
-## [Documentation](https://cs01.github.io/termpair/)
-View documentation at [https://cs01.github.io/termpair/](https://cs01.github.io/termpair/)
+## [Documentation](https://cs01.github.io/gdbgui/)
+View documentation at [https://cs01.github.io/gdbgui/](https://cs01.github.io/gdbgui/)

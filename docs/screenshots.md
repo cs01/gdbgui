@@ -1,5 +1,3 @@
-# Screenshots
-
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png)
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui2.png)
 

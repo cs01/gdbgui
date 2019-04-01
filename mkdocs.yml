@@ -3,19 +3,29 @@ site_description: A modern, browser-based frontend to gdb (gnu debugger)
 
 theme:
   name: "material"
-
+  custom_dir: 'docs/theme'
+google_analytics:
+  - 'UA-90243909-2'
+  - 'auto'
 repo_name: cs01/gdbgui
 repo_url: https://github.com/cs01/gdbgui
 
 nav:
-  - Overview: "index.md"
+  - Home: "index.md"
+  - Screenshot Tour: "screenshots.md"
   - Installation: "installation.md"
+  - Downloads: "downloads.md"
   - Getting Started: "gettingstarted.md"
+  - Examples: "examples.md"
+  - API: "api.md"
   - FAQ: "faq.md"
   - Contributing: "contributing.md"
+  - How it Works: "howitworks.md"
+  - Contact: "contact.md"
   - Roadmap: "roadmap.md"
   - Changelog: "changelog.md"
 
 markdown_extensions:
+  - admonition  #  note blocks, warning blocks -- https://github.com/mkdocs/mkdocs/issues/1659
   - markdown.extensions.codehilite:
       guess_lang: false

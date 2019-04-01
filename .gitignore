@@ -12,3 +12,5 @@ gdbgui.spec
 *.pyc
 yarn-error.log
 venv
+.vscode
+site
