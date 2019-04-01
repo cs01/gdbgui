@@ -1,13 +1,20 @@
 # gdbgui installation
 
-## Try Without Installing
-By using [pipx](https://github.com/pipxproject/pipx), you can run Python CLI programs in ephemeral one-time virtual environments.
+There are a few ways to install gdbgui on your machine. In fact there is even a way to run gdbgui without installing it!
+
+Check out the various ways to install to find the one that's right for you.
+
+
+## Method 1: Using `pipx` (recommended)
+
+### Try Without Installing
+By using [pipx](https://github.com/pipxproject/pipx), you can run Python CLI programs in ephemeral one-time virtual environments. pipx is installed with pip.
 ```
 pipx run gdbgui
 ```
 A new tab running the latest version of gdbgui will open in your browser. Press CTRL+C to end the process, and your system will remain untouched.
 
-
+### Install With pipx
 ## Recommended Installation Instructions
 gdbgui recommends using [pipx](https://github.com/pipxproject/pipx), a program to run Python CLI binaries in isolated environments. You can install pipx like this:
 ```
@@ -27,20 +34,37 @@ pipx upgrade gdbgui
 
 When installation is finished, type `gdbgui` from the command line to run it, or `gdbgui -h` for help.
 
-## Alternate Installation 1
+To uninstall, run
+```
+pipx uninstall gdbgui
+```
+
+## Method 2: Using `pip`
+`pip` is a popular installer for Python packages. gdbgui is a Python package and as such can be installed with pip, though we recommend using `pipx` rather than `pip` if possible.
+
 If you prefer to use Virtual Environments, you can activate one and then run
 ```
 pip install gdbgui
 ```
 
-## Alternate Installation 2
-Download and run the binary executable for your system on [gdbgui.com](http://gdbgui.com).
+You can get upgrades with
+```
+pip install --upgrade gdbgui
+```
+
+To uninstall, run
+```
+pip uninstall gdbgui
+```
+
+## Method 3: Download and Run Binary Executable
+Download and run the binary executable for your system on [gdbgui.com](http://gdbgui.com). Please note that these binaries may not always have the latest version of gdbgui available.
 
 
 **Please create an issue or pull request if any of this information is out of date, incomplete, or incorrect.**
 
 ## System Dependencies
-Note that this only applies if you are installing the Python package, and not using the binary executable from gdbgui.com.
+Note that this only applies if you are installing the Python package, and not using the binary executable.
 
 * gdb (gnu debugger)
 * Python 3.4+ (recommended) or 2.7
@@ -83,20 +107,4 @@ Cygwin is a more UNIX-like compatibility layer on Windows, and `gdbgui` works wi
 
 
 ### Running from Source
-In an activated Virtual Environment, run
-```bash
-git clone https://github.com/cs01/gdbgui
-cd gdbgui
-pip install -e .
-python -m gdbgui
-```
-
-A Virtual Environment sandboxes python packages, which guarantees there will be no installation conflicts.
-
-To create and use a new virtualenv:
-
-```bash
-pythom3 -m venv  # creates a virtual env named "venv"
-source venv/bin/activate  # activates the virtualenv sandbox
-pip install pip --upgrade  # make sure pip is at the latest version
-```
+See the contributing section.

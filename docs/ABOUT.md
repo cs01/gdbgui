@@ -8,14 +8,4 @@ It is open source and free.
 
 **gdbgui** (gdb GUI, or Graphical User Interface, pronounced gee-dee-bee goo-ee) runs gdb in the background to build an easier-to-use interface to gdb.
 
-## Testimonials
 
-##### I've only used @grassfedcode's gdbgui for a couple of days, but wow, it's pretty damned awesome and so dead simple to get up an running. -[Lou](https://twitter.com/DragonmasterLou/status/959449422630408192)
-
-***
-
-##### gdbgui.....WHERE HAVE YOU BEEN MY WHOLE LIFE! Seriously, great front-end to gdb for those of us who are not always using a full IDE. Easy to get too --> 'pip install gdbgui', then run gdbgui in a terminal... that's it! Great project. -[Jefferson](https://twitter.com/jeffamstutz/status/955647577373978624)
-
-***
-
-##### Where were you all my life? And why did I use DDD? -[Mario](https://twitter.com/badlogicgames/status/925079139446591490)
