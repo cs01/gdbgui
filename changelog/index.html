@@ -1,0 +1,1435 @@
+
+
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      
+        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+      
+      
+      
+      
+        <meta name="lang:clipboard.copy" content="Copy to clipboard">
+      
+        <meta name="lang:clipboard.copied" content="Copied to clipboard">
+      
+        <meta name="lang:search.language" content="en">
+      
+        <meta name="lang:search.pipeline.stopwords" content="True">
+      
+        <meta name="lang:search.pipeline.trimmer" content="True">
+      
+        <meta name="lang:search.result.none" content="No matching documents">
+      
+        <meta name="lang:search.result.one" content="1 matching document">
+      
+        <meta name="lang:search.result.other" content="# matching documents">
+      
+        <meta name="lang:search.tokenizer" content="[\s\-]+">
+      
+      <link rel="shortcut icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.1.2">
+    
+    
+      
+        <title>Changelog - gdbgui</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/application.3020aac5.css">
+      
+      
+    
+    
+      <script src="../assets/javascripts/modernizr.01ccdecf.js"></script>
+    
+    
+      
+        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700|Roboto+Mono">
+        <style>body,input{font-family:"Roboto","Helvetica Neue",Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono","Courier New",Courier,monospace}</style>
+      
+    
+    <link rel="stylesheet" href="../assets/fonts/material-icons.css">
+    
+    
+    
+      
+        
+<script>
+  window.ga = window.ga || function() {
+    (ga.q = ga.q || []).push(arguments)
+  }
+  ga.l = +new Date
+  /* Setup integration and send page view */
+  ga("create", "UA-90243909-2", "auto")
+  ga("set", "anonymizeIp", true)
+  ga("send", "pageview")
+  /* Register handler to log search on blur */
+  document.addEventListener("DOMContentLoaded", () => {
+    if (document.forms.search) {
+      var query = document.forms.search.query
+      query.addEventListener("blur", function() {
+        if (this.value) {
+          var path = document.location.pathname;
+          ga("send", "pageview", path + "?q=" + this.value)
+        }
+      })
+    }
+  })
+</script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+      
+    
+    
+  </head>
+  
+    <body dir="ltr">
+  
+    <svg class="md-svg">
+      <defs>
+        
+        
+          <svg xmlns="http://www.w3.org/2000/svg" width="416" height="448"
+    viewBox="0 0 416 448" id="__github">
+  <path fill="currentColor" d="M160 304q0 10-3.125 20.5t-10.75 19-18.125
+        8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19 18.125-8.5
+        18.125 8.5 10.75 19 3.125 20.5zM320 304q0 10-3.125 20.5t-10.75
+        19-18.125 8.5-18.125-8.5-10.75-19-3.125-20.5 3.125-20.5 10.75-19
+        18.125-8.5 18.125 8.5 10.75 19 3.125 20.5zM360
+        304q0-30-17.25-51t-46.75-21q-10.25 0-48.75 5.25-17.75 2.75-39.25
+        2.75t-39.25-2.75q-38-5.25-48.75-5.25-29.5 0-46.75 21t-17.25 51q0 22 8
+        38.375t20.25 25.75 30.5 15 35 7.375 37.25 1.75h42q20.5 0
+        37.25-1.75t35-7.375 30.5-15 20.25-25.75 8-38.375zM416 260q0 51.75-15.25
+        82.75-9.5 19.25-26.375 33.25t-35.25 21.5-42.5 11.875-42.875 5.5-41.75
+        1.125q-19.5 0-35.5-0.75t-36.875-3.125-38.125-7.5-34.25-12.875-30.25-20.25-21.5-28.75q-15.5-30.75-15.5-82.75
+        0-59.25 34-99-6.75-20.5-6.75-42.5 0-29 12.75-54.5 27 0 47.5 9.875t47.25
+        30.875q36.75-8.75 77.25-8.75 37 0 70 8 26.25-20.5
+        46.75-30.25t47.25-9.75q12.75 25.5 12.75 54.5 0 21.75-6.75 42 34 40 34
+        99.5z" />
+</svg>
+        
+      </defs>
+    </svg>
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
+    
+      <a href="#gdbgui-release-history" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
+    
+      <header class="md-header" data-md-component="header">
+  <nav class="md-header-nav md-grid">
+    <div class="md-flex">
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <a href=".." title="gdbgui" class="md-header-nav__button md-logo">
+          
+            <i class="md-icon"></i>
+          
+        </a>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        <label class="md-icon md-icon--menu md-header-nav__button" for="__drawer"></label>
+      </div>
+      <div class="md-flex__cell md-flex__cell--stretch">
+        <div class="md-flex__ellipsis md-header-nav__title" data-md-component="title">
+          
+            <span class="md-header-nav__topic">
+              gdbgui
+            </span>
+            <span class="md-header-nav__topic">
+              Changelog
+            </span>
+          
+        </div>
+      </div>
+      <div class="md-flex__cell md-flex__cell--shrink">
+        
+          <label class="md-icon md-icon--search md-header-nav__button" for="__search"></label>
+          
+<div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="query" data-md-state="active">
+      <label class="md-icon md-search__icon" for="__search"></label>
+      <button type="reset" class="md-icon md-search__icon" data-md-component="reset" tabindex="-1">
+        &#xE5CD;
+      </button>
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="result">
+          <div class="md-search-result__meta">
+            Type to start searching
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+        
+      </div>
+      
+        <div class="md-flex__cell md-flex__cell--shrink">
+          <div class="md-header-nav__source">
+            
+
+
+  
+
+<a href="https://github.com/cs01/gdbgui/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    cs01/gdbgui
+  </div>
+</a>
+          </div>
+        </div>
+      
+    </div>
+  </nav>
+</header>
+    
+    <div class="md-container">
+      
+        
+      
+      
+      <main class="md-main">
+        <div class="md-main__inner md-grid" data-md-component="container">
+          
+            
+              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    <nav class="md-nav md-nav--primary" data-md-level="0">
+  <label class="md-nav__title md-nav__title--site" for="__drawer">
+    <a href=".." title="gdbgui" class="md-nav__button md-logo">
+      
+        <i class="md-icon"></i>
+      
+    </a>
+    gdbgui
+  </label>
+  
+    <div class="md-nav__source">
+      
+
+
+  
+
+<a href="https://github.com/cs01/gdbgui/" title="Go to repository" class="md-source" data-md-source="github">
+  
+    <div class="md-source__icon">
+      <svg viewBox="0 0 24 24" width="24" height="24">
+        <use xlink:href="#__github" width="24" height="24"></use>
+      </svg>
+    </div>
+  
+  <div class="md-source__repository">
+    cs01/gdbgui
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href=".." title="Home" class="md-nav__link">
+      Home
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../screenshots/" title="Screenshot Tour" class="md-nav__link">
+      Screenshot Tour
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../installation/" title="Installation" class="md-nav__link">
+      Installation
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../downloads/" title="Downloads" class="md-nav__link">
+      Downloads
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../gettingstarted/" title="Getting Started" class="md-nav__link">
+      Getting Started
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../examples/" title="Examples" class="md-nav__link">
+      Examples
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../api/" title="API" class="md-nav__link">
+      API
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../faq/" title="FAQ" class="md-nav__link">
+      FAQ
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../contributing/" title="Contributing" class="md-nav__link">
+      Contributing
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../howitworks/" title="How it Works" class="md-nav__link">
+      How it Works
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../contact/" title="Contact" class="md-nav__link">
+      Contact
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../roadmap/" title="Roadmap" class="md-nav__link">
+      Roadmap
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+  
+
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+      
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Changelog
+      </label>
+    
+    <a href="./" title="Changelog" class="md-nav__link md-nav__link--active">
+      Changelog
+    </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#01312" title="0.13.1.2" class="md-nav__link">
+    0.13.1.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01311" title="0.13.1.1" class="md-nav__link">
+    0.13.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01310" title="0.13.1.0" class="md-nav__link">
+    0.13.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01300" title="0.13.0.0" class="md-nav__link">
+    0.13.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01200" title="0.12.0.0" class="md-nav__link">
+    0.12.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01131" title="0.11.3.1" class="md-nav__link">
+    0.11.3.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01130" title="0.11.3.0" class="md-nav__link">
+    0.11.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01121" title="0.11.2.1" class="md-nav__link">
+    0.11.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01120" title="0.11.2.0" class="md-nav__link">
+    0.11.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01111" title="0.11.1.1" class="md-nav__link">
+    0.11.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01110" title="0.11.1.0" class="md-nav__link">
+    0.11.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01100" title="0.11.0.0" class="md-nav__link">
+    0.11.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01030" title="0.10.3.0" class="md-nav__link">
+    0.10.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01021" title="0.10.2.1" class="md-nav__link">
+    0.10.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01020" title="0.10.2.0" class="md-nav__link">
+    0.10.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01010" title="0.10.1.0" class="md-nav__link">
+    0.10.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01002" title="0.10.0.2" class="md-nav__link">
+    0.10.0.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0941" title="0.9.4.1" class="md-nav__link">
+    0.9.4.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0940" title="0.9.4.0" class="md-nav__link">
+    0.9.4.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0930" title="0.9.3.0" class="md-nav__link">
+    0.9.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0920" title="0.9.2.0" class="md-nav__link">
+    0.9.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0911" title="0.9.1.1" class="md-nav__link">
+    0.9.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0910" title="0.9.1.0" class="md-nav__link">
+    0.9.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0901" title="0.9.0.1" class="md-nav__link">
+    0.9.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0900" title="0.9.0.0" class="md-nav__link">
+    0.9.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0820" title="0.8.2.0" class="md-nav__link">
+    0.8.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0810" title="0.8.1.0" class="md-nav__link">
+    0.8.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0803" title="0.8.0.3" class="md-nav__link">
+    0.8.0.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0802" title="0.8.0.2" class="md-nav__link">
+    0.8.0.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0801" title="0.8.0.1" class="md-nav__link">
+    0.8.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0800" title="0.8.0.0" class="md-nav__link">
+    0.8.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0795" title="0.7.9.5" class="md-nav__link">
+    0.7.9.5
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0794" title="0.7.9.4" class="md-nav__link">
+    0.7.9.4
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0793" title="0.7.9.3" class="md-nav__link">
+    0.7.9.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0792" title="0.7.9.2" class="md-nav__link">
+    0.7.9.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0791" title="0.7.9.1" class="md-nav__link">
+    0.7.9.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0790" title="0.7.9.0" class="md-nav__link">
+    0.7.9.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0783" title="0.7.8.3" class="md-nav__link">
+    0.7.8.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0782" title="0.7.8.2" class="md-nav__link">
+    0.7.8.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0781" title="0.7.8.1" class="md-nav__link">
+    0.7.8.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0780" title="0.7.8.0" class="md-nav__link">
+    0.7.8.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0770" title="0.7.7.0" class="md-nav__link">
+    0.7.7.0
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
+  </li>
+
+    
+  </ul>
+</nav>
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- gdbgui -->
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-9016047663812570"
+     data-ad-slot="3732200413"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+                  </div>
+                </div>
+              </div>
+            
+            
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#01312" title="0.13.1.2" class="md-nav__link">
+    0.13.1.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01311" title="0.13.1.1" class="md-nav__link">
+    0.13.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01310" title="0.13.1.0" class="md-nav__link">
+    0.13.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01300" title="0.13.0.0" class="md-nav__link">
+    0.13.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01200" title="0.12.0.0" class="md-nav__link">
+    0.12.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01131" title="0.11.3.1" class="md-nav__link">
+    0.11.3.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01130" title="0.11.3.0" class="md-nav__link">
+    0.11.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01121" title="0.11.2.1" class="md-nav__link">
+    0.11.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01120" title="0.11.2.0" class="md-nav__link">
+    0.11.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01111" title="0.11.1.1" class="md-nav__link">
+    0.11.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01110" title="0.11.1.0" class="md-nav__link">
+    0.11.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01100" title="0.11.0.0" class="md-nav__link">
+    0.11.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01030" title="0.10.3.0" class="md-nav__link">
+    0.10.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01021" title="0.10.2.1" class="md-nav__link">
+    0.10.2.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01020" title="0.10.2.0" class="md-nav__link">
+    0.10.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01010" title="0.10.1.0" class="md-nav__link">
+    0.10.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01002" title="0.10.0.2" class="md-nav__link">
+    0.10.0.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0941" title="0.9.4.1" class="md-nav__link">
+    0.9.4.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0940" title="0.9.4.0" class="md-nav__link">
+    0.9.4.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0930" title="0.9.3.0" class="md-nav__link">
+    0.9.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0920" title="0.9.2.0" class="md-nav__link">
+    0.9.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0911" title="0.9.1.1" class="md-nav__link">
+    0.9.1.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0910" title="0.9.1.0" class="md-nav__link">
+    0.9.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0901" title="0.9.0.1" class="md-nav__link">
+    0.9.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0900" title="0.9.0.0" class="md-nav__link">
+    0.9.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0820" title="0.8.2.0" class="md-nav__link">
+    0.8.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0810" title="0.8.1.0" class="md-nav__link">
+    0.8.1.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0803" title="0.8.0.3" class="md-nav__link">
+    0.8.0.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0802" title="0.8.0.2" class="md-nav__link">
+    0.8.0.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0801" title="0.8.0.1" class="md-nav__link">
+    0.8.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0800" title="0.8.0.0" class="md-nav__link">
+    0.8.0.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0795" title="0.7.9.5" class="md-nav__link">
+    0.7.9.5
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0794" title="0.7.9.4" class="md-nav__link">
+    0.7.9.4
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0793" title="0.7.9.3" class="md-nav__link">
+    0.7.9.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0792" title="0.7.9.2" class="md-nav__link">
+    0.7.9.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0791" title="0.7.9.1" class="md-nav__link">
+    0.7.9.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0790" title="0.7.9.0" class="md-nav__link">
+    0.7.9.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0783" title="0.7.8.3" class="md-nav__link">
+    0.7.8.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0782" title="0.7.8.2" class="md-nav__link">
+    0.7.8.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0781" title="0.7.8.1" class="md-nav__link">
+    0.7.8.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0780" title="0.7.8.0" class="md-nav__link">
+    0.7.8.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0770" title="0.7.7.0" class="md-nav__link">
+    0.7.7.0
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content">
+            <article class="md-content__inner md-typeset">
+              
+                
+                  <a href="https://github.com/cs01/gdbgui/edit/master/docs/changelog.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                
+                
+                <h1 id="gdbgui-release-history">gdbgui release history</h1>
+<h2 id="01312">0.13.1.2</h2>
+<ul>
+<li>Exclude "tests" directory from Python package</li>
+</ul>
+<h2 id="01311">0.13.1.1</h2>
+<ul>
+<li>Add <code>__main__</code> entrypoint</li>
+</ul>
+<h2 id="01310">0.13.1.0</h2>
+<ul>
+<li>Remove automatic flushing of stdout and require newer version of pygdbmi</li>
+<li>Add flake8 tests to CI build</li>
+</ul>
+<h2 id="01300">0.13.0.0</h2>
+<ul>
+<li>Add ability to re-map source file paths. Added flags <code>--remap-sources</code> and <code>-m</code> to replace compile-time source paths to local source paths. i.e. <code>gdbgui --remap-sources='{"/buildmachine": "/home/chad"}'</code> (#158)</li>
+<li>Add shift keyboard shortcut to go in reverse when using rr (#201)</li>
+<li>Pass arbitrary gdb arguments directly to gdb: added <code>--gdb-args</code> flag</li>
+<li>Removed <code>-x</code> CLI option, which caused major version to change. New way to pass is <code>gdbgui --gdb-args='-x=FILE'</code> (#205)</li>
+<li>Add "name" to Threads (new gdb 8.1 feature) (@P4Cu)</li>
+<li>Fix crash/black screen from "Python Exception <class NameError> name long is not defined" #212</li>
+<li>Fix bug when debugging filenames with spaces (Fix Cannot create breakpoint: -break-insert: Garbage following <location> #211")</li>
+<li>Fix empty frame causes the ui to crash/black screen #216</li>
+<li>Update npm packages; update react to 16.4</li>
+<li>Update prettier rules</li>
+<li>Update tour text + fix typo in tour (@nkirkby)</li>
+</ul>
+<h2 id="01200">0.12.0.0</h2>
+<ul>
+<li>Add pause button</li>
+<li>Update command line parsing for cmd and --args, change arguments from underscore to hyphen, add option to specify browser (@fritzr)</li>
+<li>Add tour</li>
+<li>Run <code>set breakpoint pending on</code> on initial connection</li>
+<li>Allow signal to be sent to arbitrary PIDs</li>
+<li>Fix bug when sending signals in Python2</li>
+<li>Move signal component lower in side pane</li>
+<li>Update Rust documentation</li>
+<li>Make requirements.txt point to setup.py's dependencies</li>
+</ul>
+<h2 id="01131">0.11.3.1</h2>
+<ul>
+<li>Limit maximum Flask version to prevent <code>Session expired. Please refresh this webpage.</code> error</li>
+<li>Rename "premium" to "ad-free"</li>
+<li>Do smarter version checking</li>
+<li>Fix bug when trying to view "about"</li>
+</ul>
+<h2 id="01130">0.11.3.0</h2>
+<ul>
+<li>ensure expressions with hex values are parsed and updated appropriately (#182)</li>
+<li>improve command line arguments</li>
+<li>use python logging module</li>
+</ul>
+<h2 id="01121">0.11.2.1</h2>
+<ul>
+<li>Small bugfix for specific platforms when reading version number</li>
+</ul>
+<h2 id="01120">0.11.2.0</h2>
+<ul>
+<li>add option to remove fflush command (#179)</li>
+<li>remove react-treebeard and render filesystem w/ new component</li>
+</ul>
+<h2 id="01111">0.11.1.1</h2>
+<ul>
+<li>Bugfix displaying upgrade text</li>
+</ul>
+<h2 id="01110">0.11.1.0</h2>
+<ul>
+<li>Add csrf and cross origin protection</li>
+<li>Convert backslashes to forward slashes when entering windows binary paths (#167)</li>
+<li>Fix safari ui issue (#164)</li>
+<li>Update text on reload file button, and disable when no file is loaded (#165)</li>
+<li>When disassembly can't be fetched in mode 4, fetch in mode 3 and assume gdb version is 7.6.0 (#166)</li>
+<li>Add copy to clipboard icon for files and variables</li>
+<li>Allow SSL module import to fail and print warning (#170)</li>
+<li>Cleanup menu, add license info, bugfixes, etc. (#169, #136, #163, #172)</li>
+</ul>
+<h2 id="01100">0.11.0.0</h2>
+<ul>
+<li>Replace <code>--auth</code> cli option with <code>--user</code> and <code>--password</code></li>
+</ul>
+<h2 id="01030">0.10.3.0</h2>
+<ul>
+<li>Added resizer buttons to components on right pane</li>
+</ul>
+<h2 id="01021">0.10.2.1</h2>
+<ul>
+<li>Add link for fix for macOS users</li>
+<li>Update version of React to 16.2</li>
+<li>Remove unused links</li>
+</ul>
+<h2 id="01020">0.10.2.0</h2>
+<ul>
+<li>Add folders view, rearrange layout (@martin-der)</li>
+<li>Add settings cog button</li>
+<li>Add message when sending signal to inferior process (#156)</li>
+<li>Change default theme to monokai, rename 'default' theme to 'light'</li>
+<li>Minor bugfixes</li>
+</ul>
+<h2 id="01010">0.10.1.0</h2>
+<ul>
+<li>Display descriptions of registers</li>
+<li>Do not try to fetch Registers when they cannot be read</li>
+</ul>
+<h2 id="01002">0.10.0.2</h2>
+<ul>
+<li>Add support for rr (--rr flag)</li>
+<li>Add dashboard to connect to/kill existing gdb processes</li>
+<li>Add option to specify SSL key and certificate to enable https</li>
+<li>Add option to connect to process</li>
+<li>Add option to connect to gdbserver</li>
+<li>Add infinite scrolling</li>
+</ul>
+<h2 id="0941">0.9.4.1</h2>
+<ul>
+<li>Remove <code>pypugjs</code> dependency</li>
+</ul>
+<h2 id="0940">0.9.4.0</h2>
+<ul>
+<li>Add native Windows support (no longer relies on Cygwin)</li>
+</ul>
+<h2 id="0930">0.9.3.0</h2>
+<ul>
+<li>Only display assembly flavor is assembly is displayed</li>
+<li>Add new output type to console (gdbgui output)</li>
+<li>Add dashboard link and dropdown for gdb server/pid attach</li>
+<li>Handle invalid signal choice better</li>
+<li>Print gdb mi log messages to console</li>
+<li>Remove localStorage keys when they are invalid</li>
+</ul>
+<h2 id="0920">0.9.2.0</h2>
+<ul>
+<li>Add signals component and allow signals to be sent to gdb (issue ##141)</li>
+<li>Fix bug when jumping to line of source file</li>
+</ul>
+<h2 id="0911">0.9.1.1</h2>
+<ul>
+<li>Fix bug when passing arguments to gdb</li>
+<li>Require latest version of pygdbmi for faster parsing of large gdb output</li>
+</ul>
+<h2 id="0910">0.9.1.0</h2>
+<ul>
+<li>Lazily load files (issue #131)</li>
+<li>Update setup.py to build wheels</li>
+</ul>
+<h2 id="0901">0.9.0.1</h2>
+<ul>
+<li>Reupload to fix setup.cfg PyPI bug</li>
+</ul>
+<h2 id="0900">0.9.0.0</h2>
+<ul>
+<li>Compress responses from server (massive bandwidth improvement)</li>
+<li>Add button to toggle assembly flavors (issue #110)</li>
+<li>Parse executable+args with spaces (issue #116)</li>
+<li>Turn modals into components</li>
+<li>Move everything into a single root React component</li>
+<li>Refresh state when clicking "return" button</li>
+<li>Add javascript unit tests</li>
+</ul>
+<h2 id="0820">0.8.2.0</h2>
+<ul>
+<li>Add optional authentication (@nickamon, issue #132)</li>
+<li>Support the <code>--args</code> flag (issue #126)</li>
+<li>Ensure code is correct and adheres to recommended Python style when running tests/building (flake8)</li>
+<li>Display source when running <code>backtrace</code> (fix regression, #134)</li>
+</ul>
+<h2 id="0810">0.8.1.0</h2>
+<ul>
+<li>Add autocomplete functionality (@bobthekingofegypt, issue #129)</li>
+<li>Rearranged and improved alignment of assembly</li>
+<li>Fixed bug when fetching variable fails</li>
+<li>Plot floating point values instead of casting to int</li>
+</ul>
+<h2 id="0803">0.8.0.3</h2>
+<ul>
+<li>modify component initialization order so that store updates are better sequenced</li>
+</ul>
+<h2 id="0802">0.8.0.2</h2>
+<ul>
+<li>display bracket instead of <code>&amp;lt;</code> when exploring gdb variables</li>
+</ul>
+<h2 id="0801">0.8.0.1</h2>
+<ul>
+<li>fix bug when restoring old settings</li>
+</ul>
+<h2 id="0800">0.8.0.0</h2>
+<ul>
+<li>Add ability to change radix of variables (issue #102)</li>
+<li>Add component to send signals to inferior program (issues #31, #90)</li>
+<li>Parse gdb version from arm-non-eabi-gdb (issue #83)</li>
+<li>Rewrite most components to React (issue #17)</li>
+<li>Improve CSS in various components</li>
+</ul>
+<h2 id="0795">0.7.9.5</h2>
+<ul>
+<li>re-fetch registers if name/value count does not match</li>
+</ul>
+<h2 id="0794">0.7.9.4</h2>
+<ul>
+<li>add inputs to resize Tree view</li>
+<li>add menu in top right</li>
+<li>css updates to preserve whitespace in terminal</li>
+<li>add top-level html to wrap body+head elements in gdbgui.pug</li>
+<li>add help file</li>
+<li>add donate page</li>
+</ul>
+<h2 id="0793">0.7.9.3</h2>
+<ul>
+<li>Changes to layout</li>
+<li>Fix character escaping in breakpoint line display</li>
+</ul>
+<h2 id="0792">0.7.9.2</h2>
+<ul>
+<li>Fix firefox css bug</li>
+<li>Update examples</li>
+<li>Update readme for windows (cygwin) users (thanks tgharib)</li>
+</ul>
+<h2 id="0791">0.7.9.1</h2>
+<ul>
+<li>Collapse simple fields to the parent node in tree explorer</li>
+<li>Add button to re-enter program state when signals are received (i.e. SEGFAULT)</li>
+</ul>
+<h2 id="0790">0.7.9.0</h2>
+<ul>
+<li>Add interactive tree explorer of variables</li>
+</ul>
+<h2 id="0783">0.7.8.3</h2>
+<ul>
+<li>Remove optimization for fetching registers due to potential bug</li>
+</ul>
+<h2 id="0782">0.7.8.2</h2>
+<ul>
+<li>bugfix in logic when jumping to source code line</li>
+<li>bugfix for when variable goes from<code>empty -&gt; 1 element</code></li>
+<li>add CODE OF CONDUCT, CONTRIBUTING, and CHANGELOG files</li>
+</ul>
+<h2 id="0781">0.7.8.1</h2>
+<ul>
+<li>correctly display <code>&lt;</code> and <code>&gt;</code> in console widget</li>
+</ul>
+<h2 id="0780">0.7.8.0</h2>
+<ul>
+<li>show disassembly when file is unknown or missing</li>
+<li>show new children in expressions widget when they are dynamically added by application (@wuyihao)</li>
+<li>suppress nuisance errors when hover variable or fflush command is not found</li>
+<li>improve logic when source code line should be jumped to</li>
+<li>escape brackets in disassembly, and gracefully hide missing opcodes</li>
+<li>update socketio version for more reliable websocket connection</li>
+</ul>
+<h2 id="0770">0.7.7.0</h2>
+<ul>
+<li>Show variable values when hovering in source code</li>
+<li>gracefully handle hostname not being present in /etc/hosts when running with remote flag</li>
+<li>Use external state management library (<code>stator.js</code>) for client ui</li>
+</ul>
+                
+                  
+                
+              
+              
+                
+
+
+              
+            </article>
+          </div>
+        </div>
+      </main>
+      
+        <!--
+  Copyright (c) 2016-2019 Martin Donath <martin.donath@squidfunk.com>
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+-->
+
+
+
+<!-- Application footer -->
+<footer class="md-footer">
+
+  <!-- Link to previous and/or next page -->
+  
+    <div class="md-footer-nav">
+      <nav class="md-footer-nav__inner md-grid">
+
+        <!-- Link to previous page -->
+        
+          <a href="../roadmap/"
+              title="Roadmap"
+              class="md-flex md-footer-nav__link md-footer-nav__link--prev"
+              rel="prev">
+            <div class="md-flex__cell md-flex__cell--shrink">
+              <i class="md-icon md-icon--arrow-back
+                    md-footer-nav__button"></i>
+            </div>
+            <div class="md-flex__cell md-flex__cell--stretch
+                  md-footer-nav__title">
+              <span class="md-flex__ellipsis">
+                <span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Roadmap
+              </span>
+            </div>
+          </a>
+        
+
+        <!-- Link to next page -->
+        
+      </nav>
+    </div>
+  
+
+  <!-- Further information -->
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+
+      <!-- Copyright and theme information -->
+      <div class="md-footer-copyright">
+        
+        powered by
+        <a href="https://www.mkdocs.org">MkDocs</a>
+        and
+        <a href="https://squidfunk.github.io/mkdocs-material/">
+          Material for MkDocs</a>
+      </div>
+
+      <!-- Social links -->
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    
+      <script src="../assets/javascripts/application.267712eb.js"></script>
+      
+      <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
+      
+    
+  </body>
+</html>
