@@ -41,7 +41,11 @@ yarn install
 yarn watch
 ```
 
-Now every JavaScript source file you change will trigger a recompilation. Refresh your browser to see the changes. **Make sure you have caching turned off in your browser. In Chrome, for example, this is a setting in the developer console.**
+Now every JavaScript source file you change will trigger a recompilation. Refresh your browser to see the changes.
+
+!!! Note
+
+    Make sure you have caching turned off in your browser. In Chrome, for example, this is a setting in the developer console.
 
 ### Step 5: Make your changes
 
