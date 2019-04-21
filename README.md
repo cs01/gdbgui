@@ -6,6 +6,9 @@
 A modern, browser-based frontend to gdb (gnu debugger)
 </h2>
 
+## [Homepage](https://gdbgui.com)
+View documentation at [gdbgui.com](https://gdbgui.com)
+
 <p align="center">
 <a href="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
 <img src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
@@ -25,5 +28,3 @@ A modern, browser-based frontend to gdb (gnu debugger)
 
 </p>
 
-## [Documentation](https://cs01.github.io/gdbgui/)
-View documentation at [https://cs01.github.io/gdbgui/](https://cs01.github.io/gdbgui/)
