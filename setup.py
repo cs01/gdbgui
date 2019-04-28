@@ -59,7 +59,16 @@ setup(
             "gdbgui = gdbgui.backend:main"
         ]
     },
-    extras_require={"dev": ["black", "flake8", "mkdocs", "mkdocs-material"]},
+    extras_require={
+        "dev": [
+            'black;python_version>="3.6"',
+            "flake8==3.5.0",
+            "mkdocs",
+            "mkdocs-material",
+            "collective.checkdocs==0.2",
+            "PyInstaller==3.3.1",
+        ]
+    },
     zip_safe=False,
     install_requires=REQUIRED,
     classifiers=[

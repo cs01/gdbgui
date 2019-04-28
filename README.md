@@ -2,19 +2,9 @@
 <a href="http://gdbgui.com"><img src="https://github.com/cs01/gdbgui/raw/master/images/gdbgui_banner.png"></a>
 </p>
 
-<h2 align="center">
+<h3 align="center">
 A modern, browser-based frontend to gdb (gnu debugger)
-</h2>
-
-## [Homepage](https://gdbgui.com)
-View documentation at [gdbgui.com](https://gdbgui.com)
-
-<p align="center">
-<a href="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
-<img src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
-</a>
-
-</p>
+</h3>
 
 <p align="center">
 <a href="https://travis-ci.org/cs01/gdbgui">
@@ -27,4 +17,10 @@ View documentation at [gdbgui.com](https://gdbgui.com)
 <img src="https://pepy.tech/badge/gdbgui" alt="image" />
 
 </p>
+
+---
+
+**Documentation**: https://gdbgui.com
+
+**Source Code**: https://github.com/cs01/gdbgui/
 

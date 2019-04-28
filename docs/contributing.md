@@ -4,7 +4,7 @@ If your change is small, go ahead and submit a pull request. If it is substantia
 
 ## Development Instructions
 
-### Step 1: Install python dependencies
+### Step 1: Install Python Dependencies
 
 To get started with development, set up a new virtual environment, then
 run the Flask server with the `debug` flag.
@@ -14,8 +14,7 @@ git clone https://github.com/cs01/gdbgui
 cd gdbgui
 python3 -m venv venv
 . venv/bin/activate
-pip install -e .
-pip install -r dev_requirements.txt
+pip install -e . .[dev]
 ```
 
 ### Step 2: Run Python server
@@ -59,7 +58,7 @@ runs gdbgui unit tests.
 
 If you have changed any Python code, add new tests to `gdbgui/tests/test_app.py` as necessary.
 
-There are currently no JavaScript tests.
+JavaScript tests are minimal, so you will have to manually excercise any code paths that may be affected.
 
 ## Documentation
 

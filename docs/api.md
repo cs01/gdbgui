@@ -1,4 +1,7 @@
+This is the command line help output of gdbgui.
+
 ```
+gdbgui --help
 usage: gdbgui [-h] [-g GDB] [--gdb-args GDB_ARGS] [--rr] [-p PORT]
                    [--host HOST] [-r] [--auth-file AUTH_FILE] [--user USER]
                    [--password PASSWORD] [--key KEY] [--cert CERT]
