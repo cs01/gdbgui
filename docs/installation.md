@@ -63,7 +63,7 @@ Download and run the binary executable for your system from [https://github.com/
 
     These binaries may not always have the latest version of gdbgui available since their builds are not automatic. The latest version will always be available on PyPI.
 
-## System Dependencies
+## System Dependencies for Python Package
 Note that this only applies if you are installing the Python package, and not using the binary executable.
 
 * gdb (gnu debugger)
@@ -110,4 +110,4 @@ When installing cygwin packages, add the following:
 
 
 ### Running from Source
-See the contributing section.
+See the [contributing](/contributing) section.

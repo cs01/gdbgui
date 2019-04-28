@@ -1,4 +1,4 @@
-# run pip install -r dev_requirements.txt before running make test
+# run pip install -e .[dev] before running make test
 .PHONY: test publish executable build
 test:
 	python -m tests
