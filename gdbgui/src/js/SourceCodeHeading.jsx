@@ -1,7 +1,7 @@
 import React from "react";
 import constants from "./constants.js";
 import { store } from "statorgfc";
-import { FileLink } from "./Links.jsx";
+import { FileLink } from "./Links";
 import FileOps from "./FileOps.jsx";
 
 class SourceCodeHeading extends React.Component {

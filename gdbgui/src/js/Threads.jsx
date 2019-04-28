@@ -3,8 +3,8 @@ import ReactTable from "./ReactTable.jsx";
 import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
 import Memory from "./Memory.jsx";
-import { FileLink } from "./Links.jsx";
-import MemoryLink from "./MemoryLink.jsx";
+import { FileLink } from "./Links";
+import MemoryLink from "./MemoryLink";
 
 class FrameArguments extends React.Component {
   render_frame_arg(frame_arg) {

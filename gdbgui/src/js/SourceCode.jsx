@@ -7,7 +7,7 @@ import React from "react";
 import FileOps from "./FileOps.jsx";
 import Breakpoints from "./Breakpoints.jsx";
 import Memory from "./Memory.jsx";
-import MemoryLink from "./MemoryLink.jsx";
+import MemoryLink from "./MemoryLink";
 import constants from "./constants.js";
 import Actions from "./Actions.js";
 

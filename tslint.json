@@ -1,0 +1,23 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "jquery": true
+  },
+  "extends": ["tslint-config-prettier"],
+  "globals": {
+    "initial_data": true,
+    "module": true,
+    "_": true,
+    "moment": true
+  },
+  "jsRules": {
+    "indent": {
+      "options": ["spaces"]
+    }
+  },
+  "rules": {
+    "quotemark": true,
+    "semicolon": true
+  }
+}
