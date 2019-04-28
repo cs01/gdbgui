@@ -1,14 +1,22 @@
 import Actions from "./Actions.js";
-import React from "react";
-import CopyToClipboard from "./CopyToClipboard.jsx";
+import * as React from "react";
+import CopyToClipboard from "./CopyToClipboard";
+import MemoryLink from "./MemoryLink";
 
-class FileLink extends React.Component {
+type Props = {
+  file?: string
+  fullname?: string
+  line: string
+  num_lines?: number
+};
+
+export class FileLink extends React.Component<Props> {
   render() {
     let line = parseInt(this.props.line);
-    let onclick = null,
+    let onclick = () => {},
       cls = "";
     if (!this.props.file || !line) {
-      line = "";
+      line = 0;
     }
     let sep = "";
     if (line && line !== 0) {
@@ -43,7 +51,14 @@ class FileLink extends React.Component {
   }
 }
 
-class FrameLink extends React.Component {
+type FrameLinkProps = {
+  addr: string
+  file?: string
+  fullname?: string
+  line: string
+};
+
+export class FrameLink extends React.Component<FrameLinkProps> {
   render() {
     return (
       <div>
@@ -58,6 +73,3 @@ class FrameLink extends React.Component {
     );
   }
 }
-
-export { FileLink };
-export { FrameLink };

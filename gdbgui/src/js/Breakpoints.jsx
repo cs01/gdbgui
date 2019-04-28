@@ -4,7 +4,7 @@ import GdbApi from "./GdbApi.jsx";
 import Actions from "./Actions.js";
 import Util from "./Util.js";
 import FileOps from "./FileOps.jsx";
-import { FileLink } from "./Links.jsx";
+import { FileLink } from "./Links";
 
 const BreakpointSourceLineCache = {
   _cache: {},

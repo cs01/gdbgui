@@ -1,8 +1,13 @@
-import React from "react";
+import * as React from "react";
 import ToolTip from "./ToolTip.jsx";
 import { store } from "statorgfc";
 
-class CopyToClipboard extends React.Component {
+type Props = {
+  content: string | null
+};
+
+class CopyToClipboard extends React.Component<Props> {
+  node: HTMLSpanElement | null = null;
   render() {
     if (!this.props.content) {
       return null;

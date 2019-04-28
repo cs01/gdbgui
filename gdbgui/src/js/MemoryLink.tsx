@@ -1,7 +1,12 @@
-import React from "react";
+import * as React from "react";
 import Memory from "./Memory.jsx";
 
-class MemoryLink extends React.Component {
+type Props = {
+  addr: string
+  style?: React.CSSProperties
+};
+
+class MemoryLink extends React.Component<Props> {
   render() {
     // turn 0x00000000000000 into 0x0
     const address_no_leading_zeros = "0x" + parseInt(this.props.addr, 16).toString(16);

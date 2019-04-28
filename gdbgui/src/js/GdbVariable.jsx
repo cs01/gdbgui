@@ -9,7 +9,7 @@ import Memory from "./Memory.jsx";
 import constants from "./constants.js";
 import { store } from "statorgfc";
 import GdbApi from "./GdbApi.jsx";
-import CopyToClipboard from "./CopyToClipboard.jsx";
+import CopyToClipboard from "./CopyToClipboard";
 import Actions from "./Actions.js";
 
 /**
