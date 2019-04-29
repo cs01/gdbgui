@@ -38,7 +38,7 @@
     
     
       
-        <title>Contact - gdbgui</title>
+        <title>Guides - gdbgui</title>
       
     
     
@@ -130,6 +130,10 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
+      <a href="#running-locally" tabindex="1" class="md-skip">
+        Skip to content
+      </a>
+    
     
       <header class="md-header" data-md-component="header">
   <nav class="md-header-nav md-grid">
@@ -151,7 +155,7 @@
               gdbgui
             </span>
             <span class="md-header-nav__topic">
-              Contact
+              Guides
             </span>
           
         </div>
@@ -319,11 +323,86 @@
       
       
 
+  
 
-  <li class="md-nav__item">
-    <a href="../guides/" title="Guides" class="md-nav__link">
+
+  <li class="md-nav__item md-nav__item--active">
+    
+    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+    
+    
+      <label class="md-nav__link md-nav__link--active" for="__toc">
+        Guides
+      </label>
+    
+    <a href="./" title="Guides" class="md-nav__link md-nav__link--active">
       Guides
     </a>
+    
+      
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-locally" title="Running Locally" class="md-nav__link">
+    Running Locally
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-remotely" title="Running Remotely" class="md-nav__link">
+    Running Remotely
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-rust-programs" title="Debugging Rust Programs" class="md-nav__link">
+    Debugging Rust Programs
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rust-on-macos" title="Rust on macOS" class="md-nav__link">
+    Rust on macOS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-to-gdbserver" title="Connecting to gdbserver" class="md-nav__link">
+    Connecting to gdbserver
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-debugging-between-different-architectures" title="Remote Debugging Between Different Architectures" class="md-nav__link">
+    Remote Debugging Between Different Architectures
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+    
   </li>
 
     
@@ -379,18 +458,11 @@
       
       
 
-  
 
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-toggle md-nav__toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-    
-    <a href="./" title="Contact" class="md-nav__link md-nav__link--active">
+  <li class="md-nav__item">
+    <a href="../contact/" title="Contact" class="md-nav__link">
       Contact
     </a>
-    
   </li>
 
     
@@ -435,21 +507,195 @@
               </div>
             
             
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+<nav class="md-nav md-nav--secondary">
+  
+  
+  
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#running-locally" title="Running Locally" class="md-nav__link">
+    Running Locally
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-remotely" title="Running Remotely" class="md-nav__link">
+    Running Remotely
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#debugging-rust-programs" title="Debugging Rust Programs" class="md-nav__link">
+    Debugging Rust Programs
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rust-on-macos" title="Rust on macOS" class="md-nav__link">
+    Rust on macOS
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#connecting-to-gdbserver" title="Connecting to gdbserver" class="md-nav__link">
+    Connecting to gdbserver
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remote-debugging-between-different-architectures" title="Remote Debugging Between Different Architectures" class="md-nav__link">
+    Remote Debugging Between Different Architectures
+  </a>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
           
           <div class="md-content">
             <article class="md-content__inner md-typeset">
               
                 
-                  <a href="https://github.com/cs01/gdbgui/edit/master/docs/contact.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
+                  <a href="https://github.com/cs01/gdbgui/edit/master/docs/guides.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                  <h1>Contact</h1>
+                  <h1>Guides</h1>
                 
-                <ul>
-<li>Twitter: @grassfedcode</li>
-<li>Email: grassfedcode@gmail.com</li>
-<li>Chat: https://gitter.im/gdbgui/Lobby</li>
+                <p>gdb can be used in a plethora of environments. These guides help you get gdb and gdbgui working in specific environments.</p>
+<p>Remember, these guides, like gdbgui, are <strong>open source</strong> and can be edited by you, the users! See <a href="contributing">contributing</a> to modify these docs.</p>
+<h2 id="running-locally">Running Locally</h2>
+<p>After downloading gdbgui, you can launch it like so:</p>
+<ul>
+<li><code>gdbgui</code> (or whatever the binary name is, i.e. <code>gdbgui_0.10.0.0</code>)</li>
+<li><code>gdbgui "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
+<li><code>gdbgui --args "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
 </ul>
+<p>A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).</p>
+<p>Now that gdbgui is open, you can interactively run a program with it.
+* Type the path to the executable in the input at the top (next to "Load Binary"). The executable should already exist and have been compiled with the <code>-g</code> flag.
+* Click <code>Load Binary</code>. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically. This can be changed in settings if you prefer not to do this.
+* The line of source code corresponding to main will display if the program was compiled with the <code>-g</code> flag debug symbols.
+* Click the Run button, which is on the top right and looks like a circular arrow.
+* Step through the program by clicking the Next, Step, Continue, icons as desired. These are also on the top right.</p>
+<p>For a list of gdbgui arguments, run <code>gdbgui --help</code>.</p>
+<h2 id="running-remotely">Running Remotely</h2>
+<p>Because gdbgui is a server, it naturally allows you to debug programs running on other computers.</p>
+<ul>
+<li>ssh into the computer with the program that needs to be debugged.</li>
+<li>run <code>gdbgui -r</code> on the remote machine (this will serve publicly so beware of security here)</li>
+<li>on your local machine, open your browser and access the remote machine's ip and port</li>
+<li>debug the remote computer in your local browser</li>
+</ul>
+<p>Note that gnu also distrubutes a program called <code>gdbserver</code> which gdbgui is compatible with. See the relevant section in this doc.</p>
+<h2 id="debugging-rust-programs">Debugging Rust Programs</h2>
+<p><code>gdbgui</code> can be used to debug programs written in Rust. Assuming you use <a href="https://doc.rust-lang.org/stable/cargo/">Cargo</a> to create a new program
+and build it in Debug mode in the standard way:</p>
+<div class="codehilite"><pre><span></span>cargo new myprog
+cd myprog
+cargo build
+</pre></div>
+
+
+<p>You can start debugging with a simple</p>
+<p><code>gdbgui target/debug/myprog</code></p>
+<p>There are a couple of small difficulties.</p>
+<p>1.) Instead of showing your <code>main</code> function the initial screen will be blank and <code>gdbgui</code> will print <code>File not found: main</code>.
+You need to help <code>gdbgui</code> out by typing <code>main</code> into the file browser box:</p>
+<p><img alt="" src="https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/rust_main.png" /></p>
+<p>and selecting the <code>main.rs</code> file. The source code should then appear in the browser and you can click to set breakpoints
+and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.</p>
+<h3 id="rust-on-macos">Rust on macOS</h3>
+<p>When you load your rust binary on a mac, you may see many warnings like this</p>
+<blockquote>
+<p>warning /Users/user/examples/rust/target/debug/deps/hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o': can't open to read symbols: No such file or directory.</p>
+</blockquote>
+<p>Symbols are names of variables, functions and types defined in your program. You can define symbols for your program by loading symbol files. gdb usually does this automatically for you, but sometimes has trouble finding the right paths.</p>
+<p>In this case, you need to manually tell gdb where the symbol files is; it's usually the first part of the missing file. In the above example, it's <code>hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o</code>.</p>
+<p>You can load this into gdb with the following command (changed as appropriate):</p>
+<div class="codehilite"><pre><span></span>symbol-file /Users/user/git/gdbgui/examples/rust/target/debug/deps/hello-486956f9dde465e5
+</pre></div>
+
+
+<p>2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
+which makes it print the message</p>
+<div class="codehilite"><pre><span></span>warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/phil/temp/myprog/target/debug/myprog.
+Use `info auto-load python-scripts [REGEXP]&#39; to list them.
+</pre></div>
+
+
+<p>You can safely ignore this, but the <a href="https://github.com/rust-lang/rust/issues/33159#issuecomment-384073290">Rust issue</a>
+describes the workarounds necessary (create a <code>.gdbinit</code> file and paste a few lines into the Python helper script).</p>
+<ul>
+<li>On Windows Rust defaults to the MSVC toolchain, and <code>gdbgui</code> can't debug binaries compiled that way. If you want to use <code>gdbgui</code>, you'll have to <a href="https://github.com/rust-lang-nursery/rustup.rs#working-with-rust-on-windows">switch to the GNU toolchain</a>.</li>
+<li>If you want to debug programs compiled in Release mode, you will need to create a <code>profile.release</code> section in your
+  <code>Cargo.toml</code> and add <code>debug = true</code> to it. See the <a href="https://doc.rust-lang.org/stable/cargo/reference/manifest.html">Cargo manifest</a> for details.</li>
+</ul>
+<p>and now gdb will be able to see which files were used to compile your binary, among other things.</p>
+<h2 id="connecting-to-gdbserver">Connecting to gdbserver</h2>
+<p>Like gdb, <a href="https://sourceware.org/gdb/onlinedocs/gdb/Server.html"><code>gdbserver</code></a> is also made by gnu, but with the following important differences:</p>
+<ul>
+<li>it is much smaller than gdb</li>
+<li>it is easier to port to other architectures than all of gdb</li>
+</ul>
+<p>gdbserver runs on a remote machine or embedded target, which, as the name suggests, runs a server. gdb communicates with gdbserver so you can debug on your local machine. To do this, the remote machine must run the server and program:</p>
+<p><code>gdbserver 0.0.0.0:9000 mybinary.a</code></p>
+<p>Then you can launch <code>gdb</code> or <code>gdbgui</code> and connect to it. In <code>gdbgui</code>, use the dropdown to select <code>Connect to gdbserver</code>, and enter</p>
+<p><code>&lt;remote ip address&gt;:9000</code></p>
+<p>Read more at the <a href="https://sourceware.org/gdb/onlinedocs/gdb/Server.html">gdbserver homepage</a>.</p>
+<p>If the machine gdbgui is running on and the target being debugged have different architectures, make sure gdb is built properly. See []</p>
+<h2 id="remote-debugging-between-different-architectures">Remote Debugging Between Different Architectures</h2>
+<p>For example, this is useful if you are working from an x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver.</p>
+<p>You need to build the <code>gdb</code> client with the <code>--host</code> and <code>--target</code> flags. You need to build the <code>gdbserver</code> for the correct architecture.</p>
+<p>Build the <code>gdb</code> client that <code>gdbgui</code> will use. This example applies to an x86_64 pc running gdbgui that connects to an arm device running gdbserver, so you will need to ensure the targets apply to the environments you are working in:</p>
+<ol>
+<li>downloaded latest gdb source code</li>
+<li>unzip it, go into folder
+3.</li>
+</ol>
+<div class="codehilite"><pre><span></span>./configure  --host<span class="o">=</span>x86_64-pc-linux-gnu --build<span class="o">=</span>x86_64-pc-linux-gnu --target<span class="o">=</span>arm-linux-gnuabi <span class="o">&amp;&amp;</span>
+make -j8 <span class="o">&amp;&amp;</span>
+sudo make install
+</pre></div>
+
+
+<ol>
+<li>Now arm-linux-gnuabi-gdb is installed by default to <code>/usr/local/bin</code>, but you can instead provide <code>prefix=&lt;path&gt;</code> to where you want it to install in the ./configure script above</li>
+<li>The <code>arm-linux-gnuabi-gdb</code> binary can now be used by gdbgui to connect to the ARM device:</li>
+</ol>
+<div class="codehilite"><pre><span></span>gdbgui -g arm-linux-gnuabi-gdb
+</pre></div>
+
+
+<p>Links:
+* <a href="https://sourceware.org/gdb/wiki/BuildingCrossGDBandGDBserver">Building GDB and GDBserver for cross debugging</a>
+* <a href="Cross Arch Remote Debugging with gdb and gdbserver">http://www.brain-dump.org/blog/entry/138/Cross_Arch_Remote_Debugging_with_gdb_and_gdbserver</a>
+* <a href="https://github.com/cs01/gdbgui/issues/237">support remote debug from x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver (multiarch)</a></p>
                 
                   
                 
@@ -497,8 +743,8 @@
 
         <!-- Link to previous page -->
         
-          <a href="../howitworks/"
-              title="How it Works"
+          <a href="../examples/"
+              title="Examples"
               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
               rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -511,7 +757,7 @@
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                How it Works
+                Examples
               </span>
             </div>
           </a>
@@ -519,8 +765,8 @@
 
         <!-- Link to next page -->
         
-          <a href="../roadmap/"
-              title="Roadmap"
+          <a href="../api/"
+              title="API"
               class="md-flex md-footer-nav__link md-footer-nav__link--next"
               rel="next">
             <div class="md-flex__cell md-flex__cell--stretch
@@ -529,7 +775,7 @@
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Roadmap
+                API
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

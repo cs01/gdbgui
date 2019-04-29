@@ -34,7 +34,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
       <link rel="shortcut icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.1.2">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.2.0">
     
     
       
@@ -42,12 +42,12 @@
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/application.3020aac5.css">
+      <link rel="stylesheet" href="assets/stylesheets/application.750b69bd.css">
       
       
     
     
-      <script src="assets/javascripts/modernizr.01ccdecf.js"></script>
+      <script src="assets/javascripts/modernizr.74668098.js"></script>
     
     
       
@@ -85,6 +85,15 @@
   })
 </script>
 <script async src="https://www.google-analytics.com/analytics.js"></script>
+
+<!-- add in adsense (hack)-->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9016047663812570",
+          enable_page_level_ads: true
+     });
+</script>
       
     
     
@@ -361,18 +370,6 @@
 
 
   <li class="md-nav__item">
-    <a href="downloads/" title="Downloads" class="md-nav__link">
-      Downloads
-    </a>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item">
     <a href="gettingstarted/" title="Getting Started" class="md-nav__link">
       Getting Started
     </a>
@@ -387,6 +384,18 @@
   <li class="md-nav__item">
     <a href="examples/" title="Examples" class="md-nav__link">
       Examples
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="guides/" title="Guides" class="md-nav__link">
+      Guides
     </a>
   </li>
 
@@ -570,10 +579,23 @@
 <a href="http://gdbgui.com"><img src="https://github.com/cs01/gdbgui/raw/master/images/gdbgui_banner.png"></a>
 </p>
 
-<h2 align="center">
+<h3 align="center">
 A modern, browser-based frontend to gdb (gnu debugger)
-</h2>
+</h3>
 
+<p align="center">
+<a href="https://travis-ci.org/cs01/gdbgui">
+<img src="https://travis-ci.org/cs01/gdbgui.svg?branch=master" alt="image" /></a>
+
+<a href="https://pypi.python.org/pypi/gdbgui/">
+<img src="https://img.shields.io/badge/pypi-0.13.1.2-blue.svg" alt="image" />
+</a>
+
+<img src="https://pepy.tech/badge/gdbgui" alt="image" />
+
+</p>
+
+<hr />
 <p align="center">
 <a href="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
 <img src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui_animation.gif">
@@ -583,12 +605,24 @@ A modern, browser-based frontend to gdb (gnu debugger)
 
 <p><code>gdbgui</code> is a browser-based frontend to <code>gdb</code>, the <a href="https://www.gnu.org/software/gdb/">gnu debugger</a>. You can add breakpoints, view stack traces, and more in C, C++, Go, and Rust!</p>
 <p>It's perfect for beginners and experts. Simply run <code>gdbgui</code> from the terminal to start the gdbgui server, and a new tab will open in your browser.</p>
-<p><code>gdbgui</code> works by using gdb's <a href="https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI.html">machine interface</a>. gdbgui runs gdb as a subprocess, then sends and reads machine interface data to create an interactive user interface. You can learn more about how it works <a href="howitworks/">here</a>.</p>
+<p><strong>Sound Good? Get started with <a href="installation">installation</a></strong>.</p>
 <h2 id="testimonials">Testimonials</h2>
+<p>"<em>Definitely worth checking out.</em>"</p>
+<div style="text-align: right; margin-right: 10%;">
+—<a href="https://www.youtube.com/user/lefticus1">Jason Turner</a>, host of C++ weekly on <a href="https://www.youtube.com/watch?v=em842geJhfk">YouTube</a>
+</div>
+
+<p>"<em>Seriously, great front-end to gdb for those of us who are not always using a full IDE. Great project.</em>"</p>
+<div style="text-align: right; margin-right: 10%;">
+—Jefferson on <a href="https://twitter.com/jeffamstutz/status/955647577373978624">Twitter</a>
+</div>
+
+<p>"<em>Where were you all my life? And why did I use DDD?</em>"</p>
+<div style="text-align: right; margin-right: 10%;">
+—<a href="https://github.com/badlogic">Mario Zechner</a>, author, game engine developer on <a href="https://twitter.com/badlogicgames/status/925079139446591490">Twitter</a>
+</div>
+
 <p>gdbgui is used by thousands of developers around the world including engineers at Google and college computer science course instructions. It even made its way into the Rust programming language's <a href="https://github.com/rust-lang/rust/blob/master/src/etc/rust-gdbgui">source code</a> and appeared on episode <a href="​https://youtu.be/em842geJhfk">110 of C++ Weekly</a>.</p>
-<p><span style="font-style: italic;">I've only used @grassfedcode's gdbgui for a couple of days, but wow, it's pretty awesome and so dead simple to get up an running.</span> —<a href="https://twitter.com/DragonmasterLou/status/959449422630408192">Lou</a></p>
-<p><span style="font-style: italic;">Seriously, great front-end to gdb for those of us who are not always using a full IDE. Great project.</span> —<a href="https://twitter.com/jeffamstutz/status/955647577373978624">Jefferson</a></p>
-<p><span style="font-style: italic;">Where were you all my life? And why did I use DDD?</span> —<a href="https://twitter.com/badlogicgames/status/925079139446591490">Mario</a></p>
 <h2 id="license">License</h2>
 <p>gdbgui's license is GNU GPLv3. To summarize it, you</p>
 <ul>
@@ -707,7 +741,7 @@ A modern, browser-based frontend to gdb (gnu debugger)
       
     </div>
     
-      <script src="assets/javascripts/application.267712eb.js"></script>
+      <script src="assets/javascripts/application.39abc4af.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:"."}})</script>
       

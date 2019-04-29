@@ -34,7 +34,7 @@
         <meta name="lang:search.tokenizer" content="[\s\-]+">
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.1.2">
+      <meta name="generator" content="mkdocs-1.0.4, mkdocs-material-4.2.0">
     
     
       
@@ -42,12 +42,12 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/application.3020aac5.css">
+      <link rel="stylesheet" href="../assets/stylesheets/application.750b69bd.css">
       
       
     
     
-      <script src="../assets/javascripts/modernizr.01ccdecf.js"></script>
+      <script src="../assets/javascripts/modernizr.74668098.js"></script>
     
     
       
@@ -85,6 +85,15 @@
   })
 </script>
 <script async src="https://www.google-analytics.com/analytics.js"></script>
+
+<!-- add in adsense (hack)-->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({
+          google_ad_client: "ca-pub-9016047663812570",
+          enable_page_level_ads: true
+     });
+</script>
       
     
     
@@ -121,7 +130,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#running-locally" tabindex="1" class="md-skip">
+      <a href="#settings" tabindex="1" class="md-skip">
         Skip to content
       </a>
     
@@ -290,18 +299,6 @@
       
       
 
-
-  <li class="md-nav__item">
-    <a href="../downloads/" title="Downloads" class="md-nav__link">
-      Downloads
-    </a>
-  </li>
-
-    
-      
-      
-      
-
   
 
 
@@ -325,47 +322,6 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#running-locally" title="Running Locally" class="md-nav__link">
-    Running Locally
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debugging-rust-programs" title="Debugging Rust Programs" class="md-nav__link">
-    Debugging Rust Programs
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rust-on-macos" title="Rust on macOS" class="md-nav__link">
-    Rust on macOS
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-gdbgui-remotely" title="Running gdbgui Remotely" class="md-nav__link">
-    Running gdbgui Remotely
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#connecting-to-gdbserver" title="Connecting to gdbserver" class="md-nav__link">
-    Connecting to gdbserver
-  </a>
-  
-</li>
       
         <li class="md-nav__item">
   <a href="#settings" title="Settings" class="md-nav__link">
@@ -407,6 +363,18 @@
   <li class="md-nav__item">
     <a href="../examples/" title="Examples" class="md-nav__link">
       Examples
+    </a>
+  </li>
+
+    
+      
+      
+      
+
+
+  <li class="md-nav__item">
+    <a href="../guides/" title="Guides" class="md-nav__link">
+      Guides
     </a>
   </li>
 
@@ -524,47 +492,6 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#running-locally" title="Running Locally" class="md-nav__link">
-    Running Locally
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#debugging-rust-programs" title="Debugging Rust Programs" class="md-nav__link">
-    Debugging Rust Programs
-  </a>
-  
-    <nav class="md-nav">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#rust-on-macos" title="Rust on macOS" class="md-nav__link">
-    Rust on macOS
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#running-gdbgui-remotely" title="Running gdbgui Remotely" class="md-nav__link">
-    Running gdbgui Remotely
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#connecting-to-gdbserver" title="Connecting to gdbserver" class="md-nav__link">
-    Connecting to gdbserver
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#settings" title="Settings" class="md-nav__link">
     Settings
   </a>
@@ -624,88 +551,9 @@
 <li>Ask a question in the <a href="https://gitter.im/gdbgui/Lobby">gdbgui chat room</a></li>
 <li><a href="https://github.com/cs01/gdbgui/issues">Ask question in an issue on github</a></li>
 </ul>
-<h3 id="running-locally">Running Locally</h3>
-<p>After downloading gdbgui, you can launch it like so:</p>
-<ul>
-<li><code>gdbgui</code> (or whatever the binary name is, i.e. <code>gdbgui_0.10.0.0</code>)</li>
-<li><code>gdbgui "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
-<li><code>gdbgui --args "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
-</ul>
-<p>A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).</p>
-<p>Now that gdbgui is open, you can interactively run a program with it.
-* Type the path to the executable in the input at the top (next to "Load Binary"). The executable should already exist and have been compiled with the <code>-g</code> flag.
-* Click <code>Load Binary</code>. The program and symbols will load, but will not begin running. A breakpoint will be added to main automatically. This can be changed in settings if you prefer not to do this.
-* The line of source code corresponding to main will display if the program was compiled with the <code>-g</code> flag debug symbols.
-* Click the Run button, which is on the top right and looks like a circular arrow.
-* Step through the program by clicking the Next, Step, Continue, icons as desired. These are also on the top right.</p>
-<p>For a list of gdbgui arguments, see the Arguments section below or type gdbgui --help.</p>
-<h3 id="debugging-rust-programs">Debugging Rust Programs</h3>
-<p><code>gdbgui</code> can be used to debug programs written in Rust. Assuming you use <a href="https://doc.rust-lang.org/stable/cargo/">Cargo</a> to create a new program
-and build it in Debug mode in the standard way:</p>
-<div class="codehilite"><pre><span></span>cargo new myprog
-cd myprog
-cargo build
-</pre></div>
-
-
-<p>You can start debugging with a simple</p>
-<p><code>gdbgui target/debug/myprog</code></p>
-<p>There are a couple of small difficulties.</p>
-<p>1.) Instead of showing your <code>main</code> function the initial screen will be blank and <code>gdbgui</code> will print <code>File not found: main</code>.
-You need to help <code>gdbgui</code> out by typing <code>main</code> into the file browser box:</p>
-<p><img alt="" src="https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/rust_main.png" /></p>
-<p>and selecting the <code>main.rs</code> file. The source code should then appear in the browser and you can click to set breakpoints
-and run the program. Of course, if you want to break in some other file, you can find that in the file browser instead.</p>
-<h4 id="rust-on-macos">Rust on macOS</h4>
-<p>When you load your rust binary on a mac, you may see many warnings like this</p>
-<blockquote>
-<p>warning /Users/user/examples/rust/target/debug/deps/hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o': can't open to read symbols: No such file or directory.</p>
-</blockquote>
-<p>Symbols are names of variables, functions and types defined in your program. You can define symbols for your program by loading symbol files. gdb usually does this automatically for you, but sometimes has trouble finding the right paths.</p>
-<p>In this case, you need to manually tell gdb where the symbol files is; it's usually the first part of the missing file. In the above example, it's <code>hello-486956f9dde465e5.9elsx31vb4it187.rcgu.o</code>.</p>
-<p>You can load this into gdb with the following command (changed as appropriate):</p>
-<div class="codehilite"><pre><span></span>symbol-file /Users/user/git/gdbgui/examples/rust/target/debug/deps/hello-486956f9dde465e5
-</pre></div>
-
-
-<p>2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
-which makes it print the message</p>
-<div class="codehilite"><pre><span></span>warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/phil/temp/myprog/target/debug/myprog.
-Use `info auto-load python-scripts [REGEXP]&#39; to list them.
-</pre></div>
-
-
-<p>You can safely ignore this, but the <a href="https://github.com/rust-lang/rust/issues/33159#issuecomment-384073290">Rust issue</a>
-describes the workarounds necessary (create a <code>.gdbinit</code> file and paste a few lines into the Python helper script).</p>
-<ul>
-<li>On Windows Rust defaults to the MSVC toolchain, and <code>gdbgui</code> can't debug binaries compiled that way. If you want to use <code>gdbgui</code>,
-  you'll have to <a href="https://github.com/rust-lang-nursery/rustup.rs#working-with-rust-on-windows">switch to the GNU toolchain</a>.</li>
-<li>If you want to debug programs compiled in Release mode, you will need to create a <code>profile.release</code> section in your
-  <code>Cargo.toml</code> and add <code>debug = true</code> to it. See the <a href="https://doc.rust-lang.org/stable/cargo/reference/manifest.html">Cargo manifest</a> for details.</li>
-</ul>
-<p>and now gdb will be able to see which files were used to compile your binary, among other things.</p>
-<h3 id="running-gdbgui-remotely">Running gdbgui Remotely</h3>
-<p>Because gdbgui is a server, it naturally allows you to debug programs running on other computers.</p>
-<ul>
-<li>ssh into the computer with the program that needs to be debugged.</li>
-<li>run <code>gdbgui -r</code> on the remote machine (this will serve publicly so beware of security here)</li>
-<li>on your local machine, open your browser and access the remote machine's ip and port</li>
-<li>debug the remote computer in your local browser</li>
-</ul>
-<h3 id="connecting-to-gdbserver">Connecting to gdbserver</h3>
-<p>Like gdb, <a href="https://sourceware.org/gdb/onlinedocs/gdb/Server.html"><code>gdbserver</code></a> is also made by gnu, but with the following important differences:</p>
-<ul>
-<li>it is much smaller than gdb</li>
-<li>it is easier to port to other architectures than all of gdb</li>
-</ul>
-<p>gdbserver runs on a remote machine or embedded target, which, as the name suggests, runs a server. gdb communicates with gdbserver so you can debug on your local machine. To do this, the remote machine must run the server and program:</p>
-<p><code>gdbserver 0.0.0.0:9000 mybinary.a</code></p>
-<p>Then you can launch <code>gdb</code> or <code>gdbgui</code> and connect to it. In <code>gdbgui</code>, use the dropdown to select <code>Connect to gdbserver</code>, and enter</p>
-<p><code>&lt;remote ip address&gt;:9000</code></p>
-<p>Read more at the <a href="https://sourceware.org/gdb/onlinedocs/gdb/Server.html">gdbserver homepage</a>.</p>
-<h3 id="settings">Settings</h3>
+<h2 id="settings">Settings</h2>
 <p><code>gdbgui</code> settings can be accessed by clicking the gear icon in the top right of the frontend. Most of these settings persist between sessions for a given url and port.</p>
-<h3 id="keyboard-shortcuts">Keyboard Shortcuts</h3>
+<h2 id="keyboard-shortcuts">Keyboard Shortcuts</h2>
 <p>The following keyboard shortcuts are available when the focus is not in an input field. They have the same effect as when the button is pressed.</p>
 <ul>
 <li>Run: r</li>
@@ -716,7 +564,7 @@ describes the workarounds necessary (create a <code>.gdbinit</code> file and pas
 <li>Next Instruction: m</li>
 <li>Step Instruction: ,</li>
 </ul>
-<h3 id="debugging-faults">Debugging Faults</h3>
+<h2 id="debugging-faults">Debugging Faults</h2>
 <p>If your program exits unexpectedly from something like a SEGFAULT, gdbgui displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.</p>
 <p><img alt="" src="https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/SIGSEV.png" /></p>
                 
@@ -766,8 +614,8 @@ describes the workarounds necessary (create a <code>.gdbinit</code> file and pas
 
         <!-- Link to previous page -->
         
-          <a href="../downloads/"
-              title="Downloads"
+          <a href="../installation/"
+              title="Installation"
               class="md-flex md-footer-nav__link md-footer-nav__link--prev"
               rel="prev">
             <div class="md-flex__cell md-flex__cell--shrink">
@@ -780,7 +628,7 @@ describes the workarounds necessary (create a <code>.gdbinit</code> file and pas
                 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Downloads
+                Installation
               </span>
             </div>
           </a>
@@ -833,7 +681,7 @@ describes the workarounds necessary (create a <code>.gdbinit</code> file and pas
       
     </div>
     
-      <script src="../assets/javascripts/application.267712eb.js"></script>
+      <script src="../assets/javascripts/application.39abc4af.js"></script>
       
       <script>app.initialize({version:"1.0.4",url:{base:".."}})</script>
       
