@@ -67,6 +67,7 @@ setup(
             "mkdocs-material",
             "collective.checkdocs==0.2",
             "PyInstaller==3.3.1",
+            "check-manifest==0.39",
         ]
     },
     zip_safe=False,

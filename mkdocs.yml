@@ -22,7 +22,6 @@ nav:
   - Contributing: "contributing.md"
   - How it Works: "howitworks.md"
   - Contact: "contact.md"
-  - Roadmap: "roadmap.md"
   - Changelog: "changelog.md"
 
 markdown_extensions:
