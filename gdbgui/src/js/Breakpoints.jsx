@@ -66,6 +66,17 @@ class Breakpoint extends React.Component {
       </div>
     );
   }
+  get_num_times_hit(bkpt){
+    if ((bkpt.times === undefined) // E.g. 'bkpt' is a child breakpoint
+          || 
+        (bkpt.times == 0)) {
+      return "" 
+    } else if (bkpt.times == 1) {
+      return "1 hit"
+    } else {
+      return `${bkpt.times} hits`;
+    }
+  }
   render() {
     let b = this.props.bkpt,
       checked = b.enabled === "y" ? "checked" : "",
@@ -111,6 +122,7 @@ class Breakpoint extends React.Component {
     } else {
       let func = b.func === undefined ? "(unknown function)" : b.func;
 
+      const times_hit = this.get_num_times_hit(b);
       function_jsx = (
         <div style={{ display: "inline" }}>
           <span className="monospace" style={{ paddingRight: "5px" }}>
@@ -118,6 +130,9 @@ class Breakpoint extends React.Component {
           </span>
           <span style={{ color: "#bbbbbb", fontStyle: "italic" }}>
             thread groups: {b["thread-groups"]}
+          </span>
+          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px"}}>
+            {times_hit}
           </span>
         </div>
       );
