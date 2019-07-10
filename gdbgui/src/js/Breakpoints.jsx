@@ -67,19 +67,14 @@ class Breakpoint extends React.Component {
     );
   }
   get_num_times_hit(bkpt){
-
-    if (bkpt.times === undefined) {
-      return "" // E.g. 'bkpt' is a child breakpoint
-    }
-
-    if (bkpt.times == 0) {
-      return "breakpoint never hit"
-    }
-    else if (bkpt.times == 1) {
-      return "breakpoint already hit 1 time"
-    }
-    else {
-      return "breakpoint already hit " + bkpt.times + " times";
+    if ((bkpt.times === undefined) // E.g. 'bkpt' is a child breakpoint
+          || 
+        (bkpt.times == 0)) {
+      return "" 
+    } else if (bkpt.times == 1) {
+      return "1 hit"
+    } else {
+      return `${bkpt.times} hits`;
     }
   }
   render() {
