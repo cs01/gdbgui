@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-A modern, browser-based frontend to gdb (gnu debugger)
+A modern, browser-based frontend to gdb (gnu debugger).
 </h3>
 
 <p align="center">
