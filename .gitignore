@@ -16,3 +16,4 @@ venv
 site
 build.js
 build.js.map
+__pycache__
