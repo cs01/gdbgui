@@ -3,10 +3,6 @@ site_description: A modern, browser-based frontend to gdb (gnu debugger)
 
 theme:
   name: "material"
-  custom_dir: 'docs/theme'
-google_analytics:
-  - 'UA-90243909-2'
-  - 'auto'
 repo_name: cs01/gdbgui
 repo_url: https://github.com/cs01/gdbgui
 
@@ -22,7 +18,6 @@ nav:
   - Contributing: "contributing.md"
   - How it Works: "howitworks.md"
   - Contact: "contact.md"
-  - Roadmap: "roadmap.md"
   - Changelog: "changelog.md"
 
 markdown_extensions:

@@ -156,12 +156,6 @@ class Gdbgui extends React.PureComponent {
         method: "GET",
         success: data => {
           store.set("latest_gdbgui_version", _.trim(data));
-          if (
-            initial_data.show_gdbgui_upgrades &&
-            TopBar.needs_to_update_gdbgui_version()
-          ) {
-            Actions.show_modal(`Update Available`, TopBar.get_upgrade_text());
-          }
         },
         error: data => {
           void data;

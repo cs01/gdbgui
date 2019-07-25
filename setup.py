@@ -67,6 +67,7 @@ setup(
             "mkdocs-material",
             "collective.checkdocs==0.2",
             "PyInstaller==3.3.1",
+            "check-manifest==0.39",
         ]
     },
     zip_safe=False,
@@ -79,7 +80,6 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: Implementation :: PyPy",

@@ -3,6 +3,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 module.exports = {
   entry: './gdbgui/src/js/gdbgui.jsx',
+  devtool: 'source-map',
   output: {
     path: path.resolve(__dirname, 'gdbgui/static/js/'),
     filename: 'build.js'
