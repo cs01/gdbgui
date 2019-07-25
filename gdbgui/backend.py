@@ -63,7 +63,6 @@ except ImportError:
 
 USING_WINDOWS = os.name == "nt"
 TEMPLATE_DIR = os.path.join(BASE_PATH, "templates")
-GDBGUI_PREF_DIR = os.path.join(os.path.expanduser("~"), ".gdbgui")
 STATIC_DIR = os.path.join(BASE_PATH, "static")
 DEFAULT_HOST = "127.0.0.1"
 DEFAULT_PORT = 5000
@@ -104,7 +103,6 @@ Compress(
 app.config["initial_binary_and_args"] = []
 app.config["gdb_path"] = DEFAULT_GDB_EXECUTABLE
 app.config["gdb_cmd_file"] = None
-app.config["show_gdbgui_upgrades"] = True
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["LLDB"] = False  # assume false, okay to change later
 app.config["project_home"] = None
@@ -540,13 +538,9 @@ def gdbgui():
         "initial_gdb_user_command": initial_gdb_user_command,
         "interpreter": interpreter,
         "initial_binary_and_args": app.config["initial_binary_and_args"],
-        "p": pbkdf2_hex(str(app.config.get("l")), "Feo8CJol")
-        if app.config.get("l")
-        else "",
         "project_home": app.config["project_home"],
         "remap_sources": app.config["remap_sources"],
         "rr": app.config["rr"],
-        "show_gdbgui_upgrades": app.config["show_gdbgui_upgrades"],
         "themes": THEMES,
         "signals": SIGNAL_NAME_TO_OBJ,
         "using_windows": USING_WINDOWS,
@@ -624,7 +618,7 @@ def dashboard():
 def shutdown_webview():
     add_csrf_token_to_session()
     return render_template(
-        "donate.html", debug=app.debug, csrf_token=session["csrf_token"]
+        "shutdown.html", debug=app.debug, csrf_token=session["csrf_token"]
     )
 
 
@@ -771,22 +765,6 @@ def get_gdbgui_auth_user_credentials(auth_file, user, password):
         return None
 
 
-def initialize_preferences():
-    if not os.path.exists(GDBGUI_PREF_DIR):
-        os.makedirs(GDBGUI_PREF_DIR)
-    app.config["l"] = None
-    if os.path.exists(os.path.join(GDBGUI_PREF_DIR, "license")):
-        with open(os.path.join(GDBGUI_PREF_DIR, "license")) as f:
-            app.config["l"] = f.read().strip()
-
-
-def save_license(license):
-    with open(os.path.join(GDBGUI_PREF_DIR, "license"), "w") as f:
-        f.write(license)
-        app.config["l"] = license
-    print("saved license information")
-
-
 def get_parser():
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -879,11 +857,6 @@ def get_parser():
     )
     other.add_argument("-v", "--version", help="Print version", action="store_true")
     other.add_argument(
-        "--hide-gdbgui-upgrades",
-        help="Hide messages regarding newer version of gdbgui. Default: False.",
-        action="store_true",
-    )
-    other.add_argument(
         "-n",
         "--no-browser",
         help="By default, the browser will open with gdbgui. Pass this flag so the browser does not open.",
@@ -895,7 +868,6 @@ def get_parser():
         help="Use the given browser executable instead of the system default.",
         default=None,
     )
-    other.add_argument("--license", help="Store gdbgui ad-free license key.")
     other.add_argument(
         "--debug",
         help="The debug flag of this Flask application. "
@@ -949,7 +921,6 @@ def main():
     app.config["gdb_args"] = shlex.split(args.gdb_args)
     app.config["rr"] = args.rr
     app.config["gdb_path"] = args.gdb
-    app.config["show_gdbgui_upgrades"] = not args.hide_gdbgui_upgrades
     app.config["gdbgui_auth_user_credentials"] = get_gdbgui_auth_user_credentials(
         args.auth_file, args.user, args.password
     )
@@ -963,10 +934,6 @@ def main():
             )
             print(e)
             exit(1)
-
-    if args.license:
-        print("saving license information")
-        save_license(args.license)
 
     verify_gdb_exists(app.config["gdb_path"])
     if args.remote:

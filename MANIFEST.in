@@ -9,6 +9,7 @@ prune tests
 prune docs
 prune docker
 prune images
+prune gdbgui/__pycache__
 
 exclude makefile
 exclude .eslintrc.json

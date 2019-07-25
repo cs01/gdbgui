@@ -80,7 +80,7 @@ gdbgui is distributed through
 
 ## Donate
 
-Please consider donating to support continued development of gdbgui: [Paypal](https://www.paypal.me/grassfedcode/20)
+[Paypal](https://www.paypal.me/grassfedcode/20)
 
 ## Contact
 

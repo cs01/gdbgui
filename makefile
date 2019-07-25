@@ -1,7 +1,7 @@
 # run pip install -e .[dev] before running make test
 .PHONY: test publish executable build
 test:
-	check-manifest --ignore build.js,gdbgui/static/js
+	check-manifest --ignore build.js,gdbgui/static/js,gdbgui/static/js/build.js.map
 	python setup.py checkdocs
 	python -m tests
 	yarn install
