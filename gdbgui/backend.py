@@ -858,7 +858,7 @@ def get_parser():
 
     other.add_argument(
         "--hide-gdbgui-upgrades",
-        help=argparse.SUPPRESS, # deprecated. left so calls to gdbgui don't break
+        help=argparse.SUPPRESS,  # deprecated. left so calls to gdbgui don't break
         action="store_true",
     )
     other.add_argument(
