@@ -6,6 +6,7 @@
 
 ## 0.13.1.2
 * Exclude "tests" directory from Python package
+* Remove analytics from documentation
 
 ## 0.13.1.1
 * Add `__main__` entrypoint
