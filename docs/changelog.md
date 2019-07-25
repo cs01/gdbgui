@@ -1,9 +1,11 @@
 # gdbgui release history
 
-## 0.13.1.3
+## 0.13.2.0
+* Print number of times a breakpoint was hit (@MatthiasKreileder).
 * Publish sdist to PyPI (this was overlooked in previous release).
-* Some infrastructure changes to gdbgui. End users should not be affected.
-* Print number of times a breakpoint was hit (@MatthiasKreileder)
+* Do not notify users of gdbgui upgrades
+* [dev] Some infrastructure changes to gdbgui. End users should not be affected.
+* [dev] Fix build error due to webpack bug (https://github.com/webpack/webpack/issues/8082).
 
 ## 0.13.1.2
 * Exclude "tests" directory from Python package
