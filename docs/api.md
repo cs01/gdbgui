@@ -1,13 +1,11 @@
 This is the command line help output of gdbgui.
 
 ```
-gdbgui --help
 usage: gdbgui [-h] [-g GDB] [--gdb-args GDB_ARGS] [--rr] [-p PORT]
                    [--host HOST] [-r] [--auth-file AUTH_FILE] [--user USER]
                    [--password PASSWORD] [--key KEY] [--cert CERT]
                    [--remap-sources REMAP_SOURCES] [--project PROJECT] [-v]
-                   [--hide-gdbgui-upgrades] [-n] [-b BROWSER]
-                   [--license LICENSE] [--debug] [--args ...]
+                   [-n] [-b BROWSER] [--debug] [--args ...]
                    [cmd]
 
 A server that provides a graphical user interface to the gnu debugger (gdb).
@@ -69,15 +67,11 @@ other settings:
   --project PROJECT     Set the project directory. When viewing the "folders"
                         pane, paths are shown relative to this directory.
   -v, --version         Print version
-  --hide-gdbgui-upgrades
-                        Hide messages regarding newer version of gdbgui.
-                        Default: False.
   -n, --no-browser      By default, the browser will open with gdbgui. Pass
                         this flag so the browser does not open.
   -b BROWSER, --browser BROWSER
                         Use the given browser executable instead of the system
                         default.
-  --license LICENSE     Store gdbgui ad-free license key.
   --debug               The debug flag of this Flask application. Pass this
                         flag when debugging gdbgui itself to automatically
                         reload the server when changes are detected

@@ -37,7 +37,7 @@ Note that `yarn` can be replaced with `npm`:
 
 ```bash
 yarn install
-yarn watch
+yarn start
 ```
 
 Now every JavaScript source file you change will trigger a recompilation. Refresh your browser to see the changes.

@@ -63,10 +63,7 @@ let About = {
     Actions.show_modal(
       "About gdbgui",
       <React.Fragment>
-        A <a href="http://grassfedcode.com">grassfedcode</a> project to make the easiest
-        to use and most accessible gdb frontend.
-        <p />
-        Copyright © Chad Smith
+        Copyright © Chad Smith, grassfedcode.com
       </React.Fragment>
     );
   }
@@ -133,16 +130,6 @@ const menu = (
         </li>
 
         <li role="separator" className="divider" />
-        <li>
-          <a href={constants.gdbgui_donate_url} className="pointer">
-            Donate
-          </a>
-        </li>
-        <li>
-          <a href="https://gitter.im/gdbgui/Lobby" className="pointer">
-            Chat room
-          </a>
-        </li>
         <li>
           <a href="https://github.com/cs01/gdbgui" className="pointer">
             GitHub

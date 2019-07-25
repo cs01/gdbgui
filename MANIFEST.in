@@ -1,5 +1,26 @@
-include README.rst
+include README.md
 include LICENSE
-include gdbgui/VERSION.txt
-recursive-include gdbgui/static *
-recursive-include gdbgui/templates *
+graft gdbgui
+
+prune examples
+prune downloads
+prune screenshots
+prune tests
+prune docs
+prune docker
+prune images
+prune gdbgui/__pycache__
+
+exclude makefile
+exclude .eslintrc.json
+exclude .flake8
+exclude .prettierrc.js
+exclude jest.config.js
+exclude make_executable.py
+exclude mkdocs.yml
+exclude package.json
+exclude requirements.txt
+exclude tsconfig.json
+exclude tslint.json
+exclude webpack.config.js
+exclude yarn.lock
