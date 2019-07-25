@@ -38,7 +38,6 @@ from gdbgui import __version__, htmllistformatter  # noqa
 from gdbgui.statemanager import StateManager  # noqa
 from pygdbmi.gdbcontroller import NoGdbProcessError
 from pygments.lexers import get_lexer_for_filename
-from werkzeug.security import pbkdf2_hex
 
 
 pyinstaller_env_var_base_dir = "_MEIPASS"

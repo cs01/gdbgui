@@ -3,6 +3,7 @@
 ## 0.13.1.3
 * Publish sdist to PyPI (this was overlooked in previous release).
 * Some infrastructure changes to gdbgui. End users should not be affected.
+* Print number of times a breakpoint was hit (@MatthiasKreileder)
 
 ## 0.13.1.2
 * Exclude "tests" directory from Python package
