@@ -32,7 +32,7 @@ export class FileLink extends React.Component<Props> {
       clipboard_content = (this.props.fullname || this.props.file) + sep + line;
     }
     return (
-      <div style={{ display: "inline-block", whitespace: "nowrap" }}>
+      <div style={{ display: "inline-block", whiteSpace: "nowrap" }}>
         <span
           onClick={onclick}
           className={cls}

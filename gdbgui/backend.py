@@ -904,8 +904,6 @@ def main():
     if args.debug:
         logger.setLevel(logging.NOTSET)
 
-    initialize_preferences()
-
     if args.version:
         print(__version__)
         return
