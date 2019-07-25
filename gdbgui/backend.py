@@ -7,34 +7,37 @@ https://github.com/cs01/gdbgui
 
 import argparse
 import binascii
-from distutils.spawn import find_executable
-from flask import (
-    Flask,
-    session,
-    request,
-    Response,
-    render_template,
-    jsonify,
-    redirect,
-    abort,
-)
-from flask_socketio import SocketIO, emit
-from flask_compress import Compress
-from functools import wraps
 import json
 import logging
 import os
 import platform
-import pygdbmi
-from pygments.lexers import get_lexer_for_filename
-from pygdbmi.gdbcontroller import NoGdbProcessError
 import re
-import signal
 import shlex
-import sys
+import signal
 import socket
+import sys
 import traceback
 import webbrowser
+from distutils.spawn import find_executable
+from functools import wraps
+
+import pygdbmi
+from flask import (
+    Flask,
+    Response,
+    abort,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+)
+from flask_compress import Compress
+from flask_socketio import SocketIO, emit
+from gdbgui import __version__, htmllistformatter  # noqa
+from gdbgui.statemanager import StateManager  # noqa
+from pygdbmi.gdbcontroller import NoGdbProcessError
+from pygments.lexers import get_lexer_for_filename
 from werkzeug.security import pbkdf2_hex
 
 
@@ -48,8 +51,6 @@ else:
     PARENTDIR = os.path.dirname(BASE_PATH)
     sys.path.append(PARENTDIR)
 
-from gdbgui import htmllistformatter, __version__  # noqa
-from gdbgui.statemanager import StateManager  # noqa
 
 try:
     from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
