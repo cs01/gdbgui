@@ -3,7 +3,7 @@
 ## 0.13.2.0
 * Print number of times a breakpoint was hit (@MatthiasKreileder).
 * Publish sdist to PyPI (this was overlooked in previous release).
-* Do not notify users of gdbgui upgrades
+* Do not notify users of gdbgui upgrades (deprecate `--hide-gdbgui-upgrades` flag)
 * Drop support for Python 3.4
 * [dev] Some infrastructure changes to gdbgui. End users should not be affected.
 * [dev] Fix build error due to webpack bug (https://github.com/webpack/webpack/issues/8082).

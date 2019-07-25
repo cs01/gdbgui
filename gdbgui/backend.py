@@ -855,6 +855,12 @@ def get_parser():
         help='Set the project directory. When viewing the "folders" pane, paths are shown relative to this directory.',
     )
     other.add_argument("-v", "--version", help="Print version", action="store_true")
+
+    other.add_argument(
+        "--hide-gdbgui-upgrades",
+        help=argparse.SUPPRESS, # deprecated. left so calls to gdbgui don't break
+        action="store_true",
+    )
     other.add_argument(
         "-n",
         "--no-browser",
