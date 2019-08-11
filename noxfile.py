@@ -34,20 +34,20 @@ def lint(session):
     session.run("python", "setup.py", "check", "--metadata", "--strict")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def docs(session):
     session.install(*doc_dependencies)
     session.run("python", "generate_docs.py")
     session.run("mkdocs", "build")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def develop(session):
     session.install(*doc_dependencies, *lint_dependencies)
     session.install("-e", ".")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
@@ -55,27 +55,27 @@ def build(session):
     session.run("twine", "check", "dist/*")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def publish(session):
     build(session)
     print("REMINDER: Has the changelog been updated?")
     session.run("python", "-m", "twine", "upload", "dist/*")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def watch_docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "serve")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def publish_docs(session):
     session.install(*doc_dependencies)
     session.run("python", "generate_docs.py")
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(python="3.6")
+@nox.session(python="3.7")
 def docker_executables(session):
     session.install("PyInstaller==3.3.1")
     # Windows
