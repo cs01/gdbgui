@@ -40,10 +40,13 @@ def docs(session):
     session.run("mkdocs", "build")
 
 
-@nox.session(python="3.7")
+@nox.session(python=python)
 def develop(session):
     session.install(*doc_dependencies, *lint_dependencies)
     session.install("-e", ".")
+    command = "source %s/bin/activate" % (session.virtualenv.location_name)
+    session.log("Virtual Envrionment is ready to be used for development")
+    session.log("To use, run: '%s'", command)
 
 
 @nox.session(python="3.7")
@@ -85,3 +88,9 @@ def docker_executables(session):
     # linux
     session.run("docker", "build", "-t", "gdbgui_linux", "docker/linux", external=True)
     session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_linux", external=True)
+
+
+@nox.session(python="3.7")
+def build_executable_current_os(session):
+    session.install("PyInstaller==3.3.1")
+    session.run("python", "make_executable.py")
