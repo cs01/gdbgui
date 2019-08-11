@@ -1,4 +1,4 @@
-from pygments.formatters import HtmlFormatter
+from pygments.formatters import HtmlFormatter  # type: ignore
 
 
 class HtmlListFormatter(HtmlFormatter):
@@ -8,7 +8,6 @@ class HtmlListFormatter(HtmlFormatter):
 
     def get_marked_up_list(self, tokensource):
         """an updated version of pygments.formatter.format_unencoded"""
-        # import ipdb; ipdb.set_trace()
         source = self._format_lines(tokensource)
         if self.hl_lines:
             source = self._highlight_lines(source)
