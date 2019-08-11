@@ -12,10 +12,9 @@ To see the full list of options gdbgui offers, you can view command line options
 gdbgui --help
 ```
 
-If you need help:
+If you have a question about something
 
 * Read documentation on the [homepage](https://github.com/cs01/gdbgui/)
-* Ask a question in the [gdbgui chat room](https://gitter.im/gdbgui/Lobby)
 * [Ask question in an issue on github](https://github.com/cs01/gdbgui/issues)
 
 

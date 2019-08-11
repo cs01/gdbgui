@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import io
 import os
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # type: ignore
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 

@@ -4,7 +4,8 @@ https://github.com/kennethreitz/flask-sslify
 
 import os
 import ssl
-from flask import request, redirect
+
+from flask import redirect, request
 
 YEAR_IN_SECS = 31536000
 

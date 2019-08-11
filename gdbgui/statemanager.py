@@ -1,25 +1,26 @@
-from collections import defaultdict
-from copy import deepcopy
-from pygdbmi.gdbcontroller import GdbController
 import logging
 import traceback
+from collections import defaultdict
+from copy import deepcopy
+from typing import Any, Dict, List, Optional
 
+from pygdbmi.gdbcontroller import GdbController  # type: ignore
 
 REQUIRED_GDB_FLAGS = ["--interpreter=mi2"]
 logger = logging.getLogger(__name__)
 
 
 class StateManager(object):
-    def __init__(self, config):
-        self.controller_to_client_ids = defaultdict(
+    def __init__(self, config: Dict[str, Any]):
+        self.controller_to_client_ids: Dict[GdbController, List[str]] = defaultdict(
             list
         )  # key is controller, val is list of client ids
         self.gdb_reader_thread = None
         self.config = config
 
-    def connect_client(self, client_id, desired_gdbpid):
+    def connect_client(self, client_id: str, desired_gdbpid: int) -> Dict[str, Any]:
         message = ""
-        pid = 0
+        pid: Optional[int] = 0
         error = False
         using_existing = False
 
@@ -28,11 +29,10 @@ class StateManager(object):
 
             if controller:
                 self.controller_to_client_ids[controller].append(client_id)
-                message = "gdbgui is using existing subprocess with pid %s, "
-                "originally opened with command %s" % (
-                    str(desired_gdbpid),
-                    controller.get_subprocess_cmd(),
-                )
+                message = (
+                    "gdbgui is using existing subprocess with pid %s, "
+                    "originally opened with command %s"
+                ) % (str(desired_gdbpid), controller.get_subprocess_cmd())
                 using_existing = True
                 pid = desired_gdbpid
             else:
@@ -59,10 +59,14 @@ class StateManager(object):
             self.controller_to_client_ids[controller].append(client_id)
 
             pid = self.get_pid_from_controller(controller)
-            message += "gdbgui spawned subprocess with pid %s from command %s." % (
-                str(pid),
-                controller.get_subprocess_cmd(),
-            )
+            if pid is None:
+                error = True
+                message = "Developer error"
+            else:
+                message += "gdbgui spawned subprocess with pid %s from command %s." % (
+                    str(pid),
+                    controller.get_subprocess_cmd(),
+                )
 
         return {
             "pid": pid,
@@ -71,7 +75,7 @@ class StateManager(object):
             "using_existing": using_existing,
         }
 
-    def remove_gdb_controller_by_pid(self, gdbpid):
+    def remove_gdb_controller_by_pid(self, gdbpid: int) -> List[str]:
         controller = self.get_controller_from_pid(gdbpid)
         if controller:
             orphaned_client_ids = self.remove_gdb_controller(controller)
@@ -80,7 +84,7 @@ class StateManager(object):
             orphaned_client_ids = []
         return orphaned_client_ids
 
-    def remove_gdb_controller(self, controller):
+    def remove_gdb_controller(self, controller: GdbController) -> List[str]:
         try:
             controller.exit()
         except Exception:
@@ -88,20 +92,20 @@ class StateManager(object):
         orphaned_client_ids = self.controller_to_client_ids.pop(controller, [])
         return orphaned_client_ids
 
-    def get_client_ids_from_gdb_pid(self, pid):
+    def get_client_ids_from_gdb_pid(self, pid: int) -> List[str]:
         controller = self.get_controller_from_pid(pid)
         return self.controller_to_client_ids.get(controller, [])
 
-    def get_client_ids_from_controller(self, controller):
+    def get_client_ids_from_controller(self, controller: GdbController):
         return self.controller_to_client_ids.get(controller, [])
 
-    def get_pid_from_controller(self, controller):
+    def get_pid_from_controller(self, controller: GdbController) -> Optional[int]:
         if controller and controller.gdb_process:
             return controller.gdb_process.pid
 
         return None
 
-    def get_controller_from_pid(self, pid):
+    def get_controller_from_pid(self, pid: int) -> Optional[GdbController]:
         for controller in self.controller_to_client_ids:
             this_pid = self.get_pid_from_controller(controller)
             if this_pid == pid:
@@ -109,7 +113,7 @@ class StateManager(object):
 
         return None
 
-    def get_controller_from_client_id(self, client_id):
+    def get_controller_from_client_id(self, client_id: str) -> Optional[GdbController]:
         for controller, client_ids in self.controller_to_client_ids.items():
             if client_id in client_ids:
                 return controller
@@ -137,7 +141,7 @@ class StateManager(object):
             }
         return data
 
-    def disconnect_client(self, client_id):
+    def disconnect_client(self, client_id: str):
         for _, client_ids in self.controller_to_client_ids.items():
             if client_id in client_ids:
                 client_ids.remove(client_id)

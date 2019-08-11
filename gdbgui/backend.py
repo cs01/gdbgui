@@ -21,7 +21,7 @@ import webbrowser
 from distutils.spawn import find_executable
 from functools import wraps
 
-import pygdbmi
+import pygdbmi  # type: ignore
 from flask import (
     Flask,
     Response,
@@ -32,13 +32,13 @@ from flask import (
     request,
     session,
 )
-from flask_compress import Compress
-from flask_socketio import SocketIO, emit
-from gdbgui import __version__, htmllistformatter  # noqa
-from gdbgui.statemanager import StateManager  # noqa
-from pygdbmi.gdbcontroller import NoGdbProcessError
-from pygments.lexers import get_lexer_for_filename
+from flask_compress import Compress  # type: ignore
+from flask_socketio import SocketIO, emit  # type: ignore
+from pygdbmi.gdbcontroller import NoGdbProcessError  # type: ignore
+from pygments.lexers import get_lexer_for_filename  # type: ignore
 
+from gdbgui import __version__, htmllistformatter
+from gdbgui.statemanager import StateManager
 
 pyinstaller_env_var_base_dir = "_MEIPASS"
 pyinstaller_base_dir = getattr(sys, "_MEIPASS", None)

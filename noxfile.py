@@ -25,7 +25,7 @@ def lint(session):
     files = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
     session.run("black", "--check", *files)
     session.run("flake8", *files)
-    # session.run("mypy", *files)  # TODO
+    session.run("mypy", *files)  #
     session.run(
         "check-manifest",
         "--ignore",

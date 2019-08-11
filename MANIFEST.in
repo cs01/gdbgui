@@ -11,7 +11,7 @@ prune docker
 prune images
 prune gdbgui/__pycache__
 
-exclude makefile
+exclude mypy.ini
 exclude .eslintrc.json
 exclude .flake8
 exclude .prettierrc.js
