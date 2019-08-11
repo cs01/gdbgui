@@ -70,7 +70,6 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: Implementation :: PyPy",
     ],
     python_requires=">=3.5",
     project_urls={

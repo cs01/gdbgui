@@ -18,7 +18,6 @@ matrix:
   - python: '3.6'
   - python: '3.7'
     dist: xenial
-  - python: 'pypy'
 install:
   # commands for linux
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install gdb          ; fi
