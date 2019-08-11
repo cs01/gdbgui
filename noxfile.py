@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.5", "3.6", "3.7", "3.8"]
+python = ["3.6", "3.7", "3.8"]
 
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
@@ -25,7 +25,7 @@ def lint(session):
     files = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
     session.run("black", "--check", *files)
     session.run("flake8", *files)
-    # session.run("mypy", *files)  # TODO
+    session.run("mypy", *files)  #
     session.run(
         "check-manifest",
         "--ignore",

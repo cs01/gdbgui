@@ -9,7 +9,7 @@ See more on testing Flask apps: http://flask.pocoo.org/docs/0.11/testing/
 import unittest
 from gdbgui import backend
 import sys
-from flask_socketio import send, SocketIO
+from flask_socketio import send, SocketIO  # type: ignore
 
 
 PYTHON3 = sys.version_info.major == 3

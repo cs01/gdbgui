@@ -1,9 +1,8 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import io
 import os
-from setuptools import find_packages, setup
+from setuptools import find_packages, setup  # type: ignore
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -67,11 +66,10 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     project_urls={
         "Documentation": "https://cs01.github.io/gdbgui/",
         "Source Code": "https://github.com/cs01/gdbgui",
