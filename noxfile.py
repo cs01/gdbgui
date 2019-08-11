@@ -19,7 +19,7 @@ def tests(session):
     session.run("yarn", "build", external=True)
 
 
-@nox.session(python=python)
+@nox.session(python="3.7")
 def lint(session):
     session.install(*lint_dependencies)
     files = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
@@ -37,7 +37,6 @@ def lint(session):
 @nox.session(python="3.7")
 def docs(session):
     session.install(*doc_dependencies)
-    session.run("python", "generate_docs.py")
     session.run("mkdocs", "build")
 
 
@@ -71,7 +70,6 @@ def watch_docs(session):
 @nox.session(python="3.7")
 def publish_docs(session):
     session.install(*doc_dependencies)
-    session.run("python", "generate_docs.py")
     session.run("mkdocs", "gh-deploy")
 
 
@@ -87,4 +85,3 @@ def docker_executables(session):
     # linux
     session.run("docker", "build", "-t", "gdbgui_linux", "docker/linux", external=True)
     session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_linux", external=True)
-

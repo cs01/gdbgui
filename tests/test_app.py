@@ -9,7 +9,6 @@ See more on testing Flask apps: http://flask.pocoo.org/docs/0.11/testing/
 import unittest
 from gdbgui import backend
 import sys
-from flask import Flask
 from flask_socketio import send, SocketIO
 
 
