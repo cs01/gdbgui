@@ -2,7 +2,7 @@ import nox  # type: ignore
 from pathlib import Path
 
 
-nox.options.sessions = ["test", "lint", "docs"]
+nox.options.sessions = ["tests", "lint", "docs"]
 python = ["3.5", "3.6", "3.7", "3.8"]
 
 
@@ -11,7 +11,7 @@ lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
 
 
 @nox.session(python=python)
-def test(session):
+def tests(session):
     session.install(".")
     session.run("python", "-m", "unittest", "discover")
     session.run("yarn", "install", external=True)
