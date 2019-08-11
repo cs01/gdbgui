@@ -14,9 +14,9 @@ lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
 def test(session):
     session.install(".")
     session.run("python", "-m", "unittest", "discover")
-    session.run("yarn", "install")
-    session.run("yarn", "test")
-    session.run("yarn", "build")
+    session.run("yarn", "install", external=True)
+    session.run("yarn", "test", external=True)
+    session.run("yarn", "build", external=True)
 
 
 @nox.session(python=python)
