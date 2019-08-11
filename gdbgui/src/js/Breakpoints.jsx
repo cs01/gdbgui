@@ -5,6 +5,7 @@ import Actions from "./Actions.js";
 import Util from "./Util.js";
 import FileOps from "./FileOps.jsx";
 import { FileLink } from "./Links";
+import constants from "./constants.js";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -26,6 +27,13 @@ const BreakpointSourceLineCache = {
 };
 
 class Breakpoint extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      breakpoint_condition : "",
+      editing_breakpoint_condition : false
+    };
+  }
   get_source_line(fullname, linenum) {
     // if we have the source file cached, we can display the line of text
     const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40;
@@ -77,10 +85,21 @@ class Breakpoint extends React.Component {
       return `${bkpt.times} hits`;
     }
   }
+  on_change_bkpt_cond(e) {
+    this.setState({ breakpoint_condition         : e.target.value,
+                    editing_breakpoint_condition : true });
+  }
+  on_key_up_bktp_cond(number, e) {
+    if (e.keyCode === constants.ENTER_BUTTON_NUM) {
+      this.setState({ editing_breakpoint_condition : false });
+      Breakpoints.set_breakpoint_condition(e.target.value, number);
+    }
+  }
   render() {
     let b = this.props.bkpt,
       checked = b.enabled === "y" ? "checked" : "",
-      source_line = this.get_source_line(b.fullname_to_display, b.line);
+      source_line = this.get_source_line(b.fullname_to_display, b.line),
+      break_cond = b.cond;
 
     let info_glyph, function_jsx, bkpt_num_to_delete;
     if (b.is_child_breakpoint) {
@@ -121,6 +140,27 @@ class Breakpoint extends React.Component {
       );
     } else {
       let func = b.func === undefined ? "(unknown function)" : b.func;
+      let break_cond_style = {
+        display: "inline",
+        width: "110px",
+        padding: "10px 10px",
+        height: "25px",
+        fontSize: "1em"
+      }
+      if (!this.state.editing_breakpoint_condition) {
+        // Render break conditions that have either been submitted via the 
+        // input form or via the (gdb) prompt in grey.  To communicate that
+        // those break conditions have been set up.
+        break_cond_style["color"] = "#ccc";
+        break_cond_style["style"] = "italic";
+      }
+      else {
+        // The user is currently typing the break condition.  Display
+        // what the users is typing instead of the breakpoint object's
+        // condition field (as it will be overridden once 'enter' has
+        // been hit).
+        break_cond = this.state.breakpoint_condition;
+      }
 
       const times_hit = this.get_num_times_hit(b);
       function_jsx = (
@@ -128,8 +168,19 @@ class Breakpoint extends React.Component {
           <span className="monospace" style={{ paddingRight: "5px" }}>
             {info_glyph} {func}
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic" }}>
+          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingRight: "5px" }}>
             thread groups: {b["thread-groups"]}
+          </span>
+          <span>
+            <input
+              type="text"
+              style={break_cond_style}
+              placeholder="Break condition"
+              className="form-control"
+              onKeyUp={this.on_key_up_bktp_cond.bind(this, b.number)}
+              onChange={this.on_change_bkpt_cond.bind(this)}
+              value={break_cond}
+            />
           </span>
           <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px"}}>
             {times_hit}
@@ -201,6 +252,9 @@ class Breakpoints extends React.Component {
     } else {
       GdbApi.run_gdb_command([`-break-enable ${bkpt_num}`, GdbApi.get_break_list_cmd()]);
     }
+  }
+  static set_breakpoint_condition(condition, bkpt_num) {
+    GdbApi.run_gdb_command([`-break-condition ${bkpt_num} ${condition}`, GdbApi.get_break_list_cmd()]);
   }
   static remove_breakpoint_if_present(fullname, line) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
