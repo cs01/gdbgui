@@ -24,3 +24,4 @@ exclude tsconfig.json
 exclude tslint.json
 exclude webpack.config.js
 exclude yarn.lock
+exclude noxfile.py

@@ -974,7 +974,7 @@ def warn_startup_with_shell_off(platform, gdb_args):
     to os's security requirements
     http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
     """
-    darwin_match = re.match("darwin-(\d+)\..*", platform)
+    darwin_match = re.match(r"darwin-(\d+)\..*", platform)
     on_darwin = darwin_match is not None and int(darwin_match.groups()[0]) >= 16
     if on_darwin:
         shell_is_off = "startup-with-shell off" in gdb_args

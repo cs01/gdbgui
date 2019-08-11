@@ -9,18 +9,13 @@ See more on testing Flask apps: http://flask.pocoo.org/docs/0.11/testing/
 import unittest
 from gdbgui import backend
 import sys
-from flask_socketio import send
+from flask_socketio import send, SocketIO
 
 
 PYTHON3 = sys.version_info.major == 3
 
 backend.setup_backend(testing=True)
 socketio = backend.socketio
-
-
-@socketio.on("connect")
-def on_connect():
-    send("connected")
 
 
 class TestWebsockets(unittest.TestCase):
@@ -32,11 +27,18 @@ class TestWebsockets(unittest.TestCase):
         pass
 
     def test_connect(self):
-        client = socketio.test_client(backend.app)
+        app = backend.app
+        socketio = SocketIO()
+
+        @socketio.on("connect")
+        def on_connect():
+            send({"connected": "foo"}, json=True)
+
+        socketio.init_app(app, cookie="foo")
+        client = socketio.test_client(app)
         received = client.get_received()
         self.assertEqual(len(received), 1)
-        self.assertEqual(received[0]["args"], "connected")
-        client.disconnect()
+        self.assertEqual(received[0]["args"], {"connected": "foo"})
 
 
 class Test(unittest.TestCase):
