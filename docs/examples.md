@@ -61,7 +61,7 @@ openssl req -newkey rsa:2048 -nodes -keyout private.key -x509 -days 365 -out hos
 gdbgui -r --auth --key private.key --cert host.cert
 ```
 
-Use Mozilla's [record and replay](http://rr-project.com) (rr) debugging supplement to gdb. rr lets your record a program (usually with a hard-to-reproduce bug in it), then deterministically replay it as many times as you want. You can even step forwards and backwards.
+Use Mozilla's [record and replay](https://rr-project.org) (rr) debugging supplement to gdb. rr lets your record a program (usually with a hard-to-reproduce bug in it), then deterministically replay it as many times as you want. You can even step forwards and backwards.
 ```
 gdbgui --rr
 ```
