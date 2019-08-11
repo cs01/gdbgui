@@ -14,24 +14,18 @@ matrix:
   allow_failures:
     - os: osx
   include:
-  - python: '3.5'
-    env: NOXSESSION="tests-3.5"
   - python: '3.6'
     env: NOXSESSION="tests-3.6"
   - python: '3.7'
     env: NOXSESSION="tests-3.7"
-    dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
+    dist: xenial
   - python: '3.7'
     env: NOXSESSION="lint"
-    dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
+    dist: xenial
   - python: '3.7'
     env: NOXSESSION="docs"
     dist: xenial
 
-  # - python: '3.5'
-  # - python: '3.6'
-  # - python: '3.7'
-  #   dist: xenial
 install:
   # commands for linux
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then sudo apt-get install gdb          ; fi

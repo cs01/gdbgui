@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.5", "3.6", "3.7", "3.8"]
+python = ["3.6", "3.7", "3.8"]
 
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
