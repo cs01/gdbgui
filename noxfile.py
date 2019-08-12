@@ -53,6 +53,7 @@ def develop(session):
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
+    session.run("yarn", "build")
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
 

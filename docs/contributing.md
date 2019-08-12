@@ -23,12 +23,21 @@ gdbgui compiles JavaScript source code into a single .js file.
 
 Note that `yarn` can be replaced with `npm`:
 
+First install JavaScript dependencies:
 ```bash
 yarn install
+
+To watch JavaScript files for changes and build non-optimized code for each change, use
+```
 yarn start
 ```
 
-Now every JavaScript source file you change will trigger a recompilation.
+This is useful for iterating on changes.
+
+To build once for production-optimized code, you can run
+```
+yarn build
+```
 
 ### Step 3: Run Python server
 
