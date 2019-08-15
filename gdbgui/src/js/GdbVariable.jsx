@@ -352,8 +352,7 @@ class GdbVariable extends React.Component {
           <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
 
           <div className="right_help_icon_show_on_hover">
-            <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:
-            {tree}
+            <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:{tree}
             {plot_button}
             {delete_button}
           </div>

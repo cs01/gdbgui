@@ -66,13 +66,14 @@ class Breakpoint extends React.Component {
       </div>
     );
   }
-  get_num_times_hit(bkpt){
-    if ((bkpt.times === undefined) // E.g. 'bkpt' is a child breakpoint
-          || 
-        (bkpt.times == 0)) {
-      return "" 
+  get_num_times_hit(bkpt) {
+    if (
+      bkpt.times === undefined || // E.g. 'bkpt' is a child breakpoint
+      bkpt.times == 0
+    ) {
+      return "";
     } else if (bkpt.times == 1) {
-      return "1 hit"
+      return "1 hit";
     } else {
       return `${bkpt.times} hits`;
     }
@@ -131,7 +132,7 @@ class Breakpoint extends React.Component {
           <span style={{ color: "#bbbbbb", fontStyle: "italic" }}>
             thread groups: {b["thread-groups"]}
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px"}}>
+          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px" }}>
             {times_hit}
           </span>
         </div>

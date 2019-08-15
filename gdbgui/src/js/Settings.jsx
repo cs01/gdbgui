@@ -108,7 +108,9 @@ class Settings extends React.Component {
                   localStorage.setItem("theme", e.currentTarget.value);
                 }}
               >
-                {store.get("themes").map(t => <option key={t}>{t}</option>)}
+                {store.get("themes").map(t => (
+                  <option key={t}>{t}</option>
+                ))}
               </select>
             </td>
           </tr>
