@@ -4,10 +4,10 @@ import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";
 
 type Props = {
-  file?: string
-  fullname?: string
-  line: string
-  num_lines?: number
+  file?: string;
+  fullname?: string;
+  line: string;
+  num_lines?: number;
 };
 
 export class FileLink extends React.Component<Props> {
@@ -52,10 +52,10 @@ export class FileLink extends React.Component<Props> {
 }
 
 type FrameLinkProps = {
-  addr: string
-  file?: string
-  fullname?: string
-  line: string
+  addr: string;
+  file?: string;
+  fullname?: string;
+  line: string;
 };
 
 export class FrameLink extends React.Component<FrameLinkProps> {

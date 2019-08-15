@@ -30,8 +30,8 @@ class Breakpoint extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      breakpoint_condition : "",
-      editing_breakpoint_condition : false
+      breakpoint_condition: "",
+      editing_breakpoint_condition: false
     };
   }
   get_source_line(fullname, linenum) {
@@ -74,24 +74,27 @@ class Breakpoint extends React.Component {
       </div>
     );
   }
-  get_num_times_hit(bkpt){
-    if ((bkpt.times === undefined) // E.g. 'bkpt' is a child breakpoint
-          || 
-        (bkpt.times == 0)) {
-      return "" 
+  get_num_times_hit(bkpt) {
+    if (
+      bkpt.times === undefined || // E.g. 'bkpt' is a child breakpoint
+      bkpt.times == 0
+    ) {
+      return "";
     } else if (bkpt.times == 1) {
-      return "1 hit"
+      return "1 hit";
     } else {
       return `${bkpt.times} hits`;
     }
   }
   on_change_bkpt_cond(e) {
-    this.setState({ breakpoint_condition         : e.target.value,
-                    editing_breakpoint_condition : true });
+    this.setState({
+      breakpoint_condition: e.target.value,
+      editing_breakpoint_condition: true
+    });
   }
   on_key_up_bktp_cond(number, e) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      this.setState({ editing_breakpoint_condition : false });
+      this.setState({ editing_breakpoint_condition: false });
       Breakpoints.set_breakpoint_condition(e.target.value, number);
     }
   }
@@ -146,15 +149,14 @@ class Breakpoint extends React.Component {
         padding: "10px 10px",
         height: "25px",
         fontSize: "1em"
-      }
+      };
       if (!this.state.editing_breakpoint_condition) {
-        // Render break conditions that have either been submitted via the 
+        // Render break conditions that have either been submitted via the
         // input form or via the (gdb) prompt in grey.  To communicate that
         // those break conditions have been set up.
         break_cond_style["color"] = "#ccc";
         break_cond_style["style"] = "italic";
-      }
-      else {
+      } else {
         // The user is currently typing the break condition.  Display
         // what the users is typing instead of the breakpoint object's
         // condition field (as it will be overridden once 'enter' has
@@ -182,7 +184,7 @@ class Breakpoint extends React.Component {
               value={break_cond}
             />
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px"}}>
+          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px" }}>
             {times_hit}
           </span>
         </div>
@@ -254,7 +256,10 @@ class Breakpoints extends React.Component {
     }
   }
   static set_breakpoint_condition(condition, bkpt_num) {
-    GdbApi.run_gdb_command([`-break-condition ${bkpt_num} ${condition}`, GdbApi.get_break_list_cmd()]);
+    GdbApi.run_gdb_command([
+      `-break-condition ${bkpt_num} ${condition}`,
+      GdbApi.get_break_list_cmd()
+    ]);
   }
   static remove_breakpoint_if_present(fullname, line) {
     if (Breakpoints.has_breakpoint(fullname, line)) {

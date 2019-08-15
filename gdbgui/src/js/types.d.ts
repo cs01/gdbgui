@@ -1,5 +1,5 @@
-declare module 'statorgfc' {
+declare module "statorgfc" {
   export let store: {
-    get(key: string): any
-  }
+    get(key: string): any;
+  };
 }

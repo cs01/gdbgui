@@ -33,13 +33,10 @@ const GdbApi = {
     const TIMEOUT_MIN = 5;
     /* global io */
     /* global initial_data */
-    GdbApi.socket = io.connect(
-      `/gdb_listener`,
-      {
-        timeout: TIMEOUT_MIN * 60 * 1000,
-        query: `csrf_token=${initial_data.csrf_token}&gdbpid=${initial_data.gdbpid}`
-      }
-    );
+    GdbApi.socket = io.connect(`/gdb_listener`, {
+      timeout: TIMEOUT_MIN * 60 * 1000,
+      query: `csrf_token=${initial_data.csrf_token}&gdbpid=${initial_data.gdbpid}`
+    });
 
     GdbApi.socket.on("connect", function() {
       debug_print("connected");

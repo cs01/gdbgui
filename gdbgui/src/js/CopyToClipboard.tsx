@@ -3,7 +3,7 @@ import ToolTip from "./ToolTip.jsx";
 import { store } from "statorgfc";
 
 type Props = {
-  content: string | null
+  content: string | null;
 };
 
 class CopyToClipboard extends React.Component<Props> {
