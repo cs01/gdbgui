@@ -21,6 +21,15 @@ def tests(session):
 
 @nox.session(python="3.7")
 def lint(session):
+    session.run(
+        "npx",
+        "prettier",
+        "--check",
+        "--config",
+        ".prettierrc.js",
+        "gdbgui/src/js/**/*",
+        external=True,
+    )
     session.install(*lint_dependencies)
     files = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
     session.run("black", "--check", *files)
@@ -53,6 +62,7 @@ def develop(session):
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
+    session.run("yarn", "build")
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
 
