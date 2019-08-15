@@ -154,7 +154,9 @@ class BinaryLoader extends React.Component {
           }
         />
         <datalist id="past_binaries">
-          {this.state.past_binaries.map((b, i) => <option key={i}>{b}</option>)}
+          {this.state.past_binaries.map((b, i) => (
+            <option key={i}>{b}</option>
+          ))}
         </datalist>
       </form>
     );
