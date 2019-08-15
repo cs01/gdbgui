@@ -62,9 +62,7 @@ let About = {
   show_about: function() {
     Actions.show_modal(
       "About gdbgui",
-      <React.Fragment>
-        Copyright © Chad Smith, grassfedcode.com
-      </React.Fragment>
+      <React.Fragment>Copyright © Chad Smith, grassfedcode.com</React.Fragment>
     );
   }
 };

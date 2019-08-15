@@ -2,8 +2,8 @@ import * as React from "react";
 import Memory from "./Memory.jsx";
 
 type Props = {
-  addr: string
-  style?: React.CSSProperties
+  addr: string;
+  style?: React.CSSProperties;
 };
 
 class MemoryLink extends React.Component<Props> {

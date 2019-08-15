@@ -429,7 +429,8 @@ const FileOps = {
             <p>
               {`Binary: ${store.get("inferior_binary_path")}, modified ${moment(
                 store.get("inferior_binary_path_last_modified_unix_sec") * 1000
-              ).format(constants.DATE_FORMAT)}`})
+              ).format(constants.DATE_FORMAT)}`}
+              )
             </p>
           </div>
         );
