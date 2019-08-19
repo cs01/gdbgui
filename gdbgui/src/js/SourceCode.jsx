@@ -191,11 +191,9 @@ class SourceCode extends React.Component {
     let gutter_cls = "";
     if (has_disabled_bkpt) {
       gutter_cls = "disabled_breakpoint";
-    }
-    else if (has_conditional_bkpt) {
+    } else if (has_conditional_bkpt) {
       gutter_cls = "conditional_breakpoint";
-    }
-    else if (has_bkpt) {
+    } else if (has_bkpt) {
       gutter_cls = "breakpoint";
     }
 

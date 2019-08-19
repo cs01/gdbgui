@@ -147,10 +147,12 @@ class Breakpoint extends React.Component {
       );
     } else {
       let func = b.func === undefined ? "(unknown function)" : b.func;
-      let break_condition =(
-        <div className="glyphicon glyphicon-edit"
+      let break_condition = (
+        <div
+          className="glyphicon glyphicon-edit"
           title="Add/Modify condition."
-          onClick={this.on_break_cond_click.bind(this)}>
+          onClick={this.on_break_cond_click.bind(this)}
+        >
           condition
         </div>
       );
@@ -158,19 +160,19 @@ class Breakpoint extends React.Component {
         break_condition = (
           <input
             type="text"
-            style={
-              {display : "inline",
-               width   : "110px",
-               padding : "10px 10px",
-               height  : "25px",
-               fontSize: "1em"}
-            }
+            style={{
+              display: "inline",
+              width: "110px",
+              padding: "10px 10px",
+              height: "25px",
+              fontSize: "1em"
+            }}
             placeholder="Break condition"
             className="form-control"
             onKeyUp={this.on_key_up_bktp_cond.bind(this, b.number)}
             onChange={this.on_change_bkpt_cond.bind(this)}
             value={this.state.breakpoint_condition}
-          /> 
+          />
         );
       }
 
@@ -183,9 +185,7 @@ class Breakpoint extends React.Component {
           <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingRight: "5px" }}>
             thread groups: {b["thread-groups"]}
           </span>
-          <span>
-            {break_condition}
-          </span>
+          <span>{break_condition}</span>
           <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px" }}>
             {times_hit}
           </span>
