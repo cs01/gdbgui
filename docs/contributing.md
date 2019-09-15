@@ -12,7 +12,7 @@ gdbgui uses [https://github.com/theacodes/nox](nox) for to automate various task
 git clone https://github.com/cs01/gdbgui
 cd gdbgui
 nox -s develop-3.7  # replace with desired Python version
-source nox/develop-3.7/bin/activate  # replace with desired Python version
+source .nox/develop-3.7/bin/activate  # replace with desired Python version
 ```
 
 You are now in a virtual environment with gdbgui's dependencies installed. When finished, type `deactivate` to leave the virtual environment.
