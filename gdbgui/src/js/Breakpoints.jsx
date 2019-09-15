@@ -149,11 +149,16 @@ class Breakpoint extends React.Component {
       let func = b.func === undefined ? "(unknown function)" : b.func;
       let break_condition = (
         <div
-          className="glyphicon glyphicon-edit"
-          title="Add/Modify condition."
           onClick={this.on_break_cond_click.bind(this)}
+          className="inline"
+          title={`${
+            this.state.breakpoint_condition ? "Modify or remove" : "Add"
+          } breakpoint condition`}
         >
-          condition
+          <span className="glyphicon glyphicon-edit"></span>
+          <span className={`italic ${this.state.breakpoint_condition ? "bold" : ""}`}>
+            condition
+          </span>
         </div>
       );
       if (this.state.editing_breakpoint_condition) {
@@ -182,11 +187,23 @@ class Breakpoint extends React.Component {
           <span className="monospace" style={{ paddingRight: "5px" }}>
             {info_glyph} {func}
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingRight: "5px" }}>
+          <span
+            style={{
+              color: "#bbbbbb",
+              fontStyle: "italic",
+              paddingRight: "5px"
+            }}
+          >
             thread groups: {b["thread-groups"]}
           </span>
           <span>{break_condition}</span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px" }}>
+          <span
+            style={{
+              color: "#bbbbbb",
+              fontStyle: "italic",
+              paddingLeft: "5px"
+            }}
+          >
             {times_hit}
           </span>
         </div>
