@@ -29,6 +29,9 @@ td{
 .bold{
     font-weight: bold;
 }
+.italic{
+    font-style: italic;
+}
 .pre{
     white-space: pre;
 }
@@ -169,6 +172,10 @@ div.breakpoint:hover div.breakpoint_trashcan,
 }
 .line_num.disabled_breakpoint{
     background: #ffd6d7 !important;
+}
+.line_num.conditional_breakpoint{
+    background: #ff9966 !important;
+    color:black;
 }
 td.assembly{
     padding-bottom: 0px;

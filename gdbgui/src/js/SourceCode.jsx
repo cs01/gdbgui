@@ -159,6 +159,7 @@ class SourceCode extends React.Component {
     line_num_being_rendered,
     has_bkpt,
     has_disabled_bkpt,
+    has_conditional_bkpt,
     assembly_for_line,
     paused_addr
   ) {
@@ -188,10 +189,12 @@ class SourceCode extends React.Component {
     }
 
     let gutter_cls = "";
-    if (has_bkpt) {
-      gutter_cls = "breakpoint";
-    } else if (has_disabled_bkpt) {
+    if (has_disabled_bkpt) {
       gutter_cls = "disabled_breakpoint";
+    } else if (has_conditional_bkpt) {
+      gutter_cls = "conditional_breakpoint";
+    } else if (has_bkpt) {
+      gutter_cls = "breakpoint";
     }
 
     let assembly_content = [];
@@ -359,6 +362,9 @@ class SourceCode extends React.Component {
       disabled_breakpoint_lines = Breakpoints.get_disabled_breakpoint_lines_for_file(
         this.state.fullname_to_render
       ),
+      conditional_breakpoint_lines = Breakpoints.get_conditional_breakpoint_lines_for_file(
+        this.state.fullname_to_render
+      ),
       line_gdb_is_paused_on = this.state.paused_on_frame
         ? parseInt(this.state.paused_on_frame.line)
         : 0;
@@ -380,6 +386,8 @@ class SourceCode extends React.Component {
       let has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1,
         has_disabled_bkpt =
           disabled_breakpoint_lines.indexOf(line_num_being_rendered) !== -1,
+        has_conditional_bkpt =
+          conditional_breakpoint_lines.indexOf(line_num_being_rendered) !== -1,
         is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line(
           line_num_being_rendered,
           line_gdb_is_paused_on
@@ -394,6 +402,7 @@ class SourceCode extends React.Component {
           line_num_being_rendered,
           has_bkpt,
           has_disabled_bkpt,
+          has_conditional_bkpt,
           assembly_for_line,
           paused_addr
         )

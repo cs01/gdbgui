@@ -5,6 +5,7 @@ import Actions from "./Actions.js";
 import Util from "./Util.js";
 import FileOps from "./FileOps.jsx";
 import { FileLink } from "./Links";
+import constants from "./constants.js";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -26,6 +27,13 @@ const BreakpointSourceLineCache = {
 };
 
 class Breakpoint extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      breakpoint_condition: "",
+      editing_breakpoint_condition: false
+    };
+  }
   get_source_line(fullname, linenum) {
     // if we have the source file cached, we can display the line of text
     const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40;
@@ -78,6 +86,23 @@ class Breakpoint extends React.Component {
       return `${bkpt.times} hits`;
     }
   }
+  on_change_bkpt_cond(e) {
+    this.setState({
+      breakpoint_condition: e.target.value,
+      editing_breakpoint_condition: true
+    });
+  }
+  on_key_up_bktp_cond(number, e) {
+    if (e.keyCode === constants.ENTER_BUTTON_NUM) {
+      this.setState({ editing_breakpoint_condition: false });
+      Breakpoints.set_breakpoint_condition(e.target.value, number);
+    }
+  }
+  on_break_cond_click(e) {
+    this.setState({
+      editing_breakpoint_condition: true
+    });
+  }
   render() {
     let b = this.props.bkpt,
       checked = b.enabled === "y" ? "checked" : "",
@@ -122,6 +147,39 @@ class Breakpoint extends React.Component {
       );
     } else {
       let func = b.func === undefined ? "(unknown function)" : b.func;
+      let break_condition = (
+        <div
+          onClick={this.on_break_cond_click.bind(this)}
+          className="inline"
+          title={`${
+            this.state.breakpoint_condition ? "Modify or remove" : "Add"
+          } breakpoint condition`}
+        >
+          <span className="glyphicon glyphicon-edit"></span>
+          <span className={`italic ${this.state.breakpoint_condition ? "bold" : ""}`}>
+            condition
+          </span>
+        </div>
+      );
+      if (this.state.editing_breakpoint_condition) {
+        break_condition = (
+          <input
+            type="text"
+            style={{
+              display: "inline",
+              width: "110px",
+              padding: "10px 10px",
+              height: "25px",
+              fontSize: "1em"
+            }}
+            placeholder="Break condition"
+            className="form-control"
+            onKeyUp={this.on_key_up_bktp_cond.bind(this, b.number)}
+            onChange={this.on_change_bkpt_cond.bind(this)}
+            value={this.state.breakpoint_condition}
+          />
+        );
+      }
 
       const times_hit = this.get_num_times_hit(b);
       function_jsx = (
@@ -129,10 +187,23 @@ class Breakpoint extends React.Component {
           <span className="monospace" style={{ paddingRight: "5px" }}>
             {info_glyph} {func}
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic" }}>
+          <span
+            style={{
+              color: "#bbbbbb",
+              fontStyle: "italic",
+              paddingRight: "5px"
+            }}
+          >
             thread groups: {b["thread-groups"]}
           </span>
-          <span style={{ color: "#bbbbbb", fontStyle: "italic", paddingLeft: "5px" }}>
+          <span>{break_condition}</span>
+          <span
+            style={{
+              color: "#bbbbbb",
+              fontStyle: "italic",
+              paddingLeft: "5px"
+            }}
+          >
             {times_hit}
           </span>
         </div>
@@ -203,6 +274,12 @@ class Breakpoints extends React.Component {
       GdbApi.run_gdb_command([`-break-enable ${bkpt_num}`, GdbApi.get_break_list_cmd()]);
     }
   }
+  static set_breakpoint_condition(condition, bkpt_num) {
+    GdbApi.run_gdb_command([
+      `-break-condition ${bkpt_num} ${condition}`,
+      GdbApi.get_break_list_cmd()
+    ]);
+  }
   static remove_breakpoint_if_present(fullname, line) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
       let number = Breakpoints.get_breakpoint_number(fullname, line);
@@ -254,6 +331,12 @@ class Breakpoints extends React.Component {
     return store
       .get("breakpoints")
       .filter(b => b.fullname_to_display === fullname && b.enabled !== "y")
+      .map(b => parseInt(b.line));
+  }
+  static get_conditional_breakpoint_lines_for_file(fullname) {
+    return store
+      .get("breakpoints")
+      .filter(b => b.fullname_to_display === fullname && b.cond !== undefined)
       .map(b => parseInt(b.line));
   }
   static save_breakpoints(payload) {
