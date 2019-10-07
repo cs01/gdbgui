@@ -17,6 +17,16 @@ class StateManager(object):
         self.gdb_reader_thread = None
         self.config = config
 
+    def get_gdb_args(self):
+        gdb_args = REQUIRED_GDB_FLAGS
+        if self.config["gdb_args"]:
+            gdb_args += self.config["gdb_args"]
+
+        if self.config["initial_binary_and_args"]:
+            gdb_args += ["--args"]
+            gdb_args += self.config["initial_binary_and_args"]
+        return gdb_args
+
     def connect_client(self, client_id: str, desired_gdbpid: int) -> Dict[str, Any]:
         message = ""
         pid: Optional[int] = 0
@@ -44,12 +54,7 @@ class StateManager(object):
         if self.get_controller_from_client_id(client_id) is None:
             logger.info("new sid", client_id)
 
-            gdb_args = (
-                REQUIRED_GDB_FLAGS
-                + self.config["gdb_args"]
-                + ["--args"]
-                + self.config["initial_binary_and_args"]
-            )
+            gdb_args = self.get_gdb_args()
 
             controller = GdbController(
                 gdb_path=self.config["gdb_path"],
