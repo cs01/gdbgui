@@ -13,6 +13,7 @@ prune gdbgui/__pycache__
 
 exclude mypy.ini
 exclude .eslintrc.json
+exclude .coveragerc
 exclude .flake8
 exclude .prettierrc.js
 exclude jest.config.js
