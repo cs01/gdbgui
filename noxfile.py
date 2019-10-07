@@ -8,6 +8,7 @@ python = ["3.6", "3.7", "3.8"]
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
+files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 
 
 @nox.session(python=python)
@@ -53,16 +54,21 @@ def lint(session):
         external=True,
     )
     session.install(*lint_dependencies)
-    files = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
-    session.run("black", "--check", *files)
-    session.run("flake8", *files)
-    session.run("mypy", *files)  #
+    session.run("black", "--check", *files_to_lint)
+    session.run("flake8", *files_to_lint)
+    session.run("mypy", *files_to_lint)  #
     session.run(
         "check-manifest",
         "--ignore",
         "build.js,gdbgui/static/js,gdbgui/static/js/build.js.map",
     )
     session.run("python", "setup.py", "check", "--metadata", "--strict")
+
+
+@nox.session(python="3.7")
+def autoformat(session):
+    session.install("black")
+    session.run("black", *files_to_lint)
 
 
 @nox.session(python="3.7")
@@ -76,7 +82,7 @@ def develop(session):
     session.install(*doc_dependencies, *lint_dependencies)
     session.install("-e", ".")
     command = "source %s/bin/activate" % (session.virtualenv.location_name)
-    session.log("Virtual Envrionment is ready to be used for development")
+    session.log("Virtual Environment is ready to be used for development")
     session.log("To use, run: '%s'", command)
 
 

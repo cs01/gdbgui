@@ -1,7 +1,6 @@
 import logging
 import traceback
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
 from pygdbmi.gdbcontroller import GdbController  # type: ignore
@@ -50,7 +49,7 @@ class StateManager(object):
                 + self.config["gdb_args"]
                 + ["--args"]
                 + self.config["initial_binary_and_args"]
-            )            
+            )
 
             controller = GdbController(
                 gdb_path=self.config["gdb_path"],
