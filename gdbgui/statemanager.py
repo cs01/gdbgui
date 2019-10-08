@@ -2,11 +2,11 @@ import logging
 import traceback
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
-
+import copy
 from pygdbmi.gdbcontroller import GdbController  # type: ignore
 
-REQUIRED_GDB_FLAGS = ["--interpreter=mi2"]
 logger = logging.getLogger(__name__)
+GDB_MI_FLAG = ["--interpreter=mi2"]
 
 
 class StateManager(object):
@@ -18,7 +18,7 @@ class StateManager(object):
         self.config = config
 
     def get_gdb_args(self):
-        gdb_args = REQUIRED_GDB_FLAGS
+        gdb_args = copy.copy(GDB_MI_FLAG)
         if self.config["gdb_args"]:
             gdb_args += self.config["gdb_args"]
 
