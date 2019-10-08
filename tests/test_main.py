@@ -8,6 +8,7 @@ from gdbgui.statemanager import StateManager, GDB_MI_FLAG
     "test_argv, expected_gdb_args",
     [
         (["gdbgui"], GDB_MI_FLAG),
+        (["gdbgui", "mybin -myargs"], GDB_MI_FLAG + ["mybin", "-myargs"]),
         (
             ["gdbgui", "--gdb-args", "--nx --tty=/dev/ttys002 mybin -myargs"],
             GDB_MI_FLAG + ["--nx", "--tty=/dev/ttys002", "mybin", "-myargs"],
