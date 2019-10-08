@@ -13,10 +13,32 @@ lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
 @nox.session(python=python)
 def tests(session):
     session.install(".")
-    session.run("python", "-m", "unittest", "discover")
+    tests = session.posargs or ["tests"]
+    session.install(".", "pytest", "pytest-cov")
+    tests = session.posargs or ["tests"]
+    session.run(
+        "pytest", "--cov=gdbgui", "--cov-config", ".coveragerc", "--cov-report=", *tests
+    )
+
     session.run("yarn", "install", external=True)
     session.run("yarn", "test", external=True)
     session.run("yarn", "build", external=True)
+
+    session.notify("cover")
+
+
+@nox.session
+def cover(session):
+    """Coverage analysis"""
+    session.install("coverage")
+    session.run(
+        "coverage",
+        "report",
+        "--show-missing",
+        "--omit=gdbgui/SSLify.py",
+        "--fail-under=30",
+    )
+    session.run("coverage", "erase")
 
 
 @nox.session(python="3.7")
