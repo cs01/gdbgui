@@ -53,7 +53,7 @@ It's perfect for beginners and experts. Simply run `gdbgui` from the terminal to
 —<a href="https://github.com/badlogic">Mario Zechner</a>, author, game engine developer on <a href="https://twitter.com/badlogicgames/status/925079139446591490">Twitter</a>
 </div>
 
-gdbgui is used by thousands of developers around the world including engineers at Google and college computer science course instructions. It even made its way into the Rust programming language's [source code](https://github.com/rust-lang/rust/blob/master/src/etc/rust-gdbgui) and appeared on episode [110 of C++ Weekly](​https://youtu.be/em842geJhfk).
+gdbgui is used by thousands of developers around the world including engineers at Google and college computer science course instructions. It even made its way into the Rust programming language's [source code](https://github.com/rust-lang/rust/blob/master/src/etc/rust-gdbgui) and appeared on episode [110 of C++ Weekly](https://youtu.be/em842geJhfk).
 
 
 
