@@ -1,22 +1,31 @@
 import gdbgui
 import pytest  # type: ignore
 import sys
+from gdbgui.statemanager import StateManager, GDB_MI_FLAG
 
 
 @pytest.mark.parametrize(
-    "test_argv, init_bin_args, gdb_args",
+    "test_argv, expected_gdb_args",
     [
-        (["gdbgui"], [], []),
-        (["gdbgui", "--gdb-args", "mybin -myargs"], [], ["mybin", "-myargs"]),
-        (["gdbgui", "--args", "mybin", "-myargs"], ["mybin", "-myargs"], []),
+        (["gdbgui"], GDB_MI_FLAG),
+        (["gdbgui", "mybin -myargs"], GDB_MI_FLAG + ["mybin", "-myargs"]),
+        (
+            ["gdbgui", "--gdb-args", "--nx --tty=/dev/ttys002 mybin -myargs"],
+            GDB_MI_FLAG + ["--nx", "--tty=/dev/ttys002", "mybin", "-myargs"],
+        ),
+        (
+            ["gdbgui", "-n", "--args", "mybin", "-myargs"],
+            GDB_MI_FLAG + ["--args", "mybin", "-myargs"],
+        ),
     ],
 )
-def test_argument_parsing(monkeypatch, test_argv, init_bin_args, gdb_args):
+def test_arguments_passed_to_gdb(monkeypatch, test_argv, expected_gdb_args):
     def mock_setup_backend(*args, **kwargs):
         pass
 
     monkeypatch.setattr(gdbgui.backend, "setup_backend", mock_setup_backend)
     monkeypatch.setattr(sys, "argv", test_argv)
     gdbgui.backend.main()
-    assert gdbgui.backend.app.config.get("initial_binary_and_args") == init_bin_args
-    assert gdbgui.backend.app.config.get("gdb_args") == gdb_args
+
+    state = StateManager(gdbgui.backend.app.config)
+    assert len(state.get_gdb_args()) == len(expected_gdb_args)
