@@ -1,13 +1,12 @@
 import logging
 import traceback
 from collections import defaultdict
-from copy import deepcopy
 from typing import Any, Dict, List, Optional
-
+import copy
 from pygdbmi.gdbcontroller import GdbController  # type: ignore
 
-REQUIRED_GDB_FLAGS = ["--interpreter=mi2"]
 logger = logging.getLogger(__name__)
+GDB_MI_FLAG = ["--interpreter=mi2"]
 
 
 class StateManager(object):
@@ -17,6 +16,16 @@ class StateManager(object):
         )  # key is controller, val is list of client ids
         self.gdb_reader_thread = None
         self.config = config
+
+    def get_gdb_args(self):
+        gdb_args = copy.copy(GDB_MI_FLAG)
+        if self.config["gdb_args"]:
+            gdb_args += self.config["gdb_args"]
+
+        if self.config["initial_binary_and_args"]:
+            gdb_args += ["--args"]
+            gdb_args += self.config["initial_binary_and_args"]
+        return gdb_args
 
     def connect_client(self, client_id: str, desired_gdbpid: int) -> Dict[str, Any]:
         message = ""
@@ -45,11 +54,7 @@ class StateManager(object):
         if self.get_controller_from_client_id(client_id) is None:
             logger.info("new sid", client_id)
 
-            gdb_args = (
-                deepcopy(self.config["initial_binary_and_args"])
-                + deepcopy(self.config["gdb_args"])
-                + REQUIRED_GDB_FLAGS
-            )
+            gdb_args = self.get_gdb_args()
 
             controller = GdbController(
                 gdb_path=self.config["gdb_path"],
