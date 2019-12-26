@@ -160,7 +160,10 @@ const process_gdb_response = function(response_array) {
       if ("register-names" in r.payload) {
         let names = r.payload["register-names"];
         // filter out empty names
-        store.set("register_names", names.filter(name => name !== ""));
+        store.set(
+          "register_names",
+          names.filter(name => name !== "")
+        );
       }
       if ("register-values" in r.payload) {
         store.set("previous_register_values", store.get("current_register_values"));
@@ -297,9 +300,7 @@ const process_gdb_response = function(response_array) {
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
-              `gdbgui noticed a signal was received (${r.payload["signal-meaning"]}, ${
-                r.payload["signal-name"]
-              }).`,
+              `gdbgui noticed a signal was received (${r.payload["signal-meaning"]}, ${r.payload["signal-name"]}).`,
               constants.console_entry_type.GDBGUI_OUTPUT
             );
             Actions.add_console_entries(
