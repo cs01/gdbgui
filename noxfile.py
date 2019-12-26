@@ -69,6 +69,15 @@ def lint(session):
 def autoformat(session):
     session.install("black")
     session.run("black", *files_to_lint)
+    session.run(
+        "npx",
+        "prettier",
+        "--write",
+        "--config",
+        ".prettierrc.js",
+        "gdbgui/src/js/**/*",
+        external=True,
+    )
 
 
 @nox.session(python="3.7")

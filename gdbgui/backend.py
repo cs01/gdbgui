@@ -679,8 +679,8 @@ def read_file():
 
         else:
             highlight = (
-                True
-            )  # highlight argument was invalid for some reason, default to true
+                True  # highlight argument was invalid for some reason, default to true
+            )
 
     if path and os.path.isfile(path):
         try:
