@@ -139,5 +139,5 @@ def docker_executables(session):
 
 @nox.session(python="3.7")
 def build_executable_current_os(session):
-    session.install("PyInstaller==3.3.1")
+    session.install(".", "PyInstaller<3.7")
     session.run("python", "make_executable.py")
