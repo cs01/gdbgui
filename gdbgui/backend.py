@@ -149,6 +149,7 @@ def is_cross_origin(request):
         origin = origin.replace("https://", "")
     if host!=origin:
         logger.warning("Host is Same as Origin")
+        logger.warning("Try using different browser")
     return host != origin
 
 
