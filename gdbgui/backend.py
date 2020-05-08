@@ -147,7 +147,9 @@ def is_cross_origin(request):
         origin = origin.replace("http://", "")
     elif origin.startswith("https://"):
         origin = origin.replace("https://", "")
-    return host == origin
+    if host!=origin:
+        logger.warning("Host is Same as Origin")
+    return host != origin
 
 
 def csrf_protect(f):
