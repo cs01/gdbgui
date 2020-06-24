@@ -1,10 +1,6 @@
 name: "GitHub Releases"
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -27,9 +23,9 @@ jobs:
       run: |
         nox -s docker_executables # linux, windows
         nox -s build_executable_current_os # macos
-    - name: Publish GitHub Release
-      uses: fnkr/github-action-ghr@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      env:
-        GHR_PATH: app/app-debug.apk
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#    - name: Publish GitHub Release
+#      uses: fnkr/github-action-ghr@v1
+#      if: startsWith(github.ref, 'refs/tags/')
+#      env:
+#        GHR_PATH: FIXME
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
