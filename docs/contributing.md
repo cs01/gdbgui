@@ -121,4 +121,3 @@ To build macOS executable, run the following on a mac:
 nox -s build_executable_current_os
 ```
 
-When creating a new release, build these executables, then create a new release in GitHub and attach the binaries to the release through GitHub's UI.
