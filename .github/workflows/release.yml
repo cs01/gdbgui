@@ -3,12 +3,29 @@ name: "GitHub Releases"
 on: [push, pull_request]
 
 jobs:
-  build:
+  docker_executables:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.5, 3.6, 3.7, 3.8]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install nox
+    - name: Compile binaries
+      run: |
+        nox -s docker_executables # linux, windows
+  build_executable_current_os:
     runs-on: macOS-latest
     strategy:
       matrix:
         python-version: [3.5, 3.6, 3.7, 3.8]
-
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python-version }}
@@ -22,9 +39,3 @@ jobs:
     - name: Compile binaries
       run: |
         nox -s build_executable_current_os # macos
-#    - name: Publish GitHub Release
-#      uses: fnkr/github-action-ghr@v1
-#      if: startsWith(github.ref, 'refs/tags/')
-#      env:
-#        GHR_PATH: FIXME
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
