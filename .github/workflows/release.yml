@@ -7,7 +7,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+        python-version: [3.5, 3.6, 3.7, 3.8]
 
     steps:
     - uses: actions/checkout@v1
@@ -21,7 +21,6 @@ jobs:
         pip install nox
     - name: Compile binaries
       run: |
-        nox -s docker_executables # linux, windows
         nox -s build_executable_current_os # macos
 #    - name: Publish GitHub Release
 #      uses: fnkr/github-action-ghr@v1
