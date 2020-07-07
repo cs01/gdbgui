@@ -13,7 +13,9 @@ python3 -m pip install --user pipx
 python3 -m userpath append ~/.local/bin
 ```
 
-Then install gdbgui with pipx:
+Restart/re-source your console to make sure the userpath is up to date.
+
+Then, install gdbgui with pipx:
 
 ```
 pipx install gdbgui
