@@ -1,4 +1,4 @@
-name: "Attach executables to GitHub releases"
+name: "Build gdbgui executables"
 
 on: [push, pull_request]
 
@@ -17,7 +17,7 @@ jobs:
           python -m pip install nox
       - name: Compile linux gdbgui executable
         run: |
-          nox -s build_executable_linux
+          nox --non-interactive --session build_executable_linux
       - name: Upload linux executable
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
@@ -39,7 +39,7 @@ jobs:
           python -m pip install nox
       - name: Compile mac gdbgui executable
         run: |
-          nox -s build_executable_mac
+          nox --non-interactive --session build_executable_mac
       - name: Upload mac executable
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
@@ -61,7 +61,7 @@ jobs:
           python -m pip install nox
       - name: Compile windows gdbgui executable
         run: |
-          nox -s build_executable_windows
+          nox --non-interactive --session build_executable_windows
       - name: Upload windows executable
         if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
