@@ -15,7 +15,7 @@ RUN set -x \
     && apt-key add Release.key \
     && add-apt-repository 'https://dl.winehq.org/wine-builds/ubuntu/' \
     && apt-get update -qy \
-    && apt-get install --no-install-recommends -qfy $WINE_VERSION winbind cabextract \
+    && apt-get install --allow-unauthenticated  --no-install-recommends -qfy $WINE_VERSION winbind cabextract \
     && apt-get clean \
     && wget -nv https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks \
     && chmod +x winetricks \
@@ -36,9 +36,9 @@ ENV PYPI_INDEX_URL=https://pypi.python.org/simple
 RUN set -x \
     && winetricks win7 \
     && for msifile in `echo core dev exe lib path pip tcltk tools`; do \
-        wget -nv "https://www.python.org/ftp/python/$PYTHON_VERSION/amd64/${msifile}.msi"; \
-        wine msiexec /i "${msifile}.msi" /qb TARGETDIR=C:/Python36; \
-        rm ${msifile}.msi; \
+    wget -nv "https://www.python.org/ftp/python/$PYTHON_VERSION/amd64/${msifile}.msi"; \
+    wine msiexec /i "${msifile}.msi" /qb TARGETDIR=C:/Python36; \
+    rm ${msifile}.msi; \
     done \
     && cd /wine/drive_c/Python36 \
     && echo 'wine '\''C:\Python36\python.exe'\'' "$@"' > /usr/bin/python \
