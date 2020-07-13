@@ -93,11 +93,10 @@ def develop(session):
     session.log("To use, run: '%s'", command)
 
 
-@nox.session(python="3.7")
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
-    session.run("yarn", "build")
+    session.run("yarn", "build", external=True)
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
 
@@ -121,28 +120,30 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(python="3.8")
+@nox.session()
 def build_executable_current_platform(session):
+    session.run("yarn", "install", external=True)
+    session.run("yarn", "build", external=True)
     session.install(".", "PyInstaller<3.7")
     session.run("python", "make_executable.py")
 
 
-@nox.session(python="3.8")
+@nox.session()
 def build_executable_mac(session):
     if not platform.startswith("darwin"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
 
 
-@nox.session(python="3.8")
+@nox.session()
 def build_executable_linux(session):
     if not platform.startswith("linux"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
 
 
-@nox.session(python="3.8")
+@nox.session()
 def build_executable_windows(session):
-    if not platform.startswith("windows"):
+    if not platform.startswith("win32"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
