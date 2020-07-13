@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 
-
 """
+Build an executable of gdbgui for the current platform
 """
 
 
 import subprocess
 from sys import platform
 from gdbgui import __version__
-import os
+import hashlib
+from pathlib import Path
+import logging
 
-
+logging.basicConfig(level=logging.INFO)
 if platform.startswith("linux"):
     platform_dir = "linux"
 elif platform.startswith("darwin"):
     platform_dir = "mac"
-elif platform.startswith("win32"):
+elif platform == "win32":
     platform_dir = "windows"
 else:
     raise Exception("Unknown platform")
@@ -23,8 +25,7 @@ else:
 
 def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
 
-    spec = (
-        """# -*- mode: python -*-
+    spec = f"""# -*- mode: python -*-
 
 # create executable with: pyinstaller gdbgui.spec
 # run executable with: dist/gdbgui
@@ -65,7 +66,7 @@ exe = EXE(pyz,  # noqa
           a.binaries,
           a.zipfiles,
           a.datas,
-          name="%s",
+          name="{binary_name}",
           debug=False,
           strip=False,
           upx=False,
@@ -73,28 +74,48 @@ exe = EXE(pyz,  # noqa
           console=True)
 
 """
-        % binary_name
-    )
 
     with open(spec_path, "w+") as f:
         f.write(spec)
 
 
+def verify(binary_path: str, version: str):
+    cmd = [str(binary_path), "--version"]
+    logging.info(f"Smoke test: Running {' '.join(cmd)}")
+    proc = subprocess.run(cmd, stdout=subprocess.PIPE)
+    output = proc.stdout.decode().strip()
+    if output != __version__:
+        raise ValueError(f"Expected {__version__}. Got {output}")
+    logging.info("Success!")
+
+
+def generate_md5(binary: Path, output_file: Path):
+    with open(output_file, "w+") as f:
+        f.write(hashlib.md5(str(binary).encode()).hexdigest() + "\n")
+    logging.info(f"Wrote md5 to {output_file}")
+
+
 def main():
     binary_name = "gdbgui_%s" % __version__
     spec_path = "gdbgui.spec"
-    write_spec_with_gdbgui_version_in_name(spec_path, binary_name)
+    distpath = (Path("executable") / platform_dir).resolve()
+    extension = ".exe" if platform == "win32" else ""
+    binary_path = Path(distpath) / f"{binary_name}{extension}"
 
-    subprocess.call(
+    write_spec_with_gdbgui_version_in_name(spec_path, binary_name)
+    subprocess.run(
         [
             "pyinstaller",
             spec_path,
             "--distpath",
-            os.path.join("executable", platform_dir),
+            distpath,
             "--key",
             "a5s1fe65aw41f54sa64v6b4ds98fhea98rhg4etj4et78ku4yu87mn",
         ]
     )
+    verify(binary_path, __version__)
+    generate_md5(binary_path, distpath / f"{binary_name}.md5")
+    logging.info(f"Saved executable to {binary_path}")
 
 
 if __name__ == "__main__":

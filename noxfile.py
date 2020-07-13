@@ -1,6 +1,6 @@
 import nox  # type: ignore
 from pathlib import Path
-
+from sys import platform
 
 nox.options.sessions = ["tests", "lint", "docs"]
 python = ["3.6", "3.7", "3.8"]
@@ -93,11 +93,10 @@ def develop(session):
     session.log("To use, run: '%s'", command)
 
 
-@nox.session(python="3.7")
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
-    session.run("yarn", "build")
+    session.run("yarn", "build", external=True)
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
 
@@ -121,21 +120,30 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(python="3.7")
-def docker_executables(session):
-    session.install(".", "PyInstaller<3.7")
-    # Windows
-    session.run(
-        "docker", "build", "-t", "gdbgui_windows", "docker/windows", external=True
-    )
-    session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_windows", external=True)
-
-    # linux
-    session.run("docker", "build", "-t", "gdbgui_linux", "docker/linux", external=True)
-    session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_linux", external=True)
-
-
-@nox.session(python="3.7")
-def build_executable_current_os(session):
+@nox.session()
+def build_executable_current_platform(session):
+    session.run("yarn", "install", external=True)
+    session.run("yarn", "build", external=True)
     session.install(".", "PyInstaller<3.7")
     session.run("python", "make_executable.py")
+
+
+@nox.session()
+def build_executable_mac(session):
+    if not platform.startswith("darwin"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")
+
+
+@nox.session()
+def build_executable_linux(session):
+    if not platform.startswith("linux"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")
+
+
+@nox.session()
+def build_executable_windows(session):
+    if not platform.startswith("win32"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")
