@@ -13,8 +13,6 @@ files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 
 @nox.session(python=python)
 def tests(session):
-    session.install(".")
-    tests = session.posargs or ["tests"]
     session.install(".", "pytest", "pytest-cov")
     tests = session.posargs or ["tests"]
     session.run(
@@ -56,7 +54,7 @@ def lint(session):
     session.install(*lint_dependencies)
     session.run("black", "--check", *files_to_lint)
     session.run("flake8", *files_to_lint)
-    session.run("mypy", *files_to_lint)  #
+    session.run("mypy", *files_to_lint)
     session.run(
         "check-manifest",
         "--ignore",
@@ -125,7 +123,7 @@ def publish_docs(session):
 
 @nox.session(python="3.7")
 def docker_executables(session):
-    session.install("PyInstaller==3.3.1")
+    session.install(".", "PyInstaller<3.7")
     # Windows
     session.run(
         "docker", "build", "-t", "gdbgui_windows", "docker/windows", external=True
@@ -139,5 +137,5 @@ def docker_executables(session):
 
 @nox.session(python="3.7")
 def build_executable_current_os(session):
-    session.install("PyInstaller==3.3.1")
+    session.install(".", "PyInstaller<3.7")
     session.run("python", "make_executable.py")
