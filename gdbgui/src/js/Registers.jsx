@@ -50,10 +50,7 @@ class Registers extends React.Component {
   }
   static cache_register_names(names) {
     // filter out non-empty names
-    store.set(
-      "register_names",
-      names.filter(name => name)
-    );
+    store.set("register_names", names.filter(name => name));
   }
   static clear_register_name_cache() {
     store.set("register_names", []);
