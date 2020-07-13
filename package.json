@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "license": "GPL-3.0",
   "scripts": {
-    "start": "NODE_ENV=development webpack --mode development --watch --config webpack.config.js",
+    "start": "cross-env NODE_ENV=development webpack --mode development --watch --config webpack.config.js",
     "test": "jest",
-    "build": "NODE_ENV=production webpack --mode production --config webpack.config.js",
+    "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
     "prettier": "prettier ./gdbgui/src/js/** --write"
   },
   "dependencies": {
+    "cross-env": "^7.0.2",
     "prettier": "^1.12.0",
     "react": "^16.8",
     "react-dom": "^16.4",
