@@ -43,6 +43,11 @@ a = Analysis(['gdbgui/backend.py'],  # noqa
              hiddenimports=[
                'engineio.async_gevent',
                'engineio.async_threading',
+               'engineio.async_drivers.gevent',
+               'engineio.async_drivers.threading',
+               'engineio.async_drivers.eventlet',
+               'engineio.async_drivers.gevent_uwsgi',
+               'pkg_resources.py2_warn',
                ],
              hookspath=[],
              runtime_hooks=[],
