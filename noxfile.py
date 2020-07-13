@@ -1,6 +1,6 @@
 import nox  # type: ignore
 from pathlib import Path
-
+from sys import platform
 
 nox.options.sessions = ["tests", "lint", "docs"]
 python = ["3.6", "3.7", "3.8"]
@@ -121,21 +121,28 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(python="3.7")
-def docker_executables(session):
-    session.install(".", "PyInstaller<3.7")
-    # Windows
-    session.run(
-        "docker", "build", "-t", "gdbgui_windows", "docker/windows", external=True
-    )
-    session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_windows", external=True)
-
-    # linux
-    session.run("docker", "build", "-t", "gdbgui_linux", "docker/linux", external=True)
-    session.run("docker", "run", "-v", '"`pwd`:/src/"', "gdbgui_linux", external=True)
-
-
-@nox.session(python="3.7")
-def build_executable_current_os(session):
+@nox.session(python="3.8")
+def build_executable_current_platform(session):
     session.install(".", "PyInstaller<3.7")
     session.run("python", "make_executable.py")
+
+
+@nox.session(python="3.8")
+def build_executable_mac(session):
+    if not platform.startswith("darwin"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")
+
+
+@nox.session(python="3.8")
+def build_executable_linux(session):
+    if not platform.startswith("linux"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")
+
+
+@nox.session(python="3.8")
+def build_executable_windows(session):
+    if not platform.startswith("windows"):
+        raise Exception(f"Unexpected platform {platform}")
+    session.notify("build_executable_current_platform")

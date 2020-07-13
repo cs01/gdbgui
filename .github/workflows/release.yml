@@ -3,36 +3,72 @@ name: "GitHub Releases"
 on: [push, pull_request]
 
 jobs:
-  docker_executables:
+  ubuntu_executable:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install nox
-    - name: Compile binaries
-      run: |
-        nox -s docker_executables # linux, windows
-  build_executable_current_os:
-    runs-on: macOS-latest
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        working-directory: "."
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "." "PyInstaller<3.7"
+      - name: Compile linux gdbgui executable
+        run: |
+          python make_executable.py
+      - name: Upload linux executable
+        uses: actions/upload-artifact@v1
+        with:
+          name: linux_executable
+          path: ./executable/linux
+  mac_executable:
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install nox
-    - name: Compile binaries
-      run: |
-        nox -s build_executable_current_os # macos
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        working-directory: "."
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "." "PyInstaller<3.7"
+      - name: Compile mac gdbgui executable
+        run: |
+          python make_executable.py
+      - name: Upload mac executable
+        uses: actions/upload-artifact@v1
+        with:
+          name: mac_executable
+          path: ./executable/mac
+  windows_executable:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Install dependencies
+        working-directory: "."
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "." "PyInstaller<3.7"
+      - name: Compile windows gdbgui executable
+        run: |
+          python make_executable.py
+      - name: Upload linux executable
+        uses: actions/upload-artifact@v1
+        with:
+          name: windows_executable
+          path: ./executable/windows
