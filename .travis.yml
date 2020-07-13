@@ -14,20 +14,20 @@ matrix:
   allow_failures:
     - os: osx
   include:
-  - python: '3.6'
-    env: NOXSESSION="tests-3.6"
-  - python: '3.7'
-    env: NOXSESSION="tests-3.7"
-    dist: xenial
-  - python: '3.7'
-    env: NOXSESSION="lint"
-    dist: xenial
-  - python: '3.7'
-    env: NOXSESSION="docs"
-    dist: xenial
-  - python: '3.8-dev'
-    env: NOXSESSION="tests-3.8"
-    dist: xenial
+    - python: "3.6"
+      env: NOXSESSION="tests-3.6"
+    - python: "3.7"
+      env: NOXSESSION="tests-3.7"
+      dist: bionic
+    - python: "3.7"
+      env: NOXSESSION="lint"
+      dist: bionic
+    - python: "3.7"
+      env: NOXSESSION="docs"
+      dist: bionic
+    - python: "3.8-dev"
+      env: NOXSESSION="tests-3.8"
+      dist: bionic
 
 install:
   # commands for linux
