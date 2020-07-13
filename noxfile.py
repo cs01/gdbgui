@@ -44,7 +44,7 @@ def cover(session):
 def lint(session):
     session.run(
         "npx",
-        "prettier",
+        "prettier@1.18.2",
         "--check",
         "--config",
         ".prettierrc.js",
@@ -69,7 +69,7 @@ def autoformat(session):
     session.run("black", *files_to_lint)
     session.run(
         "npx",
-        "prettier",
+        "prettier@1.18.2",
         "--write",
         "--config",
         ".prettierrc.js",
