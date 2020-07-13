@@ -1,38 +1,70 @@
-name: "GitHub Releases"
+name: "Attach executables to GitHub releases"
 
 on: [push, pull_request]
 
 jobs:
-  docker_executables:
+  ubuntu_executable:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install nox
-    - name: Compile binaries
-      run: |
-        nox -s docker_executables # linux, windows
-  build_executable_current_os:
-    runs-on: macOS-latest
-    strategy:
-      matrix:
-        python-version: [3.5, 3.6, 3.7, 3.8]
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nox
+      - name: Compile linux gdbgui executable
+        run: |
+          nox -s build_executable_linux
+      - name: Upload linux executable
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v1
+        with:
+          name: gdbgui_linux
+          path: ./executable/linux
+
+  mac_executable:
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install nox
-    - name: Compile binaries
-      run: |
-        nox -s build_executable_current_os # macos
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nox
+      - name: Compile mac gdbgui executable
+        run: |
+          nox -s build_executable_mac
+      - name: Upload mac executable
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v1
+        with:
+          name: gdbgui_mac
+          path: ./executable/mac
+
+  windows_executable:
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v1
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install nox
+      - name: Compile windows gdbgui executable
+        run: |
+          nox -s build_executable_windows
+      - name: Upload windows executable
+        if: github.ref == 'refs/heads/master'
+        uses: actions/upload-artifact@v1
+        with:
+          name: gdbgui_windows
+          path: ./executable/windows
