@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.13.2.1
+* No end user changes. This release builds the gdbgui executables with GitHub actions.
+
 ## 0.13.2.0
 * Print number of times a breakpoint was hit (@MatthiasKreileder).
 * Publish sdist to PyPI (this was overlooked in previous release).
