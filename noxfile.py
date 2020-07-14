@@ -40,7 +40,7 @@ def cover(session):
     session.run("coverage", "erase")
 
 
-@nox.session(python="3.7")
+@nox.session
 def lint(session):
     session.run(
         "npx",
@@ -63,7 +63,7 @@ def lint(session):
     session.run("python", "setup.py", "check", "--metadata", "--strict")
 
 
-@nox.session(python="3.7")
+@nox.session
 def autoformat(session):
     session.install("black")
     session.run("black", *files_to_lint)
@@ -78,7 +78,7 @@ def autoformat(session):
     )
 
 
-@nox.session(python="3.7")
+@nox.session
 def docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "build")
@@ -93,6 +93,7 @@ def develop(session):
     session.log("To use, run: '%s'", command)
 
 
+@nox.session
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
@@ -101,20 +102,20 @@ def build(session):
     session.run("twine", "check", "dist/*")
 
 
-@nox.session(python="3.7")
+@nox.session
 def publish(session):
     build(session)
     print("REMINDER: Has the changelog been updated?")
     session.run("python", "-m", "twine", "upload", "dist/*")
 
 
-@nox.session(python="3.7")
+@nox.session
 def watch_docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "serve")
 
 
-@nox.session(python="3.7")
+@nox.session
 def publish_docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "gh-deploy")

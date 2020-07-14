@@ -1,21 +1,21 @@
 # https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Push Verifications
+name: CI tests
 
-on: [push]
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  release:
 
 jobs:
-  tests:
+  run_tests:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
         python-version: [3.6, 3.7, 3.8]
-        include:
-          - os: windows-latest
-            python-version: 3.8
-          - os: macos-latest
-            python-version: 3.8
 
     steps:
       - uses: actions/checkout@v2
@@ -27,6 +27,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install nox
+      - name: Install gdb ubuntu
+        run: |
+          sudo apt-get install gdb
       - name: Execute Tests
         run: |
           nox --non-interactive --session tests-${{ matrix.python-version }}
