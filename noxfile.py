@@ -107,6 +107,7 @@ def publish(session):
     build(session)
     print("REMINDER: Has the changelog been updated?")
     session.run("python", "-m", "twine", "upload", "dist/*")
+    publish_docs(session)
 
 
 @nox.session
