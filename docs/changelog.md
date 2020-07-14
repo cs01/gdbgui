@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## development
+* Removed gdbgui binaries from source control. They can now be downloaded as artifacts of [releases](https://github.com/cs01/gdbgui/releases).
+
 ## 0.13.2.1
 * No end user changes. This release builds the gdbgui executables with GitHub actions.
 
