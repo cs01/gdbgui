@@ -368,19 +368,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#publishing-a-new-version-to-pypi" class="md-nav__link">
-    Publishing a New Version to PyPI
-  </a>
-  
-    <nav class="md-nav" aria-label="Publishing a New Version to PyPI">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#building-binary-executables" class="md-nav__link">
     Building Binary Executables
@@ -390,6 +377,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publishing-a-new-version" class="md-nav__link">
+    Publishing a New Version
+  </a>
   
 </li>
       
@@ -522,19 +516,6 @@
   
 </li>
         
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#publishing-a-new-version-to-pypi" class="md-nav__link">
-    Publishing a New Version to PyPI
-  </a>
-  
-    <nav class="md-nav" aria-label="Publishing a New Version to PyPI">
-      <ul class="md-nav__list">
-        
           <li class="md-nav__item">
   <a href="#building-binary-executables" class="md-nav__link">
     Building Binary Executables
@@ -544,6 +525,13 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#publishing-a-new-version" class="md-nav__link">
+    Publishing a New Version
+  </a>
   
 </li>
       
@@ -655,18 +643,26 @@ nox -s develop-3.7  <span class="c1"># replace with desired Python version</span
 </code></pre></div>
 
 
-<h2 id="publishing-a-new-version-to-pypi">Publishing a New Version to PyPI</h2>
-<p>Each time a new version of gdbgui is created, a package needs to be published to PyPI and executables need to be built.</p>
+<h3 id="building-binary-executables">Building Binary Executables</h3>
+<p>These are automatically built on CI, but can be built locally with corresponding <code>nox</code> commands, such as:</p>
+<div class="codehilite"><pre><span></span><code>nox -s build_executable_current_platform
+</code></pre></div>
+
+
+<h2 id="publishing-a-new-version">Publishing a New Version</h2>
+<p>Make sure the version number is incremented in VERSION.txt and in applicable READMEs, and the CHANGELOG is updated.</p>
+<ol>
+<li>The version to release must be on the master branch and have all CI tests pass and new binary executable artifacts attached to the GitHub action results</li>
+<li>Publish the package to PyPI and update documentation (both done with this command):</li>
+</ol>
 <p>From the root of gdbgui, run:</p>
 <div class="codehilite"><pre><span></span><code>nox -s publish
 </code></pre></div>
 
 
-<p>Make sure the version number is incremented in VERSION.txt and in applicable READMEs.</p>
-<h3 id="building-binary-executables">Building Binary Executables</h3>
-<p>These are automatically built on CI, but can be built locally with corresponding <code>nox</code> commands, such as:</p>
-<div class="codehilite"><pre><span></span><code>build_executable_current_platform
-</code></pre></div>
+<ol>
+<li>Create a "release" in GitHub and attach the gdbgui binary executable artifacts to it.</li>
+</ol>
                 
               
               
