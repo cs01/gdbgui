@@ -572,7 +572,17 @@
                 <p>Thanks for your interest in contributing to gdbgui!</p>
 <p>If your change is small, go ahead and submit a pull request. If it is substantial, create a GitHub issue to discuss it before making the change.</p>
 <h2 id="development-instructions">Development Instructions</h2>
-<p>gdbgui uses <a href="nox">https://github.com/theacodes/nox</a> for to automate various tasks. You will need it installed on your system before continuing.</p>
+<p>gdbgui uses <a href="https://github.com/theacodes/nox">nox</a> to automate various tasks. You will need it installed on your system before continuing.</p>
+<p>You can install it with pipx (recommended):</p>
+<div class="codehilite"><pre><span></span><code>&gt; pipx install nox
+</code></pre></div>
+
+
+<p>or pip:</p>
+<div class="codehilite"><pre><span></span><code>&gt; pip install --user nox
+</code></pre></div>
+
+
 <h3 id="step-1-compile-javascript-code">Step 1: Compile JavaScript Code</h3>
 <p>gdbgui compiles JavaScript source code into a single .js file.</p>
 <p>Note that <code>yarn</code> can be replaced with <code>npm</code>:</p>
