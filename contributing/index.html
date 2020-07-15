@@ -314,29 +314,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-install-python-dependencies" class="md-nav__link">
-    Step 1: Install Python Dependencies
+  <a href="#step-1-compile-javascript-code" class="md-nav__link">
+    Step 1: Compile JavaScript Code
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-compile-javascript-code" class="md-nav__link">
-    Step 2: Compile JavaScript Code
+  <a href="#step-2-run-server" class="md-nav__link">
+    Step 2: Run Server
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-4-make-your-changes" class="md-nav__link">
-    Step 4: Make your changes
+  <a href="#step-3-make-your-changes" class="md-nav__link">
+    Step 3: Make your changes
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-5-run-and-add-tests" class="md-nav__link">
-    Step 5: Run and Add tests
+  <a href="#step-4-run-and-add-tests" class="md-nav__link">
+    Step 4: Run and Add tests
   </a>
   
 </li>
@@ -468,29 +468,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-install-python-dependencies" class="md-nav__link">
-    Step 1: Install Python Dependencies
+  <a href="#step-1-compile-javascript-code" class="md-nav__link">
+    Step 1: Compile JavaScript Code
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-compile-javascript-code" class="md-nav__link">
-    Step 2: Compile JavaScript Code
+  <a href="#step-2-run-server" class="md-nav__link">
+    Step 2: Run Server
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-4-make-your-changes" class="md-nav__link">
-    Step 4: Make your changes
+  <a href="#step-3-make-your-changes" class="md-nav__link">
+    Step 3: Make your changes
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-5-run-and-add-tests" class="md-nav__link">
-    Step 5: Run and Add tests
+  <a href="#step-4-run-and-add-tests" class="md-nav__link">
+    Step 4: Run and Add tests
   </a>
   
 </li>
@@ -573,7 +573,26 @@
 <p>If your change is small, go ahead and submit a pull request. If it is substantial, create a GitHub issue to discuss it before making the change.</p>
 <h2 id="development-instructions">Development Instructions</h2>
 <p>gdbgui uses <a href="nox">https://github.com/theacodes/nox</a> for to automate various tasks. You will need it installed on your system before continuing.</p>
-<h3 id="step-1-install-python-dependencies">Step 1: Install Python Dependencies</h3>
+<h3 id="step-1-compile-javascript-code">Step 1: Compile JavaScript Code</h3>
+<p>gdbgui compiles JavaScript source code into a single .js file.</p>
+<p>Note that <code>yarn</code> can be replaced with <code>npm</code>:</p>
+<p>First install JavaScript dependencies:</p>
+<div class="codehilite"><pre><span></span><code>yarn install
+</code></pre></div>
+
+
+<p>To watch JavaScript files for changes and build non-optimized code for each change, use</p>
+<div class="codehilite"><pre><span></span><code>yarn start
+</code></pre></div>
+
+
+<p>This is useful for iterating on changes.</p>
+<p>To build once for production-optimized code, you can run</p>
+<div class="codehilite"><pre><span></span><code>yarn build
+</code></pre></div>
+
+
+<h3 id="step-2-run-server">Step 2: Run Server</h3>
 <div class="codehilite"><pre><span></span><code>git clone https://github.com/cs01/gdbgui
 <span class="nb">cd</span> gdbgui
 nox -s develop-3.7  <span class="c1"># replace with desired Python version</span>
@@ -582,28 +601,7 @@ nox -s develop-3.7  <span class="c1"># replace with desired Python version</span
 
 
 <p>You are now in a virtual environment with gdbgui's dependencies installed. When finished, type <code>deactivate</code> to leave the virtual environment.</p>
-<h3 id="step-2-compile-javascript-code">Step 2: Compile JavaScript Code</h3>
-<p>gdbgui compiles JavaScript source code into a single .js file.</p>
-<p>Note that <code>yarn</code> can be replaced with <code>npm</code>:</p>
-<p>First install JavaScript dependencies:</p>
-<div class="codehilite"><pre><span></span><code>yarn install
-
-To watch JavaScript files <span class="k">for</span> changes and build non-optimized code <span class="k">for</span> each change, use
-</code></pre></div>
-
-
-<p>yarn start</p>
-<div class="codehilite"><pre><span></span><code>This is useful for iterating on changes.
-
-To build once for production-optimized code, you can run
-</code></pre></div>
-
-
-<p>yarn build</p>
-<div class="codehilite"><pre><span></span><code>### Step 3: Run Python server
-
-```bash
-python -m gdbgui --debug
+<div class="codehilite"><pre><span></span><code>python -m gdbgui --debug
 </code></pre></div>
 
 
@@ -613,13 +611,13 @@ python -m gdbgui --debug
 <li>Adds a new component at the bottom of the right sidebar called "gdb machine interface output" that displays the raw gdb mi output to help you debug.</li>
 <li>Displays all changes to state data in the browser's developer console, such as <code>rendered_source_file_fullname null -&gt; /home/chad/git/gdbgui/examples/hello.c</code></li>
 </ol>
-<h3 id="step-4-make-your-changes">Step 4: Make your changes</h3>
+<h3 id="step-3-make-your-changes">Step 3: Make your changes</h3>
 <p>Open the browser to view gdbgui. Refresh the page as you make changes to JavaScript code.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Make sure you have caching turned off in your browser. In Chrome, for example, this is a setting in the developer console.</p>
 </div>
-<h3 id="step-5-run-and-add-tests">Step 5: Run and Add tests</h3>
+<h3 id="step-4-run-and-add-tests">Step 4: Run and Add tests</h3>
 <p>To continue, you must have nox installed.</p>
 <div class="codehilite"><pre><span></span><code>nox
 </code></pre></div>
@@ -656,13 +654,8 @@ python -m gdbgui --debug
 
 <p>Make sure the version number is incremented in VERSION.txt and in applicable READMEs.</p>
 <h3 id="building-binary-executables">Building Binary Executables</h3>
-<p>To build Ubuntu and Windows executables, run from any operating system:</p>
-<div class="codehilite"><pre><span></span><code>nox -s docker_executables
-</code></pre></div>
-
-
-<p>To build macOS executable, run the following on a mac:</p>
-<div class="codehilite"><pre><span></span><code>nox -s build_executable_current_os
+<p>These are automatically built on CI, but can be built locally with corresponding <code>nox</code> commands, such as:</p>
+<div class="codehilite"><pre><span></span><code>build_executable_current_platform
 </code></pre></div>
                 
               
