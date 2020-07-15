@@ -1,6 +1,6 @@
 # https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: CI tests
+name: Tests
 
 on:
   pull_request:

@@ -11,7 +11,7 @@ lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
 files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 
 
-@nox.session(python=python)
+@nox.session(reuse_venv=True, python=python)
 def tests(session):
     session.install(".", "pytest", "pytest-cov")
     tests = session.posargs or ["tests"]
@@ -26,7 +26,7 @@ def tests(session):
     session.notify("cover")
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def cover(session):
     """Coverage analysis"""
     session.install("coverage")
@@ -40,7 +40,7 @@ def cover(session):
     session.run("coverage", "erase")
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def lint(session):
     session.run(
         "npx",
@@ -63,7 +63,7 @@ def lint(session):
     session.run("python", "setup.py", "check", "--metadata", "--strict")
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def autoformat(session):
     session.install("black")
     session.run("black", *files_to_lint)
@@ -78,13 +78,13 @@ def autoformat(session):
     )
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "build")
 
 
-@nox.session(python=python)
+@nox.session(reuse_venv=True, python=python)
 def develop(session):
     session.install(*doc_dependencies, *lint_dependencies)
     session.install("-e", ".")
@@ -93,7 +93,7 @@ def develop(session):
     session.log("To use, run: '%s'", command)
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)
@@ -102,7 +102,7 @@ def build(session):
     session.run("twine", "check", "dist/*")
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def publish(session):
     build(session)
     print("REMINDER: Has the changelog been updated?")
@@ -110,19 +110,19 @@ def publish(session):
     publish_docs(session)
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def watch_docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "serve")
 
 
-@nox.session
+@nox.session(reuse_venv=True)
 def publish_docs(session):
     session.install(*doc_dependencies)
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session()
+@nox.session(reuse_venv=True)
 def build_executable_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
@@ -130,21 +130,21 @@ def build_executable_current_platform(session):
     session.run("python", "make_executable.py")
 
 
-@nox.session()
+@nox.session(reuse_venv=True)
 def build_executable_mac(session):
     if not platform.startswith("darwin"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
 
 
-@nox.session()
+@nox.session(reuse_venv=True)
 def build_executable_linux(session):
     if not platform.startswith("linux"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
 
 
-@nox.session()
+@nox.session(reuse_venv=True)
 def build_executable_windows(session):
     if not platform.startswith("win32"):
         raise Exception(f"Unexpected platform {platform}")

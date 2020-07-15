@@ -1,5 +1,6 @@
 include README.md
 include LICENSE
+
 graft gdbgui
 
 prune examples
@@ -26,3 +27,5 @@ exclude tslint.json
 exclude webpack.config.js
 exclude yarn.lock
 exclude noxfile.py
+exclude CHANGELOG.md
+exclude CONTRIBUTING.md
