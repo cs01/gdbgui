@@ -650,17 +650,10 @@ nox -s develop-3.7  <span class="c1"># replace with desired Python version</span
 
 
 <h2 id="publishing-a-new-version">Publishing a New Version</h2>
-<p>Make sure the version number is incremented in VERSION.txt and in applicable READMEs, and the CHANGELOG is updated.</p>
 <ol>
+<li>Make sure the version number is incremented in <code>VERSION.txt</code>.</li>
 <li>The version to release must be on the master branch and have all CI tests pass and new binary executable artifacts attached to the GitHub action results</li>
-<li>Publish the package to PyPI and update documentation (both done with this command):</li>
-</ol>
-<p>From the root of gdbgui, run:</p>
-<div class="codehilite"><pre><span></span><code>nox -s publish
-</code></pre></div>
-
-
-<ol>
+<li>Publish the package to PyPI and update documentation. Both are done with this <code>nox -s publish</code>.</li>
 <li>Create a "release" in GitHub and attach the gdbgui binary executable artifacts to it.</li>
 </ol>
                 
