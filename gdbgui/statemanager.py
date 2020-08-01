@@ -1,7 +1,7 @@
 import logging
 import traceback
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Tuple, List, Optional
 import copy
 from pygdbmi.gdbcontroller import GdbController  # type: ignore
 
@@ -11,7 +11,7 @@ GDB_MI_FLAG = ["--interpreter=mi2"]
 
 class StateManager(object):
     def __init__(self, config: Dict[str, Any]):
-        self.controller_to_client_ids: Dict[GdbController, List[str]] = defaultdict(
+        self.controller_to_client_ids: Dict[GdbController, (List[str],int)] = defaultdict(
             list
         )  # key is controller, val is list of client ids
         self.gdb_reader_thread = None
@@ -37,7 +37,7 @@ class StateManager(object):
             controller = self.get_controller_from_pid(desired_gdbpid)
 
             if controller:
-                self.controller_to_client_ids[controller].append(client_id)
+                self.controller_to_client_ids[controller][0].append(client_id)
                 message = (
                     "gdbgui is using existing subprocess with pid %s, "
                     "originally opened with command %s"
@@ -61,7 +61,9 @@ class StateManager(object):
                 gdb_args=gdb_args,
                 rr=self.config["rr"],
             )
-            self.controller_to_client_ids[controller].append(client_id)
+            self.controller_to_client_ids[controller] = ([],-1)
+            ele = self.controller_to_client_ids[controller]
+            ele[0].append(client_id)
 
             pid = self.get_pid_from_controller(controller)
             if pid is None:
@@ -99,10 +101,10 @@ class StateManager(object):
 
     def get_client_ids_from_gdb_pid(self, pid: int) -> List[str]:
         controller = self.get_controller_from_pid(pid)
-        return self.controller_to_client_ids.get(controller, [])
+        return self.controller_to_client_ids.get(controller, ([],-1))
 
     def get_client_ids_from_controller(self, controller: GdbController):
-        return self.controller_to_client_ids.get(controller, [])
+        return self.controller_to_client_ids.get(controller, ([],-1))
 
     def get_pid_from_controller(self, controller: GdbController) -> Optional[int]:
         if controller and controller.gdb_process:
@@ -120,16 +122,34 @@ class StateManager(object):
 
     def get_controller_from_client_id(self, client_id: str) -> Optional[GdbController]:
         for controller, client_ids in self.controller_to_client_ids.items():
-            if client_id in client_ids:
+            if client_id in client_ids[0]:
                 return controller
 
         return None
+
+    def get_controller_from_mpi_processor_id(self, mpi_processor_id: int) -> Optional[GdbController]:
+        for ele in self.controller_to_client_ids.items():
+            this_mpi_processor = ele[1][1]
+            if this_mpi_processor == mpi_processor_id:
+                return ele[0]
+
+        return None
+
+    def set_mpi_process_from_cotroller(self, controller: GdbController, mpi_processor_id: int):
+        self.controller_to_client_ids[controller] = (self.controller_to_client_ids[controller][0],mpi_processor_id)
 
     def exit_all_gdb_processes(self):
         logger.info("exiting all subprocesses")
         for controller in self.controller_to_client_ids:
             controller.exit()
-            self.controller_to_client_ids.pop(controller)
+        self.controller_to_client_ids.clear()
+
+    def exit_all_gdb_processes_except_client_id(self,client_id: str):
+        logger.info("exiting all subprocesses except client id")
+        for controller,pair in self.controller_to_client_ids.copy().items():
+            if client_id not in pair[0]:
+                controller.exit()
+                self.controller_to_client_ids.pop(controller)
 
     def get_dashboard_data(self):
         data = {}
@@ -150,6 +170,9 @@ class StateManager(object):
         for _, client_ids in self.controller_to_client_ids.items():
             if client_id in client_ids:
                 client_ids.remove(client_id)
+
+    def get_controllers(self):
+        return self.controller_to_client_ids
 
     def _spawn_new_gdb_controller(self):
         pass

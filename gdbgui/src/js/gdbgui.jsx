@@ -51,6 +51,7 @@ window.store = store;
 
 class Gdbgui extends React.PureComponent {
   componentWillMount() {
+    store.set("process_on_focus",-1);
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'

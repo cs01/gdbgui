@@ -143,7 +143,36 @@ const Actions = {
     Actions.inferior_program_exited();
     GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
   },
-  remote_connected() {
+  connect_to_gdbserver_mpi(user_input) {
+    // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+    store.set("source_file_paths", []);
+    store.set("language", "c_family");
+    store.set("inferior_binary_path", null);
+    store.set("process_on_focus",0);
+    Actions.inferior_program_exited();
+    // parse user input
+    let user_input_arr = user_input.split(" ");
+    let host_port_arr = user_input_arr[0].split(":");
+    if (user_input_arr[1] != "-np") {
+        // Error
+      Actions.add_console_entries(
+        "You must specify the number of process with the option -np x (with x number of processes)",
+        constants.console_entry_type.GDBGUI_OUTPUT
+      );
+    }
+    
+    // Before connection we have to create the remaining sessions
+    GdbApi.open_mpi_sessions(user_input_arr[2]);
+
+    for (let i = 0 ; i < parseInt(user_input_arr[2]) ; i++)
+    {
+        let port = (parseInt(host_port_arr[1]) + i).toString();
+        GdbApi.run_gdb_command_mpi([`-target-select remote ${host_port_arr[0]}:${port}`],i);
+    }
+
+    GdbApi.set_mpi_state(true)
+  },
+  remote_connected(proc) {
     Actions.inferior_program_paused();
     let cmds = [];
     if (store.get("auto_add_breakpoint_to_main")) {
@@ -160,7 +189,7 @@ const Actions = {
         constants.console_entry_type.GDBGUI_OUTPUT
       );
     }
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.run_gdb_command(cmds,proc);
   },
   attach_to_process(user_input) {
     // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation

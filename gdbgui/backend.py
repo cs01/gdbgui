@@ -363,6 +363,65 @@ def run_gdb_command(message):
     else:
         emit("error_running_gdb_command", {"message": "gdb is not running"})
 
+@socketio.on("run_gdb_command_mpi", namespace="/gdb_listener")
+def run_gdb_command_mpi(message):
+    """
+    Endpoint for a websocket route.
+    Runs a gdb command over multiple sessions.
+    Responds only if an error occurs when trying to write the command to
+    gdb
+    """
+    if message["processor"] != -1:
+        """ If the command is target we have to handle differently """
+        cmd = message["cmd"]
+        cmds = cmd[0].split(" ")
+        if cmds[0] == "-target-select" and cmds[1] == "remote":
+            controller = _state.get_controller_from_mpi_processor_id(-1)
+            _state.set_mpi_process_from_cotroller(controller,int(cmds[2].split(":")[1]) - 60000)
+        controller = _state.get_controller_from_mpi_processor_id(message["processor"])
+        if controller is not None:
+            try:
+                # the command (string) or commands (list) to run
+                cmd = message["cmd"]
+                controller.write(cmd, read_response=False)
+
+            except Exception:
+                err = traceback.format_exc()
+                logger.error(err)
+                emit("error_running_gdb_command", {"message": err})
+        else:
+            emit("error_running_gdb_command", {"message": "gdb is not running"})
+    else:
+        """
+        execute the command for all controllers
+        """
+        for controller,pair in _state.get_controllers().items():
+            try:
+                # the command (string) or commands (list) to run
+                cmd = message["cmd"]
+                controller.write(cmd, read_response=False)
+                # in case is the connection command take the port number to understand the mpi process rank
+
+            except Exception:
+                err = traceback.format_exc()
+                logger.error(err)
+                emit("error_running_gdb_command", {"message": err})
+
+
+@socketio.on("open_mpi_sessions", namespace="/gdb_listener")
+def open_mpi_sessions(message):
+    """
+    In MPI we kill all old sessions and we open new sessions
+    """
+
+    _state.exit_all_gdb_processes_except_client_id(request.sid)
+
+    for i in range(1,int(message["processors"])):
+        # see if user wants to connect to existing gdb pid
+        desired_gdbpid = 0
+        ses = _state.connect_client(str(i), desired_gdbpid)
+        # This is required to send messages from multiple session to the same client
+        _state.connect_client(request.sid,ses["pid"])
 
 def send_msg_to_clients(client_ids, msg, error=False):
     """Send message to all clients"""
@@ -430,16 +489,20 @@ def read_and_forward_gdb_output():
                 except NoGdbProcessError:
                     response = None
                     send_msg_to_clients(
-                        client_ids,
+                        client_ids[0],
                         "The underlying gdb process has been killed. This tab will no longer function as expected.",
                         error=True,
                     )
                     controllers_to_remove.append(controller)
 
                 if response:
-                    for client_id in client_ids:
+                    """Attach processor information"""
+                    for r in response:
+                        r["proc"] = client_ids[1]
+
+                    for client_id in client_ids[0]:
                         logger.info(
-                            "emiting message to websocket client id " + client_id
+                            "emiting message to websocket client id " + client_id[0]
                         )
                         socketio.emit(
                             "gdb_response",

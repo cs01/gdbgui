@@ -250,12 +250,20 @@ const GdbApi = {
     }, WAIT_TIME_SEC * 1000);
   },
   /**
+   * Set if the commands must be sent on all user sessions
+   * @param state mpi state
+   * @return nothing
+   */
+  set_mpi_state: function(state) {
+      this.mpi_state = state
+  },
+  /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
    * validates command before sending, and updates the gdb console and status bar
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing
    */
-  run_gdb_command: function(cmd) {
+  run_gdb_command_single: function(cmd) {
     if (_.trim(cmd) === "") {
       return;
     }
@@ -273,6 +281,53 @@ const GdbApi = {
 
     GdbApi.waiting_for_response();
     GdbApi.socket.emit("run_gdb_command", { cmd: cmds });
+  },
+  /**
+   * runs a gdb cmd (or commands) directly in gdb on the backend
+   * validates command before sending, and updates the gdb console and status bar
+   * @param cmd: a string or array of strings, that are directly evaluated by gdb
+   * @param processor: Processor in which we want to execute the command
+   * @return nothing
+   */
+  run_gdb_command_mpi: function(cmd,processor) {
+    if (_.trim(cmd) === "") {
+      return;
+    }
+
+    let cmds = cmd;
+    if (_.isString(cmds)) {
+      cmds = [cmds];
+    }
+
+    // add the send command to the console to show commands that are
+    // automatically run by gdb
+    if (store.get("show_all_sent_commands_in_console")) {
+      Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND);
+    }
+
+    GdbApi.waiting_for_response();
+    GdbApi.socket.emit("run_gdb_command_mpi", { processor: processor, cmd: cmds });
+  },
+  /**
+   * runs a gdb cmd (or commands) directly in gdb on the backend
+   * validates command before sending, and updates the gdb console and status bar
+   * @param cmd: a string or array of strings, that are directly evaluated by gdb
+   * @return nothing
+   */
+  run_gdb_command: function(cmd,processor = -1) {
+      if (this.mpi_state == true)
+      {GdbApi.run_gdb_command_mpi(cmd,processor);}
+      else
+      {GdbApi.run_gdb_command_single(cmd);}
+  },
+  /**
+   * Open the MPI sessions
+   * @return nothing
+   */
+  open_mpi_sessions: function(processors) {
+
+    GdbApi.waiting_for_response();
+    GdbApi.socket.emit("open_mpi_sessions", { processors: processors });
   },
   /**
    * Run a user-defined command, then refresh the store

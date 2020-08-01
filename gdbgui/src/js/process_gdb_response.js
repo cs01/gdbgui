@@ -61,6 +61,7 @@ const process_gdb_response = function(response_array) {
         return false;
       }
     };
+
   // if this is an autocomplete response, we will process it here and not
   if (is_autocomplete_response(response_array)) {
     let gdb_completion_output = response_array.slice(1, response_array.length - 1),
@@ -110,7 +111,7 @@ const process_gdb_response = function(response_array) {
       }
     }
 
-    if (r.type === "result" && r.message === "done" && r.payload) {
+    if (r.type === "result" && r.message === "done" && r.payload && r.proc == store.get("process_on_focus")) {
       // This is special GDB Machine Interface structured data that we
       // can render in the frontend
       if ("bkpt" in r.payload) {
@@ -324,7 +325,7 @@ const process_gdb_response = function(response_array) {
         Actions.inferior_program_paused(r.payload.frame);
       }
     } else if (r.message && r.message === "connected") {
-      Actions.remote_connected();
+      Actions.remote_connected(r.proc);
     }
   }
 };
