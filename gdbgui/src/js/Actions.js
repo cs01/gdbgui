@@ -149,6 +149,8 @@ const Actions = {
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
     store.set("process_on_focus",0);
+    store.set("is_mpi",true);
+    // create a bigger padding to draw processor on focus selector
     Actions.inferior_program_exited();
     // parse user input
     let user_input_arr = user_input.split(" ");
@@ -161,6 +163,8 @@ const Actions = {
       );
     }
     
+    store.set("nproc",parseInt(user_input_arr[2]));
+
     // Before connection we have to create the remaining sessions
     GdbApi.open_mpi_sessions(user_input_arr[2]);
 

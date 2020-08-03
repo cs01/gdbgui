@@ -55,13 +55,20 @@ class Gdbgui extends React.PureComponent {
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
+    store.connectComponentState(this, ['is_mpi']) 
   }
   render() {
+
+    let mid_padding_style = { paddingTop: "60px"};
+    if (store.get("is_mpi") == true) {
+        mid_padding_style = { paddingTop: "130px"};
+    }
+
     return (
       <div className="splitjs_container">
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle" style={{ paddingTop: "60px" }}>
+        <div id="middle" style={mid_padding_style}>
           <div id="folders_view" className="content" style={{ backgroundColor: "#333" }}>
             <FoldersView />
           </div>

@@ -103,7 +103,9 @@ const initial_store_data = {
   show_filesystem: false,
   middle_panes_split_obj: {},
 
-  process_on_focus: 0
+  process_on_focus: 0,
+  is_mpi: false,
+  nproc: 1
 };
 
 function get_stored(key, default_val) {
