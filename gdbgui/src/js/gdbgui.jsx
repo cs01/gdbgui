@@ -61,7 +61,7 @@ class Gdbgui extends React.PureComponent {
 
     let mid_padding_style = { paddingTop: "60px"};
     if (store.get("is_mpi") == true) {
-        mid_padding_style = { paddingTop: "130px"};
+        mid_padding_style = { paddingTop: "95px"};
     }
 
     return (

@@ -105,7 +105,8 @@ const initial_store_data = {
 
   process_on_focus: 0,
   is_mpi: false,
-  nproc: 1
+  nproc: 1,
+  processors_states: []
 };
 
 function get_stored(key, default_val) {

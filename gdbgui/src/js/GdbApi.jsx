@@ -321,6 +321,13 @@ const GdbApi = {
       {GdbApi.run_gdb_command_single(cmd);}
   },
   /**
+  * Change the process on focus
+  */
+  server_change_process_on_focus: function(proc) {
+    GdbApi.waiting_for_response();
+    GdbApi.socket.emit("change_process_focus", { proc: proc });
+  },
+  /**
    * Open the MPI sessions
    * @return nothing
    */
@@ -352,6 +359,23 @@ const GdbApi = {
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     store.set("inferior_program", constants.inferior_states.paused);
     GdbApi.run_gdb_command(cmds);
+  },
+  /**
+  * Get array of commands to refresh the state of the variables
+  */
+  refresh_state_for_change_process_on_focus: function() {
+    let expr = store.get("expressions");
+
+    for (let i = 0 ; i < expr.length ; i++) {
+      GdbVariable.delete_gdb_variable_remote(expr[i].name);
+    }
+
+    for (let i = 0 ; i < expr.length ; i++) {
+      GdbVariable.create_variable_no_fetch(expr[i].expression,expr[i].expr_type);
+    }
+
+    GdbVariable._delete_all_local_gdb_var_data();
+    GdbVariable.fetch_created_variables();
   },
   /**
    * Get array of commands to send to gdb that refreshes everything in the

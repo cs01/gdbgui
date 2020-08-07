@@ -292,7 +292,7 @@ const process_gdb_response = function(response_array) {
           if (r.payload["new-thread-id"]) {
             Threads.set_thread_id(r.payload["new-thread-id"]);
           }
-          Actions.inferior_program_paused(r.payload.frame);
+          Actions.inferior_program_paused(r.payload.frame,r.proc);
         } else if (r.payload.reason === "signal-received") {
           Actions.inferior_program_paused(r.payload.frame);
 

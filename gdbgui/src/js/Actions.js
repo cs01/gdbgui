@@ -22,10 +22,18 @@ const Actions = {
     store.set("inferior_program", constants.inferior_states.running);
     Actions.clear_program_state();
   },
-  inferior_program_resuming: function() {
+  inferior_program_resuming: function(proc = -1) {
     store.set("inferior_program", constants.inferior_states.running);
+    // all processor are resuming
+    if (proc == -1) {
+        let prcs = store.get("processors_states");
+        for (let i = 0 ; i < store.get("nproc") ; i++) {
+            prcs[i] = constants.inferior_states.running;
+        }
+        store.set("processors_states",prcs);
+    }
   },
-  inferior_program_paused: function(frame = {}) {
+  inferior_program_paused: function(frame = {}, proc = -1) {
     store.set("inferior_program", constants.inferior_states.paused);
     store.set(
       "source_code_selection_state",
@@ -37,7 +45,21 @@ const Actions = {
     store.set("current_assembly_address", frame.addr);
     store.set("source_code_infinite_scrolling", false);
     SourceCode.make_current_line_visible();
-    Actions.refresh_state_for_gdb_pause();
+    Actions.refresh_state_for_gdb_pause(proc);
+    if (proc != -1) {
+        let prcs = store.get("processors_states");
+        prcs[proc] = constants.inferior_states.paused;
+        store.set("processors_states",prcs);
+    }
+  },
+  change_process_on_focus: function(proc) {
+    store.set("process_on_focus",proc);
+    GdbApi.server_change_process_on_focus(proc);
+    Actions.refresh_state_for_gdb_pause(proc);
+    Actions.refresh_variables_for_change_on_focus(proc);
+  },
+  refresh_variables_for_change_on_focus: function(proc) {
+    GdbApi.refresh_state_for_change_process_on_focus();
   },
   inferior_program_exited: function() {
     store.set("inferior_program", constants.inferior_states.exited);
@@ -51,8 +73,8 @@ const Actions = {
   /**
    * Request relevant store information from gdb to refresh UI
    */
-  refresh_state_for_gdb_pause: function() {
-    GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
+  refresh_state_for_gdb_pause: function(proc = -1) {
+    GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds(),proc);
   },
   execute_console_command: function(command) {
     if (store.get("refresh_state_after_sending_console_command")) {
@@ -178,6 +200,7 @@ const Actions = {
   },
   remote_connected(proc) {
     Actions.inferior_program_paused();
+    let prcs = store.get("processors_states");
     let cmds = [];
     if (store.get("auto_add_breakpoint_to_main")) {
       Actions.add_console_entries(
@@ -187,12 +210,20 @@ const Actions = {
       cmds.push("-break-insert main");
       cmds.push("-exec-continue");
       cmds.push(GdbApi.get_break_list_cmd());
+      
+      if (store.get("is_mpi") == true) {
+        prcs[proc] = constants.inferior_states.running;
+      }
     } else {
       Actions.add_console_entries(
         'Connected to remote target! Add breakpoint(s), then press "continue" button (do not press "run").',
         constants.console_entry_type.GDBGUI_OUTPUT
       );
+      if (store.get("is_mpi") == true) {
+        prcs[proc] = constants.inferior_states.paused;
+      }
     }
+    store.set("processors_states",prcs);
     GdbApi.run_gdb_command(cmds,proc);
   },
   attach_to_process(user_input) {

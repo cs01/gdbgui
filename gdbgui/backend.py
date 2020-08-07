@@ -173,7 +173,7 @@ def add_csrf_token_to_session():
 
 socketio = SocketIO()
 _state = StateManager(app.config)
-
+process_on_focus = 0
 
 def setup_backend(
     serve=True,
@@ -422,6 +422,14 @@ def open_mpi_sessions(message):
         ses = _state.connect_client(str(i), desired_gdbpid)
         # This is required to send messages from multiple session to the same client
         _state.connect_client(request.sid,ses["pid"])
+
+@socketio.on("change_process_focus", namespace="/gdb_listener")
+def change_process_focus(message):
+    """
+    Notify the user is focusing on a different process
+    """
+
+    process_on_focus = int(message["proc"])
 
 def send_msg_to_clients(client_ids, msg, error=False):
     """Send message to all clients"""

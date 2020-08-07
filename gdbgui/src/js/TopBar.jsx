@@ -3,6 +3,7 @@ import React from "react";
 import { store } from "statorgfc";
 import BinaryLoader from "./BinaryLoader.jsx";
 import ControlButtons from "./ControlButtons.jsx";
+import ProcessorsButtons from "./ProcessorsButtons.jsx";
 import Settings from "./Settings.jsx";
 import SourceCodeHeading from "./SourceCodeHeading.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
@@ -339,24 +340,6 @@ class TopBar extends React.Component {
         </label>
       );
     }
-
-    let svg_elements_mpi_processors = [];
-    let svg_mpi_processors = null;
-    let mpi_processors = null;
-
-    if (store.get("is_mpi") == true)
-    {
-        let nproc = store.get("nproc");
-        for (let i = 0 ; i < nproc ; i++)
-        {
-            let start_b = 3 + i*60;
-            let start_t = 3+25 + i*60;
-            svg_elements_mpi_processors.push((<rect x={start_b} y="3" width="50" height="50" style={{fill: "rgb(150,150,150)", strokeWidth: 3, stroke: "rgb(0,0,0)"}} />));
-            svg_elements_mpi_processors.push((<text x={start_t} y="43" font-size="40px" text-anchor="middle">{i}</text>));
-        }
-        svg_mpi_processors = <svg width="100%" height="60">${svg_elements_mpi_processors}</svg>
-        mpi_processors = (<div style={{ margin: 5, whitespace: "nowrap" }} className="flexrow">{svg_mpi_processors}</div>);
-    }
     
     return (
       <div
@@ -461,7 +444,7 @@ class TopBar extends React.Component {
             <SourceCodeHeading />
           </div>
         </div>
-        {mpi_processors}
+        <ProcessorsButtons />
       </div>
     );
   }
