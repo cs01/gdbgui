@@ -310,7 +310,12 @@ class Breakpoints extends React.Component {
     let bkpts = store.get("breakpoints");
     for (let b of bkpts) {
       if (b.fullname === fullname && b.line == line) {
-        return b.number;
+        if (b.is_child_breakpoint == true) {
+          return b.parent_breakpoint_number.toString();
+        }
+        else {
+          return b.number;
+        }
       }
     }
     console.error(`could not find breakpoint for ${fullname}:${line}`);

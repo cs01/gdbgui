@@ -106,7 +106,11 @@ const initial_store_data = {
   process_on_focus: 0,
   is_mpi: false,
   nproc: 1,
-  processors_states: []
+  processors_states: [],
+  paused_on_frame_prcs: [],
+  fullname_to_render_prcs: [],
+  line_of_source_to_flash_prcs: [],
+  current_assembly_address_prcs: []
 };
 
 function get_stored(key, default_val) {

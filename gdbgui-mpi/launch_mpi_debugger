@@ -1,0 +1,6 @@
+#!/bin/sh
+
+mpirun -np $1 gdbgui-mpi/launch_gdb_server ${@:2} # &
+#python -m gdbgui-mpi
+
+

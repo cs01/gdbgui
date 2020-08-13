@@ -649,7 +649,13 @@ def send_signal_to_pid():
     signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
 
     try:
-        os.kill(pid_int, signal_value)
+        if pid_int != -1:
+            os.kill(pid_int, signal_value)
+        else:
+            for controller in _state.get_controllers():
+                pid_int = controller.gdb_process.pid
+                os.kill(pid_int, signal_value)
+
     except Exception:
         return (
             jsonify(

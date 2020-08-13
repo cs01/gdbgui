@@ -33,23 +33,41 @@ const Actions = {
         store.set("processors_states",prcs);
     }
   },
+  update_view_source_code: function(frame = {}) {
+      store.set("inferior_program", constants.inferior_states.paused);
+      store.set(
+        "source_code_selection_state",
+        constants.source_code_selection_states.PAUSED_FRAME
+      );
+      store.set("paused_on_frame", frame);
+      store.set("fullname_to_render", frame.fullname);
+      store.set("line_of_source_to_flash", parseInt(frame.line));
+      store.set("current_assembly_address", frame.addr);
+      store.set("source_code_infinite_scrolling", false);
+      SourceCode.make_current_line_visible();
+  },
   inferior_program_paused: function(frame = {}, proc = -1) {
-    store.set("inferior_program", constants.inferior_states.paused);
-    store.set(
-      "source_code_selection_state",
-      constants.source_code_selection_states.PAUSED_FRAME
-    );
-    store.set("paused_on_frame", frame);
-    store.set("fullname_to_render", frame.fullname);
-    store.set("line_of_source_to_flash", parseInt(frame.line));
-    store.set("current_assembly_address", frame.addr);
-    store.set("source_code_infinite_scrolling", false);
-    SourceCode.make_current_line_visible();
+    if (store.get("is_mpi") == false || (store.get("is_mpi") == true && proc == store.get("process_on_focus")) )
+    {
+      Actions.update_view_source_code(frame);
+    }
     Actions.refresh_state_for_gdb_pause(proc);
     if (proc != -1) {
+        let pof_prcs = store.get("paused_on_frame_prcs");
+        pof_prcs[proc] = frame;
+        store.set("paused_on_frame_prcs",pof_prcs);
         let prcs = store.get("processors_states");
         prcs[proc] = constants.inferior_states.paused;
         store.set("processors_states",prcs);
+        let ftr_prcs = store.get("fullname_to_render_prcs");
+        ftr_prcs[proc] = frame.fullname;
+        store.set("fullname_to_render_prcs",ftr_prcs);
+        let lostf_prcs = store.get("line_of_source_to_flash_prcs");
+        lostf_prcs[proc] = parseInt(frame.line);
+        store.set("line_of_source_to_flash_prcs",lostf_prcs);
+        let cac_prcs = store.get("current_assembly_address_prcs");
+        cac_prcs[proc] = frame.addr;
+        store.set("current_assembly_address_prcs",cac_prcs);
     }
   },
   change_process_on_focus: function(proc) {
@@ -61,13 +79,18 @@ const Actions = {
   refresh_variables_for_change_on_focus: function(proc) {
     GdbApi.refresh_state_for_change_process_on_focus();
   },
-  inferior_program_exited: function() {
+  inferior_program_exited: function(proc = -1) {
     store.set("inferior_program", constants.inferior_states.exited);
     store.set("disassembly_for_missing_file", []);
     store.set("root_gdb_tree_var", null);
     store.set("previous_register_values", {});
     store.set("current_register_values", {});
     store.set("inferior_pid", null);
+    if (proc != -1) {
+      let ps = store.get("processors_states");
+      ps[proc] = constants.inferior_states.exited;
+      store.set("processors_states",ps)
+    }
     Actions.clear_program_state();
   },
   /**
@@ -232,7 +255,7 @@ const Actions = {
   },
   fetch_source_files() {
     store.set("source_file_paths", []);
-    GdbApi.run_gdb_command("-file-list-exec-source-files");
+    GdbApi.run_gdb_command("-file-list-exec-source-files",store.get("process_on_focus"));
   },
   view_file(fullname, line) {
     store.set("fullname_to_render", fullname);
@@ -276,6 +299,9 @@ const Actions = {
     Actions.show_modal("upgrade to pro for this feature", body);
   },
   send_signal(signal_name, pid) {
+    if (store.get("is_mpi") == true) {
+      pid = -1
+    }
     $.ajax({
       beforeSend: function(xhr) {
         xhr.setRequestHeader(

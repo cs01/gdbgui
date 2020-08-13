@@ -36,7 +36,10 @@ class SourceCode extends React.Component {
       "source_linenum_to_display_start",
       "source_linenum_to_display_end",
       "max_lines_of_code_to_fetch",
-      "source_code_infinite_scrolling"
+      "source_code_infinite_scrolling",
+      "fullname_to_render_prcs",
+      "line_of_source_to_flash_prcs",
+      "current_assembly_address_prcs"
     ]);
 
     // bind methods
@@ -165,8 +168,10 @@ class SourceCode extends React.Component {
   ) {
     let row_class = ["srccode"];
 
-    if (is_gdb_paused_on_this_line) {
+    if (is_gdb_paused_on_this_line === 1) {
       row_class.push("paused_on_line");
+    } else if (is_gdb_paused_on_this_line === 2) {
+      row_class.push("paused_on_line2");
     } else if (line_should_flash) {
       row_class.push("flash");
     }
@@ -284,12 +289,20 @@ class SourceCode extends React.Component {
 
   is_gdb_paused_on_this_line(line_num_being_rendered, line_gdb_is_paused_on) {
     if (this.state.paused_on_frame) {
-      return (
-        line_num_being_rendered === line_gdb_is_paused_on &&
-        this.state.paused_on_frame.fullname === this.state.fullname_to_render
-      );
+      if (line_num_being_rendered === line_gdb_is_paused_on &&
+        this.state.paused_on_frame.fullname === this.state.fullname_to_render) {
+        return 1;
+      }
+      else {
+        for (let i = 0 ; i < this.state.fullname_to_render_prcs.length ; i++) {
+          if (this.state.fullname_to_render_prcs[i] === this.state.fullname_to_render && 
+              this.state.line_of_source_to_flash_prcs[i] === line_num_being_rendered) {
+            return 2;
+          }
+        } 
+      }
     } else {
-      return false;
+      return 0;
     }
   }
   get_view_more_tr(fullname, linenum, node_key) {
@@ -370,6 +383,8 @@ class SourceCode extends React.Component {
         : 0;
 
     const line_of_source_to_flash = this.state.line_of_source_to_flash;
+    const line_of_source_to_flash_prcs = this.state.line_of_source_to_flash_prcs;
+    const fullname_to_render_prcs = this.state.fullname_to_render_prcs
     const {
       start_linenum_to_render,
       end_linenum_to_render

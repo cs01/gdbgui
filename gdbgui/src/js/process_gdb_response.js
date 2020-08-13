@@ -284,7 +284,7 @@ const process_gdb_response = function(response_array) {
     if (r.message && r.message === "stopped") {
       if (r.payload && r.payload.reason) {
         if (r.payload.reason.includes("exited")) {
-          Actions.inferior_program_exited();
+          Actions.inferior_program_exited(r.proc);
         } else if (
           r.payload.reason.includes("breakpoint-hit") ||
           r.payload.reason.includes("end-stepping-range")
@@ -294,7 +294,7 @@ const process_gdb_response = function(response_array) {
           }
           Actions.inferior_program_paused(r.payload.frame,r.proc);
         } else if (r.payload.reason === "signal-received") {
-          Actions.inferior_program_paused(r.payload.frame);
+          Actions.inferior_program_paused(r.payload.frame,r.proc);
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
