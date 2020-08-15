@@ -1,0 +1,8 @@
+#!/bin/sh
+# Usage: debug_server.sh <executable> <arguments>
+
+GDB_HOST=$(hostname)
+GDB_PORT=$(( 60000 + $OMPI_COMM_WORLD_RANK ))
+echo "GDB server for rank $OMPI_COMM_WORLD_RANK available on $GDB_HOST:$GDB_PORT"
+exec gdbserver :$GDB_PORT $*
+
