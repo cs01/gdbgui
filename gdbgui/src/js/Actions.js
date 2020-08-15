@@ -213,10 +213,22 @@ const Actions = {
     // Before connection we have to create the remaining sessions
     GdbApi.open_mpi_sessions(user_input_arr[2]);
 
-    for (let i = 0 ; i < parseInt(user_input_arr[2]) ; i++)
+    let data_lines;
+    // Check the server names from
+    if (host_port_arr[0] === "*") {
+        jQuery.ajax({
+          url: 'mpi_processes_info',
+          success: function(data, status){data_lines = data.split(/\r?\n/);},
+          async: false
+        });
+    }
+    data_lines.pop();
+
+    for (let i = 0 ; i < data_lines.length ; i++)
     {
+        let rank_host = data_lines[i].split(/\s+/);
         let port = (parseInt(host_port_arr[1]) + i).toString();
-        GdbApi.run_gdb_command_mpi([`-target-select remote ${host_port_arr[0]}:${port}`],i);
+        GdbApi.run_gdb_command_mpi([`-target-select remote ${rank_host[1]}:${port}`],parseInt(rank_host[0]));
     }
 
     GdbApi.set_mpi_state(true)

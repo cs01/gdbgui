@@ -588,6 +588,13 @@ def authenticate(f):
 
     return wrapper
 
+@app.route("/mpi_processes_info", methods=["GET"])
+def mpi_processes_info():
+    """
+    Get information about mpi processes
+    """
+    f = open("gdbgui-mpi/nodes_name", "r")
+    return Response(f.read(), mimetype='text/plain')
 
 @app.route("/", methods=["GET"])
 @authenticate
