@@ -7,8 +7,9 @@ Remember, these guides, like gdbgui, are **open source** and can be edited by yo
 After downloading gdbgui, you can launch it like so:
 
 * `gdbgui` (or whatever the binary name is, i.e. `gdbgui_0.10.0.0`)
-* `gdbgui "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
-* `gdbgui --args "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
+* `gdbgui --args ./mybinary -myarg value -flag1 -flag2`
+
+Make sure the program you want to debug was compiled with debug symbols. See the getting started section for more details.
 
 A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).
 
@@ -42,9 +43,9 @@ cd myprog
 cargo build
 ```
 
-You can start debugging with a simple
+You can start debugging with
 
-`gdbgui target/debug/myprog`
+`gdbgui --args target/debug/myprog`
 
 There are a couple of small difficulties.
 

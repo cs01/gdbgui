@@ -1,5 +1,5 @@
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import SourceCode from "./SourceCode.jsx";
 import Locals from "./Locals.jsx";
 import Memory from "./Memory.jsx";
@@ -61,26 +61,35 @@ const Actions = {
       GdbApi.run_gdb_command(command);
     }
   },
+  onConsoleCommandRun: function() {
+    if (store.get("refresh_state_after_sending_console_command")) {
+      GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
+    }
+  },
   clear_console: function() {
     store.set("gdb_console_entries", []);
   },
   add_console_entries: function(entries, type) {
-    if (!_.isArray(entries)) {
+    if (type === constants.console_entry_type.STD_OUT) {
+      // ignore
+      return;
+    }
+    if (!Array.isArray(entries)) {
       entries = [entries];
     }
 
-    const typed_entries = entries.map(entry => {
-      return { type: type, value: entry };
-    });
-
-    const previous_entries = store.get("gdb_console_entries");
-    const MAX_NUM_ENTRIES = 1000;
-    const new_entries = previous_entries.concat(typed_entries);
-    if (new_entries.length > MAX_NUM_ENTRIES) {
-      new_entries.splice(0, new_entries.length - MAX_NUM_ENTRIES);
+    const pty = store.get("gdbguiPty");
+    if (pty) {
+      entries.forEach(data => {
+        pty.write(constants.colorTypeMap[type] ?? constants.xtermColors["reset"]);
+        pty.writeln(data);
+        pty.write(constants.xtermColors["reset"]);
+      });
+    } else {
+      console.error("cant log:", entries);
     }
 
-    store.set("gdb_console_entries", new_entries);
+    // store.set("gdb_console_entries", new_entries);
   },
   add_gdb_response_to_console(mi_obj) {
     if (!mi_obj) {

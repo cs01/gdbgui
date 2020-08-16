@@ -164,7 +164,7 @@ class FoldersView extends React.Component {
     }
 
     let source_paths = this.state.source_file_paths;
-    if (!_.isArray(source_paths) || !source_paths.length) {
+    if (!Array.isArray(source_paths) || !source_paths.length) {
       this.setState({
         rootnode: default_rootnode
       });

@@ -14,12 +14,10 @@ import ReactDOM from "react-dom";
 import React from "react";
 import { store, middleware } from "statorgfc";
 
-import Actions from "./Actions.js";
 import constants from "./constants.js";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import FileOps from "./FileOps.jsx";
 import FoldersView from "./FoldersView.jsx";
-import GdbConsoleContainer from "./GdbConsoleContainer.jsx";
 import GlobalEvents from "./GlobalEvents.js";
 import HoverVar from "./HoverVar.jsx";
 import initial_store_data from "./InitialStoreData.js";
@@ -30,6 +28,10 @@ import Settings from "./Settings.jsx";
 import ToolTip from "./ToolTip.jsx";
 import TopBar from "./TopBar.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
+
+import "../../static/css/gdbgui.css";
+import "../../static/css/splitjs-gdbgui.css";
+import GdbConsoleContainer from "./GdbConsoleContainer";
 
 const store_options = {
   immutable: false,
@@ -91,11 +93,7 @@ class Gdbgui extends React.PureComponent {
             }
           />
 
-          <div
-            id="bottom_content"
-            className="split content"
-            style={{ paddingBottom: "0px" /* for height of input */ }}
-          >
+          <div id="bottom_content" className="split content">
             <GdbConsoleContainer />
           </div>
         </div>

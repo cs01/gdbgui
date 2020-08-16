@@ -95,7 +95,7 @@ class ToolTipTourguide extends React.Component {
     let is_last_step = this.props.step_num + 1 === this.state.num_tour_guide_steps,
       dismiss = is_last_step ? null : (
         <span className="btn btn-default pointer" onClick={ToolTipTourguide.dismiss}>
-          dismiss
+          Dismiss
         </span>
       );
     return (
@@ -123,7 +123,7 @@ class ToolTipTourguide extends React.Component {
         <p />
         {dismiss}
         <span className="btn btn-primary pointer" onClick={ToolTipTourguide.next}>
-          {is_last_step ? "Let's Do This!" : "next"}
+          {is_last_step ? "Finish" : "Next"}
         </span>
       </div>
     );

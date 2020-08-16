@@ -18,7 +18,6 @@ let constants = {
     SENT_COMMAND: "SENT_COMMAND",
     STD_ERR: "STD_ERR",
     STD_OUT: "STD_OUT",
-    BACKTRACE_LINK: "BACKTRACE_LINK",
     GDBGUI_OUTPUT: "GDBGUI_OUTPUT",
     GDBGUI_OUTPUT_RAW: "GDBGUI_OUTPUT_RAW",
     AUTOCOMPLETE_OPTION: "AUTOCOMPLETE_OPTION"
@@ -51,8 +50,30 @@ let constants = {
 
   default_max_lines_of_code_to_fetch: 500,
 
-  keys_to_not_log_changes_in_console: ["gdb_mi_output", "gdb_console_entries"]
+  keys_to_not_log_changes_in_console: ["gdb_mi_output"],
+  xtermColors: {
+    reset: "\x1B[0m",
+    red: "\x1B[31m",
+    grey: "\x1b[1;30m",
+    green: "\x1B[0;32m",
+    lgreen: "\x1B[1;32m",
+    blue: "\x1B[0;34m",
+    lblue: "\x1B[1;34m",
+    yellow: "\x1B[0;33m"
+  }
 };
+
+const colorTypeMap = {};
+colorTypeMap[constants.console_entry_type.STD_OUT] = constants.xtermColors["reset"];
+colorTypeMap[constants.console_entry_type.STD_ERR] = constants.xtermColors["red"];
+colorTypeMap[constants.console_entry_type.SENT_COMMAND] = constants.xtermColors["lblue"];
+colorTypeMap[constants.console_entry_type.GDBGUI_OUTPUT] =
+  constants.xtermColors["yellow"];
+colorTypeMap[constants.console_entry_type.GDBGUI_OUTPUT_RAW] =
+  constants.xtermColors["green"];
+
+constants["colorTypeMap"] = colorTypeMap;
+
 constants["IGNORE_ERRORS_TOKEN_INT"] = parseInt(constants.IGNORE_ERRORS_TOKEN_STR);
 constants["DISASSEMBLY_FOR_MISSING_FILE_INT"] = parseInt(
   constants.DISASSEMBLY_FOR_MISSING_FILE_STR

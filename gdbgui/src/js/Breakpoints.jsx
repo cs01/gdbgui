@@ -1,6 +1,6 @@
 import React from "react";
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import Actions from "./Actions.js";
 import Util from "./Util.js";
 import FileOps from "./FileOps.jsx";
@@ -219,8 +219,7 @@ class Breakpoint extends React.Component {
           style={{
             width: "100%",
             fontSize: "0.9em",
-            borderWidth: "1px",
-            borderColor: "black"
+            borderWidth: "0px"
           }}
           className="lighttext table-condensed"
         >

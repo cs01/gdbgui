@@ -1,9 +1,13 @@
-Now that you have `gdbgui` installed, all you need to do is run
+Before running `gdbgui`, you should compile your program with debug symbols and a lower level of optimization, so code isn't optimized out before runtime. To include debug symbols with `gcc` or `rustc`, this means using `-g`. To disable most optimizations in gdcc `gcc` use the `-O0` flag.
+
+For more details, consult your compiler's documentation or a search engine.
+
+Now that you have `gdbgui` installed and your program compiled with debug symbols, all you need to do is run
 ```
 gdbgui
 ```
 
-which will start gdbgui's server and open a new tab in your browser. That tab contains a fully functional frontend running `gdb`!
+This will start gdbgui's server and open a new tab in your browser. That tab contains a fully functional frontend running `gdb`!
 
 You can see gdbgui in action on [YouTube](https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A).
 
@@ -32,10 +36,3 @@ The following keyboard shortcuts are available when the focus is not in an input
 * Up: u or up arrow
 * Next Instruction: m
 * Step Instruction: ,
-
-
-## Debugging Faults
-
-If your program exits unexpectedly from something like a SEGFAULT, gdbgui displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.
-
-![](https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/SIGSEV.png)

@@ -1,5 +1,5 @@
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import constants from "./constants.js";
 import Actions from "./Actions.js";
 import React from "react"; // needed for jsx
@@ -145,7 +145,6 @@ const FileOps = {
         "missing_files",
         "files_being_fetched",
         "gdb_version_array",
-        "interpreter",
         "fullname_to_render",
         "line_of_source_to_flash",
         "cached_source_files",
@@ -532,15 +531,10 @@ const FileOps = {
   },
   get_fetch_disassembly_command: function(fullname, start_line, mi_response_format) {
     if (_.isString(fullname)) {
-      if (store.get("interpreter") === "gdb") {
-        return (
-          constants.INLINE_DISASSEMBLY_STR +
-          `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
-        );
-      } else {
-        console.log("TODOLLDB - get mi command to disassemble");
-        return `disassemble --frame`;
-      }
+      return (
+        constants.INLINE_DISASSEMBLY_STR +
+        `-data-disassemble -f ${fullname} -l ${start_line} -n 1000 -- ${mi_response_format}`
+      );
     } else {
       console.warn("not fetching undefined file");
     }
@@ -578,7 +572,10 @@ const FileOps = {
     if (window.isNaN(hex_addr)) {
       return;
     }
-
+    Actions.add_console_entries(
+      "Fetching assembly since file is missing",
+      constants.console_entry_type.GDBGUI_OUTPUT
+    );
     let start = parseInt(hex_addr, 16),
       end = start + 100;
     FileOps.disassembly_addr_being_fetched = hex_addr;
@@ -591,6 +588,10 @@ const FileOps = {
     let addr_being_fetched = FileOps.disassembly_addr_being_fetched;
     FileOps.unfetchable_disassembly_addresses[addr_being_fetched] = true;
     FileOps.disassembly_addr_being_fetched = null;
+    Actions.add_console_entries(
+      "Failed to retrieve assembly for missing file",
+      constants.console_entry_type.GDBGUI_OUTPUT
+    );
   },
   /**
    * Save assembly and render source code if desired
@@ -601,7 +602,7 @@ const FileOps = {
   save_new_assembly: function(mi_assembly, mi_token) {
     FileOps.disassembly_addr_being_fetched = null;
 
-    if (!_.isArray(mi_assembly) || mi_assembly.length === 0) {
+    if (!Array.isArray(mi_assembly) || mi_assembly.length === 0) {
       console.error("Attempted to save unexpected assembly", mi_assembly);
     }
 

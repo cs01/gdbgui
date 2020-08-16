@@ -215,9 +215,9 @@ class BinaryLoader extends React.Component {
     return { binary: binary, args: args.join(" ") };
   }
   set_target_app() {
-    let user_input = _.trim(this.state.user_input);
+    let user_input = this.state.user_input.trim();
 
-    if (_.trim(user_input) === "") {
+    if (user_input === "") {
       Actions.add_console_entries(
         "input cannot be empty",
         constants.console_entry_type.GDBGUI_OUTPUT

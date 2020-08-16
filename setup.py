@@ -14,7 +14,7 @@ REQUIRED = [
     "gevent>=1.2.2, <2.0",  # websocket handling
     "gevent-websocket>=0.10.1, <0.11",  # also websocket
     "eventlet>=0.25.0, <0.26",  # also websocket
-    "pygdbmi>=0.9.0.0, <1.0",  # parse gdb output
+    "pygdbmi>=0.10.0.0b0, <0.11",  # parse gdb output
     "Pygments>=2.2.0, <3.0",  # syntax highlighting
 ]
 

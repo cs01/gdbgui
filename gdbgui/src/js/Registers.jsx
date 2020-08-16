@@ -7,7 +7,7 @@ import { store } from "statorgfc";
 import constants from "./constants.js";
 import ReactTable from "./ReactTable.jsx";
 import Memory from "./Memory.jsx";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import register_descriptions from "./register_descriptions.js";
 
 const MAX_REGISTER_NAME_FETCH_COUNT = 5;
