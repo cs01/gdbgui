@@ -1,4 +1,4 @@
-Before running `gdbgui`, you should compile your program with debug symbols and a lower level of optimization, so code isn't optimized out before runtime. To include debug symbols with `gcc` or `rustc`, this means using `-g`. To disable most optimizations in gdcc `gcc` use the `-O0` flag.
+Before running `gdbgui`, you should compile your program with debug symbols and a lower level of optimization, so code isn't optimized out before runtime. To include debug symbols with `gcc` use `-ggdb`, with `rustc` use `-g`. To disable most optimizations in `gcc` use the `-O0` flag, with `rustc` use `-O`.
 
 For more details, consult your compiler's documentation or a search engine.
 

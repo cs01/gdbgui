@@ -1,15 +1,19 @@
+import os
+
+USING_WINDOWS = os.name == "nt"
+if USING_WINDOWS:
+    raise RuntimeError(
+        "Windows is not supported at this time. "
+        + "Versions lower than 0.14.x. are Windows compatible."
+    )
 import pty
 import select
 import struct
 import signal
 from typing import Optional
-import os
 import shlex
-
-USING_WINDOWS = os.name == "nt"
-if not USING_WINDOWS:
-    import termios
-    import fcntl
+import termios
+import fcntl
 
 
 class Pty:
@@ -45,9 +49,6 @@ class Pty:
             self.set_echo(echo)
 
     def set_echo(self, echo_on: bool) -> None:
-        if USING_WINDOWS:
-            # TODO
-            return
         (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.stdin)
         if echo_on:
             lflag = lflag & termios.ECHO  # type: ignore
@@ -60,9 +61,6 @@ class Pty:
         )
 
     def set_winsize(self, rows: int, cols: int):
-        if USING_WINDOWS:
-            # TODO set window size
-            return
         xpix = 0
         ypix = 0
         winsize = struct.pack("HHHH", rows, cols, xpix, ypix)

@@ -1,7 +1,14 @@
 #!/usr/bin/env python
 
-import io
 import os
+
+USING_WINDOWS = os.name == "nt"
+if USING_WINDOWS:
+    raise RuntimeError(
+        "Windows is not supported at this time. "
+        + "Versions lower than 0.14.x. are Windows compatible."
+    )
+import io
 from setuptools import find_packages, setup  # type: ignore
 
 CURDIR = os.path.abspath(os.path.dirname(__file__))
@@ -64,7 +71,8 @@ setup(
     install_requires=REQUIRED,
     classifiers=[
         "Intended Audience :: Developers",
-        "Operating System :: OS Independent",
+        "Operating System :: MacOS",
+        "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
