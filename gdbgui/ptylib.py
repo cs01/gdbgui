@@ -1,4 +1,3 @@
-import fcntl
 import pty
 import select
 import struct
@@ -7,6 +6,10 @@ import signal
 from typing import Optional
 import os
 import shlex
+
+USING_WINDOWS = os.name == "nt"
+if not USING_WINDOWS:
+    import fcntl
 
 
 class Pty:
@@ -59,7 +62,11 @@ class Pty:
         winsize = struct.pack("HHHH", rows, cols, xpix, ypix)
         if self.stdin is None:
             raise RuntimeError("fd stdin not assigned")
-        fcntl.ioctl(self.stdin, termios.TIOCSWINSZ, winsize)
+        if USING_WINDOWS:
+            # TODO set window size
+            pass
+        else:
+            fcntl.ioctl(self.stdin, termios.TIOCSWINSZ, winsize)
 
     def read(self) -> Optional[str]:
         if self.stdout is None:
