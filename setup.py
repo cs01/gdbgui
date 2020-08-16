@@ -72,7 +72,8 @@ setup(
     classifiers=[
         "Intended Audience :: Developers",
         "Operating System :: MacOS",
-        "Operating System :: POSIX :: Linux",
+        "Operating System :: Unix",
+        "Operating System :: POSIX",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
