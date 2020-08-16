@@ -1,7 +1,7 @@
 import React from "react";
 import ReactTable from "./ReactTable.jsx";
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import Memory from "./Memory.jsx";
 import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink";

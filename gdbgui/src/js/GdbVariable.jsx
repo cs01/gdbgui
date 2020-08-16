@@ -8,7 +8,7 @@ import React from "react";
 import Memory from "./Memory.jsx";
 import constants from "./constants.js";
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
 import Actions from "./Actions.js";
 

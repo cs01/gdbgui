@@ -12,11 +12,12 @@ import constants from "./constants.js";
 import Threads from "./Threads.jsx";
 import FileOps from "./FileOps.jsx";
 import Memory from "./Memory.jsx";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import Locals from "./Locals.jsx";
 import GdbVariable from "./GdbVariable.jsx";
 import Modal from "./GdbguiModal.jsx";
 import Actions from "./Actions.js";
+import { processFeatures } from "./processFeatures";
 
 const process_gdb_response = function(response_array) {
   /**
@@ -24,60 +25,28 @@ const process_gdb_response = function(response_array) {
    * @param response: gdb mi response object
    * @return (bool): true if response should be ignored
    */
-  let is_error = response => {
-      return response.message === "error";
-    },
-    ignore_error = response => {
-      return (
-        response.token === constants.IGNORE_ERRORS_TOKEN_INT ||
-        response.token === constants.CREATE_VAR_INT
-      );
-    },
-    is_creating_var = response => {
-      return response.token === constants.CREATE_VAR_INT;
-    },
-    is_autocomplete_response = response_array => {
-      let num_responses = response_array.length;
-      if (num_responses < 2) {
-        return false;
-      }
-
-      let first_element = response_array[0],
-        last_element = response_array[num_responses - 1];
-      if (
-        first_element.type === "log" &&
-        first_element.payload &&
-        first_element.payload.startsWith("complete ") &&
-        last_element.message === "done" &&
-        last_element.stream === "stdout" &&
-        last_element.type === "result"
-      ) {
-        // don't do this unless other checks are true to avoid a potentially expensive slice (copy) of the array
-        let gdb_completion_output = response_array.slice(1, num_responses - 1);
-        return gdb_completion_output.every(
-          c => c.type === "console" && c.stream === "stdout" && c.message === null
-        );
-      } else {
-        return false;
-      }
-    };
-  // if this is an autocomplete response, we will process it here and not
-  if (is_autocomplete_response(response_array)) {
-    let gdb_completion_output = response_array.slice(1, response_array.length - 1),
-      options = gdb_completion_output.map(o => o.payload.replace(/\\n/g, ""));
-    store.set("gdb_autocomplete_options", options);
-    return;
-  }
+  const isError = response => {
+    return response.message === "error";
+  };
+  const ignoreError = response => {
+    return (
+      response.token === constants.IGNOREERRORS_TOKEN_INT ||
+      response.token === constants.CREATE_VAR_INT
+    );
+  };
+  const isCreatingVar = response => {
+    return response.token === constants.CREATE_VAR_INT;
+  };
 
   for (let r of response_array) {
     // gdb mi output
     GdbMiOutput.add_mi_output(r);
 
-    if (is_error(r)) {
-      if (is_creating_var(r)) {
+    if (isError(r)) {
+      if (isCreatingVar(r)) {
         GdbVariable.gdb_variable_fetch_failed(r);
         continue;
-      } else if (ignore_error(r)) {
+      } else if (ignoreError(r)) {
         continue;
       } else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
         FileOps.fetch_disassembly_for_missing_file_failed();
@@ -151,11 +120,7 @@ const process_gdb_response = function(response_array) {
       }
       if ("threads" in r.payload) {
         store.set("threads", r.payload.threads);
-        if (store.get("interpreter") === "gdb") {
-          store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
-        } else if (store.get("interpreter") === "lldb") {
-          // lldb does not provide this
-        }
+        store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
       }
       if ("register-names" in r.payload) {
         let names = r.payload["register-names"];
@@ -238,6 +203,14 @@ const process_gdb_response = function(response_array) {
       if ("name" in r.payload) {
         GdbVariable.gdb_created_root_variable(r);
       }
+      // features list
+      if ("features" in r.payload) {
+        processFeatures(r.payload.features);
+      }
+      // features list
+      if ("target_features" in r.payload) {
+        processTargetFeatures(r.payload.target_features);
+      }
     } else if (r.type === "result" && r.message === "error") {
       // render it in the status bar, and don't render the last response in the array as it does by default
       Actions.add_gdb_response_to_console(r);
@@ -261,7 +234,7 @@ const process_gdb_response = function(response_array) {
         // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
         let m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g;
         let a = m.exec(r.payload);
-        if (_.isArray(a) && a.length === 2) {
+        if (Array.isArray(a) && a.length === 2) {
           store.set("gdb_version", a[1]);
           store.set("gdb_version_array", a[1].split("."));
         }
@@ -307,13 +280,8 @@ const process_gdb_response = function(response_array) {
               constants.console_entry_type.GDBGUI_OUTPUT
             );
             Actions.add_console_entries(
-              "occurred by clicking the below button.",
+              "occurred by running the command 'backtrace' in the gdb terminal.",
               constants.console_entry_type.GDBGUI_OUTPUT
-            );
-
-            Actions.add_console_entries(
-              "Re-Enter Program (backtrace)",
-              constants.console_entry_type.BACKTRACE_LINK
             );
           }
         } else {

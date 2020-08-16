@@ -3,7 +3,7 @@
  */
 
 import constants from "./constants.js";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 
 const GlobalEvents = {
   init: function() {
@@ -24,6 +24,7 @@ const GlobalEvents = {
    * enabled only when key is depressed on a target that is NOT an input.
    */
   body_keydown: function(e) {
+    return;
     let modifier = e.altKey || e.ctrlKey || e.metaKey;
 
     if (e.target.nodeName !== "INPUT" && !modifier) {

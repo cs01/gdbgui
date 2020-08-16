@@ -1,6 +1,15 @@
 # gdbgui release history
 
 ## development
+**Breaking Changes**
+* Removed `cmd` positional argument from CLI. Use `--args` instead.
+* Replaced `--gdb` flag with `--gdb-cmd`. The `--gdb-cmd` argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example `--gdb-cmd "gdb -nx"`.
+* Removed `--rr` flag. Use `--gdb-cmd rr replay` instead.
+
+**Additional Changes**
+* Replaced single terminal on frontend with three terminals: an interactive xterm terminal running gdb, a gdbgui console for diagnostic messages, and a terminal connected to the inferior application being debugged.
+* Updates to the dashboard
+* Add ability to specify gdb command from the browser. This can now be accomplished from the dashboard.
 * Removed gdbgui binaries from source control. They can now be downloaded as artifacts of [releases](https://github.com/cs01/gdbgui/releases).
 
 ## 0.13.2.1

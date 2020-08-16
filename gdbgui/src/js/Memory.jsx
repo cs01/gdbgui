@@ -6,7 +6,7 @@
  */
 
 import { store } from "statorgfc";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import constants from "./constants.js";
 import ReactTable from "./ReactTable.jsx";
 import MemoryLink from "./MemoryLink.tsx";

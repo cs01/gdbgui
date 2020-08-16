@@ -7,7 +7,7 @@ import Settings from "./Settings.jsx";
 import SourceCodeHeading from "./SourceCodeHeading.jsx";
 import ToolTipTourguide from "./ToolTipTourguide.jsx";
 import FileOps from "./FileOps.jsx";
-import GdbApi from "./GdbApi.jsx";
+import GdbApi from "./GdbApi";
 import Actions from "./Actions.js";
 import constants from "./constants.js";
 import Util from "./Util.js";

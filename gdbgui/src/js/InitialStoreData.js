@@ -10,12 +10,12 @@ import constants from "./constants.js";
 const initial_store_data = {
   // environment
   debug: debug, // if gdbgui is run in debug mode
-  interpreter: initial_data.interpreter, // either 'gdb' or 'llvm'
   gdbgui_version: initial_data.gdbgui_version,
   latest_gdbgui_version: "(not fetched)",
   gdb_version: undefined, // this is parsed from gdb's output
   gdb_version_array: [], // this is parsed from gdb's output
   gdb_pid: undefined,
+  gdb_command: initial_data.gdb_command,
   can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
   show_settings: false,
 
@@ -101,7 +101,8 @@ const initial_store_data = {
   gdb_console_entries: [],
 
   show_filesystem: false,
-  middle_panes_split_obj: {}
+  middle_panes_split_obj: {},
+  gdbguiPty: null
 };
 
 function get_stored(key, default_val) {
