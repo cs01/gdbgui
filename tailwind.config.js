@@ -1,8 +1,8 @@
 module.exports = {
-  purge: [],
+  purge: ["./gdbgui/src/js/**", "./gdbgui/templates/*.html"],
   theme: {
-    extend: {},
+    extend: {}
   },
   variants: {},
-  plugins: [],
-}
+  plugins: []
+};
