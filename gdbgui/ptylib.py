@@ -1,7 +1,6 @@
 import pty
 import select
 import struct
-import termios
 import signal
 from typing import Optional
 import os
@@ -9,6 +8,7 @@ import shlex
 
 USING_WINDOWS = os.name == "nt"
 if not USING_WINDOWS:
+    import termios
     import fcntl
 
 
@@ -45,6 +45,9 @@ class Pty:
             self.set_echo(echo)
 
     def set_echo(self, echo_on: bool) -> None:
+        if USING_WINDOWS:
+            # TODO
+            return
         (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.stdin)
         if echo_on:
             lflag = lflag & termios.ECHO  # type: ignore
@@ -57,16 +60,15 @@ class Pty:
         )
 
     def set_winsize(self, rows: int, cols: int):
+        if USING_WINDOWS:
+            # TODO set window size
+            return
         xpix = 0
         ypix = 0
         winsize = struct.pack("HHHH", rows, cols, xpix, ypix)
         if self.stdin is None:
             raise RuntimeError("fd stdin not assigned")
-        if USING_WINDOWS:
-            # TODO set window size
-            pass
-        else:
-            fcntl.ioctl(self.stdin, termios.TIOCSWINSZ, winsize)
+        fcntl.ioctl(self.stdin, termios.TIOCSWINSZ, winsize)
 
     def read(self) -> Optional[str]:
         if self.stdout is None:
