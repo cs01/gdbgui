@@ -1,3 +1,3 @@
 #! /bin/bash
 
-mpic++ -o print_nodes main.cpp
+mpic++ -g -O0 -o print_nodes main.cpp

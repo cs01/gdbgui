@@ -175,6 +175,7 @@ socketio = SocketIO()
 _state = StateManager(app.config)
 process_on_focus = 0
 
+
 def setup_backend(
     serve=True,
     host=DEFAULT_HOST,
@@ -363,6 +364,7 @@ def run_gdb_command(message):
     else:
         emit("error_running_gdb_command", {"message": "gdb is not running"})
 
+
 @socketio.on("run_gdb_command_mpi", namespace="/gdb_listener")
 def run_gdb_command_mpi(message):
     """
@@ -377,7 +379,9 @@ def run_gdb_command_mpi(message):
         cmds = cmd[0].split(" ")
         if cmds[0] == "-target-select" and cmds[1] == "remote":
             controller = _state.get_controller_from_mpi_processor_id(-1)
-            _state.set_mpi_process_from_cotroller(controller,int(cmds[2].split(":")[1]) - 60000)
+            _state.set_mpi_process_from_cotroller(
+                controller, int(cmds[2].split(":")[1]) - 60000
+            )
         controller = _state.get_controller_from_mpi_processor_id(message["processor"])
         if controller is not None:
             try:
@@ -395,7 +399,7 @@ def run_gdb_command_mpi(message):
         """
         execute the command for all controllers
         """
-        for controller,pair in _state.get_controllers().items():
+        for controller, pair in _state.get_controllers().items():
             try:
                 # the command (string) or commands (list) to run
                 cmd = message["cmd"]
@@ -416,12 +420,13 @@ def open_mpi_sessions(message):
 
     _state.exit_all_gdb_processes_except_client_id(request.sid)
 
-    for i in range(1,int(message["processors"])):
+    for i in range(1, int(message["processors"])):
         # see if user wants to connect to existing gdb pid
         desired_gdbpid = 0
         ses = _state.connect_client(str(i), desired_gdbpid)
         # This is required to send messages from multiple session to the same client
-        _state.connect_client(request.sid,ses["pid"])
+        _state.connect_client(request.sid, ses["pid"])
+
 
 @socketio.on("change_process_focus", namespace="/gdb_listener")
 def change_process_focus(message):
@@ -429,7 +434,8 @@ def change_process_focus(message):
     Notify the user is focusing on a different process
     """
 
-    process_on_focus = int(message["proc"])
+    # process_on_focus = int(message["proc"])
+
 
 def send_msg_to_clients(client_ids, msg, error=False):
     """Send message to all clients"""
@@ -588,13 +594,15 @@ def authenticate(f):
 
     return wrapper
 
+
 @app.route("/mpi_processes_info", methods=["GET"])
 def mpi_processes_info():
     """
     Get information about mpi processes
     """
     f = open("gdbgui-mpi/nodes_name", "r")
-    return Response(f.read(), mimetype='text/plain')
+    return Response(f.read(), mimetype="text/plain")
+
 
 @app.route("/", methods=["GET"])
 @authenticate

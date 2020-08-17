@@ -11,9 +11,9 @@ GDB_MI_FLAG = ["--interpreter=mi2"]
 
 class StateManager(object):
     def __init__(self, config: Dict[str, Any]):
-        self.controller_to_client_ids: Dict[GdbController, (List[str],int)] = defaultdict(
-            list
-        )  # key is controller, val is list of client ids
+        self.controller_to_client_ids: Dict[
+            GdbController, Tuple[List[str], int]
+        ] = defaultdict()  # key is controller, val is list of client ids
         self.gdb_reader_thread = None
         self.config = config
 
@@ -61,7 +61,7 @@ class StateManager(object):
                 gdb_args=gdb_args,
                 rr=self.config["rr"],
             )
-            self.controller_to_client_ids[controller] = ([],-1)
+            self.controller_to_client_ids[controller] = ([], -1)
             ele = self.controller_to_client_ids[controller]
             ele[0].append(client_id)
 
@@ -96,15 +96,18 @@ class StateManager(object):
             controller.exit()
         except Exception:
             logger.error(traceback.format_exc())
-        orphaned_client_ids = self.controller_to_client_ids.pop(controller, [])
+        orphaned_client_ids = self.controller_to_client_ids.pop(controller, ([], -1))[0]
         return orphaned_client_ids
 
-    def get_client_ids_from_gdb_pid(self, pid: int) -> List[str]:
+    def get_client_ids_from_gdb_pid(self, pid: int) -> Tuple[List[str], int]:
         controller = self.get_controller_from_pid(pid)
-        return self.controller_to_client_ids.get(controller, ([],-1))
+        if controller is None:
+            return ([], -1)
+        controller_non_opt: GdbController = controller
+        return self.controller_to_client_ids.get(controller_non_opt, ([], -1))
 
     def get_client_ids_from_controller(self, controller: GdbController):
-        return self.controller_to_client_ids.get(controller, ([],-1))
+        return self.controller_to_client_ids.get(controller, ([], -1))
 
     def get_pid_from_controller(self, controller: GdbController) -> Optional[int]:
         if controller and controller.gdb_process:
@@ -127,7 +130,9 @@ class StateManager(object):
 
         return None
 
-    def get_controller_from_mpi_processor_id(self, mpi_processor_id: int) -> Optional[GdbController]:
+    def get_controller_from_mpi_processor_id(
+        self, mpi_processor_id: int
+    ) -> Optional[GdbController]:
         for ele in self.controller_to_client_ids.items():
             this_mpi_processor = ele[1][1]
             if this_mpi_processor == mpi_processor_id:
@@ -135,8 +140,13 @@ class StateManager(object):
 
         return None
 
-    def set_mpi_process_from_cotroller(self, controller: GdbController, mpi_processor_id: int):
-        self.controller_to_client_ids[controller] = (self.controller_to_client_ids[controller][0],mpi_processor_id)
+    def set_mpi_process_from_cotroller(
+        self, controller: GdbController, mpi_processor_id: int
+    ):
+        self.controller_to_client_ids[controller] = (
+            self.controller_to_client_ids[controller][0],
+            mpi_processor_id,
+        )
 
     def exit_all_gdb_processes(self):
         logger.info("exiting all subprocesses")
@@ -144,9 +154,9 @@ class StateManager(object):
             controller.exit()
         self.controller_to_client_ids.clear()
 
-    def exit_all_gdb_processes_except_client_id(self,client_id: str):
+    def exit_all_gdb_processes_except_client_id(self, client_id: str):
         logger.info("exiting all subprocesses except client id")
-        for controller,pair in self.controller_to_client_ids.copy().items():
+        for controller, pair in self.controller_to_client_ids.copy().items():
             if client_id not in pair[0]:
                 controller.exit()
                 self.controller_to_client_ids.pop(controller)
@@ -169,7 +179,7 @@ class StateManager(object):
     def disconnect_client(self, client_id: str):
         for _, client_ids in self.controller_to_client_ids.items():
             if client_id in client_ids:
-                client_ids.remove(client_id)
+                client_ids[0].remove(client_id)
 
     def get_controllers(self):
         return self.controller_to_client_ids

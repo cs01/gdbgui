@@ -51,17 +51,16 @@ window.store = store;
 
 class Gdbgui extends React.PureComponent {
   componentWillMount() {
-    store.set("process_on_focus",-1);
+    store.set("process_on_focus", -1);
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
-    store.connectComponentState(this, ['is_mpi']) 
+    store.connectComponentState(this, ["is_mpi"]);
   }
   render() {
-
-    let mid_padding_style = { paddingTop: "60px"};
+    let mid_padding_style = { paddingTop: "60px" };
     if (store.get("is_mpi") == true) {
-        mid_padding_style = { paddingTop: "95px"};
+      mid_padding_style = { paddingTop: "95px" };
     }
 
     return (

@@ -255,7 +255,7 @@ const GdbApi = {
    * @return nothing
    */
   set_mpi_state: function(state) {
-      this.mpi_state = state
+    this.mpi_state = state;
   },
   /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -289,7 +289,7 @@ const GdbApi = {
    * @param processor: Processor in which we want to execute the command
    * @return nothing
    */
-  run_gdb_command_mpi: function(cmd,processor) {
+  run_gdb_command_mpi: function(cmd, processor) {
     if (_.trim(cmd) === "") {
       return;
     }
@@ -314,15 +314,16 @@ const GdbApi = {
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing
    */
-  run_gdb_command: function(cmd,processor = -1) {
-      if (this.mpi_state == true)
-      {GdbApi.run_gdb_command_mpi(cmd,processor);}
-      else
-      {GdbApi.run_gdb_command_single(cmd);}
+  run_gdb_command: function(cmd, processor = -1) {
+    if (this.mpi_state == true) {
+      GdbApi.run_gdb_command_mpi(cmd, processor);
+    } else {
+      GdbApi.run_gdb_command_single(cmd);
+    }
   },
   /**
-  * Change the process on focus
-  */
+   * Change the process on focus
+   */
   server_change_process_on_focus: function(proc) {
     GdbApi.waiting_for_response();
     GdbApi.socket.emit("change_process_focus", { proc: proc });
@@ -332,7 +333,6 @@ const GdbApi = {
    * @return nothing
    */
   open_mpi_sessions: function(processors) {
-
     GdbApi.waiting_for_response();
     GdbApi.socket.emit("open_mpi_sessions", { processors: processors });
   },
@@ -361,17 +361,17 @@ const GdbApi = {
     GdbApi.run_gdb_command(cmds);
   },
   /**
-  * Get array of commands to refresh the state of the variables
-  */
+   * Get array of commands to refresh the state of the variables
+   */
   refresh_state_for_change_process_on_focus: function() {
     let expr = store.get("expressions");
 
-    for (let i = 0 ; i < expr.length ; i++) {
+    for (let i = 0; i < expr.length; i++) {
       GdbVariable.delete_gdb_variable_remote(expr[i].name);
     }
 
-    for (let i = 0 ; i < expr.length ; i++) {
-      GdbVariable.create_variable_no_fetch(expr[i].expression,expr[i].expr_type);
+    for (let i = 0; i < expr.length; i++) {
+      GdbVariable.create_variable_no_fetch(expr[i].expression, expr[i].expr_type);
     }
 
     GdbVariable._delete_all_local_gdb_var_data();

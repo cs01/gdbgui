@@ -312,8 +312,7 @@ class Breakpoints extends React.Component {
       if (b.fullname === fullname && b.line == line) {
         if (b.is_child_breakpoint == true) {
           return b.parent_breakpoint_number.toString();
-        }
-        else {
+        } else {
           return b.number;
         }
       }

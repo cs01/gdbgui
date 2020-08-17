@@ -340,7 +340,7 @@ class TopBar extends React.Component {
         </label>
       );
     }
-    
+
     return (
       <div
         id="top"

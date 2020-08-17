@@ -111,7 +111,12 @@ const process_gdb_response = function(response_array) {
       }
     }
 
-    if (r.type === "result" && r.message === "done" && r.payload && r.proc == store.get("process_on_focus")) {
+    if (
+      r.type === "result" &&
+      r.message === "done" &&
+      r.payload &&
+      r.proc == store.get("process_on_focus")
+    ) {
       // This is special GDB Machine Interface structured data that we
       // can render in the frontend
       if ("bkpt" in r.payload) {
@@ -292,9 +297,9 @@ const process_gdb_response = function(response_array) {
           if (r.payload["new-thread-id"]) {
             Threads.set_thread_id(r.payload["new-thread-id"]);
           }
-          Actions.inferior_program_paused(r.payload.frame,r.proc);
+          Actions.inferior_program_paused(r.payload.frame, r.proc);
         } else if (r.payload.reason === "signal-received") {
-          Actions.inferior_program_paused(r.payload.frame,r.proc);
+          Actions.inferior_program_paused(r.payload.frame, r.proc);
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
