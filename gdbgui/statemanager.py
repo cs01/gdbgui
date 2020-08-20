@@ -19,7 +19,7 @@ class StateManager(object):
 
     def get_gdb_args(self):
         gdb_args = copy.copy(GDB_MI_FLAG)
-        if self.config["gdb_args"]:
+        if self.config.get("gdb_args"):
             gdb_args += self.config["gdb_args"]
 
         if self.config["initial_binary_and_args"]:

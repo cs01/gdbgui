@@ -485,6 +485,48 @@ def client_disconnected():
 def test_disconnect():
     print("Client websocket disconnected", request.sid)
 
+def process_controllers_out():
+    controllers_to_remove = []
+    controller_items = _state.controller_to_client_ids.items()
+    for controller, client_ids in controller_items:
+        try:
+            try:
+                response = controller.get_gdb_response(
+                    timeout_sec=0, raise_error_on_timeout=False
+                )
+            except NoGdbProcessError:
+                response = None
+                send_msg_to_clients(
+                    client_ids[0],
+                    "The underlying gdb process has been killed. This tab will no longer function as expected.",
+                    error=True,
+                )
+                controllers_to_remove.append(controller)
+
+            if response:
+                """Attach processor information"""
+                for r in response:
+                    r["proc"] = client_ids[1]
+
+                for client_id in client_ids[0]:
+                    logger.info(
+                        "emiting message to websocket client id " + client_id[0]
+                    )
+                    socketio.emit(
+                        "gdb_response",
+                        response,
+                        namespace="/gdb_listener",
+                        room=client_id,
+                    )
+            else:
+                # there was no queued response from gdb, not a problem
+                pass
+
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    for controller in controllers_to_remove:
+        _state.remove_gdb_controller(controller)
 
 def read_and_forward_gdb_output():
     """A task that runs on a different thread, and emits websocket messages
@@ -492,47 +534,8 @@ def read_and_forward_gdb_output():
 
     while True:
         socketio.sleep(0.05)
-        controllers_to_remove = []
-        controller_items = _state.controller_to_client_ids.items()
-        for controller, client_ids in controller_items:
-            try:
-                try:
-                    response = controller.get_gdb_response(
-                        timeout_sec=0, raise_error_on_timeout=False
-                    )
-                except NoGdbProcessError:
-                    response = None
-                    send_msg_to_clients(
-                        client_ids[0],
-                        "The underlying gdb process has been killed. This tab will no longer function as expected.",
-                        error=True,
-                    )
-                    controllers_to_remove.append(controller)
+        process_controllers_out()
 
-                if response:
-                    """Attach processor information"""
-                    for r in response:
-                        r["proc"] = client_ids[1]
-
-                    for client_id in client_ids[0]:
-                        logger.info(
-                            "emiting message to websocket client id " + client_id[0]
-                        )
-                        socketio.emit(
-                            "gdb_response",
-                            response,
-                            namespace="/gdb_listener",
-                            room=client_id,
-                        )
-                else:
-                    # there was no queued response from gdb, not a problem
-                    pass
-
-            except Exception:
-                logger.error(traceback.format_exc())
-
-        for controller in controllers_to_remove:
-            _state.remove_gdb_controller(controller)
 
 
 def server_error(obj):

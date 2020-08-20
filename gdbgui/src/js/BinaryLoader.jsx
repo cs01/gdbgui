@@ -57,7 +57,7 @@ class BinaryLoader extends React.Component {
       // -target-select
       button_text = "Connect to mpi-gdbserver";
       title = "Connect GDBs to the mpi launched gdb-servers.";
-      placeholder = "examples: localhost:60000";
+      placeholder = "examples: *:60000";
     } else if (this.state.target_type === TARGET_TYPES.process) {
       // -target-attach
       button_text = "Attach to Process";

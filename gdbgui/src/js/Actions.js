@@ -200,20 +200,7 @@ const Actions = {
     // create a bigger padding to draw processor on focus selector
     Actions.inferior_program_exited();
     // parse user input
-    let user_input_arr = user_input.split(" ");
-    let host_port_arr = user_input_arr[0].split(":");
-    if (user_input_arr[1] != "-np") {
-      // Error
-      Actions.add_console_entries(
-        "You must specify the number of process with the option -np x (with x number of processes)",
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-    }
-
-    store.set("nproc", parseInt(user_input_arr[2]));
-
-    // Before connection we have to create the remaining sessions
-    GdbApi.open_mpi_sessions(user_input_arr[2]);
+    let host_port_arr = user_input.split(":");
 
     let data_lines;
     // Check the server names from
@@ -227,6 +214,10 @@ const Actions = {
       });
     }
     data_lines.pop();
+    store.set("nproc", data_lines.length);
+
+    // Before connection we have to create the remaining sessions
+    GdbApi.open_mpi_sessions(data_lines.length.toString());
 
     for (let i = 0; i < data_lines.length; i++) {
       let rank_host = data_lines[i].split(/\s+/);
