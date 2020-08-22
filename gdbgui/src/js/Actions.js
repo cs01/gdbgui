@@ -208,18 +208,6 @@ const Actions = {
     store.set("max_lines_of_code_to_fetch", new_value);
     localStorage.setItem("max_lines_of_code_to_fetch", JSON.stringify(new_value));
   },
-  show_upgrade_modal() {
-    const body = (
-      <div>
-        <span>This feature is only available in gdbgui pro.</span>
-        <p />
-        <a onClick={() => window.open("http://gdbgui.com")} className="btn btn-primary">
-          Upgrade now
-        </a>
-      </div>
-    );
-    Actions.show_modal("upgrade to pro for this feature", body);
-  },
   send_signal(signal_name, pid) {
     $.ajax({
       beforeSend: function(xhr) {

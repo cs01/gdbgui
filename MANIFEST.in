@@ -20,6 +20,7 @@ exclude mypy.ini
 exclude .eslintrc.json
 exclude .coveragerc
 exclude .flake8
+exclude .vulture_whitelist.py
 exclude .prettierrc.js
 exclude jest.config.js
 exclude make_executable.py

@@ -35,7 +35,11 @@ class DebugSession:
 
     def terminate(self):
         if self.pid:
-            os.kill(self.pid, signal.SIGKILL)
+            try:
+                os.kill(self.pid, signal.SIGKILL)
+            except Exception as e:
+                logger.error(f"Failed to kill pid {self.pid}: {str(e)}")
+
         self.pygdbmi_controller = None
 
     def to_dict(self):

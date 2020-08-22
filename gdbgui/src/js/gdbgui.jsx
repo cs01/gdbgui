@@ -31,7 +31,7 @@ import ToolTipTourguide from "./ToolTipTourguide.jsx";
 
 import "../../static/css/gdbgui.css";
 import "../../static/css/splitjs-gdbgui.css";
-import GdbConsoleContainer from "./GdbConsoleContainer";
+import { Terminals } from "./Terminals";
 
 const store_options = {
   immutable: false,
@@ -94,7 +94,7 @@ class Gdbgui extends React.PureComponent {
           />
 
           <div id="bottom_content" className="split content">
-            <GdbConsoleContainer />
+            <Terminals />
           </div>
         </div>
 

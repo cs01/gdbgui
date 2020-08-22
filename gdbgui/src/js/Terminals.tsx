@@ -39,7 +39,7 @@ function customKeyEventHandler(config: {
     return true;
   };
 }
-class GdbConsoleContainer extends React.Component {
+export class Terminals extends React.Component {
   userPtyRef: React.RefObject<any>;
   programPtyRef: React.RefObject<any>;
   gdbguiPtyRef: React.RefObject<any>;
@@ -196,5 +196,3 @@ class GdbConsoleContainer extends React.Component {
     }, 0);
   }
 }
-
-export default GdbConsoleContainer;

@@ -906,11 +906,6 @@ def get_parser():
     other.add_argument("-v", "--version", help="Print version", action="store_true")
 
     other.add_argument(
-        "--hide-gdbgui-upgrades",
-        help=argparse.SUPPRESS,  # deprecated. left so calls to gdbgui don't break
-        action="store_true",
-    )
-    other.add_argument(
         "-n",
         "--no-browser",
         help="By default, the browser will open with gdbgui. Pass this flag so the browser does not open.",
