@@ -15,7 +15,7 @@ void React; // needed when using JSX, but not marked as used
 /* global debug */
 
 // print to console if debug is true
-let debug_print: {
+let log: {
   (arg0: string): void;
   (...data: any[]): void;
   (message?: any, ...optionalParams: any[]): void;
@@ -23,9 +23,9 @@ let debug_print: {
 };
 // @ts-ignore
 if (debug) {
-  debug_print = console.info;
+  log = console.info;
 } else {
-  debug_print = function() {
+  log = function() {
     // stubbed out
   };
 }
@@ -53,7 +53,12 @@ const GdbApi = {
     });
 
     socket.on("connect", function() {
-      debug_print("connected");
+      log("connected");
+      const queuedGdbCommands = store.get("queuedGdbCommands");
+      if (queuedGdbCommands) {
+        GdbApi.run_gdb_command(queuedGdbCommands);
+        store.set("queuedGdbCommands", []);
+      }
     });
 
     socket.on("gdb_response", function(response_array: any) {
@@ -310,26 +315,22 @@ const GdbApi = {
     if (_.isString(cmds)) {
       cmds = [cmds];
     }
-    // add the send command to the console to show commands that are
-    // automatically run by gdb
-    if (store.get("show_all_sent_commands_in_console")) {
-      Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND);
-    }
 
     if (socket.connected) {
-      GdbApi.waiting_for_response();
       socket.emit("run_gdb_command", { cmd: cmds });
+      GdbApi.waiting_for_response();
+      // add the send command to the console to show commands that are
+      // automatically run by gdb
+      if (store.get("show_all_sent_commands_in_console")) {
+        Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND);
+      }
+    } else {
+      log("queuing commands");
+      const queuedGdbCommands = store.get("queuedGdbCommands").concat(cmds);
+      store.set("queuedGdbCommands", queuedGdbCommands);
     }
   },
-  /**
-   * Run a user-defined command, then refresh the store
-   * @param user_cmd (str or array): command or commands to run before refreshing store
-   */
   run_command_and_refresh_state: function(user_cmd: string | any[]) {
-    // if(!user_cmd){
-    //     console.error('missing required argument')
-    //     return
-    // }
     let cmds: any[] = [];
     if (Array.isArray(user_cmd)) {
       cmds = cmds.concat(user_cmd);

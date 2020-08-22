@@ -86,10 +86,8 @@ const Actions = {
         pty.write(constants.xtermColors["reset"]);
       });
     } else {
-      console.error("cant log:", entries);
+      console.error("Pty not available. New entries are:", entries);
     }
-
-    // store.set("gdb_console_entries", new_entries);
   },
   add_gdb_response_to_console(mi_obj) {
     if (!mi_obj) {

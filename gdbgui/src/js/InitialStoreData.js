@@ -100,6 +100,9 @@ const initial_store_data = {
 
   gdb_console_entries: [],
 
+  // if we try to write something before the websocket is connected, store it here
+  queuedGdbCommands: [],
+
   show_filesystem: false,
   middle_panes_split_obj: {},
   gdbguiPty: null

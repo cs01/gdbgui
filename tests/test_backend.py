@@ -35,3 +35,15 @@ def test_load_main_page(test_client):
 
 def test_same_port():
     backend.setup_backend(testing=True)
+
+
+def test_get_initial_binary_and_args():
+    assert backend.get_initial_binary_and_args([], "./program --args") == [
+        "./program",
+        "--args",
+    ]
+    assert backend.get_initial_binary_and_args(["./program", "--args",], None) == [
+        "./program",
+        "--args",
+    ]
+

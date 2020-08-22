@@ -27,6 +27,13 @@ class Registers extends React.Component {
   }
   static get_update_cmds() {
     let cmds = [];
+    if (
+      [constants.inferior_states.paused, constants.inferior_states.running].indexOf(
+        store.get("inferior_program") > -1
+      )
+    ) {
+      return cmds;
+    }
     if (store.get("can_fetch_register_values") === true) {
       if (store.get("register_names").length === 0) {
         if (register_name_fetch_count <= MAX_REGISTER_NAME_FETCH_COUNT) {
@@ -50,7 +57,10 @@ class Registers extends React.Component {
   }
   static cache_register_names(names) {
     // filter out non-empty names
-    store.set("register_names", names.filter(name => name));
+    store.set(
+      "register_names",
+      names.filter(name => name)
+    );
   }
   static clear_register_name_cache() {
     store.set("register_names", []);

@@ -3,8 +3,7 @@
 ## development
 **Breaking Changes**
 * Removed support for Windows
-* Removed `cmd` positional argument from CLI. Use `--args` instead.
-* Replaced `--gdb` flag with `--gdb-cmd`. The `--gdb-cmd` argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example `--gdb-cmd "gdb -nx"`.
+* Replaced `--gdb` flag with `--gdb-cmd`. The `--gdb-cmd` argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example `--gdb-cmd "gdb -nx"`. The existing `-g` argument is an alias for `--gdb-cmd`.
 * Removed `--rr` flag. Use `--gdb-cmd rr replay` instead.
 * Removed deprecated and hidden `--hide-gdbgui-upgrades` argument. It will now raise an error.
 

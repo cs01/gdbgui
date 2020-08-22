@@ -14,11 +14,12 @@ import platform
 import re
 import signal
 import socket
+import shlex
 import sys
 import traceback
 import webbrowser
 from functools import wraps
-from typing import Dict, List
+from typing import Dict, List, Optional
 from flask import (
     Flask,
     Response,
@@ -923,11 +924,19 @@ def get_parser():
         "Pass this flag when debugging gdbgui itself to automatically reload the server when changes are detected",
         action="store_true",
     )
-
+    args_group.add_argument(
+        "debug_program",
+        nargs="?",
+        help="The executable file you wish to debug, and any arguments to pass to it."
+        " To pass flags to the binary, wrap in quotes, or use --args instead."
+        " Example: gdbgui ./mybinary [other-gdbgui-args...]"
+        " Example: gdbgui './mybinary myarg -flag1 -flag2' [other gdbgui args...]",
+        default=None,
+    )
     args_group.add_argument(
         "--args",
         nargs=argparse.REMAINDER,
-        help="Specify the executable file and any arguments to pass to it. All arguments are"
+        help="Specify the executable file you wish to debug and any arguments to pass to it. All arguments are"
         " taken literally, so if used, this must be the last argument. This can also be specified later in the frontend."
         " passed to gdbgui."
         " Example: gdbgui [...] --args ./mybinary myarg -flag1 -flag2",
@@ -936,11 +945,21 @@ def get_parser():
     return parser
 
 
+def get_initial_binary_and_args(
+    user_supplied_args: List[str], debug_program_and_args: Optional[str]
+) -> List[str]:
+    if debug_program_and_args:
+        # passed via positional
+        return shlex.split(debug_program_and_args)
+    else:
+        # passed via --args
+        return user_supplied_args
+
+
 def main():
     """Entry point from command line"""
     parser = get_parser()
     args = parser.parse_args()
-
     if args.version:
         print(__version__)
         return
@@ -950,7 +969,9 @@ def main():
         exit(1)
 
     app.config["gdb_command"] = args.gdb_cmd
-    app.config["initial_binary_and_args"] = args.args
+    app.config["initial_binary_and_args"] = get_initial_binary_and_args(
+        args.args, args.debug_program
+    )
     app.config["gdbgui_auth_user_credentials"] = get_gdbgui_auth_user_credentials(
         args.auth_file, args.user, args.password
     )
