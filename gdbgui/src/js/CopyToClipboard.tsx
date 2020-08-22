@@ -1,5 +1,5 @@
 import * as React from "react";
-import ToolTip from "./ToolTip.jsx";
+import ToolTip from "./ToolTip";
 import { store } from "statorgfc";
 
 type Props = {

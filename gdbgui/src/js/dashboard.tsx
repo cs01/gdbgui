@@ -18,11 +18,11 @@ const copyIcon = (
   </svg>
 );
 
-// @ts-ignore
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'gdbgui_sessions' does not exist on type ... Remove this comment to see the full error message
 const data: GdbguiSession[] = window.gdbgui_sessions;
-// @ts-ignore
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'csrf_token' does not exist on type 'Wind... Remove this comment to see the full error message
 const csrf_token: string = window.csrf_token;
-// @ts-ignore
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'default_command' does not exist on type ... Remove this comment to see the full error message
 const default_command: string = window.default_command;
 function GdbguiSession(props: { session: GdbguiSession; updateData: Function }) {
   const session = props.session;
@@ -97,7 +97,7 @@ function redirect(url: string) {
   setTimeout(() => window.location.reload(), 500);
 }
 class StartCommand extends React.Component<any, { value: string }> {
-  constructor(props: {}) {
+  constructor(props: any) {
     super(props);
     // @ts-expect-error
     this.state = { value: window.default_command };
@@ -193,7 +193,7 @@ function Nav() {
 
 class Dashboard extends React.PureComponent<any, { sessions: GdbguiSession[] }> {
   interval: NodeJS.Timeout | undefined;
-  constructor(props: {}) {
+  constructor(props: any) {
     super(props);
     this.state = { sessions: data };
     this.updateData = this.updateData.bind(this);

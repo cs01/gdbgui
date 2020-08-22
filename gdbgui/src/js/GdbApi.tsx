@@ -3,12 +3,12 @@
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
 import { store } from "statorgfc";
-import Registers from "./Registers.jsx";
-import Memory from "./Memory.jsx";
-import Actions from "./Actions.js";
-import GdbVariable from "./GdbVariable.jsx";
-import constants from "./constants.js";
-import process_gdb_response from "./process_gdb_response.js";
+import Registers from "./Registers";
+import Memory from "./Memory";
+import Actions from "./Actions";
+import GdbVariable from "./GdbVariable";
+import constants from "./constants";
+import process_gdb_response from "./process_gdb_response";
 import React from "react";
 import io from "socket.io-client";
 void React; // needed when using JSX, but not marked as used
@@ -21,7 +21,7 @@ let log: {
   (message?: any, ...optionalParams: any[]): void;
   (): void;
 };
-// @ts-ignore
+// @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'debug'.
 if (debug) {
   log = console.info;
 } else {
@@ -34,7 +34,7 @@ if (debug) {
  * This object contains methods to interact with
  * gdb, but does not directly render anything in the DOM.
  */
-// @ts-ignore
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_data' does not exist on type 'Wi... Remove this comment to see the full error message
 const initial_data = window.initial_data;
 let socket: SocketIOClient.Socket;
 const GdbApi = {
@@ -62,7 +62,7 @@ const GdbApi = {
     });
 
     socket.on("gdb_response", function(response_array: any) {
-      // @ts-ignore
+      // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
       clearTimeout(GdbApi._waiting_for_response_timeout);
       store.set("waiting_for_response", false);
       process_gdb_response(response_array);
@@ -144,7 +144,6 @@ const GdbApi = {
         constants.console_entry_type.STD_ERR
       );
 
-      // @ts-ignore
       // if (debug) {
       //   window.location.reload(true);
       // }
@@ -262,9 +261,9 @@ const GdbApi = {
   waiting_for_response: function() {
     store.set("waiting_for_response", true);
     const WAIT_TIME_SEC = 10;
-    // @ts-ignore
+    // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
     clearTimeout(GdbApi._waiting_for_response_timeout);
-    // @ts-ignore
+    // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'null'.
     GdbApi._waiting_for_response_timeout = setTimeout(() => {
       Actions.clear_program_state();
       store.set("waiting_for_response", false);
@@ -305,13 +304,13 @@ const GdbApi = {
    * @return nothing
    */
   run_gdb_command: function(cmd: any) {
-    // @ts-ignore
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
     if (_.trim(cmd) === "") {
       return;
     }
 
     let cmds = cmd;
-    // @ts-ignore
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
     if (_.isString(cmds)) {
       cmds = [cmds];
     }
@@ -334,7 +333,7 @@ const GdbApi = {
     let cmds: any[] = [];
     if (Array.isArray(user_cmd)) {
       cmds = cmds.concat(user_cmd);
-      // @ts-ignore
+      // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
     } else if (_.isString(user_cmd) && user_cmd.length > 0) {
       cmds.push(user_cmd);
     }
@@ -432,6 +431,6 @@ const GdbApi = {
     store.set("inferior_binary_path", null);
   }
 };
-// @ts-ignore
+// @ts-expect-error ts-migrate(2339) FIXME: Property 'socket' does not exist on type '{ getSoc... Remove this comment to see the full error message
 GdbApi.socket = socket;
 export default GdbApi;

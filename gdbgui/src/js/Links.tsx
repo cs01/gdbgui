@@ -1,4 +1,4 @@
-import Actions from "./Actions.js";
+import Actions from "./Actions";
 import * as React from "react";
 import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";

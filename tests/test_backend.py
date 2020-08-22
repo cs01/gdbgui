@@ -46,4 +46,3 @@ def test_get_initial_binary_and_args():
         "./program",
         "--args",
     ]
-

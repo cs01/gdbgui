@@ -6,7 +6,15 @@ import subprocess
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
 python = ["3.6", "3.7", "3.8"]
-
+prettier_command = [
+    "npx",
+    "prettier@1.19.1",
+    "--parser",
+    "typescript",
+    "--config",
+    ".prettierrc.js",
+    "gdbgui/src/js/**/*",
+]
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = ["black", "vulture", "flake8", "mypy", "check-manifest"]
@@ -78,13 +86,7 @@ def lint(session):
     )
     session.run("python", "setup.py", "check", "--metadata", "--strict")
     session.run(
-        "npx",
-        "prettier@1.18.2",
-        "--check",
-        "--config",
-        ".prettierrc.js",
-        "gdbgui/src/js/**/*",
-        external=True,
+        *prettier_command, "--check", external=True,
     )
 
 
@@ -93,13 +95,7 @@ def autoformat(session):
     session.install("black")
     session.run("black", *files_to_lint)
     session.run(
-        "npx",
-        "prettier@1.18.2",
-        "--write",
-        "--config",
-        ".prettierrc.js",
-        "gdbgui/src/js/**/*",
-        external=True,
+        *prettier_command, "--write", external=True,
     )
 
 
