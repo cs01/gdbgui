@@ -18,23 +18,6 @@ let onkeyup_jump_to_line = e => {
   }
 };
 
-let click_shutdown_button = function() {
-  // no need to show confirmation before leaving, because we're about to prompt the user
-  window.onbeforeunload = () => null;
-  // prompt user
-  if (
-    window.confirm(
-      "This will terminate the gdbgui for all browser tabs running gdbgui (and their gdb processes). Continue?"
-    ) === true
-  ) {
-    // user wants to shutdown, redirect them to the shutdown page
-    window.location = "/shutdown";
-  } else {
-    // re-add confirmation before leaving page (when user actually leaves at a later time)
-    window.onbeforeunload = () => "some text";
-  }
-};
-
 let show_license = function() {
   Actions.show_modal(
     "gdbgui license",
@@ -119,11 +102,6 @@ const menu = (
         <li>
           <a onClick={show_session_info} className="pointer">
             Session Information
-          </a>
-        </li>
-        <li>
-          <a title="shutdown" className="pointer" onClick={click_shutdown_button}>
-            Shutdown gdbgui server
           </a>
         </li>
 

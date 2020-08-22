@@ -26,7 +26,7 @@ class Pty:
                 # this is the child process fork.
                 # anything printed here will show up in the pty, including the output
                 # of this subprocess
-                def sigint_handler(sig, frame):
+                def sigint_handler(_sig, _frame):
                     # prevent SIGINT (ctrl+c) from exiting
                     # the whole program
                     pass

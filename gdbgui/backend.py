@@ -36,7 +36,6 @@ from pygments.lexers import get_lexer_for_filename  # type: ignore
 from gdbgui import __version__, htmllistformatter
 from gdbgui.sessionmanager import SessionManager, DebugSession
 
-pyinstaller_env_var_base_dir = "_MEIPASS"
 pyinstaller_base_dir = getattr(sys, "_MEIPASS", None)
 using_pyinstaller = pyinstaller_base_dir is not None
 if using_pyinstaller:
@@ -171,7 +170,7 @@ manager = SessionManager(app.config)
 
 
 def setup_backend(
-    serve=True,
+    *,
     host=DEFAULT_HOST,
     port=DEFAULT_PORT,
     debug=False,
@@ -535,10 +534,6 @@ def check_and_forward_pty_output() -> List[DebugSession]:
     return debug_sessions_to_remove
 
 
-def server_error(obj):
-    return jsonify(obj), 500
-
-
 def client_error(obj):
     return jsonify(obj), 400
 
@@ -700,35 +695,9 @@ def kill_session():
         return Response("Missing required parameter: gdbpid", 401,)
 
 
-@app.route("/shutdown", methods=["GET"])
-@authenticate
-def shutdown_webview():
-    add_csrf_token_to_session()
-    return render_template(
-        "shutdown.html", debug=app.debug, csrf_token=session["csrf_token"]
-    )
-
-
 @app.route("/help")
-def help():
+def help_route():
     return redirect("https://github.com/cs01/gdbgui/blob/master/HELP.md")
-
-
-@app.route("/_shutdown", methods=["POST"])
-def _shutdown():
-    try:
-        manager.exit_all_gdb_processes()
-    except Exception:
-        logger.error("failed to exit gdb subprocces")
-        logger.error(traceback.format_exc())
-
-    pid = os.getpid()
-    if app.debug:
-        os.kill(pid, signal.SIGINT)
-    else:
-        socketio.stop()
-
-    return jsonify({})
 
 
 @app.route("/get_last_modified_unix_sec", methods=["GET"])
@@ -1019,7 +988,6 @@ def main():
         )
 
     setup_backend(
-        serve=True,
         host=args.host,
         port=int(args.port),
         debug=bool(args.debug),

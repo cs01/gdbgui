@@ -270,17 +270,15 @@ const process_gdb_response = function(response_array) {
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
-              `gdbgui noticed a signal was received (${r.payload["signal-meaning"]}, ${
+              `Signal received: (${r.payload["signal-meaning"]}, ${
                 r.payload["signal-name"]
               }).`,
               constants.console_entry_type.GDBGUI_OUTPUT
             );
             Actions.add_console_entries(
-              "If the program exited due to a fault, you can attempt to re-enter the state of the program when the fault ",
-              constants.console_entry_type.GDBGUI_OUTPUT
-            );
-            Actions.add_console_entries(
-              "occurred by running the command 'backtrace' in the gdb terminal.",
+              "If the program exited due to a fault, you can attempt to re-enter " +
+                "the state of the program when the fault occurred by running the " +
+                "command 'backtrace' in the gdb terminal.",
               constants.console_entry_type.GDBGUI_OUTPUT
             );
           }

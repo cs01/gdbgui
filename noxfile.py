@@ -3,14 +3,16 @@ from pathlib import Path
 from sys import platform
 import subprocess
 
-nox.options.reuse_existing_virtualenvs
+nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
 python = ["3.6", "3.7", "3.8"]
 
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
-lint_dependencies = ["black", "flake8", "mypy", "check-manifest"]
+lint_dependencies = ["black", "vulture", "flake8", "mypy", "check-manifest"]
+vulture_whitelist = ".vulture_whitelist.py"
 files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
+files_to_lint.remove(vulture_whitelist)
 publish_deps = ["setuptools", "wheel", "twine"]
 
 
@@ -51,13 +53,26 @@ def cover(session):
     session.run("coverage", "erase")
 
 
-@nox.session(reuse_venv=True)
-def lint(session):
+@nox.session()
+def vulture(session):
+    """Find dead code"""
+    session.run(
+        "vulture",
+        "--ignore-decorators",
+        "@app.*,@socketio.*,@nox.*",
+        *files_to_lint,
+        vulture_whitelist,
+        *session.posargs,
+    )
 
+
+@nox.session()
+def lint(session):
     session.install(".", *lint_dependencies)
     session.run("black", "--check", *files_to_lint)
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
+    vulture(session)
     session.run(
         "check-manifest", "--ignore", "gdbgui/static/js/*",
     )
