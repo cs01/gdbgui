@@ -32,22 +32,22 @@ blueprint = Blueprint("http_routes", __name__, template_folder=TEMPLATE_DIR)
 @csrf_protect
 def read_file():
     """Read a file and return its contents as an array"""
+
+    def should_highlight():
+        try:
+            return json.loads(request.args.get("highlight", "true"))
+        except Exception as e:
+            if current_app.debug:
+                print("Raising exception since debug is on")
+                raise e
+
+            else:
+                return True  # highlight argument was invalid for some reason, default to true
+
     path = request.args.get("path")
     start_line = int(request.args.get("start_line"))
-    end_line = int(request.args.get("end_line"))
-
     start_line = max(1, start_line)  # make sure it's not negative
-    try:
-        highlight = json.loads(request.args.get("highlight", "true"))
-    except Exception as e:
-        if current_app.debug:
-            print("Raising exception since debug is on")
-            raise e
-
-        else:
-            highlight = (
-                True  # highlight argument was invalid for some reason, default to true
-            )
+    end_line = int(request.args.get("end_line"))
 
     if path and os.path.isfile(path):
         try:
@@ -72,7 +72,7 @@ def read_file():
             except Exception:
                 lexer = None
 
-            if lexer and highlight:
+            if lexer and should_highlight():
                 highlighted = True
                 # convert string into tokens
                 tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))

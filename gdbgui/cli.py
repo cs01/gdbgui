@@ -317,6 +317,20 @@ def get_gdbgui_auth_user_credentials(auth_file, user, password):
         return None
 
 
+def warn_startup_with_shell_off(platform: str, gdb_args: str):
+    """return True if user may need to turn shell off
+    if mac OS version is 16 (sierra) or higher, may need to set shell off due
+    to os's security requirements
+    http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
+    """
+    darwin_match = re.match(r"darwin-(\d+)\..*", platform)
+    on_darwin = darwin_match is not None and int(darwin_match.groups()[0]) >= 16
+    if on_darwin:
+        shell_is_off = "startup-with-shell off" in gdb_args
+        return not shell_is_off
+    return False
+
+
 def get_parser():
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,
@@ -493,7 +507,7 @@ def main():
     if warn_startup_with_shell_off(platform.platform().lower(), args.gdb_cmd):
         logger.warning(
             "You may need to set startup-with-shell off when running on a mac. i.e.\n"
-            "  gdbgui --gdb-args='--init-eval-command=\"set startup-with-shell off\"'\n"
+            "  gdbgui --gdb-cmd='gdb --init-eval-command=\"set startup-with-shell off\"'\n"
             "see http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra\n"
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )
@@ -509,20 +523,6 @@ def main():
         private_key=args.key,
         certificate=args.cert,
     )
-
-
-def warn_startup_with_shell_off(platform: str, gdb_args: str):
-    """return True if user may need to turn shell off
-    if mac OS version is 16 (sierra) or higher, may need to set shell off due
-    to os's security requirements
-    http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra
-    """
-    darwin_match = re.match(r"darwin-(\d+)\..*", platform)
-    on_darwin = darwin_match is not None and int(darwin_match.groups()[0]) >= 16
-    if on_darwin:
-        shell_is_off = "startup-with-shell off" in gdb_args
-        return not shell_is_off
-    return False
 
 
 if __name__ == "__main__":
