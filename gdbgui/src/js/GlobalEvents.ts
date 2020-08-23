@@ -25,7 +25,6 @@ const GlobalEvents = {
    * enabled only when key is depressed on a target that is NOT an input.
    */
   body_keydown: function(e: any) {
-    return;
     let modifier = e.altKey || e.ctrlKey || e.metaKey;
 
     if (e.target.nodeName !== "INPUT" && !modifier) {
