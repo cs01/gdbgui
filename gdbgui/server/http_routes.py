@@ -10,6 +10,7 @@ from flask import (
     render_template,
     request,
     session,
+    Response,
 )
 from pygments.lexers import get_lexer_for_filename  # type: ignore
 
@@ -171,4 +172,66 @@ def gdbgui():
         debug=current_app.debug,
         initial_data=initial_data,
         themes=THEMES,
+    )
+
+
+@blueprint.route("/dashboard_data", methods=["GET"])
+@authenticate
+def dashboard_data():
+    from .app import manager
+
+    return jsonify(manager.get_dashboard_data())
+
+
+@blueprint.route("/kill_session", methods=["PUT"])
+@authenticate
+def kill_session():
+    from .app import manager
+
+    pid = request.json.get("gdbpid")
+    if pid:
+        manager.remove_debug_session_by_pid(pid)
+        return jsonify({"success": True})
+    else:
+        return Response("Missing required parameter: gdbpid", 401,)
+
+
+@blueprint.route("/send_signal_to_pid", methods=["POST"])
+def send_signal_to_pid():
+    signal_name = request.form.get("signal_name", "").upper()
+    pid_str = str(request.form.get("pid"))
+    try:
+        pid_int = int(pid_str)
+    except ValueError:
+        return (
+            jsonify(
+                {
+                    "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
+                    % (pid_str, signal_name)
+                }
+            ),
+            400,
+        )
+
+    if signal_name not in SIGNAL_NAME_TO_OBJ:
+        raise ValueError("no such signal %s" % signal_name)
+    signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
+
+    try:
+        os.kill(pid_int, signal_value)
+    except Exception:
+        return (
+            jsonify(
+                {
+                    "message": "Process could not be killed. Is %s an active PID?"
+                    % pid_int
+                }
+            ),
+            400,
+        )
+    return jsonify(
+        {
+            "message": "sent signal %s (%s) to process id %s"
+            % (signal_name, signal_value, pid_str)
+        }
     )

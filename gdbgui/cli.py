@@ -15,7 +15,7 @@ import shlex
 import traceback
 from typing import Dict, List, Optional
 
-from flask import Response, abort, jsonify, render_template, request, session
+from flask import abort, request, session
 from flask_socketio import SocketIO, emit  # type: ignore
 
 from gdbgui import __version__
@@ -25,14 +25,8 @@ from .server.constants import (
     DEFAULT_GDB_EXECUTABLE,
     DEFAULT_HOST,
     DEFAULT_PORT,
-    SIGNAL_NAME_TO_OBJ,
-    USING_WINDOWS,
 )
-from .server.http_util import (
-    add_csrf_token_to_session,
-    authenticate,
-    is_cross_origin,
-)
+from .server.http_util import is_cross_origin
 from .server.server import run_server
 from .server.sessionmanager import DebugSession
 
@@ -202,37 +196,6 @@ def send_msg_to_clients(client_ids, msg, error=False):
         )
 
 
-@app.route("/", methods=["GET"])
-@authenticate
-def gdbgui():
-    """Render the main gdbgui interface"""
-    gdbpid = request.args.get("gdbpid", 0)
-    gdb_command = request.args.get("gdb_command", app.config["gdb_command"])
-    add_csrf_token_to_session()
-
-    THEMES = ["monokai", "light"]
-    initial_data = {
-        "csrf_token": session["csrf_token"],
-        "gdbgui_version": __version__,
-        "gdbpid": gdbpid,
-        "gdb_command": gdb_command,
-        "initial_binary_and_args": app.config["initial_binary_and_args"],
-        "project_home": app.config["project_home"],
-        "remap_sources": app.config["remap_sources"],
-        "themes": THEMES,
-        "signals": SIGNAL_NAME_TO_OBJ,
-        "using_windows": USING_WINDOWS,
-    }
-
-    return render_template(
-        "gdbgui.html",
-        version=__version__,
-        debug=app.debug,
-        initial_data=initial_data,
-        themes=THEMES,
-    )
-
-
 @socketio.on("disconnect", namespace="/gdb_listener")
 def client_disconnected():
     """do nothing if client disconnects"""
@@ -325,64 +288,6 @@ def check_and_forward_pty_output() -> List[DebugSession]:
                 )
             logger.error(e, exc_info=True)
     return debug_sessions_to_remove
-
-
-@app.route("/send_signal_to_pid", methods=["POST"])
-def send_signal_to_pid():
-    signal_name = request.form.get("signal_name", "").upper()
-    pid_str = str(request.form.get("pid"))
-    try:
-        pid_int = int(pid_str)
-    except ValueError:
-        return (
-            jsonify(
-                {
-                    "message": "The pid %s cannot be converted to an integer. Signal %s was not sent."
-                    % (pid_str, signal_name)
-                }
-            ),
-            400,
-        )
-
-    if signal_name not in SIGNAL_NAME_TO_OBJ:
-        raise ValueError("no such signal %s" % signal_name)
-    signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
-
-    try:
-        os.kill(pid_int, signal_value)
-    except Exception:
-        return (
-            jsonify(
-                {
-                    "message": "Process could not be killed. Is %s an active PID?"
-                    % pid_int
-                }
-            ),
-            400,
-        )
-    return jsonify(
-        {
-            "message": "sent signal %s (%s) to process id %s"
-            % (signal_name, signal_value, pid_str)
-        }
-    )
-
-
-@app.route("/dashboard_data", methods=["GET"])
-@authenticate
-def dashboard_data():
-    return jsonify(manager.get_dashboard_data())
-
-
-@app.route("/kill_session", methods=["PUT"])
-@authenticate
-def kill_session():
-    pid = request.json.get("gdbpid")
-    if pid:
-        manager.remove_debug_session_by_pid(pid)
-        return jsonify({"success": True})
-    else:
-        return Response("Missing required parameter: gdbpid", 401,)
 
 
 def get_gdbgui_auth_user_credentials(auth_file, user, password):
