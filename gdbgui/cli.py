@@ -30,11 +30,10 @@ from flask import (
     request,
     session,
 )
-from flask_compress import Compress  # type: ignore
+
 from flask_socketio import SocketIO, emit  # type: ignore
 from pygments.lexers import get_lexer_for_filename  # type: ignore
 from .server.constants import (
-    DEFAULT_PORT,
     USING_WINDOWS,
     TEMPLATE_DIR,
     STATIC_DIR,
@@ -42,19 +41,12 @@ from .server.constants import (
     DEFAULT_PORT,
     IS_A_TTY,
     DEFAULT_GDB_EXECUTABLE,
+    SIGNAL_NAME_TO_OBJ,
 )
-
+from .server.http_util import add_csrf_token_to_session
+from .server.app import app
 from gdbgui import __version__, htmllistformatter
 from gdbgui.sessionmanager import SessionManager, DebugSession
-
-pyinstaller_base_dir = getattr(sys, "_MEIPASS", None)
-using_pyinstaller = pyinstaller_base_dir is not None
-if using_pyinstaller:
-    BASE_PATH = pyinstaller_base_dir
-else:
-    BASE_PATH = os.path.dirname(os.path.realpath(__file__))
-    PARENTDIR = os.path.dirname(BASE_PATH)
-    sys.path.append(PARENTDIR)
 
 
 try:
@@ -86,25 +78,6 @@ formatter = ColorFormatter()
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 logger.addHandler(handler)
-# create dictionary of signal names
-SIGNAL_NAME_TO_OBJ = {}
-for n in dir(signal):
-    if n.startswith("SIG") and "_" not in n:
-        SIGNAL_NAME_TO_OBJ[n.upper()] = getattr(signal, n)
-
-# Create flask application and add some configuration keys to be used in various callbacks
-app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
-Compress(
-    app
-)  # add gzip compression to Flask. see https://github.com/libwilliam/flask-compress
-
-app.config["initial_binary_and_args"] = []
-app.config["gdb_path"] = DEFAULT_GDB_EXECUTABLE
-app.config["gdb_command"] = None
-app.config["TEMPLATES_AUTO_RELOAD"] = True
-app.config["project_home"] = None
-app.config["remap_sources"] = {}
-app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
 
 
 @app.before_request
@@ -161,11 +134,6 @@ def csrf_protect(f):
         return f(*args, **kwargs)
 
     return wrapper
-
-
-def add_csrf_token_to_session():
-    if "csrf_token" not in session:
-        session["csrf_token"] = binascii.hexlify(os.urandom(20)).decode("utf-8")
 
 
 socketio = SocketIO(manage_session=False)
@@ -422,25 +390,68 @@ def send_msg_to_clients(client_ids, msg, error=False):
         )
 
 
-@app.route("/remove_gdb_controller", methods=["POST"])
-def remove_gdb_controller():
-    gdbpid = int(request.form.get("gdbpid"))
+def authenticate(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if app.config.get("gdbgui_auth_user_credentials") is not None:
+            auth = request.authorization
+            if (
+                not auth
+                or not auth.username
+                or not auth.password
+                or not credentials_are_valid(auth.username, auth.password)
+            ):
+                return Response(
+                    "You must log in to continue.",
+                    401,
+                    {"WWW-Authenticate": 'Basic realm="gdbgui_login"'},
+                )
 
-    orphaned_client_ids = manager.remove_debug_session_by_pid(gdbpid)
-    num_removed = len(orphaned_client_ids)
+        return f(*args, **kwargs)
 
-    send_msg_to_clients(
-        orphaned_client_ids,
-        "The underlying gdb process has been killed. This tab will no longer function as expected.",
-        error=True,
+    return wrapper
+
+
+@app.route("/", methods=["GET"])
+@authenticate
+def gdbgui():
+    """Render the main gdbgui interface"""
+    gdbpid = request.args.get("gdbpid", 0)
+    gdb_command = request.args.get("gdb_command", app.config["gdb_command"])
+    add_csrf_token_to_session()
+
+    THEMES = ["monokai", "light"]
+    initial_data = {
+        "csrf_token": session["csrf_token"],
+        "gdbgui_version": __version__,
+        "gdbpid": gdbpid,
+        "gdb_command": gdb_command,
+        "initial_binary_and_args": app.config["initial_binary_and_args"],
+        "project_home": app.config["project_home"],
+        "remap_sources": app.config["remap_sources"],
+        "themes": THEMES,
+        "signals": SIGNAL_NAME_TO_OBJ,
+        "using_windows": USING_WINDOWS,
+    }
+
+    return render_template(
+        "gdbgui.html",
+        version=__version__,
+        debug=app.debug,
+        initial_data=initial_data,
+        themes=THEMES,
     )
 
-    msg = "removed %d gdb controller(s) with pid %d" % (num_removed, gdbpid)
-    if num_removed:
-        return jsonify({"message": msg})
 
-    else:
-        return jsonify({"message": msg}), 500
+def credentials_are_valid(username, password):
+    user_credentials = app.config.get("gdbgui_auth_user_credentials")
+    if user_credentials is None:
+        return False
+
+    elif len(user_credentials) < 2:
+        return False
+
+    return user_credentials[0] == username and user_credentials[1] == password
 
 
 @socketio.on("disconnect", namespace="/gdb_listener")
@@ -558,70 +569,6 @@ def get_extra_files():
                         if skipfile not in filepath:
                             extra_files.append(filepath)
     return extra_files
-
-
-def credentials_are_valid(username, password):
-    user_credentials = app.config.get("gdbgui_auth_user_credentials")
-    if user_credentials is None:
-        return False
-
-    elif len(user_credentials) < 2:
-        return False
-
-    return user_credentials[0] == username and user_credentials[1] == password
-
-
-def authenticate(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if app.config.get("gdbgui_auth_user_credentials") is not None:
-            auth = request.authorization
-            if (
-                not auth
-                or not auth.username
-                or not auth.password
-                or not credentials_are_valid(auth.username, auth.password)
-            ):
-                return Response(
-                    "You must log in to continue.",
-                    401,
-                    {"WWW-Authenticate": 'Basic realm="gdbgui_login"'},
-                )
-
-        return f(*args, **kwargs)
-
-    return wrapper
-
-
-@app.route("/", methods=["GET"])
-@authenticate
-def gdbgui():
-    """Render the main gdbgui interface"""
-    gdbpid = request.args.get("gdbpid", 0)
-    gdb_command = request.args.get("gdb_command", app.config["gdb_command"])
-    add_csrf_token_to_session()
-
-    THEMES = ["monokai", "light"]
-    initial_data = {
-        "csrf_token": session["csrf_token"],
-        "gdbgui_version": __version__,
-        "gdbpid": gdbpid,
-        "gdb_command": gdb_command,
-        "initial_binary_and_args": app.config["initial_binary_and_args"],
-        "project_home": app.config["project_home"],
-        "remap_sources": app.config["remap_sources"],
-        "themes": THEMES,
-        "signals": SIGNAL_NAME_TO_OBJ,
-        "using_windows": USING_WINDOWS,
-    }
-
-    return render_template(
-        "gdbgui.html",
-        version=__version__,
-        debug=app.debug,
-        initial_data=initial_data,
-        themes=THEMES,
-    )
 
 
 @app.route("/send_signal_to_pid", methods=["POST"])
