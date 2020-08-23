@@ -1,6 +1,6 @@
 # gdbgui release history
 
-## development
+## 0.14.0.0
 **Breaking Changes**
 * Removed support for Windows
 * Replaced `--gdb` flag with `--gdb-cmd`. The `--gdb-cmd` argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example `--gdb-cmd "gdb -nx"`. The existing `-g` argument is an alias for `--gdb-cmd`.
