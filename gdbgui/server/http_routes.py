@@ -25,7 +25,7 @@ from .http_util import (
 )
 
 logger = logging.getLogger(__file__)
-blueprint = Blueprint("http_routes", __name__, template_folder=TEMPLATE_DIR)
+blueprint = Blueprint("http_routes", __name__, template_folder=str(TEMPLATE_DIR))
 
 
 @blueprint.route("/read_file", methods=["GET"])
@@ -129,7 +129,7 @@ def help_route():
 @blueprint.route("/dashboard", methods=["GET"])
 @authenticate
 def dashboard():
-    from .app import manager
+    manager = current_app.config.get("_manager")
 
     add_csrf_token_to_session()
 
@@ -178,7 +178,7 @@ def gdbgui():
 @blueprint.route("/dashboard_data", methods=["GET"])
 @authenticate
 def dashboard_data():
-    from .app import manager
+    manager = current_app.config.get("_manager")
 
     return jsonify(manager.get_dashboard_data())
 

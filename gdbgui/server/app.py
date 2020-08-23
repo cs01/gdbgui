@@ -12,7 +12,7 @@ from .sessionmanager import SessionManager
 
 logger = logging.getLogger(__file__)
 # Create flask application and add some configuration keys to be used in various callbacks
-app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
 # app.register_blueprint(blueprint)
 Compress(
     app
@@ -24,10 +24,9 @@ app.config["gdb_command"] = None
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 app.config["project_home"] = None
 app.config["remap_sources"] = {}
+app.config["_manager"] = SessionManager()
 app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
 app.register_blueprint(blueprint)
-
-manager = SessionManager(app.config)
 
 
 @app.before_request

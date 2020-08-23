@@ -64,10 +64,11 @@ def cover(session):
 @nox.session()
 def vulture(session):
     """Find dead code"""
+    session.install("vulture")
     session.run(
         "vulture",
         "--ignore-decorators",
-        "@app.*,@socketio.*,@nox.*",
+        "@app.*,@socketio.*,@nox.*,@blueprint.*",
         *files_to_lint,
         vulture_whitelist,
         *session.posargs,

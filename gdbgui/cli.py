@@ -20,7 +20,7 @@ from flask_socketio import SocketIO, emit  # type: ignore
 
 from gdbgui import __version__
 
-from .server.app import app, manager
+from .server.app import app
 from .server.constants import (
     DEFAULT_GDB_EXECUTABLE,
     DEFAULT_HOST,
@@ -28,7 +28,7 @@ from .server.constants import (
 )
 from .server.http_util import is_cross_origin
 from .server.server import run_server
-from .server.sessionmanager import DebugSession
+from .server.sessionmanager import DebugSession, SessionManager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -36,6 +36,7 @@ logging.basicConfig(format="(%(asctime)s) %(msg)s")
 
 
 socketio = SocketIO(manage_session=False)
+manager: SessionManager = app.config.get("_manager")  # type: ignore
 
 
 @socketio.on("connect", namespace="/gdb_listener")
