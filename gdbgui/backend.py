@@ -485,6 +485,7 @@ def client_disconnected():
 def test_disconnect():
     print("Client websocket disconnected", request.sid)
 
+
 def process_controllers_out():
     controllers_to_remove = []
     controller_items = _state.controller_to_client_ids.items()
@@ -528,6 +529,7 @@ def process_controllers_out():
     for controller in controllers_to_remove:
         _state.remove_gdb_controller(controller)
 
+
 def read_and_forward_gdb_output():
     """A task that runs on a different thread, and emits websocket messages
     of gdb responses"""
@@ -535,7 +537,6 @@ def read_and_forward_gdb_output():
     while True:
         socketio.sleep(0.05)
         process_controllers_out()
-
 
 
 def server_error(obj):

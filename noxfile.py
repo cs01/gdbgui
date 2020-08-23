@@ -13,7 +13,7 @@ files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 
 @nox.session(reuse_venv=True, python=python)
 def tests(session):
-    session.install(".", "pytest", "pytest-cov")
+    session.install(".", "pytest", "pytest-cov", "flask-socketio>4.2.0")
     tests = session.posargs or ["tests"]
     session.run(
         "pytest", "--cov=gdbgui", "--cov-config", ".coveragerc", "--cov-report=", *tests
