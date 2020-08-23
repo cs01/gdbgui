@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -259,13 +259,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#debugging-faults" class="md-nav__link">
-    Debugging Faults
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -406,13 +399,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#debugging-faults" class="md-nav__link">
-    Debugging Faults
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -435,12 +421,14 @@
                 
                   <h1>Getting Started</h1>
                 
-                <p>Now that you have <code>gdbgui</code> installed, all you need to do is run</p>
+                <p>Before running <code>gdbgui</code>, you should compile your program with debug symbols and a lower level of optimization, so code isn't optimized out before runtime. To include debug symbols with <code>gcc</code> use <code>-ggdb</code>, with <code>rustc</code> use <code>-g</code>. To disable most optimizations in <code>gcc</code> use the <code>-O0</code> flag, with <code>rustc</code> use <code>-O</code>.</p>
+<p>For more details, consult your compiler's documentation or a search engine.</p>
+<p>Now that you have <code>gdbgui</code> installed and your program compiled with debug symbols, all you need to do is run</p>
 <div class="codehilite"><pre><span></span><code>gdbgui
 </code></pre></div>
 
 
-<p>which will start gdbgui's server and open a new tab in your browser. That tab contains a fully functional frontend running <code>gdb</code>!</p>
+<p>This will start gdbgui's server and open a new tab in your browser. That tab contains a fully functional frontend running <code>gdb</code>!</p>
 <p>You can see gdbgui in action on <a href="https://www.youtube.com/channel/UCUCOSclB97r9nd54NpXMV5A">YouTube</a>.</p>
 <p>To see the full list of options gdbgui offers, you can view command line options by running</p>
 <div class="codehilite"><pre><span></span><code>gdbgui --help
@@ -465,9 +453,6 @@
 <li>Next Instruction: m</li>
 <li>Step Instruction: ,</li>
 </ul>
-<h2 id="debugging-faults">Debugging Faults</h2>
-<p>If your program exits unexpectedly from something like a SEGFAULT, gdbgui displays a button in the console to re-enter the state the program was in when it exited. This allows you to inspect the stack, the line on which the program exited, memory, variables, registers, etc.</p>
-<p><img alt="" src="https://raw.githubusercontent.com/cs01/gdbgui/master/screenshots/SIGSEV.png" /></p>
                 
               
               
@@ -534,15 +519,15 @@
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

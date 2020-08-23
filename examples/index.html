@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -435,27 +435,26 @@
 
 
 <p>set the inferior program, pass argument, set a breakpoint at main</p>
+<div class="codehilite"><pre><span></span><code>gdbgui --args ./myprogram myarg -myflag
+</code></pre></div>
+
+
 <div class="codehilite"><pre><span></span><code>gdbgui &quot;./myprogram myarg -myflag&quot;
 </code></pre></div>
 
 
-<p>alternate way to do the same thing (note the lack of quotes)</p>
-<div class="codehilite"><pre><span></span><code>gdbgui --args ./myprogram myarg  command -myflag
+<p>use gdb binary not on your $PATH</p>
+<div class="codehilite"><pre><span></span><code>gdbgui --gdb-cmd build/mygdb
 </code></pre></div>
 
 
-<p>use gdb binary not on your $PATH</p>
-<div class="codehilite"><pre><span></span><code>gdbgui -g build/mygdb
+<p>Pass arbitrary arguments directly to gdb when it is launched</p>
+<div class="codehilite"><pre><span></span><code>gdbgui --gdb-cmd=&quot;gdb -x gdbcmds.txt&quot;
 </code></pre></div>
 
 
 <p>run on port 8080 instead of the default port</p>
 <div class="codehilite"><pre><span></span><code>gdbgui --port 8080
-</code></pre></div>
-
-
-<p>Pass arbitrary arguments directly to gdb when it is launched</p>
-<div class="codehilite"><pre><span></span><code>gdbgui --gdb-args=&quot;-x gdbcmds.txt&quot;
 </code></pre></div>
 
 
@@ -479,12 +478,12 @@
 
 
 <p>Use Mozilla's <a href="https://rr-project.org">record and replay</a> (rr) debugging supplement to gdb. rr lets your record a program (usually with a hard-to-reproduce bug in it), then deterministically replay it as many times as you want. You can even step forwards and backwards.</p>
-<div class="codehilite"><pre><span></span><code>gdbgui --rr
+<div class="codehilite"><pre><span></span><code>gdbgui --gdb-cmd &quot;rr replay&quot;
 </code></pre></div>
 
 
 <p>Use recording other than the most recent one</p>
-<div class="codehilite"><pre><span></span><code>gdbgui --rr RECORDED_DIRECTORY
+<div class="codehilite"><pre><span></span><code>gdbgui --gdb-cmd &quot;rr replay RECORDED_DIRECTORY&quot;
 </code></pre></div>
 
 
@@ -557,15 +556,15 @@
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

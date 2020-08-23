@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -229,8 +229,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#send-signal-to-inferior" class="md-nav__link">
-    Send Signal to Inferior
+  <a href="#send-signal-to-inferior-debugged-process" class="md-nav__link">
+    Send Signal to Inferior (debugged) Process
   </a>
   
 </li>
@@ -449,8 +449,8 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#send-signal-to-inferior" class="md-nav__link">
-    Send Signal to Inferior
+  <a href="#send-signal-to-inferior-debugged-process" class="md-nav__link">
+    Send Signal to Inferior (debugged) Process
   </a>
   
 </li>
@@ -536,23 +536,21 @@
                 <p><img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui.png" />
 <img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui2.png" /></p>
 <p>Enter the binary and args just as you'd call them on the command line.
-Binary is restored when gdbgui is opened at a later time.</p>
+The binary is restored when gdbgui is opened at a later time.</p>
 <p><img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png" /></p>
 <p>Intuitive control of your program. From left to right: Run, Continue,
 Next, Step, Return, Next Instruction, Step Instruction.</p>
 <p><img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png" /></p>
-<p>If using an Intel CPU and running Linux, gdbgui also works in conjunction with <a href="http://rr-project.org/">rr</a> to let you debug in reverse.
+<p>If the environment supports reverse debugging, such as when using an Intel CPU and running Linux and debugging with <a href="http://rr-project.org/">rr</a>, gdbgui allows you to debug in reverse.
 <img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/reverse_debugging.png" /></p>
 <h2 id="stackthreads">Stack/Threads</h2>
 <p>View all threads, the full stack on the active thread, the current frame
 on inactive threads. Switch between frames on the stack, or threads by
 pointing and clicking.</p>
 <p><img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png" /></p>
-<h2 id="send-signal-to-inferior">Send Signal to Inferior</h2>
+<h2 id="send-signal-to-inferior-debugged-process">Send Signal to Inferior (debugged) Process</h2>
 <p>Choose from any signal your OS supports to send to the inferior. For example, to mock <code>CTRL+C</code> in plain gdb, you can send <code>SIGINT</code> to interrupt the inferior process. If the inferior process is hung for some reason, you can send <code>SIGKILL</code>, etc.
 <img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/send_signal.png" /></p>
-<p>Signals are also recognized by <code>gdbgui</code>, and a button is presented to let you step back into the program and inspect the program's state in case it exits unexpectedly.
-<img alt="image" src="https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEV.png" /></p>
 <h2 id="source-code">Source Code</h2>
 <p>View source, assembly, add breakpoints. All symbols used to compile the
 target are listed in a dropdown above the source code viewer, and have
@@ -670,15 +668,15 @@ yellow.</p>
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

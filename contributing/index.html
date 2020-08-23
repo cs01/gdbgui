@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -51,7 +51,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#development-instructions" class="md-skip">
+        <a href="#dependencies" class="md-skip">
           Skip to content
         </a>
       
@@ -306,43 +306,23 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development-instructions" class="md-nav__link">
-    Development Instructions
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Instructions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-compile-javascript-code" class="md-nav__link">
-    Step 1: Compile JavaScript Code
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-run-server" class="md-nav__link">
-    Step 2: Run Server
+      
+        <li class="md-nav__item">
+  <a href="#developing" class="md-nav__link">
+    Developing
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-make-your-changes" class="md-nav__link">
-    Step 3: Make your changes
+      
+        <li class="md-nav__item">
+  <a href="#running-and-adding-tests" class="md-nav__link">
+    Running and Adding tests
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-run-and-add-tests" class="md-nav__link">
-    Step 4: Run and Add tests
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -454,43 +434,23 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development-instructions" class="md-nav__link">
-    Development Instructions
-  </a>
-  
-    <nav class="md-nav" aria-label="Development Instructions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-compile-javascript-code" class="md-nav__link">
-    Step 1: Compile JavaScript Code
+  <a href="#dependencies" class="md-nav__link">
+    Dependencies
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-run-server" class="md-nav__link">
-    Step 2: Run Server
+      
+        <li class="md-nav__item">
+  <a href="#developing" class="md-nav__link">
+    Developing
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-make-your-changes" class="md-nav__link">
-    Step 3: Make your changes
+      
+        <li class="md-nav__item">
+  <a href="#running-and-adding-tests" class="md-nav__link">
+    Running and Adding tests
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-run-and-add-tests" class="md-nav__link">
-    Step 4: Run and Add tests
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -559,8 +519,8 @@
                 
                 <p>Thanks for your interest in contributing to gdbgui!</p>
 <p>If your change is small, go ahead and submit a pull request. If it is substantial, create a GitHub issue to discuss it before making the change.</p>
-<h2 id="development-instructions">Development Instructions</h2>
-<p>gdbgui uses <a href="https://github.com/theacodes/nox">nox</a> to automate various tasks. You will need it installed on your system before continuing.</p>
+<h2 id="dependencies">Dependencies</h2>
+<p>1.) <a href="https://github.com/theacodes/nox">nox</a> is used to automate various tasks. You will need it installed on your system before continuing.</p>
 <p>You can install it with pipx (recommended):</p>
 <div class="codehilite"><pre><span></span><code>&gt; pipx install nox
 </code></pre></div>
@@ -571,59 +531,31 @@
 </code></pre></div>
 
 
-<h3 id="step-1-compile-javascript-code">Step 1: Compile JavaScript Code</h3>
-<p>gdbgui compiles JavaScript source code into a single .js file.</p>
-<p>Note that <code>yarn</code> can be replaced with <code>npm</code>:</p>
-<p>First install JavaScript dependencies:</p>
-<div class="codehilite"><pre><span></span><code>yarn install
+<p>2.) <a href="https://yarnpkg.com/">yarn</a> is used for managing JavaScript files</p>
+<h2 id="developing">Developing</h2>
+<p>Development can be done with one simple step:</p>
+<div class="codehilite"><pre><span></span><code>&gt; nox -s develop
 </code></pre></div>
 
 
-<p>To watch JavaScript files for changes and build non-optimized code for each change, use</p>
-<div class="codehilite"><pre><span></span><code>yarn start
+<p>This will install all Python and JavaScript dependencies, and build and watch Python and JavaScript files for changes, automatically reloading as things are changed.</p>
+<p>Make sure you <a href="https://www.technipages.com/google-chrome-how-to-completely-disable-cache">turn your cache off</a> so that changes made locally are reflected in the page.</p>
+<h2 id="running-and-adding-tests">Running and Adding tests</h2>
+<div class="codehilite"><pre><span></span><code>&gt; nox
 </code></pre></div>
 
 
-<p>This is useful for iterating on changes.</p>
-<p>To build once for production-optimized code, you can run</p>
-<div class="codehilite"><pre><span></span><code>yarn build
+<p>runs all applicable tests and linting.</p>
+<p>Python tests are in <code>gdbgui/tests</code>. They are run as part of the above command, but can be run with</p>
+<div class="codehilite"><pre><span></span><code>&gt; nox -s python_tests
 </code></pre></div>
 
 
-<h3 id="step-2-run-server">Step 2: Run Server</h3>
-<div class="codehilite"><pre><span></span><code>git clone https://github.com/cs01/gdbgui
-<span class="nb">cd</span> gdbgui
-nox -s develop-3.7  <span class="c1"># replace with desired Python version</span>
-<span class="nb">source</span> .nox/develop-3-7/bin/activate  <span class="c1"># replace with desired Python version</span>
+<p>JavaScript tests are in <code>gdbgui/src/js/tests</code>. They are run as part of the above command, but can be run with</p>
+<div class="codehilite"><pre><span></span><code>&gt; nox -s js_tests
 </code></pre></div>
 
 
-<p>You are now in a virtual environment with gdbgui's dependencies installed. When finished, type <code>deactivate</code> to leave the virtual environment.</p>
-<div class="codehilite"><pre><span></span><code>python -m gdbgui --debug
-</code></pre></div>
-
-
-<p>The <code>--debug</code> flag:</p>
-<ol>
-<li>Automatically reloads the server when it detects changes you've made</li>
-<li>Adds a new component at the bottom of the right sidebar called "gdb machine interface output" that displays the raw gdb mi output to help you debug.</li>
-<li>Displays all changes to state data in the browser's developer console, such as <code>rendered_source_file_fullname null -&gt; /home/chad/git/gdbgui/examples/hello.c</code></li>
-</ol>
-<h3 id="step-3-make-your-changes">Step 3: Make your changes</h3>
-<p>Open the browser to view gdbgui. Refresh the page as you make changes to JavaScript code.</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Make sure you have caching turned off in your browser. In Chrome, for example, this is a setting in the developer console.</p>
-</div>
-<h3 id="step-4-run-and-add-tests">Step 4: Run and Add tests</h3>
-<p>To continue, you must have nox installed.</p>
-<div class="codehilite"><pre><span></span><code>nox
-</code></pre></div>
-
-
-<p>runs gdbgui unit tests.</p>
-<p>If you have changed any Python code, add new tests to <code>gdbgui/tests/test_app.py</code> as necessary.</p>
-<p>JavaScript tests are minimal, so you will have to manually excercise any code paths that may be affected.</p>
 <h2 id="documentation">Documentation</h2>
 <h3 id="modifying-documentation">Modifying Documentation</h3>
 <p>Documentation is made with <code>mkdocs</code>. Then make changes to <code>mkdocs.yml</code> or md files in the <code>docs</code> directory.</p>
@@ -722,15 +654,15 @@ nox -s develop-3.7  <span class="c1"># replace with desired Python version</span
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

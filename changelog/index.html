@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -1029,9 +1029,18 @@
                 
                 <h1 id="gdbgui-release-history">gdbgui release history</h1>
 <h2 id="development">development</h2>
-<ul>
-<li>Removed gdbgui binaries from source control. They can now be downloaded as artifacts of <a href="https://github.com/cs01/gdbgui/releases">releases</a>.</li>
-</ul>
+<p><strong>Breaking Changes</strong>
+* Removed support for Windows
+* Replaced <code>--gdb</code> flag with <code>--gdb-cmd</code>. The <code>--gdb-cmd</code> argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example <code>--gdb-cmd "gdb -nx"</code>. The existing <code>-g</code> argument is an alias for <code>--gdb-cmd</code>.
+* Removed <code>--rr</code> flag. Use <code>--gdb-cmd rr replay</code> instead.
+* Removed deprecated and hidden <code>--hide-gdbgui-upgrades</code> argument. It will now raise an error.</p>
+<p><strong>Additional Changes</strong>
+* Replaced single terminal on frontend with three terminals: an interactive xterm terminal running gdb, a gdbgui console for diagnostic messages, and a terminal connected to the inferior application being debugged.
+* Updates to the dashboard
+* Add ability to specify gdb command from the browser. This can now be accomplished from the dashboard.
+* Removed gdbgui binaries from source control. They can now be downloaded as artifacts of <a href="https://github.com/cs01/gdbgui/releases">releases</a>.
+* [documentation] Fix bug when generating md5 checksum for binary releases
+* Remove "shutdown" button in UI</p>
 <h2 id="01321">0.13.2.1</h2>
 <ul>
 <li>No end user changes. This release builds the gdbgui executables with GitHub actions.</li>
@@ -1352,15 +1361,15 @@
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

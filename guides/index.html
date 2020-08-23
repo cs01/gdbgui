@@ -8,12 +8,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A modern, browser-based frontend to gdb (gnu debugger)">
+        <meta name="description" content="A browser-based frontend to gdb (gnu debugger)">
       
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.4.0">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
     
     
       
@@ -21,7 +21,7 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.fe0cca5b.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
       
       
     
@@ -495,9 +495,9 @@
 <p>After downloading gdbgui, you can launch it like so:</p>
 <ul>
 <li><code>gdbgui</code> (or whatever the binary name is, i.e. <code>gdbgui_0.10.0.0</code>)</li>
-<li><code>gdbgui "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
-<li><code>gdbgui --args "./mybinary -myarg value -flag1 -flag2"</code> (note the quotes around the arguments)</li>
+<li><code>gdbgui --args ./mybinary -myarg value -flag1 -flag2</code></li>
 </ul>
+<p>Make sure the program you want to debug was compiled with debug symbols. See the getting started section for more details.</p>
 <p>A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).</p>
 <p>Now that gdbgui is open, you can interactively run a program with it.
 * Type the path to the executable in the input at the top (next to "Load Binary"). The executable should already exist and have been compiled with the <code>-g</code> flag.
@@ -524,8 +524,11 @@ cargo build
 </code></pre></div>
 
 
-<p>You can start debugging with a simple</p>
-<p><code>gdbgui target/debug/myprog</code></p>
+<p>You can start debugging with</p>
+<div class="codehilite"><pre><span></span><code>gdbgui --args target/debug/myprog
+</code></pre></div>
+
+
 <p>There are a couple of small difficulties.</p>
 <p>1.) Instead of showing your <code>main</code> function the initial screen will be blank and <code>gdbgui</code> will print <code>File not found: main</code>.
 You need to help <code>gdbgui</code> out by typing <code>main</code> into the file browser box:</p>
@@ -544,9 +547,8 @@ and run the program. Of course, if you want to break in some other file, you can
 </code></pre></div>
 
 
-<p>2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
-which makes it print the message</p>
-<div class="codehilite"><pre><span></span><code>warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/phil/temp/myprog/target/debug/myprog.
+<p>2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default, which makes it print the message</p>
+<div class="codehilite"><pre><span></span><code>warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/temp/myprog/target/debug/myprog.
 Use `info auto-load python-scripts [REGEXP]&#39; to list them.
 </code></pre></div>
 
@@ -570,7 +572,7 @@ describes the workarounds necessary (create a <code>.gdbinit</code> file and pas
 <p>Then you can launch <code>gdb</code> or <code>gdbgui</code> and connect to it. In <code>gdbgui</code>, use the dropdown to select <code>Connect to gdbserver</code>, and enter</p>
 <p><code>&lt;remote ip address&gt;:9000</code></p>
 <p>Read more at the <a href="https://sourceware.org/gdb/onlinedocs/gdb/Server.html">gdbserver homepage</a>.</p>
-<p>If the machine gdbgui is running on and the target being debugged have different architectures, make sure gdb is built properly. See []</p>
+<p>If the machine gdbgui is running on and the target being debugged have different architectures, make sure gdb is built properly (see <code>Remote Debugging Between Different Architectures</code>).</p>
 <h2 id="remote-debugging-between-different-architectures">Remote Debugging Between Different Architectures</h2>
 <p>For example, this is useful if you are working from an x86_64 based PC gdb client with gdbgui, to ARM arch gdbserver.</p>
 <p>You need to build the <code>gdb</code> client with the <code>--host</code> and <code>--target</code> flags. You need to build the <code>gdbserver</code> for the correct architecture.</p>
@@ -664,15 +666,15 @@ sudo make install
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d710d30a.min.js"></script>
-      <script src="../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
+      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.a68abb33.min.js"
+            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
