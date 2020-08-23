@@ -1,20 +1,27 @@
+import json
+import logging
+import os
+
 from flask import (
     Blueprint,
     current_app,
+    jsonify,
+    redirect,
     render_template,
     request,
     session,
-    jsonify,
-    abort,
 )
-from .constants import TEMPLATE_DIR, SIGNAL_NAME_TO_OBJ, USING_WINDOWS
-from gdbgui import __version__
-from .http_util import is_cross_origin, csrf_protect, client_error
-import logging
-import json
-import os
 from pygments.lexers import get_lexer_for_filename  # type: ignore
-from gdbgui import __version__, htmllistformatter
+
+from gdbgui import htmllistformatter
+
+from .constants import TEMPLATE_DIR
+from .http_util import (
+    add_csrf_token_to_session,
+    authenticate,
+    client_error,
+    csrf_protect,
+)
 
 logger = logging.getLogger(__file__)
 blueprint = Blueprint("http_routes", __name__, template_folder=TEMPLATE_DIR)
@@ -95,3 +102,42 @@ def read_file():
     else:
         return client_error({"message": "File not found: %s" % path})
 
+
+@blueprint.route("/get_last_modified_unix_sec", methods=["GET"])
+@csrf_protect
+def get_last_modified_unix_sec():
+    """Get last modified unix time for a given file"""
+    path = request.args.get("path")
+    if path and os.path.isfile(path):
+        try:
+            last_modified = os.path.getmtime(path)
+            return jsonify({"path": path, "last_modified_unix_sec": last_modified})
+
+        except Exception as e:
+            return client_error({"message": "%s" % e, "path": path})
+
+    else:
+        return client_error({"message": "File not found: %s" % path, "path": path})
+
+
+@blueprint.route("/help")
+def help_route():
+    return redirect("https://github.com/cs01/gdbgui/blob/master/HELP.md")
+
+
+@blueprint.route("/dashboard", methods=["GET"])
+@authenticate
+def dashboard():
+    from .app import manager
+
+    add_csrf_token_to_session()
+
+    """display a dashboard with a list of all running gdb processes
+    and ability to kill them, or open a new tab to work with that
+    GdbController instance"""
+    return render_template(
+        "dashboard.html",
+        gdbgui_sessions=manager.get_dashboard_data(),
+        csrf_token=session["csrf_token"],
+        default_command=current_app.config["gdb_command"],
+    )

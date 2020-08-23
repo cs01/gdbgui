@@ -1,12 +1,14 @@
-import logging
-import traceback
-from typing import Any, Dict, List, Optional, Set
-from pygdbmi.IoManager import IoManager
-from collections import defaultdict
-from .ptylib import Pty
-import os
 import datetime
+import logging
+import os
 import signal
+import traceback
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Set
+
+from pygdbmi.IoManager import IoManager
+
+from .ptylib import Pty
 
 logger = logging.getLogger(__name__)
 

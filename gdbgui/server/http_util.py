@@ -1,8 +1,9 @@
-from flask import request, session, Response, abort, jsonify, current_app
 import binascii
-import os
 import logging
+import os
 from functools import wraps
+
+from flask import Response, abort, current_app, jsonify, request, session
 
 logger = logging.getLogger(__file__)
 
@@ -74,7 +75,7 @@ def authenticate(f):
 
 
 def credentials_are_valid(username, password):
-    user_credentials = app.config.get("gdbgui_auth_user_credentials")
+    user_credentials = current_app.config.get("gdbgui_auth_user_credentials")
     if user_credentials is None:
         return False
 
@@ -82,4 +83,3 @@ def credentials_are_valid(username, password):
         return False
 
     return user_credentials[0] == username and user_credentials[1] == password
-

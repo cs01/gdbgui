@@ -1,8 +1,7 @@
-import sys
 import os
-from pathlib import Path
 import signal
-import logging
+import sys
+from pathlib import Path
 
 DEFAULT_GDB_EXECUTABLE = "gdb"
 DEFAULT_HOST = "127.0.0.1"

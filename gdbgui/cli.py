@@ -6,56 +6,35 @@ https://github.com/cs01/gdbgui
 """
 
 import argparse
-import binascii
 import json
 import logging
 import os
 import platform
 import re
-import signal
-import socket
 import shlex
-import sys
 import traceback
-import webbrowser
-from functools import wraps
 from typing import Dict, List, Optional
-from flask import (
-    Flask,
-    Response,
-    abort,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-)
 
+from flask import Response, abort, jsonify, render_template, request, session
 from flask_socketio import SocketIO, emit  # type: ignore
 
+from gdbgui import __version__
+
+from .server.app import app, manager
 from .server.constants import (
-    USING_WINDOWS,
-    TEMPLATE_DIR,
-    STATIC_DIR,
+    DEFAULT_GDB_EXECUTABLE,
     DEFAULT_HOST,
     DEFAULT_PORT,
-    IS_A_TTY,
-    DEFAULT_GDB_EXECUTABLE,
     SIGNAL_NAME_TO_OBJ,
-    colorize,
+    USING_WINDOWS,
 )
 from .server.http_util import (
     add_csrf_token_to_session,
-    is_cross_origin,
-    csrf_protect,
     authenticate,
-    client_error,
+    is_cross_origin,
 )
-from .server.app import app
 from .server.server import run_server
-from gdbgui import __version__, htmllistformatter
-from gdbgui.sessionmanager import SessionManager, DebugSession
-
+from .server.sessionmanager import DebugSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -63,7 +42,6 @@ logging.basicConfig(format="(%(asctime)s) %(msg)s")
 
 
 socketio = SocketIO(manage_session=False)
-manager = SessionManager(app.config)
 
 
 @socketio.on("connect", namespace="/gdb_listener")
@@ -390,22 +368,6 @@ def send_signal_to_pid():
     )
 
 
-@app.route("/dashboard", methods=["GET"])
-@authenticate
-def dashboard():
-    add_csrf_token_to_session()
-
-    """display a dashboard with a list of all running gdb processes
-    and ability to kill them, or open a new tab to work with that
-    GdbController instance"""
-    return render_template(
-        "dashboard.html",
-        gdbgui_sessions=manager.get_dashboard_data(),
-        csrf_token=session["csrf_token"],
-        default_command=app.config["gdb_command"],
-    )
-
-
 @app.route("/dashboard_data", methods=["GET"])
 @authenticate
 def dashboard_data():
@@ -421,28 +383,6 @@ def kill_session():
         return jsonify({"success": True})
     else:
         return Response("Missing required parameter: gdbpid", 401,)
-
-
-@app.route("/help")
-def help_route():
-    return redirect("https://github.com/cs01/gdbgui/blob/master/HELP.md")
-
-
-@app.route("/get_last_modified_unix_sec", methods=["GET"])
-@csrf_protect
-def get_last_modified_unix_sec():
-    """Get last modified unix time for a given file"""
-    path = request.args.get("path")
-    if path and os.path.isfile(path):
-        try:
-            last_modified = os.path.getmtime(path)
-            return jsonify({"path": path, "last_modified_unix_sec": last_modified})
-
-        except Exception as e:
-            return client_error({"message": "%s" % e, "path": path})
-
-    else:
-        return client_error({"message": "File not found: %s" % path, "path": path})
 
 
 def get_gdbgui_auth_user_credentials(auth_file, user, password):

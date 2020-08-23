@@ -1,7 +1,8 @@
-from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
+import os
 import socket
 import webbrowser
-import os
+
+from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
 
 try:
     from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
@@ -115,4 +116,3 @@ def run_server(
         except KeyboardInterrupt:
             # Process was interrupted by ctrl+c on keyboard, show message
             pass
-

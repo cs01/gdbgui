@@ -1,11 +1,14 @@
-from .constants import TEMPLATE_DIR, STATIC_DIR, DEFAULT_GDB_EXECUTABLE
 import binascii
+import logging
 import os
+
 from flask import Flask, abort, request, session
 from flask_compress import Compress  # type: ignore
+
+from .constants import DEFAULT_GDB_EXECUTABLE, STATIC_DIR, TEMPLATE_DIR
 from .http_routes import blueprint
 from .http_util import is_cross_origin
-import logging
+from .sessionmanager import SessionManager
 
 logger = logging.getLogger(__file__)
 # Create flask application and add some configuration keys to be used in various callbacks
@@ -23,6 +26,8 @@ app.config["project_home"] = None
 app.config["remap_sources"] = {}
 app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
 app.register_blueprint(blueprint)
+
+manager = SessionManager(app.config)
 
 
 @app.before_request
