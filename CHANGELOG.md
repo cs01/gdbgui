@@ -1,7 +1,20 @@
 # gdbgui release history
 
 ## development
+**Breaking Changes**
+* Removed support for Windows
+* Replaced `--gdb` flag with `--gdb-cmd`. The `--gdb-cmd` argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example `--gdb-cmd "gdb -nx"`. The existing `-g` argument is an alias for `--gdb-cmd`.
+* Removed `--rr` flag. Use `--gdb-cmd rr replay` instead.
+* Removed deprecated and hidden `--hide-gdbgui-upgrades` argument. It will now raise an error.
+
+**Additional Changes**
+* Replaced single terminal on frontend with three terminals: an interactive xterm terminal running gdb, a gdbgui console for diagnostic messages, and a terminal connected to the inferior application being debugged.
+* Updates to the dashboard
+* Add ability to specify gdb command from the browser. This can now be accomplished from the dashboard.
 * Removed gdbgui binaries from source control. They can now be downloaded as artifacts of [releases](https://github.com/cs01/gdbgui/releases).
+* [documentation] Fix bug when generating md5 checksum for binary releases
+* Remove "shutdown" button in UI
+
 
 ## 0.13.2.1
 * No end user changes. This release builds the gdbgui executables with GitHub actions.

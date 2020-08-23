@@ -2,7 +2,7 @@
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/gdbgui2.png)
 
 Enter the binary and args just as you'd call them on the command line.
-Binary is restored when gdbgui is opened at a later time.
+The binary is restored when gdbgui is opened at a later time.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/load_binary_and_args.png)
 
@@ -11,7 +11,7 @@ Next, Step, Return, Next Instruction, Step Instruction.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/controls.png)
 
-If using an Intel CPU and running Linux, gdbgui also works in conjunction with [rr](http://rr-project.org/) to let you debug in reverse.
+If the environment supports reverse debugging, such as when using an Intel CPU and running Linux and debugging with [rr](http://rr-project.org/), gdbgui allows you to debug in reverse.
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/reverse_debugging.png)
 
 ## Stack/Threads
@@ -22,12 +22,9 @@ pointing and clicking.
 
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/stack_and_threads.png)
 
-## Send Signal to Inferior
+## Send Signal to Inferior (debugged) Process
 Choose from any signal your OS supports to send to the inferior. For example, to mock `CTRL+C` in plain gdb, you can send `SIGINT` to interrupt the inferior process. If the inferior process is hung for some reason, you can send `SIGKILL`, etc.
 ![image](https://github.com/cs01/gdbgui/raw/master/screenshots/send_signal.png)
-
-Signals are also recognized by `gdbgui`, and a button is presented to let you step back into the program and inspect the program's state in case it exits unexpectedly.
-![image](https://github.com/cs01/gdbgui/raw/master/screenshots/SIGSEV.png)
 
 
 ## Source Code

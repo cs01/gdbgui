@@ -1,35 +1,43 @@
-const path = require('path');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const path = require("path");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 
 module.exports = {
-  entry: './gdbgui/src/js/gdbgui.jsx',
-  devtool: 'source-map',
+  entry: {
+    main: "./gdbgui/src/js/gdbgui.tsx",
+    dashboard: "./gdbgui/src/js/dashboard.tsx"
+  },
+  devtool: "source-map",
   output: {
-    path: path.resolve(__dirname, 'gdbgui/static/js/'),
-    filename: 'build.js'
+    path: path.resolve(__dirname, "gdbgui/static/js/")
   },
   module: {
-    rules: [{
-      test: /\.(j|t)sx?$/,
-      use: [
-        {
-          loader: 'ts-loader',
-          options: {
-            experimentalFileCaching: true,
-            experimentalWatchApi: true,
-            transpileOnly: true
+    rules: [
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader", "postcss-loader"]
+      },
+      {
+        test: /\.(j|t)sx?$/,
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              experimentalFileCaching: true,
+              experimentalWatchApi: true,
+              transpileOnly: true
+            }
+          },
+          {
+            loader: "tslint-loader",
+            options: {
+              fix: true,
+              typeCheck: true
+            }
           }
-        },
-        {
-          loader: 'tslint-loader',
-          options: {
-            fix: true,
-            typeCheck: true
-          }
-        }
-      ],
-      exclude: /node_modules/
-    }]
+        ],
+        exclude: /node_modules/
+      }
+    ]
   },
   plugins: [
     new ForkTsCheckerWebpackPlugin({
@@ -38,6 +46,6 @@ module.exports = {
     })
   ],
   resolve: {
-    extensions: ['.js', '.ts', '.tsx']
+    extensions: [".js", ".ts", ".tsx", ".css"]
   }
-}
+};

@@ -1,21 +1,23 @@
 #include <stdio.h>
 #include <string.h>
-
-void say_something(const char* str)
+void say_something(const char *str)
 {
   printf("%s\n", str);
 }
 
-struct mystruct_t {
+struct mystruct_t
+{
   int value;
   char letter;
   char *string;
 
-  struct {
+  struct
+  {
     double dbl;
   } substruct; /* named sub-struct */
 
-  struct {
+  struct
+  {
     float fp;
   }; /* anonymous struct */
 
@@ -27,8 +29,8 @@ struct mystruct_t {
   };
 };
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
   printf("Hello World\n");
 
   int retval = 1;
@@ -46,11 +48,13 @@ int main(int argc, char **argv) {
   s.unionint = 0;
   s.uniondouble = 1.0;
 
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++)
+  {
     printf("i is %d\n", i);
   }
 
-  if (!strcmp(s.string, "pass")) {
+  if (!strcmp(s.string, "pass"))
+  {
     retval = 0;
   }
 

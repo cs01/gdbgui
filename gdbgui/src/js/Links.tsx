@@ -1,4 +1,4 @@
-import Actions from "./Actions.js";
+import Actions from "./Actions";
 import * as React from "react";
 import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";
@@ -41,7 +41,7 @@ export class FileLink extends React.Component<Props> {
         >
           {this.props.file}
           {sep}
-          {line}
+          {line > 0 ? line : ""}
         </span>
 
         <CopyToClipboard content={clipboard_content} />
