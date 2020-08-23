@@ -33,6 +33,16 @@ from flask import (
 from flask_compress import Compress  # type: ignore
 from flask_socketio import SocketIO, emit  # type: ignore
 from pygments.lexers import get_lexer_for_filename  # type: ignore
+from .server.constants import (
+    DEFAULT_PORT,
+    USING_WINDOWS,
+    TEMPLATE_DIR,
+    STATIC_DIR,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+    IS_A_TTY,
+    DEFAULT_GDB_EXECUTABLE,
+)
 
 from gdbgui import __version__, htmllistformatter
 from gdbgui.sessionmanager import SessionManager, DebugSession
@@ -55,14 +65,6 @@ except ImportError:
     def get_ssl_context(private_key, certificate):  # noqa
         return None
 
-
-USING_WINDOWS = os.name == "nt"
-TEMPLATE_DIR = os.path.join(BASE_PATH, "templates")
-STATIC_DIR = os.path.join(BASE_PATH, "static")
-DEFAULT_HOST = "127.0.0.1"
-DEFAULT_PORT = 5000
-IS_A_TTY = sys.stdout.isatty()
-DEFAULT_GDB_EXECUTABLE = "gdb"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
