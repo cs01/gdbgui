@@ -43,7 +43,7 @@ from .server.constants import (
     DEFAULT_GDB_EXECUTABLE,
     SIGNAL_NAME_TO_OBJ,
 )
-from .server.http_util import add_csrf_token_to_session
+from .server.http_util import add_csrf_token_to_session, is_cross_origin, csrf_protect
 from .server.app import app
 from gdbgui import __version__, htmllistformatter
 from gdbgui.sessionmanager import SessionManager, DebugSession
@@ -61,79 +61,6 @@ except ImportError:
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 logging.basicConfig(format="(%(asctime)s) %(msg)s")
-
-
-class ColorFormatter(logging.Formatter):
-    def format(self, record):
-        color = "\033[1;0m"
-        if not USING_WINDOWS and sys.stdout.isatty():
-            if record.levelname == "WARNING":
-                color = "\33[93m"  # yellow
-            elif record.levelname == "ERROR":
-                color = "\033[1;41m"
-        return "{color}{levelname}\033[1;0m - {msg}".format(color=color, **vars(record))
-
-
-formatter = ColorFormatter()
-handler = logging.StreamHandler()
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-
-@app.before_request
-def csrf_protect_all_post_and_cross_origin_requests():
-    """returns None upon success"""
-    success = None
-
-    if is_cross_origin(request):
-        logger.warning("Received cross origin request. Aborting")
-        abort(403)
-    if request.method in ["POST", "PUT"]:
-        server_token = session.get("csrf_token")
-        if server_token == request.form.get("csrf_token"):
-            return success
-        elif server_token == request.environ.get("HTTP_X_CSRFTOKEN"):
-            return success
-        elif request.json and server_token == request.json.get("csrf_token"):
-            return success
-        else:
-            logger.warning("Received invalid csrf token. Aborting")
-            abort(403)
-
-
-def is_cross_origin(request):
-    """Compare headers HOST and ORIGIN. Remove protocol prefix from ORIGIN, then
-    compare. Return true if they are not equal
-    example HTTP_HOST: '127.0.0.1:5000'
-    example HTTP_ORIGIN: 'http://127.0.0.1:5000'
-    """
-    origin = request.environ.get("HTTP_ORIGIN")
-    host = request.environ.get("HTTP_HOST")
-    if origin is None:
-        # origin is sometimes omitted by the browser when origin and host are equal
-        return False
-
-    if origin.startswith("http://"):
-        origin = origin.replace("http://", "")
-    elif origin.startswith("https://"):
-        origin = origin.replace("https://", "")
-    return host != origin
-
-
-def csrf_protect(f):
-    """A decorator to add csrf protection by validing the X_CSRFTOKEN
-    field in request header"""
-
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        token = session.get("csrf_token", None)
-        if token is None or token != request.environ.get("HTTP_X_CSRFTOKEN"):
-            logger.warning("Received invalid csrf token. Aborting")
-            abort(403)
-        # call original request handler
-        return f(*args, **kwargs)
-
-    return wrapper
 
 
 socketio = SocketIO(manage_session=False)
