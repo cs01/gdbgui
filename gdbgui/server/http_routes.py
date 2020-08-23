@@ -13,9 +13,9 @@ from flask import (
 )
 from pygments.lexers import get_lexer_for_filename  # type: ignore
 
-from gdbgui import htmllistformatter
+from gdbgui import htmllistformatter, __version__
 
-from .constants import TEMPLATE_DIR
+from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ
 from .http_util import (
     add_csrf_token_to_session,
     authenticate,
@@ -140,4 +140,35 @@ def dashboard():
         gdbgui_sessions=manager.get_dashboard_data(),
         csrf_token=session["csrf_token"],
         default_command=current_app.config["gdb_command"],
+    )
+
+
+@blueprint.route("/", methods=["GET"])
+@authenticate
+def gdbgui():
+    """Render the main gdbgui interface"""
+    gdbpid = request.args.get("gdbpid", 0)
+    gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
+    add_csrf_token_to_session()
+
+    THEMES = ["monokai", "light"]
+    initial_data = {
+        "csrf_token": session["csrf_token"],
+        "gdbgui_version": __version__,
+        "gdbpid": gdbpid,
+        "gdb_command": gdb_command,
+        "initial_binary_and_args": current_app.config["initial_binary_and_args"],
+        "project_home": current_app.config["project_home"],
+        "remap_sources": current_app.config["remap_sources"],
+        "themes": THEMES,
+        "signals": SIGNAL_NAME_TO_OBJ,
+        "using_windows": USING_WINDOWS,
+    }
+
+    return render_template(
+        "gdbgui.html",
+        version=__version__,
+        debug=current_app.debug,
+        initial_data=initial_data,
+        themes=THEMES,
     )
