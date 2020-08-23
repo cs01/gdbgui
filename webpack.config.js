@@ -26,25 +26,13 @@ module.exports = {
               experimentalWatchApi: true,
               transpileOnly: true
             }
-          },
-          {
-            loader: "tslint-loader",
-            options: {
-              fix: true,
-              typeCheck: true
-            }
           }
         ],
         exclude: /node_modules/
       }
     ]
   },
-  plugins: [
-    new ForkTsCheckerWebpackPlugin({
-      tslint: true,
-      tslintAutoFix: true
-    })
-  ],
+  plugins: [new ForkTsCheckerWebpackPlugin({})],
   resolve: {
     extensions: [".js", ".ts", ".tsx", ".css"]
   }
