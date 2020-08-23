@@ -14,7 +14,12 @@ gdbgui
 set the inferior program, pass argument, set a breakpoint at main
 
 ```
-gdbgui --args ./myprogram myarg  command -myflag
+gdbgui --args ./myprogram myarg -myflag
+```
+
+
+```
+gdbgui "./myprogram myarg -myflag"
 ```
 
 use gdb binary not on your $PATH
