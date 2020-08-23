@@ -32,7 +32,7 @@ from flask import (
 )
 
 from flask_socketio import SocketIO, emit  # type: ignore
-from pygments.lexers import get_lexer_for_filename  # type: ignore
+
 from .server.constants import (
     USING_WINDOWS,
     TEMPLATE_DIR,
@@ -42,20 +42,19 @@ from .server.constants import (
     IS_A_TTY,
     DEFAULT_GDB_EXECUTABLE,
     SIGNAL_NAME_TO_OBJ,
+    colorize,
 )
-from .server.http_util import add_csrf_token_to_session, is_cross_origin, csrf_protect
+from .server.http_util import (
+    add_csrf_token_to_session,
+    is_cross_origin,
+    csrf_protect,
+    authenticate,
+    client_error,
+)
 from .server.app import app
+from .server.server import run_server
 from gdbgui import __version__, htmllistformatter
 from gdbgui.sessionmanager import SessionManager, DebugSession
-
-
-try:
-    from gdbgui.SSLify import SSLify, get_ssl_context  # noqa
-except ImportError:
-    print("Warning: Optional SSL support is not available")
-
-    def get_ssl_context(private_key, certificate):  # noqa
-        return None
 
 
 logger = logging.getLogger(__name__)
@@ -65,98 +64,6 @@ logging.basicConfig(format="(%(asctime)s) %(msg)s")
 
 socketio = SocketIO(manage_session=False)
 manager = SessionManager(app.config)
-
-
-def setup_backend(
-    *,
-    host=DEFAULT_HOST,
-    port=DEFAULT_PORT,
-    debug=False,
-    open_browser=True,
-    browsername=None,
-    testing=False,
-    private_key=None,
-    certificate=None,
-):
-    """Run the server of the gdb gui"""
-
-    kwargs = {}
-    ssl_context = get_ssl_context(private_key, certificate)
-    if ssl_context:
-        # got valid ssl context
-        # force everything through https
-        SSLify(app)
-        # pass ssl_context to flask
-        kwargs["ssl_context"] = ssl_context
-
-    url = "%s:%s" % (host, port)
-    if kwargs.get("ssl_context"):
-        protocol = "https://"
-        url_with_prefix = "https://" + url
-    else:
-        protocol = "http://"
-        url_with_prefix = "http://" + url
-
-    if debug:
-        async_mode = "eventlet"
-    else:
-        async_mode = "gevent"
-
-    socketio.server_options["async_mode"] = async_mode
-    try:
-        socketio.init_app(app)
-    except Exception:
-        print(
-            'failed to initialize socketio app with async mode "%s". Continuing with async mode "threading".'
-            % async_mode
-        )
-        socketio.server_options["async_mode"] = "threading"
-        socketio.init_app(app)
-
-    if testing is False:
-        if host == DEFAULT_HOST:
-            url = (DEFAULT_HOST, port)
-        else:
-            try:
-                url = (socket.gethostbyname(socket.gethostname()), port)
-            except Exception:
-                url = (host, port)
-
-        if open_browser is True and debug is False:
-            browsertext = repr(browsername) if browsername else "default browser"
-            args = (browsertext,) + url
-            text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
-            print(colorize(text))
-            b = webbrowser.get(browsername) if browsername else webbrowser
-            b.open(url_with_prefix)
-        else:
-            print(colorize(f"View gdbgui at {protocol}{url[0]}:{url[1]}"))
-        print(
-            colorize(f"View gdbgui dashboard at {protocol}{url[0]}:{url[1]}/dashboard")
-        )
-
-        print("exit gdbgui by pressing CTRL+C")
-
-        try:
-            socketio.run(
-                app,
-                debug=debug,
-                port=int(port),
-                host=host,
-                extra_files=get_extra_files(),
-                **kwargs,
-            )
-        except KeyboardInterrupt:
-            # Process was interrupted by ctrl+c on keyboard, show message
-            pass
-
-
-def colorize(text):
-    if IS_A_TTY and not USING_WINDOWS:
-        return "\033[1;32m" + text + "\x1b[0m"
-
-    else:
-        return text
 
 
 @socketio.on("connect", namespace="/gdb_listener")
@@ -317,28 +224,6 @@ def send_msg_to_clients(client_ids, msg, error=False):
         )
 
 
-def authenticate(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if app.config.get("gdbgui_auth_user_credentials") is not None:
-            auth = request.authorization
-            if (
-                not auth
-                or not auth.username
-                or not auth.password
-                or not credentials_are_valid(auth.username, auth.password)
-            ):
-                return Response(
-                    "You must log in to continue.",
-                    401,
-                    {"WWW-Authenticate": 'Basic realm="gdbgui_login"'},
-                )
-
-        return f(*args, **kwargs)
-
-    return wrapper
-
-
 @app.route("/", methods=["GET"])
 @authenticate
 def gdbgui():
@@ -368,17 +253,6 @@ def gdbgui():
         initial_data=initial_data,
         themes=THEMES,
     )
-
-
-def credentials_are_valid(username, password):
-    user_credentials = app.config.get("gdbgui_auth_user_credentials")
-    if user_credentials is None:
-        return False
-
-    elif len(user_credentials) < 2:
-        return False
-
-    return user_credentials[0] == username and user_credentials[1] == password
 
 
 @socketio.on("disconnect", namespace="/gdb_listener")
@@ -475,29 +349,6 @@ def check_and_forward_pty_output() -> List[DebugSession]:
     return debug_sessions_to_remove
 
 
-def client_error(obj):
-    return jsonify(obj), 400
-
-
-def get_extra_files():
-    """returns a list of files that should be watched by the Flask server
-    when in debug mode to trigger a reload of the server
-    """
-    FILES_TO_SKIP = ["src/gdbgui.js"]
-    THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-    extra_dirs = [THIS_DIR]
-    extra_files = []
-    for extra_dir in extra_dirs:
-        for dirname, _, files in os.walk(extra_dir):
-            for filename in files:
-                filepath = os.path.join(dirname, filename)
-                if os.path.isfile(filepath) and filepath not in extra_files:
-                    for skipfile in FILES_TO_SKIP:
-                        if skipfile not in filepath:
-                            extra_files.append(filepath)
-    return extra_files
-
-
 @app.route("/send_signal_to_pid", methods=["POST"])
 def send_signal_to_pid():
     signal_name = request.form.get("signal_name", "").upper()
@@ -592,83 +443,6 @@ def get_last_modified_unix_sec():
 
     else:
         return client_error({"message": "File not found: %s" % path, "path": path})
-
-
-@app.route("/read_file", methods=["GET"])
-@csrf_protect
-def read_file():
-    """Read a file and return its contents as an array"""
-    path = request.args.get("path")
-    start_line = int(request.args.get("start_line"))
-    end_line = int(request.args.get("end_line"))
-
-    start_line = max(1, start_line)  # make sure it's not negative
-
-    try:
-        highlight = json.loads(request.args.get("highlight", "true"))
-    except Exception as e:
-        if app.debug:
-            print("Raising exception since debug is on")
-            raise e
-
-        else:
-            highlight = (
-                True  # highlight argument was invalid for some reason, default to true
-            )
-
-    if path and os.path.isfile(path):
-        try:
-            last_modified = os.path.getmtime(path)
-            with open(path, "r") as f:
-                raw_source_code_list = f.read().split("\n")
-                num_lines_in_file = len(raw_source_code_list)
-                end_line = min(
-                    num_lines_in_file, end_line
-                )  # make sure we don't try to go too far
-
-                # if leading lines are '', then the lexer will strip them out, but we want
-                # to preserve blank lines. Insert a space whenever we find a blank line.
-                for i in range((start_line - 1), (end_line)):
-                    if raw_source_code_list[i] == "":
-                        raw_source_code_list[i] = " "
-                raw_source_code_lines_of_interest = raw_source_code_list[
-                    (start_line - 1) : (end_line)
-                ]
-            try:
-                lexer = get_lexer_for_filename(path)
-            except Exception:
-                lexer = None
-
-            if lexer and highlight:
-                highlighted = True
-                # convert string into tokens
-                tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))
-                # format tokens into nice, marked up list of html
-                formatter = (
-                    htmllistformatter.HtmlListFormatter()
-                )  # Don't add newlines after each line
-                source_code = formatter.get_marked_up_list(tokens)
-            else:
-                highlighted = False
-                source_code = raw_source_code_lines_of_interest
-
-            return jsonify(
-                {
-                    "source_code_array": source_code,
-                    "path": path,
-                    "last_modified_unix_sec": last_modified,
-                    "highlighted": highlighted,
-                    "start_line": start_line,
-                    "end_line": end_line,
-                    "num_lines_in_file": num_lines_in_file,
-                }
-            )
-
-        except Exception as e:
-            return client_error({"message": "%s" % e})
-
-    else:
-        return client_error({"message": "File not found: %s" % path})
 
 
 def get_gdbgui_auth_user_credentials(auth_file, user, password):
@@ -879,7 +653,9 @@ def main():
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )
 
-    setup_backend(
+    run_server(
+        app=app,
+        socketio=socketio,
         host=args.host,
         port=int(args.port),
         debug=bool(args.debug),
