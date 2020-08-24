@@ -16,7 +16,8 @@
     "react-dom": "^16.4",
     "statorgfc": "^0.1.6",
     "webpack": "^4.44.1",
-    "webpack-cli": "^2.0.14"
+    "webpack-cli": "^3.3.10",
+    "yarn": "^1.22.4"
   },
   "devDependencies": {
     "@types/jest": "^24.0.11",
