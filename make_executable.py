@@ -33,7 +33,7 @@ def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
 block_cipher = None
 
 
-a = Analysis(['gdbgui/backend.py'],  # noqa
+a = Analysis(['gdbgui/cli.py'],  # noqa
              pathex=['.'],
              binaries=[],
              datas=[

@@ -16,13 +16,13 @@ from typing import List, Optional
 
 from gdbgui import __version__
 
-from .server.app import app, socketio
-from .server.constants import (
+from gdbgui.server.app import app, socketio
+from gdbgui.server.constants import (
     DEFAULT_GDB_EXECUTABLE,
     DEFAULT_HOST,
     DEFAULT_PORT,
 )
-from .server.server import run_server
+from gdbgui.server.server import run_server
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
