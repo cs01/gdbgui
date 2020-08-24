@@ -9,14 +9,14 @@ run_server(testing=True, app=app, socketio=socketio)
 
 
 def test_connect():
-    socketio = SocketIO()
+    test_ws = SocketIO()
 
-    @socketio.on("connect")
+    @test_ws.on("connect")
     def on_connect():
         send({"connected": "foo"}, json=True)
 
-    socketio.init_app(app, cookie="foo")
-    client = socketio.test_client(app)
+    test_ws.init_app(app, cookie="foo")
+    client = test_ws.test_client(app)
     received = client.get_received()
     assert len(received) == 1
     assert received[0]["args"] == {"connected": "foo"}
