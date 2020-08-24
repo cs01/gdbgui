@@ -64,7 +64,7 @@ setup(
         "console_scripts": [
             # allow user to type gdbgui from terminal to automatically launch
             # the server and a tab in a browser
-            "gdbgui = gdbgui.backend:main"
+            "gdbgui = gdbgui.cli:main"
         ]
     },
     zip_safe=False,

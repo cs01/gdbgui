@@ -1,12 +1,14 @@
-import logging
-import traceback
-from typing import Any, Dict, List, Optional, Set
-from pygdbmi.IoManager import IoManager
-from collections import defaultdict
-from .ptylib import Pty
-import os
 import datetime
+import logging
+import os
 import signal
+import traceback
+from collections import defaultdict
+from typing import Dict, List, Optional, Set
+
+from pygdbmi.IoManager import IoManager
+
+from .ptylib import Pty
 
 logger = logging.getLogger(__name__)
 
@@ -61,13 +63,12 @@ class DebugSession:
 
 
 class SessionManager(object):
-    def __init__(self, app_config: Dict[str, Any]):
+    def __init__(self):
         self.debug_session_to_client_ids: Dict[DebugSession, List[str]] = defaultdict(
             list
         )  # key is controller, val is list of client ids
 
         self.gdb_reader_thread = None
-        self.config = app_config
 
     def connect_client_to_debug_session(
         self, *, desired_gdbpid: int, client_id: str

@@ -6,14 +6,14 @@ if USING_WINDOWS:
         "Windows is not supported at this time. "
         + "Versions lower than 0.14.x. are Windows compatible."
     )
+import fcntl
 import pty
 import select
-import struct
-import signal
-from typing import Optional
 import shlex
+import signal
+import struct
 import termios
-import fcntl
+from typing import Optional
 
 
 class Pty:
