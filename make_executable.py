@@ -33,7 +33,7 @@ def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
 block_cipher = None
 
 
-a = Analysis(['gdbgui/backend.py'],  # noqa
+a = Analysis(['gdbgui/cli.py'],  # noqa
              pathex=['.'],
              binaries=[],
              datas=[
@@ -90,8 +90,9 @@ def verify(binary_path: str, version: str):
 
 
 def generate_md5(binary: Path, output_file: Path):
+    checksum = hashlib.md5(binary.read_bytes()).hexdigest()
     with open(output_file, "w+") as f:
-        f.write(hashlib.md5(str(binary).encode()).hexdigest() + "\n")
+        f.write(checksum + "\n")
     logging.info(f"Wrote md5 to {output_file}")
 
 

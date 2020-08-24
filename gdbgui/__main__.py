@@ -1,3 +1,3 @@
-from . import backend
+from . import cli
 
-backend.main()
+cli.main()

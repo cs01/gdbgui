@@ -1,10 +1,12 @@
 import * as React from "react";
-import Memory from "./Memory.jsx";
+import Memory from "./Memory";
 
-type Props = {
+type OwnProps = {
   addr: string;
   style?: React.CSSProperties;
 };
+
+type Props = OwnProps & typeof MemoryLink.defaultProps;
 
 class MemoryLink extends React.Component<Props> {
   render() {
