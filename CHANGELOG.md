@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.14.0.1
+* Hide "No registers." message
+
 ## 0.14.0.0
 **Breaking Changes**
 * Removed support for Windows
