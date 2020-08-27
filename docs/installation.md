@@ -94,6 +94,8 @@ instructions](http://andresabino.com/2015/04/14/codesign-gdb-on-mac-os-x-yosemit
 
 ### Windows Dependencies
 
+Note that windows is only supported for gdbgui versions less than 0.14.
+
 - [Python 3](https://www.python.org/downloads/windows/)
 - gdb, make, gcc
 

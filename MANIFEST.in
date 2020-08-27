@@ -2,6 +2,10 @@ include README.md
 include LICENSE
 
 graft gdbgui
+# these files are built and must be included in distribution
+# but shouldn't be included in git repository since they
+# are generated
+graft gdbgui/static/js
 
 include gdbgui-mpi/compile.sh
 include gdbgui-mpi/launch_gdb_server
@@ -21,6 +25,7 @@ exclude mypy.ini
 exclude .eslintrc.json
 exclude .coveragerc
 exclude .flake8
+exclude .vulture_whitelist.py
 exclude .prettierrc.js
 exclude jest.config.js
 exclude make_executable.py
@@ -34,3 +39,5 @@ exclude yarn.lock
 exclude noxfile.py
 exclude CHANGELOG.md
 exclude CONTRIBUTING.md
+exclude postcss.config.js
+exclude tailwind.config.js

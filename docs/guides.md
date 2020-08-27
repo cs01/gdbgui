@@ -7,8 +7,9 @@ Remember, these guides, like gdbgui, are **open source** and can be edited by yo
 After downloading gdbgui, you can launch it like so:
 
 * `gdbgui` (or whatever the binary name is, i.e. `gdbgui_0.10.0.0`)
-* `gdbgui "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
-* `gdbgui --args "./mybinary -myarg value -flag1 -flag2"` (note the quotes around the arguments)
+* `gdbgui --args ./mybinary -myarg value -flag1 -flag2`
+
+Make sure the program you want to debug was compiled with debug symbols. See the getting started section for more details.
 
 A new tab in your browser will open with gdbgui in it. If a browser tab did not open, navigate to the ip/port that gdbgui is being served on (i.e. http://localhost:5000).
 
@@ -42,9 +43,11 @@ cd myprog
 cargo build
 ```
 
-You can start debugging with a simple
+You can start debugging with
 
-`gdbgui target/debug/myprog`
+```
+gdbgui --args target/debug/myprog
+```
 
 There are a couple of small difficulties.
 
@@ -72,11 +75,10 @@ You can load this into gdb with the following command (changed as appropriate):
 symbol-file /Users/user/git/gdbgui/examples/rust/target/debug/deps/hello-486956f9dde465e5
 ```
 
-2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default,
-which makes it print the message
+2.) The GDB pretty-printing macros that Rust ships with. GDB can't find these by default, which makes it print the message
 
 ```
-warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/phil/temp/myprog/target/debug/myprog.
+warning: Missing auto-load script at offset 0 in section .debug_gdb_scripts of file /home/temp/myprog/target/debug/myprog.
 Use `info auto-load python-scripts [REGEXP]' to list them.
 ```
 
@@ -106,7 +108,7 @@ Then you can launch `gdb` or `gdbgui` and connect to it. In `gdbgui`, use the dr
 
 Read more at the [gdbserver homepage](https://sourceware.org/gdb/onlinedocs/gdb/Server.html).
 
-If the machine gdbgui is running on and the target being debugged have different architectures, make sure gdb is built properly. See []
+If the machine gdbgui is running on and the target being debugged have different architectures, make sure gdb is built properly (see `Remote Debugging Between Different Architectures`).
 
 ## Remote Debugging Between Different Architectures
 
