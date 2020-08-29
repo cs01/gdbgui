@@ -102,8 +102,6 @@ test("debug session", () => {
       return line_num.innerHTML;
     });
 
-    page.screenshot({ path: "DIOCANE.png" });
-
     console.log("Check the program load and breakpoint:", break_on_line);
 
     const break_on_line_40 = await page.evaluate(() => {
