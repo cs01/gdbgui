@@ -305,7 +305,49 @@ def open_mpi_sessions(message):
             gdb_command=gdb_command, mi_version=mi_version, client_id=request.sid
         )
 
+def process_controllers_out():
+    debug_sessions_to_remove = []
+    for debug_session, client_ids in manager.debug_session_to_client_ids.items():
+        try:
+            try:
+                response = debug_session.pygdbmi_controller.get_gdb_response(
+                    timeout_sec=0, raise_error_on_timeout=False
+                )
 
+            except Exception:
+                response = None
+                send_msg_to_clients(
+                    client_ids,
+                    "The underlying gdb process has been killed. This tab will no longer function as expected.",
+                    error=True,
+                )
+                debug_sessions_to_remove.append(debug_session)
+
+            if response:
+                """Attach processor information"""
+                for r in response:
+                    r["proc"] = debug_session.mpi_rank
+
+                for client_id in client_ids:
+                    logger.info(
+                        "emiting message to websocket client id " + client_id
+                    )
+                    socketio.emit(
+                        "gdb_response",
+                        response,
+                        namespace="/gdb_listener",
+                        room=client_id,
+                    )
+            else:
+                # there was no queued response from gdb, not a problem
+                pass
+
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    debug_sessions_to_remove += check_and_forward_pty_output()
+    for debug_session in set(debug_sessions_to_remove):
+        manager.remove_debug_session(debug_session)
 
 def read_and_forward_gdb_and_pty_output():
     """A task that runs on a different thread, and emits websocket messages
@@ -313,48 +355,7 @@ def read_and_forward_gdb_and_pty_output():
 
     while True:
         socketio.sleep(0.05)
-        debug_sessions_to_remove = []
-        for debug_session, client_ids in manager.debug_session_to_client_ids.items():
-            try:
-                try:
-                    response = debug_session.pygdbmi_controller.get_gdb_response(
-                        timeout_sec=0, raise_error_on_timeout=False
-                    )
-
-                except Exception:
-                    response = None
-                    send_msg_to_clients(
-                        client_ids,
-                        "The underlying gdb process has been killed. This tab will no longer function as expected.",
-                        error=True,
-                    )
-                    debug_sessions_to_remove.append(debug_session)
-
-                if response:
-                    """Attach processor information"""
-                    for r in response:
-                        r["proc"] = debug_session.mpi_rank
-
-                    for client_id in client_ids:
-                        logger.info(
-                            "emiting message to websocket client id " + client_id
-                        )
-                        socketio.emit(
-                            "gdb_response",
-                            response,
-                            namespace="/gdb_listener",
-                            room=client_id,
-                        )
-                else:
-                    # there was no queued response from gdb, not a problem
-                    pass
-
-            except Exception:
-                logger.error(traceback.format_exc())
-
-        debug_sessions_to_remove += check_and_forward_pty_output()
-        for debug_session in set(debug_sessions_to_remove):
-            manager.remove_debug_session(debug_session)
+        process_controllers_out()
 
 
 def check_and_forward_pty_output() -> List[DebugSession]:

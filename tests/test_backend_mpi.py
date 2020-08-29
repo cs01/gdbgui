@@ -1,50 +1,62 @@
-from gdbgui import backend
+from gdbgui import cli
 import pytest  # type: ignore
 from threading import Thread
 import time
 import re
 import subprocess
+import gdbgui.server
+import os
 
-backend.setup_backend(testing=True)
-socketio = backend.socketio
+from gdbgui.server.app import app, socketio
+from gdbgui.server.constants import (
+    DEFAULT_GDB_EXECUTABLE,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+)
+import gdbgui.server.server
+
+app.config["gdb_command"] = DEFAULT_GDB_EXECUTABLE
+gdbgui.server.server.run_server(
+    app=app,
+    socketio=socketio,
+    host=DEFAULT_HOST,
+    port=DEFAULT_PORT,
+    debug=False,
+    open_browser=False,
+    browsername="ChromeHeadless",
+    testing=True
+)
+socketio = gdbgui.server.app.socketio
 
 
 @pytest.fixture
 def test_client():
-    return backend.app.test_client()
-
-
-def launch_gdb_servers():
-    process = subprocess.Popen(
-        [
-            "bash",
-            "-c",
-            "source /home/i-bird/openfpm_vars_3.0.0 && ./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
-    stdout, stderr = process.communicate()
-
+    return gdbgui.server.app.app.test_client()
 
 def check_run_and_wait_for_brakpoint(target_bkt, target_runs, test_client_socketio):
     num_breakpoint_hit = 0
     num_running = 0
-    while num_breakpoint_hit < target_bkt or num_running < target_runs:
-        backend.process_controllers_out()
+    print("Checking running and breakpoint hit:")
+    timeout = time.time() + 10
+    while (num_breakpoint_hit < target_bkt or num_running < target_runs) and time.time() < timeout:
+        gdbgui.server.app.process_controllers_out()
         messages = test_client_socketio.get_received(namespace="/gdb_listener")
+
+        if len(messages) != 0:
+            print(messages)
 
         for i in range(0, len(messages)):
             for arg in messages[i]["args"][0]:
-                if arg["message"] == "running" and arg["type"] == "result":
-                    num_running += 1
-                if arg["message"] == "stopped" and (
-                    arg["payload"]["reason"] == "breakpoint-hit"
-                    or arg["payload"]["reason"] == "end-stepping-range"
-                ):
-                    num_breakpoint_hit += 1
-                if arg["message"] is None and "exited" in arg["payload"]:
-                    num_breakpoint_hit += 1
+                if (type(arg) is dict):
+                    if arg["message"] == "running" and arg["type"] == "notify":
+                        num_running += 1
+                    if arg["message"] == "stopped" and (
+                        arg["payload"]["reason"] == "breakpoint-hit"
+                        or arg["payload"]["reason"] == "end-stepping-range"
+                    ):
+                        num_breakpoint_hit += 1
+                    if arg["message"] is None and "exited" in arg["payload"]:
+                        num_breakpoint_hit += 1
     return num_breakpoint_hit, num_running
 
 
@@ -58,19 +70,33 @@ def set_breakpoint(test_client_socketio, pos):
         )
 
 
-def check_breakpoint_hit(test_client_socketio, line):
+def check_breakpoint_set(test_client_socketio, line, target_bkt):
     time.sleep(1)
     # 6 connection, 6 gdb messages
-    messages = test_client_socketio.get_received(namespace="/gdb_listener")
-    assert len(messages) == 6
-    for i in range(0, 6):
-        assert "gdb_response" in messages[i]["name"]
-        assert (
-            "main(int, char**)" in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
-        )
-        assert line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
-        assert "breakpoint" in messages[i]["args"][0][0]["payload"]["bkpt"]["type"]
+    num_break_hit = 0
+    timeout = time.time() + 10
 
+    print("Checking breakpoint set:")
+
+    while num_break_hit < target_bkt and time.time() < timeout:
+        gdbgui.server.app.process_controllers_out()
+        messages = test_client_socketio.get_received(namespace="/gdb_listener")
+
+        if len(messages) != 0:
+            print(messages)
+
+        for i in range(0, len(messages)):
+            if messages[i]["args"][0][0]["payload"].get("bkpt") is not None:
+                if "breakpoint" in messages[i]["args"][0][0]["payload"]["bkpt"]["type"]:
+                    assert "gdb_response" in messages[i]["name"]
+                    assert (
+                        "main(int, char**)" in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
+                    )
+                    assert line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
+
+                    num_break_hit += 1
+
+    assert num_break_hit == 6
 
 def continue_run(test_client_socketio):
     for i in range(0, 6):
@@ -96,7 +122,7 @@ def test_load_mpi_program(test_client):
     gdbpid_extract = gdbpid_ext.match(p[0]).group(1)
 
     test_client_socketio = socketio.test_client(
-        backend.app,
+        gdbgui.server.app.app,
         namespace="/gdb_listener",
         query_string="csrf_token=" + csrf_token_extract + "&gdbpid=" + gdbpid_extract,
         flask_test_client=test_client,
@@ -105,8 +131,17 @@ def test_load_mpi_program(test_client):
 
     assert test_client_socketio.is_connected(namespace="/gdb_listener")
 
-    thread = Thread(target=launch_gdb_servers)
-    thread.start()
+    my_env = os.environ
+    process = subprocess.Popen(
+        [
+            "bash",
+            "-c",
+            "./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        env=my_env
+    )
 
     time.sleep(1)
 
@@ -115,10 +150,10 @@ def test_load_mpi_program(test_client):
     assert "0         localhost.localdomain\n" in response.data.decode()
 
     test_client_socketio.emit(
-        "open_mpi_sessions", {"processors": "6"}, namespace="/gdb_listener"
+        "open_mpi_sessions", {"processors": 6}, namespace="/gdb_listener"
     )
     time.sleep(1)
-    controllers = backend._state.get_controllers()
+    controllers = gdbgui.server.app.manager.get_controllers()
 
     # check we have 6 sessions
     assert len(controllers) == 6
@@ -132,19 +167,18 @@ def test_load_mpi_program(test_client):
             namespace="/gdb_listener",
         )
 
-    time.sleep(1)
+    time.sleep(2)
 
     messages = test_client_socketio.get_received(namespace="/gdb_listener")
-    backend.process_controllers_out()
+    gdbgui.server.app.process_controllers_out()
 
-    # 6 connection, 6 gdb messages
+    # 6 connection, 12 gdb messages
     messages = test_client_socketio.get_received(namespace="/gdb_listener")
-    assert len(messages) == 6
+    assert len(messages) == 12
 
     set_breakpoint(test_client_socketio, "")
-    backend.process_controllers_out()
-    check_breakpoint_hit(test_client_socketio, "10")
-
+    gdbgui.server.app.process_controllers_out()
+    check_breakpoint_set(test_client_socketio, "10",6)
     continue_run(test_client_socketio)
 
     # At this point I am expexting to receive a lot of notification messages about reading information on libraries and so on in reality we are interested
@@ -159,8 +193,8 @@ def test_load_mpi_program(test_client):
     # now we set a breakpoint in a particular point of main.cpp and check we hit that breakpoint
 
     set_breakpoint(test_client_socketio, ".cpp:40")
-    backend.process_controllers_out()
-    check_breakpoint_hit(test_client_socketio, "40")
+    gdbgui.server.app.process_controllers_out()
+    check_breakpoint_set(test_client_socketio, "40",6)
 
     # run and check for breakpoint
     continue_run(test_client_socketio)
@@ -181,7 +215,7 @@ def test_load_mpi_program(test_client):
             namespace="/gdb_listener",
         )
 
-    backend.process_controllers_out()
+    gdbgui.server.app.process_controllers_out()
 
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
         6, 6, test_client_socketio
@@ -193,8 +227,8 @@ def test_load_mpi_program(test_client):
     # create a breakpoint only valid fir processor 0
 
     set_breakpoint(test_client_socketio, ".cpp:47")
-    backend.process_controllers_out()
-    check_breakpoint_hit(test_client_socketio, "47")
+    gdbgui.server.app.process_controllers_out()
+    check_breakpoint_set(test_client_socketio, "47",6)
 
     # run and check for breakpoint
     continue_run(test_client_socketio)
@@ -217,3 +251,6 @@ def test_load_mpi_program(test_client):
 
     assert num_breakpoint_hit == 6
     assert num_running == 1
+
+    process.terminate()
+    process.wait()
