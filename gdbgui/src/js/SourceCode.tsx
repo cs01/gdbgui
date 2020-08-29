@@ -163,7 +163,7 @@ class SourceCode extends React.Component<{}, State> {
   _get_source_line(
     source: any,
     line_should_flash: any,
-    is_gdb_paused_on_this_line: any,
+    gdb_paused_on_this_line_type: number,
     line_num_being_rendered: any,
     has_bkpt: any,
     has_disabled_bkpt: any,
@@ -173,9 +173,9 @@ class SourceCode extends React.Component<{}, State> {
   ) {
     let row_class = ["srccode"];
 
-    if (is_gdb_paused_on_this_line === 1) {
+    if (gdb_paused_on_this_line_type === 1) {
       row_class.push("paused_on_line");
-    } else if (is_gdb_paused_on_this_line === 2) {
+    } else if (gdb_paused_on_this_line_type === 2) {
       row_class.push("paused_on_line2");
     } else if (line_should_flash) {
       row_class.push("flash");
@@ -186,7 +186,7 @@ class SourceCode extends React.Component<{}, State> {
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      if (is_gdb_paused_on_this_line) {
+      if (gdb_paused_on_this_line_type === 1) {
         id = "scroll_to_line";
       }
     } else if (
@@ -428,7 +428,7 @@ class SourceCode extends React.Component<{}, State> {
       body.push(
         this._get_source_line(
           cur_line_of_code,
-          line_of_source_to_flash === line_num_being_rendered,
+          (line_of_source_to_flash === line_num_being_rendered)?1:0,
           is_gdb_paused_on_this_line,
           line_num_being_rendered,
           has_bkpt,
