@@ -30,6 +30,9 @@ jobs:
       - name: Install gdb and openmpi ubuntu
         run: |
           sudo apt-get install gdb openmpi
+      - name: Compiling node_names
+        run: |
+          ./gdbgui-mpi/compile.sh
       - name: Execute Tests
         run: |
           nox --non-interactive --session tests-${{ matrix.python-version }}
