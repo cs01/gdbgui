@@ -157,12 +157,17 @@ def test_load_mpi_program(test_client):
     # check we have 6 sessions
     assert len(controllers) == 6
 
-    # connect to the gdb_servers
-    for i in range(0, 6):
-        cmd = "-target-select remote localhost.localdomain:" + str(60000 + i)
+    # process the names and connect to gdb_servers
+    lines = response.data.decode().split("\n")
+    lines.pop()
+    assert len(lines) == 6
+    for line in lines:
+        proc_name = line.split()
+
+        cmd = "-target-select remote " + proc_name[1] + ":" + str(60000 + int(proc_name[0]))
         test_client_socketio.emit(
             "run_gdb_command_mpi",
-            {"processor": i, "cmd": [cmd]},
+            {"processor": int(proc_name[0]), "cmd": [cmd]},
             namespace="/gdb_listener",
         )
 
