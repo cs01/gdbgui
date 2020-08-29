@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 mpirun --oversubscribe -np $1 gdbgui-mpi/print_nodes
 mv nodes_name gdbgui-mpi/
