@@ -13,7 +13,7 @@ test("debug session", () => {
     ["6", "gdbgui-mpi/print_nodes"],
     { shell: true }
   );
-  const exe_python_server = spawn("python", ["-m", "gdbgui-mpi"], { shell: true });
+  const exe_python_server = spawn("python", ["-m", "gdbgui", "-n"], { shell: true });
 
   const puppeteer = require("puppeteer");
 
