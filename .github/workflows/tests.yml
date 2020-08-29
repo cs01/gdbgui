@@ -1,5 +1,18 @@
 # https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions
 
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.4.1
+        with:
+          access_token: ${{ github.token }}
+      #- name: Run Tests
+      #  uses: actions/setup-node@v1
+      #  run: node test.js
+      # ... etc
+
 name: Tests
 
 on:
@@ -18,6 +31,7 @@ jobs:
         python-version: [3.6, 3.7, 3.8]
 
     steps:
+      - timeout: 4
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
