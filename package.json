@@ -4,7 +4,7 @@
   "license": "GPL-3.0",
   "scripts": {
     "start": "cross-env NODE_ENV=development webpack --mode development --watch --config webpack.config.js",
-    "test": "ls ./node_modules && ./node_modules/ts-jest/bin/jest.js --verbose=false",
+    "test": "./node_modules/jest/bin/jest.js --verbose=false",
     "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
     "format": "prettier ./gdbgui/src/js/** --write",
     "lint": "prettier ./gdbgui/src/js/** --check"
@@ -38,6 +38,7 @@
     "cross-env": "^7.0.2",
     "css-loader": "^3.6.0",
     "fork-ts-checker-webpack-plugin": "^1.0.0",
+    "jest": "^26.4.2",
     "mini-css-extract-plugin": "^0.9.0",
     "mocha": "^8.1.1",
     "postcss-cli": "^7.1.1",

@@ -36,6 +36,7 @@ def python_tests(session):
 
 @nox.session(reuse_venv=True)
 def js_tests(session):
+    session.install(".", "pytest", "pytest-cov", "flask-socketio>4.2.0")
     session.run("yarn", "install", external=True)
     session.run("yarn", "test", external=True)
     session.run("yarn", "build", external=True)

@@ -1,4 +1,4 @@
-function sleep(ms) {
+function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -20,6 +20,7 @@ test("debug session", () => {
   return (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+    page.waitFor(2000)
     await page.goto("http://127.0.0.1:5000");
 
     // Load page and connect to server and debug
@@ -29,20 +30,20 @@ test("debug session", () => {
         return false;
       }
 
-      let menu_button = top_div.querySelector("button.dropdown-toggle");
+      let menu_button:HTMLElement = top_div.querySelector("button.dropdown-toggle") as HTMLElement;
       if (menu_button == null) {
         return false;
       }
 
       menu_button.click();
 
-      a_point = top_div.querySelectorAll("a.pointer")[3];
+      let a_point:HTMLElement = top_div.querySelectorAll("a.pointer")[3] as HTMLElement;
       if (a_point == null || a_point.innerText != "Connect to MPI gdbservers") {
         return false;
       }
       a_point.click();
 
-      connect_button = top_div.querySelectorAll("button.btn-primary")[1];
+      let connect_button:HTMLElement = top_div.querySelectorAll("button.btn-primary")[1] as HTMLElement;
       if (
         connect_button == null ||
         connect_button.innerText != "Connect to mpi-gdbserver"
@@ -71,7 +72,7 @@ test("debug session", () => {
         return false;
       }
 
-      connect_button = top_div.querySelectorAll("button.btn-primary")[1];
+      let connect_button:HTMLElement = top_div.querySelectorAll("button.btn-primary")[1] as HTMLElement;
       if (
         connect_button == null ||
         connect_button.innerText != "Connect to mpi-gdbserver"
@@ -89,12 +90,12 @@ test("debug session", () => {
     await page.waitFor(4000);
 
     const break_on_line = await page.evaluate(() => {
-      source_break_point = document.querySelector("tr.paused_on_line");
+      let source_break_point:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
 
-      line_num = source_break_point.querySelector("td.line_num div");
+      let line_num:HTMLElement = source_break_point.querySelector("td.line_num div") as HTMLElement;
       if (line_num == null) {
         return false;
       }
@@ -105,7 +106,7 @@ test("debug session", () => {
     console.log("Check the program load and breakpoint:", break_on_line);
 
     const break_on_line_40 = await page.evaluate(() => {
-      source_break_point = document.querySelectorAll("td.line_num")[39];
+      let source_break_point:HTMLElement = document.querySelectorAll("td.line_num")[39] as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
@@ -126,7 +127,7 @@ test("debug session", () => {
     await page.waitFor(1000);
 
     const confirm_break_on_line_40 = await page.evaluate(() => {
-      breakpoints = document.querySelectorAll("td.line_num.breakpoint");
+      let breakpoints = document.querySelectorAll<HTMLElement>("td.line_num.breakpoint");
       if (breakpoints.length < 2) {
         return false;
       }
@@ -141,7 +142,7 @@ test("debug session", () => {
     console.log("Confirm breakpoint on line 40:", confirm_break_on_line_40);
 
     const continue_execution = await page.evaluate(() => {
-      continue_button = document.getElementById("continue_button");
+      let continue_button:HTMLElement = document.getElementById("continue_button") as HTMLElement;
       if (continue_button == null) {
         return false;
       }
@@ -155,12 +156,12 @@ test("debug session", () => {
     await page.waitFor(4000);
 
     const break_on_line2 = await page.evaluate(() => {
-      source_break_point = document.querySelector("tr.paused_on_line");
+      let source_break_point:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
 
-      line_num = source_break_point.querySelector("td.line_num div");
+      let line_num:HTMLElement = source_break_point.querySelector("td.line_num div") as HTMLElement;
       if (line_num == null) {
         return false;
       }
@@ -176,23 +177,23 @@ test("debug session", () => {
     await page.waitFor(1000);
 
     const single_step_divergence = await page.evaluate(() => {
-      source_break_point_on_focus = document.querySelector("tr.paused_on_line");
-      if (source_break_point == null) {
+      let source_break_point_on_focus:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
+      if (source_break_point_on_focus == null) {
         return false;
       }
 
-      source_break_point_not_on_focus = document.querySelector("tr.paused_on_line2");
-      if (source_break_point == null) {
+      let source_break_point_not_on_focus:HTMLElement = document.querySelector("tr.paused_on_line2") as HTMLElement;
+      if (source_break_point_not_on_focus == null) {
         return false;
       }
 
-      line_num = source_break_point_on_focus.querySelector("td.line_num div");
-      if (line_num.innerHTML != 43) {
+      let line_num:HTMLElement = source_break_point_on_focus.querySelector("td.line_num div") as HTMLElement;
+      if (parseInt(line_num.innerHTML) != 43) {
         return false;
       }
 
-      line_num = source_break_point_not_on_focus.querySelector("td.line_num div");
-      if (line_num.innerHTML != 60) {
+      line_num = source_break_point_not_on_focus.querySelector("td.line_num div") as HTMLElement;
+      if (parseInt(line_num.innerHTML) != 60) {
         return false;
       }
 
@@ -209,17 +210,17 @@ test("debug session", () => {
     await page.waitFor(1000);
 
     const add_expression = await page.evaluate(() => {
-      varLi = document.querySelectorAll("li.varLI");
+      let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
       if (varLi.length != 1) {
         return false;
       }
 
-      var_name = varLi[0].querySelector("span");
+      let var_name:HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
         return false;
       }
 
-      var_value = varLi[0].querySelector("span.gdbVarValue");
+      let var_value:HTMLElement = varLi[0].querySelector("span.gdbVarValue") as HTMLElement;
       if (var_value == null) {
         return false;
       }
@@ -239,17 +240,17 @@ test("debug session", () => {
     await page.waitFor(1000);
 
     const add_expression2 = await page.evaluate(() => {
-      varLi = document.querySelectorAll("li.varLI");
+      let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
       if (varLi.length != 1) {
         return false;
       }
 
-      var_name = varLi[0].querySelector("span");
+      let var_name:HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
         return false;
       }
 
-      var_value = varLi[0].querySelector("span.gdbVarValue");
+      let var_value:HTMLElement = varLi[0].querySelector("span.gdbVarValue") as HTMLElement;
       if (var_value == null) {
         return false;
       }
