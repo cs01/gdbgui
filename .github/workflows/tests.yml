@@ -27,9 +27,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install nox
-      - name: Install gdb ubuntu
+      - name: Install gdb and openmpi ubuntu
         run: |
-          sudo apt-get install gdb
+          sudo apt-get install gdb openmpi
       - name: Execute Tests
         run: |
           nox --non-interactive --session tests-${{ matrix.python-version }}
