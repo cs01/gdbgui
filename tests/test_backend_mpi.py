@@ -71,7 +71,7 @@ def set_breakpoint(test_client_socketio, pos):
         )
 
 
-def check_breakpoint_set(test_client_socketio, line, target_bkt):
+def check_breakpoint_set(test_client_socketio, line, target_bkt, process = None):
     time.sleep(1)
     # 6 connection, 6 gdb messages
     num_break_hit = 0
@@ -97,6 +97,11 @@ def check_breakpoint_set(test_client_socketio, line, target_bkt):
                     assert line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
 
                     num_break_hit += 1
+
+    if num_break_hit == 0 and process is not None:
+        # OK we try to print the output of launching the gdbserver
+        print(process.stderr.read())
+        print(process.stdout.read())
 
     assert num_break_hit == 6
 
@@ -164,7 +169,7 @@ def test_load_mpi_program(test_client):
     for line in lines:
         proc_name = line.split()
 
-        cmd = "-target-select remote 127.0.0.1:" + str(60000 + int(proc_name[0]))
+        cmd = "-target-select remote " + proc_name[1] + ":" + str(60000 + int(proc_name[0]))
         test_client_socketio.emit(
             "run_gdb_command_mpi",
             {"processor": int(proc_name[0]), "cmd": [cmd]},
@@ -182,7 +187,7 @@ def test_load_mpi_program(test_client):
 
     set_breakpoint(test_client_socketio, "")
     gdbgui.server.app.process_controllers_out()
-    check_breakpoint_set(test_client_socketio, "10", 6)
+    check_breakpoint_set(test_client_socketio, "10", 6,process)
     continue_run(test_client_socketio)
 
     # At this point I am expexting to receive a lot of notification messages about reading information on libraries and so on in reality we are interested
