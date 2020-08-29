@@ -164,7 +164,7 @@ def test_load_mpi_program(test_client):
     for line in lines:
         proc_name = line.split()
 
-        cmd = "-target-select remote " + proc_name[1] + ":" + str(60000 + int(proc_name[0]))
+        cmd = "-target-select remote 127.0.0.1:" + str(60000 + int(proc_name[0]))
         test_client_socketio.emit(
             "run_gdb_command_mpi",
             {"processor": int(proc_name[0]), "cmd": [cmd]},
