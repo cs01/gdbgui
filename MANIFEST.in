@@ -20,6 +20,7 @@ prune docs
 prune docker
 prune images
 prune gdbgui/__pycache__
+prune gdbgui/server/__pycache__
 
 exclude mypy.ini
 exclude .eslintrc.json

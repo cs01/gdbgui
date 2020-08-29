@@ -96,7 +96,7 @@ let VarCreator = {
   /**
    * Create a new variable in gdb. But does not start to fetch
    */
-  create_variable_no_fetch: function(expression:any, expr_type:any) {
+  create_variable_no_fetch: function(expression: any, expr_type: any) {
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'any' is not assignable to type 'never'.
     VarCreator._queue.push({ expression: expression, expr_type: expr_type });
   },
@@ -770,7 +770,7 @@ class GdbVariable extends React.Component {
     // delete in gdb too
     GdbApi.run_gdb_command(`-var-delete ${gdbvar}`);
   }
-  static delete_gdb_variable_remote(gdbvar:string) {
+  static delete_gdb_variable_remote(gdbvar: string) {
     // delete in gdb too
     GdbApi.run_gdb_command(`-var-delete ${gdbvar}`);
   }

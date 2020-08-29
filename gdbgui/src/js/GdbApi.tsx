@@ -303,7 +303,7 @@ const GdbApi = {
    * @param state mpi state
    * @return nothing
    */
-  set_mpi_state: function(state:boolean) {
+  set_mpi_state: function(state: boolean) {
     mpi_state = state;
   },
   /**

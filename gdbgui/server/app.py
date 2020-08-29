@@ -204,11 +204,14 @@ def run_gdb_command_mpi(message: Dict[str, str]):
     if message["processor"] != -1:
         """ If the command is target we have to handle differently """
         cmd = message["cmd"]
-        cmds = cmd[0].split(" ")
-        if cmds[0] == "-target-select" and cmds[1] == "remote":
+        cmds_tcheck = cmd[0].split(" ")
+        if cmds_tcheck[0] == "-target-select" and cmds_tcheck[1] == "remote":
             debug_session = manager.debug_session_from_mpi_processor_id(-1)
-            debug_session.set_mpi_rank(int(cmds[2].split(":")[1]) - 60000)
-        debug_session = manager.debug_session_from_mpi_processor_id(message["processor"])
+            if debug_session is not None:
+                debug_session.set_mpi_rank(int(cmds_tcheck[2].split(":")[1]) - 60000)
+        debug_session = manager.debug_session_from_mpi_processor_id(
+            int(message["processor"])
+        )
         if debug_session is not None:
             pty_mi = debug_session.pygdbmi_controller
             if pty_mi is not None:
@@ -234,6 +237,8 @@ def run_gdb_command_mpi(message: Dict[str, str]):
         execute the command for all controllers
         """
         for debug_session, client_ids in manager.get_controllers().items():
+            if debug_session is None:
+                continue
             try:
                 # the command (string) or commands (list) to run
                 cmd = message["cmd"]
@@ -254,8 +259,8 @@ def run_gdb_command_mpi(message: Dict[str, str]):
                         err = traceback.format_exc()
                         logger.error(err)
                         emit("error_running_gdb_command", {"message": err})
-#                debug_session.write(cmd, read_response=False)
-                # in case is the connection command take the port number to understand the mpi process rank
+            #                debug_session.write(cmd, read_response=False)
+            # in case is the connection command take the port number to understand the mpi process rank
 
             except Exception:
                 err = traceback.format_exc()
@@ -290,6 +295,7 @@ def client_disconnected():
 def test_disconnect():
     print("Client websocket disconnected", request.sid)
 
+
 @socketio.on("open_mpi_sessions", namespace="/gdb_listener")
 def open_mpi_sessions(message):
     """
@@ -301,9 +307,10 @@ def open_mpi_sessions(message):
     for i in range(1, int(message["processors"])):
         gdb_command = request.args.get("gdb_command", app.config["gdb_command"])
         mi_version = request.args.get("mi_version", "mi2")
-        debug_session = manager.add_new_debug_session(
+        manager.add_new_debug_session(
             gdb_command=gdb_command, mi_version=mi_version, client_id=request.sid
         )
+
 
 def process_controllers_out():
     debug_sessions_to_remove = []
@@ -329,9 +336,7 @@ def process_controllers_out():
                     r["proc"] = debug_session.mpi_rank
 
                 for client_id in client_ids:
-                    logger.info(
-                        "emiting message to websocket client id " + client_id
-                    )
+                    logger.info("emiting message to websocket client id " + client_id)
                     socketio.emit(
                         "gdb_response",
                         response,
@@ -348,6 +353,7 @@ def process_controllers_out():
     debug_sessions_to_remove += check_and_forward_pty_output()
     for debug_session in set(debug_sessions_to_remove):
         manager.remove_debug_session(debug_session)
+
 
 def read_and_forward_gdb_and_pty_output():
     """A task that runs on a different thread, and emits websocket messages

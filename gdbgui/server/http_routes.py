@@ -174,6 +174,7 @@ def gdbgui():
         themes=THEMES,
     )
 
+
 @blueprint.route("/mpi_processes_info", methods=["GET"])
 @authenticate
 def mpi_processes_info():
@@ -182,6 +183,7 @@ def mpi_processes_info():
     """
     f = open("gdbgui-mpi/nodes_name", "r")
     return Response(f.read(), mimetype="text/plain")
+
 
 @blueprint.route("/dashboard_data", methods=["GET"])
 @authenticate

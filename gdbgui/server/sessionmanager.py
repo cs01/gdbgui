@@ -4,7 +4,7 @@ import os
 import signal
 import traceback
 from collections import defaultdict
-from typing import Dict, Tuple, List, Optional, Set
+from typing import Dict, List, Optional, Set
 
 from pygdbmi.IoManager import IoManager
 
@@ -89,9 +89,13 @@ class SessionManager(object):
         self.debug_session_to_client_ids[debug_session].append(client_id)
         return debug_session
 
-
     def add_new_debug_session(
-        self, *, gdb_command: str, mi_version: str, client_id: str, include_client_id = True
+        self,
+        *,
+        gdb_command: str,
+        mi_version: str,
+        client_id: str,
+        include_client_id=True,
     ) -> DebugSession:
         pty_for_debugged_program = Pty()
         pty_for_gdbgui = Pty(echo=False)
@@ -118,9 +122,9 @@ class SessionManager(object):
             command=gdb_command,
             mi_version=mi_version,
             pid=pid,
-            mpi_rank=-1
+            mpi_rank=-1,
         )
-        if include_client_id == True :
+        if include_client_id is True:
             debug_session.add_client(client_id)
             self.debug_session_to_client_ids[debug_session] = [client_id]
         else:
@@ -171,7 +175,9 @@ class SessionManager(object):
                 return debug_session
         return None
 
-    def debug_session_from_mpi_processor_id(self, mpi_processor_id: int) -> Optional[DebugSession]:
+    def debug_session_from_mpi_processor_id(
+        self, mpi_processor_id: int
+    ) -> Optional[DebugSession]:
         for debug_session, client_ids in self.debug_session_to_client_ids.items():
             this_mpi_processor = debug_session.get_mpi_rank()
             if this_mpi_processor == mpi_processor_id:
@@ -179,15 +185,15 @@ class SessionManager(object):
 
         return None
 
-    def exit_all_gdb_processes_except_client_id(self,client_id: str):
+    def exit_all_gdb_processes_except_client_id(self, client_id: str):
         logger.info("exiting all subprocesses except client id")
-        for debug_session,client_ids in self.debug_session_to_client_ids.copy().items():
+        for (
+            debug_session,
+            client_ids,
+        ) in self.debug_session_to_client_ids.copy().items():
             if client_id not in client_ids:
                 debug_session.terminate()
                 self.debug_session_to_client_ids.pop(debug_session)
-
-    def get_debug_sessions(self):
-        return self.debug_session_to_client_ids
 
     def get_dashboard_data(self) -> List[DebugSession]:
         return [

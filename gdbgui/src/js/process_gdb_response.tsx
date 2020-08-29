@@ -307,13 +307,13 @@ const process_gdb_response = function(response_array: any) {
         }
       } else {
         // This is semothing that drive me crazy it seems that under some condition gdb does not send the message connected
-        let prcs_state = store.get("processors_states")
+        let prcs_state = store.get("processors_states");
         if (r.proc != -1 && prcs_state[r.proc] == undefined) {
           Actions.remote_connected(r.proc);
         }
-        Actions.inferior_program_paused(r.payload.frame,r.proc);
+        Actions.inferior_program_paused(r.payload.frame, r.proc);
       }
-    }/* else if (r.message && r.message === "connected") {
+    } /* else if (r.message && r.message === "connected") {
       Actions.remote_connected(r.proc);
     }*/
   }

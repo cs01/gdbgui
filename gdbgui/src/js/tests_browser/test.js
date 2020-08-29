@@ -5,14 +5,18 @@ function sleep(ms) {
 test("debug session", () => {
   var expect = require("chai").expect;
 
-  const { exec, spawn } = require('child_process');
+  const { exec, spawn } = require("child_process");
 
   // Script with spaces in the filename:
-  const exe_gdb_server = spawn('./gdbgui-mpi/launch_mpi_debugger', ['6', 'gdbgui-mpi/print_nodes'], { shell: true });
-  const exe_python_server = spawn('python', ['-m', 'gdbgui-mpi'], { shell: true });
+  const exe_gdb_server = spawn(
+    "./gdbgui-mpi/launch_mpi_debugger",
+    ["6", "gdbgui-mpi/print_nodes"],
+    { shell: true }
+  );
+  const exe_python_server = spawn("python", ["-m", "gdbgui-mpi"], { shell: true });
 
   const puppeteer = require("puppeteer");
-  
+
   return (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
@@ -51,13 +55,15 @@ test("debug session", () => {
       return true;
     });
 
-    if (loaded == false)    {return false;}
+    if (loaded == false) {
+      return false;
+    }
     console.log("Connecting and select MPI session:", loaded);
 
     await page.focus("input.form-control");
     await page.keyboard.type("*:60000");
 
-    page.waitFor(1000)
+    page.waitFor(1000);
 
     const connection_gdb = await page.evaluate(() => {
       let top_div = document.getElementById("top");
@@ -96,7 +102,7 @@ test("debug session", () => {
       return line_num.innerHTML;
     });
 
-    page.screenshot({path: 'DIOCANE.png'})
+    page.screenshot({ path: "DIOCANE.png" });
 
     console.log("Check the program load and breakpoint:", break_on_line);
 
@@ -261,13 +267,15 @@ test("debug session", () => {
 
     await browser.close();
 
-    exe_python_server.kill('SIGTERM')
+    exe_python_server.kill("SIGTERM");
 
     // execute killing command kill does not propagate to all child processes
     console.log("Killing:", exe_gdb_server.pid.toString());
-    let kill_cmd = spawn('bash', ['-c', "pkill mpirun"]);
-    await sleep(3000)
+    let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
+    await sleep(3000);
 
     return true;
-  })().then(ret => { expect(ret).equal(true) });
-},100000);
+  })().then(ret => {
+    expect(ret).equal(true);
+  });
+}, 100000);

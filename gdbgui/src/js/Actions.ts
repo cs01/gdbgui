@@ -224,7 +224,7 @@ const Actions = {
     // parse user input
     let host_port_arr = user_input.split(":");
 
-    let data_lines:string[] = [];
+    let data_lines: string[] = [];
     // Check the server names from
     if (host_port_arr[0] === "*") {
       jQuery.ajax({
@@ -252,7 +252,7 @@ const Actions = {
 
     GdbApi.set_mpi_state(true);
   },
-  remote_connected(proc:number) {
+  remote_connected(proc: number) {
     Actions.inferior_program_paused(proc);
     let prcs = store.get("processors_states");
     let cmds = [];
