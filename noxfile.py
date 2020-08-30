@@ -26,7 +26,7 @@ publish_deps = ["setuptools", "wheel", "twine"]
 
 @nox.session(reuse_venv=True)
 def python_tests(session):
-    session.install(".", "pytest", "pytest-cov", "flask-socketio>4.2.0")
+    session.install(".", "pytest", "pytest-cov")
     tests = session.posargs or ["tests"]
     session.run(
         "pytest", "--cov=gdbgui", "--cov-config", ".coveragerc", "--cov-report=", *tests
