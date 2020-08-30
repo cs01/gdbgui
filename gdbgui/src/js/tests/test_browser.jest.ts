@@ -69,7 +69,7 @@ test("debug session", () => {
     });
 
     if (loaded == false) {
-      close_test(browser, exe_python_server, exe_gdb_server)
+      await close_test(browser, exe_python_server, exe_gdb_server)
       return false;
     }
     console.log("Connecting and select MPI session:", loaded);
@@ -134,7 +134,7 @@ test("debug session", () => {
 
     console.log("Setting breakpoint on line 40:", break_on_line_40);
     if (break_on_line_40 == false) {
-      close_test(browser, exe_python_server, exe_gdb_server)
+      await close_test(browser, exe_python_server, exe_gdb_server)
       return false;
     }
 
