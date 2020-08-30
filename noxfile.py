@@ -38,8 +38,8 @@ def python_tests(session):
 def js_tests(session):
     session.install(".", "pytest", "pytest-cov")
     session.run("yarn", "install", external=True)
-    session.run("yarn", "test", external=True)
     session.run("yarn", "build", external=True)
+    session.run("yarn", "test", external=True)
 
 
 @nox.session(reuse_venv=True, python=python)
