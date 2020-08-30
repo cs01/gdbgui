@@ -72,7 +72,8 @@ def warn_startup_with_shell_off(platform: str, gdb_args: str):
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__,
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     gdb_group = parser.add_argument_group(title="gdb settings")

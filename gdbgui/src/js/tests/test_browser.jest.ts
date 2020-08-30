@@ -2,16 +2,16 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function close_test(browser: any, exe_python_server:any, exe_gdb_server:any) {
-    const { exec, spawn } = require("child_process");
-    await browser.close();
+async function close_test(browser: any, exe_python_server: any, exe_gdb_server: any) {
+  const { exec, spawn } = require("child_process");
+  await browser.close();
 
-    exe_python_server.kill("SIGTERM");
+  exe_python_server.kill("SIGTERM");
 
-    // execute killing command kill does not propagate to all child processes
-    console.log("Killing:", exe_gdb_server.pid.toString());
-    let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
-    await sleep(3000)
+  // execute killing command kill does not propagate to all child processes
+  console.log("Killing:", exe_gdb_server.pid.toString());
+  let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
+  await sleep(3000);
 }
 
 test("debug session", () => {
@@ -32,7 +32,7 @@ test("debug session", () => {
   return (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    page.waitFor(2000)
+    page.waitFor(2000);
     await page.goto("http://127.0.0.1:5000");
 
     // Load page and connect to server and debug
@@ -42,20 +42,24 @@ test("debug session", () => {
         return false;
       }
 
-      let menu_button:HTMLElement = top_div.querySelector("button.dropdown-toggle") as HTMLElement;
+      let menu_button: HTMLElement = top_div.querySelector(
+        "button.dropdown-toggle"
+      ) as HTMLElement;
       if (menu_button == null) {
         return false;
       }
 
       menu_button.click();
 
-      let a_point:HTMLElement = top_div.querySelectorAll("a.pointer")[3] as HTMLElement;
+      let a_point: HTMLElement = top_div.querySelectorAll("a.pointer")[3] as HTMLElement;
       if (a_point == null || a_point.innerText != "Connect to MPI gdbservers") {
         return false;
       }
       a_point.click();
 
-      let connect_button:HTMLElement = top_div.querySelectorAll("button.btn-primary")[1] as HTMLElement;
+      let connect_button: HTMLElement = top_div.querySelectorAll(
+        "button.btn-primary"
+      )[1] as HTMLElement;
       if (
         connect_button == null ||
         connect_button.innerText != "Connect to mpi-gdbserver"
@@ -70,7 +74,7 @@ test("debug session", () => {
 
     console.log("Connecting and select MPI session:", loaded);
     if (loaded == false) {
-      await close_test(browser, exe_python_server, exe_gdb_server)
+      await close_test(browser, exe_python_server, exe_gdb_server);
       return false;
     }
 
@@ -85,7 +89,9 @@ test("debug session", () => {
         return false;
       }
 
-      let connect_button:HTMLElement = top_div.querySelectorAll("button.btn-primary")[1] as HTMLElement;
+      let connect_button: HTMLElement = top_div.querySelectorAll(
+        "button.btn-primary"
+      )[1] as HTMLElement;
       if (
         connect_button == null ||
         connect_button.innerText != "Connect to mpi-gdbserver"
@@ -103,12 +109,16 @@ test("debug session", () => {
     await page.waitFor(4000);
 
     const break_on_line = await page.evaluate(() => {
-      let source_break_point:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
+      let source_break_point: HTMLElement = document.querySelector(
+        "tr.paused_on_line"
+      ) as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
 
-      let line_num:HTMLElement = source_break_point.querySelector("td.line_num div") as HTMLElement;
+      let line_num: HTMLElement = source_break_point.querySelector(
+        "td.line_num div"
+      ) as HTMLElement;
       if (line_num == null) {
         return false;
       }
@@ -119,7 +129,9 @@ test("debug session", () => {
     console.log("Check the program load and breakpoint:", break_on_line);
 
     const break_on_line_40 = await page.evaluate(() => {
-      let source_break_point:HTMLElement = document.querySelectorAll("td.line_num")[39] as HTMLElement;
+      let source_break_point: HTMLElement = document.querySelectorAll(
+        "td.line_num"
+      )[39] as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
@@ -134,7 +146,7 @@ test("debug session", () => {
 
     console.log("Setting breakpoint on line 40:", break_on_line_40);
     if (break_on_line_40 == false) {
-      await close_test(browser, exe_python_server, exe_gdb_server)
+      await close_test(browser, exe_python_server, exe_gdb_server);
       return false;
     }
 
@@ -156,7 +168,9 @@ test("debug session", () => {
     console.log("Confirm breakpoint on line 40:", confirm_break_on_line_40);
 
     const continue_execution = await page.evaluate(() => {
-      let continue_button:HTMLElement = document.getElementById("continue_button") as HTMLElement;
+      let continue_button: HTMLElement = document.getElementById(
+        "continue_button"
+      ) as HTMLElement;
       if (continue_button == null) {
         return false;
       }
@@ -170,12 +184,16 @@ test("debug session", () => {
     await page.waitFor(4000);
 
     const break_on_line2 = await page.evaluate(() => {
-      let source_break_point:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
+      let source_break_point: HTMLElement = document.querySelector(
+        "tr.paused_on_line"
+      ) as HTMLElement;
       if (source_break_point == null) {
         return false;
       }
 
-      let line_num:HTMLElement = source_break_point.querySelector("td.line_num div") as HTMLElement;
+      let line_num: HTMLElement = source_break_point.querySelector(
+        "td.line_num div"
+      ) as HTMLElement;
       if (line_num == null) {
         return false;
       }
@@ -191,22 +209,30 @@ test("debug session", () => {
     await page.waitFor(1000);
 
     const single_step_divergence = await page.evaluate(() => {
-      let source_break_point_on_focus:HTMLElement = document.querySelector("tr.paused_on_line") as HTMLElement;
+      let source_break_point_on_focus: HTMLElement = document.querySelector(
+        "tr.paused_on_line"
+      ) as HTMLElement;
       if (source_break_point_on_focus == null) {
         return false;
       }
 
-      let source_break_point_not_on_focus:HTMLElement = document.querySelector("tr.paused_on_line2") as HTMLElement;
+      let source_break_point_not_on_focus: HTMLElement = document.querySelector(
+        "tr.paused_on_line2"
+      ) as HTMLElement;
       if (source_break_point_not_on_focus == null) {
         return false;
       }
 
-      let line_num:HTMLElement = source_break_point_on_focus.querySelector("td.line_num div") as HTMLElement;
+      let line_num: HTMLElement = source_break_point_on_focus.querySelector(
+        "td.line_num div"
+      ) as HTMLElement;
       if (parseInt(line_num.innerHTML) != 43) {
         return false;
       }
 
-      line_num = source_break_point_not_on_focus.querySelector("td.line_num div") as HTMLElement;
+      line_num = source_break_point_not_on_focus.querySelector(
+        "td.line_num div"
+      ) as HTMLElement;
       if (parseInt(line_num.innerHTML) != 60) {
         return false;
       }
@@ -229,12 +255,14 @@ test("debug session", () => {
         return false;
       }
 
-      let var_name:HTMLElement = varLi[0].querySelector("span") as HTMLElement;
+      let var_name: HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
         return false;
       }
 
-      let var_value:HTMLElement = varLi[0].querySelector("span.gdbVarValue") as HTMLElement;
+      let var_value: HTMLElement = varLi[0].querySelector(
+        "span.gdbVarValue"
+      ) as HTMLElement;
       if (var_value == null) {
         return false;
       }
@@ -259,12 +287,14 @@ test("debug session", () => {
         return false;
       }
 
-      let var_name:HTMLElement = varLi[0].querySelector("span") as HTMLElement;
+      let var_name: HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
         return false;
       }
 
-      let var_value:HTMLElement = varLi[0].querySelector("span.gdbVarValue") as HTMLElement;
+      let var_value: HTMLElement = varLi[0].querySelector(
+        "span.gdbVarValue"
+      ) as HTMLElement;
       if (var_value == null) {
         return false;
       }
@@ -278,7 +308,7 @@ test("debug session", () => {
 
     console.log("Expression check world_rank:", add_expression2);
 
-    await close_test(browser, exe_python_server, exe_gdb_server)
+    await close_test(browser, exe_python_server, exe_gdb_server);
 
     return true;
   })().then(ret => {

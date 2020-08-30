@@ -428,7 +428,7 @@ class SourceCode extends React.Component<{}, State> {
       body.push(
         this._get_source_line(
           cur_line_of_code,
-          (line_of_source_to_flash === line_num_being_rendered)?1:0,
+          line_of_source_to_flash === line_num_being_rendered ? 1 : 0,
           is_gdb_paused_on_this_line,
           line_num_being_rendered,
           has_bkpt,

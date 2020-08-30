@@ -71,7 +71,9 @@ def set_breakpoint(test_client_socketio, pos):
         )
 
 
-def check_breakpoint_set(test_client_socketio, line, target_bkt, no_line_check = True, process = None):
+def check_breakpoint_set(
+    test_client_socketio, line, target_bkt, no_line_check=True, process=None
+):
     time.sleep(1)
     # 6 connection, 6 gdb messages
     num_break_hit = 0
@@ -94,8 +96,10 @@ def check_breakpoint_set(test_client_socketio, line, target_bkt, no_line_check =
                         "main(int, char**)"
                         in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
                     )
-                    if no_line_check == False:
-                        assert line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
+                    if no_line_check is False:
+                        assert (
+                            line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
+                        )
 
                     num_break_hit += 1
 
@@ -142,7 +146,11 @@ def test_load_mpi_program(test_client):
 
     my_env = os.environ
     process = subprocess.Popen(
-        ["bash", "-c", "./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",],
+        [
+            "bash",
+            "-c",
+            "./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
+        ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         env=my_env,
@@ -170,7 +178,12 @@ def test_load_mpi_program(test_client):
     for line in lines:
         proc_name = line.split()
 
-        cmd = "-target-select remote " + proc_name[1] + ":" + str(60000 + int(proc_name[0]))
+        cmd = (
+            "-target-select remote "
+            + proc_name[1]
+            + ":"
+            + str(60000 + int(proc_name[0]))
+        )
         test_client_socketio.emit(
             "run_gdb_command_mpi",
             {"processor": int(proc_name[0]), "cmd": [cmd]},
@@ -188,7 +201,7 @@ def test_load_mpi_program(test_client):
 
     set_breakpoint(test_client_socketio, "")
     gdbgui.server.app.process_controllers_out()
-    check_breakpoint_set(test_client_socketio, "8", 6,True, process)
+    check_breakpoint_set(test_client_socketio, "8", 6, True, process)
     continue_run(test_client_socketio)
 
     # At this point I am expexting to receive a lot of notification messages about reading information on libraries and so on in reality we are interested

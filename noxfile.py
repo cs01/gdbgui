@@ -84,11 +84,15 @@ def lint(session):
     session.run("mypy", *files_to_lint)
     vulture(session)
     session.run(
-        "check-manifest", "--ignore", "gdbgui/static/js/*",
+        "check-manifest",
+        "--ignore",
+        "gdbgui/static/js/*",
     )
     session.run("python", "setup.py", "check", "--metadata", "--strict")
     session.run(
-        *prettier_command, "--check", external=True,
+        *prettier_command,
+        "--check",
+        external=True,
     )
 
 
@@ -97,7 +101,9 @@ def autoformat(session):
     session.install("black")
     session.run("black", *files_to_lint)
     session.run(
-        *prettier_command, "--write", external=True,
+        *prettier_command,
+        "--write",
+        external=True,
     )
 
 
