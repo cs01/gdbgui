@@ -65,8 +65,11 @@ test("debug session", () => {
 
       connect_button.click();
 
-      return document.querySelector("body").innerText;
+      return true;
     });
+
+    const html = await page.content();
+    console.log("HTML:", html);
 
     console.log("Connecting and select MPI session:", loaded);
 //    if (loaded == false) {
