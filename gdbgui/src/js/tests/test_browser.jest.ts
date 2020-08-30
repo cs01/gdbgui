@@ -65,14 +65,14 @@ test("debug session", () => {
 
       connect_button.click();
 
-      return true;
+      return document.innerText;
     });
 
     console.log("Connecting and select MPI session:", loaded);
-    if (loaded == false) {
+//    if (loaded == false) {
       await close_test(browser, exe_python_server, exe_gdb_server)
       return false;
-    }
+//    }
 
     await page.focus("input.form-control");
     await page.keyboard.type("*:60000");
