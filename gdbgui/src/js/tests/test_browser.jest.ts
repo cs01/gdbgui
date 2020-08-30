@@ -2,6 +2,18 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function close_test(browser: any, exe_python_server:any, exe_gdb_server:any) {
+    const { exec, spawn } = require("child_process");
+    await browser.close();
+
+    exe_python_server.kill("SIGTERM");
+
+    // execute killing command kill does not propagate to all child processes
+    console.log("Killing:", exe_gdb_server.pid.toString());
+    let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
+    await sleep(3000)
+}
+
 test("debug session", () => {
   var expect = require("chai").expect;
 
@@ -57,6 +69,7 @@ test("debug session", () => {
     });
 
     if (loaded == false) {
+      close_test(browser, exe_python_server, exe_gdb_server)
       return false;
     }
     console.log("Connecting and select MPI session:", loaded);
@@ -121,7 +134,8 @@ test("debug session", () => {
 
     console.log("Setting breakpoint on line 40:", break_on_line_40);
     if (break_on_line_40 == false) {
-      return;
+      close_test(browser, exe_python_server, exe_gdb_server)
+      return false;
     }
 
     await page.waitFor(1000);
@@ -264,14 +278,7 @@ test("debug session", () => {
 
     console.log("Expression check world_rank:", add_expression2);
 
-    await browser.close();
-
-    exe_python_server.kill("SIGTERM");
-
-    // execute killing command kill does not propagate to all child processes
-    console.log("Killing:", exe_gdb_server.pid.toString());
-    let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
-    await sleep(3000);
+    await close_test(browser, exe_python_server, exe_gdb_server)
 
     return true;
   })().then(ret => {
