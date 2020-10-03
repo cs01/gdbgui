@@ -1,6 +1,4 @@
 
-
-
 <!doctype html>
 <html lang="en" class="no-js">
   <head>
@@ -13,7 +11,7 @@
       
       
       <link rel="shortcut icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-5.5.7">
+      <meta name="generator" content="mkdocs-1.1.2, mkdocs-material-6.0.1">
     
     
       
@@ -21,13 +19,17 @@
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.b8ac9624.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.38780c08.min.css">
       
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.3f72e892.min.css">
+        
       
     
     
     
       
+        
         <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
         <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
         <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
@@ -42,9 +44,14 @@
   </head>
   
   
-    <body dir="ltr">
-  
     
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="" data-md-color-primary="none" data-md-color-accent="none">
+      
+  
     <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
@@ -134,8 +141,6 @@
 </header>
     
     <div class="md-container" data-md-component="container">
-      
-        
       
       
         
@@ -321,9 +326,7 @@
     
       <label class="md-nav__link md-nav__link--active" for="__toc">
         Changelog
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9h14V7H3v2m0 4h14v-2H3v2m0 4h14v-2H3v2m16 0h2v-2h-2v2m0-10v2h2V7h-2m0 6h2v-2h-2v2z"/></svg>
-        </span>
+        <span class="md-nav__icon md-icon"></span>
       </label>
     
     <a href="./" title="Changelog" class="md-nav__link md-nav__link--active">
@@ -338,16 +341,21 @@
   
   
     <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
+      <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
-    development
+  <a href="#01401" class="md-nav__link">
+    0.14.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01400" class="md-nav__link">
+    0.14.0.0
   </a>
   
 </li>
@@ -685,16 +693,21 @@
   
   
     <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
-      </span>
+      <span class="md-nav__icon md-icon"></span>
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#development" class="md-nav__link">
-    development
+  <a href="#01401" class="md-nav__link">
+    0.14.0.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01400" class="md-nav__link">
+    0.14.0.0
   </a>
   
 </li>
@@ -1024,23 +1037,30 @@
                   </a>
                 
                 
-                  
-                
-                
                 <h1 id="gdbgui-release-history">gdbgui release history</h1>
-<h2 id="development">development</h2>
-<p><strong>Breaking Changes</strong>
-* Removed support for Windows
-* Replaced <code>--gdb</code> flag with <code>--gdb-cmd</code>. The <code>--gdb-cmd</code> argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example <code>--gdb-cmd "gdb -nx"</code>. The existing <code>-g</code> argument is an alias for <code>--gdb-cmd</code>.
-* Removed <code>--rr</code> flag. Use <code>--gdb-cmd rr replay</code> instead.
-* Removed deprecated and hidden <code>--hide-gdbgui-upgrades</code> argument. It will now raise an error.</p>
-<p><strong>Additional Changes</strong>
-* Replaced single terminal on frontend with three terminals: an interactive xterm terminal running gdb, a gdbgui console for diagnostic messages, and a terminal connected to the inferior application being debugged.
-* Updates to the dashboard
-* Add ability to specify gdb command from the browser. This can now be accomplished from the dashboard.
-* Removed gdbgui binaries from source control. They can now be downloaded as artifacts of <a href="https://github.com/cs01/gdbgui/releases">releases</a>.
-* [documentation] Fix bug when generating md5 checksum for binary releases
-* Remove "shutdown" button in UI</p>
+<h2 id="01401">0.14.0.1</h2>
+<ul>
+<li>Fix import paths</li>
+<li>Pin broken dependency to avoid segfault</li>
+<li>Hide "No registers." message</li>
+</ul>
+<h2 id="01400">0.14.0.0</h2>
+<p><strong>Breaking Changes</strong></p>
+<ul>
+<li>Removed support for Windows</li>
+<li>Replaced <code>--gdb</code> flag with <code>--gdb-cmd</code>. The <code>--gdb-cmd</code> argument specifies the gdb executable as well as all arguments you wish to pass to gdb at startup, for example <code>--gdb-cmd "gdb -nx"</code>. The existing <code>-g</code> argument is an alias for <code>--gdb-cmd</code>.</li>
+<li>Removed <code>--rr</code> flag. Use <code>--gdb-cmd rr replay</code> instead.</li>
+<li>Removed deprecated and hidden <code>--hide-gdbgui-upgrades</code> argument. It will now raise an error.</li>
+</ul>
+<p><strong>Additional Changes</strong></p>
+<ul>
+<li>Replaced single terminal on frontend with three terminals: an interactive xterm terminal running gdb, a gdbgui console for diagnostic messages, and a terminal connected to the inferior application being debugged.</li>
+<li>Updates to the dashboard</li>
+<li>Add ability to specify gdb command from the browser. This can now be accomplished from the dashboard.</li>
+<li>Removed gdbgui binaries from source control. They can now be downloaded as artifacts of <a href="https://github.com/cs01/gdbgui/releases">releases</a>.</li>
+<li>[documentation] Fix bug when generating md5 checksum for binary releases</li>
+<li>Remove "shutdown" button in UI</li>
+</ul>
 <h2 id="01321">0.13.2.1</h2>
 <ul>
 <li>No end user changes. This release builds the gdbgui executables with GitHub actions.</li>
@@ -1361,15 +1381,15 @@
       
     </div>
     
-      <script src="../assets/javascripts/vendor.d1f5a259.min.js"></script>
-      <script src="../assets/javascripts/bundle.d5fec882.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../assets/javascripts/vendor.77e55a48.min.js"></script>
+      <script src="../assets/javascripts/bundle.aa3f9871.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.term.missing": "Missing"}</script>
       
       <script>
         app = initialize({
           base: "..",
           features: [],
           search: Object.assign({
-            worker: "../assets/javascripts/worker/search.fae956e7.min.js"
+            worker: "../assets/javascripts/worker/search.4ac00218.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
