@@ -28,7 +28,8 @@ def test_cli(monkeypatch, argv):
 
 @mock.patch("gdbgui.server.server.run_server")
 @pytest.mark.parametrize(
-    "argv", (["--gdb-cmd"], ["myprogram", "cannot pass second arg"]),
+    "argv",
+    (["--gdb-cmd"], ["myprogram", "cannot pass second arg"]),
 )
 def test_cli_fails(monkeypatch, argv):
     mock_exit = mock.Mock(side_effect=ValueError("raised in test to exit early"))
