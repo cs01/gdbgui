@@ -15,14 +15,10 @@ import shlex
 from typing import List, Optional
 
 from gdbgui import __version__
-
 from gdbgui.server.app import app, socketio
-from gdbgui.server.constants import (
-    DEFAULT_GDB_EXECUTABLE,
-    DEFAULT_HOST,
-    DEFAULT_PORT,
-)
-import gdbgui
+from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAULT_PORT
+from gdbgui.server.server import run_server
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -72,7 +68,7 @@ def warn_startup_with_shell_off(platform: str, gdb_args: str):
 
 def get_parser():
     parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
     gdb_group = parser.add_argument_group(title="gdb settings")
@@ -101,9 +97,7 @@ def get_parser():
         default=DEFAULT_PORT,
     )
     network.add_argument(
-        "--host",
-        help="The host ip address on which gdbgui serve",
-        default=DEFAULT_HOST,
+        "--host", help="The host ip address on which gdbgui serve", default=DEFAULT_HOST
     )
     network.add_argument(
         "-r",
@@ -251,7 +245,7 @@ def main():
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )
 
-    gdbgui.server.server.run_server(
+    run_server(
         app=app,
         socketio=socketio,
         host=args.host,
