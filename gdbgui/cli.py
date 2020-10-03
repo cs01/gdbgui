@@ -14,7 +14,6 @@ import re
 import shlex
 from typing import List, Optional
 
-import gdbgui
 from gdbgui import __version__
 from gdbgui.server.app import app, socketio
 from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAULT_PORT
