@@ -1,12 +1,9 @@
 # gdbgui release history
 
-## 0.14.0.2
-
-- Pin broken dependency to avoid segfault
-- Fix import paths
-
 ## 0.14.0.1
 
+- Fix import paths
+- Pin broken dependency to avoid segfault
 - Hide "No registers." message
 
 ## 0.14.0.0
