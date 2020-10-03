@@ -11,21 +11,21 @@ def run_gdbgui_cli(gdbgui_args: List[str]):
         return gdbgui.cli.main()  # type: ignore
 
 
-@pytest.mark.parametrize(
-    "argv",
-    (
-        [],
-        ["-n"],
-        ["myprogram"],
-        ["-g", "gdb -nx"],
-        ["--args", "can", "pass", "many", "args"],
-    ),
-)
-def skip_test_cli(monkeypatch, argv):
-    # TODO fix this patch
-    with mock.patch("gdbgui.server.server.run_server") as mock_run_server:
-        run_gdbgui_cli(argv)
-        mock_run_server.assert_called_once()
+# @pytest.mark.parametrize(
+#     "argv",
+#     (
+#         [],
+#         ["-n"],
+#         ["myprogram"],
+#         ["-g", "gdb -nx"],
+#         ["--args", "can", "pass", "many", "args"],
+#     ),
+# )
+# def skip_test_cli(monkeypatch, argv):
+#     # TODO fix this patch
+#     with mock.patch("gdbgui.server.server.run_server") as mock_run_server:
+#         run_gdbgui_cli(argv)
+#         mock_run_server.assert_called_once()
 
 
 @mock.patch("gdbgui.server.server.run_server")
