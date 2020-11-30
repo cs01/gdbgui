@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## 0.14.0.2
+
+- Pinned mypy version to unbreak linting
+- Fixed reverse debugging commands that were broken when `--gdb` flag was removed
+
 ## 0.14.0.1
 
 - Fix import paths
