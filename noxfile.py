@@ -19,7 +19,13 @@ prettier_command = [
 ]
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
-lint_dependencies = ["black==20.8b1", "vulture", "flake8", "mypy", "check-manifest"]
+lint_dependencies = [
+    "black==20.8b1",
+    "vulture",
+    "flake8",
+    "mypy==0.782",
+    "check-manifest",
+]
 vulture_whitelist = ".vulture_whitelist.py"
 files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 files_to_lint.remove(vulture_whitelist)

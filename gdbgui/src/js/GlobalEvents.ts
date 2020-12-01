@@ -4,6 +4,7 @@
 
 import constants from "./constants";
 import GdbApi from "./GdbApi";
+import { store } from "statorgfc";
 
 const GlobalEvents = {
   init: function() {
@@ -45,9 +46,10 @@ const GlobalEvents = {
         GdbApi.click_next_instruction_button(e.shiftKey);
       } else if (e.keyCode === constants.COMMA_BUTTON_NUM) {
         GdbApi.click_step_instruction_button(e.shiftKey);
-        // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-      } else if (initial_data.rr && e.keyCode === constants.LEFT_BUTTON_NUM) {
-        // reverse
+      } else if (
+        e.keyCode === constants.LEFT_BUTTON_NUM &&
+        store.get("reverse_supported")
+      ) {
         GdbApi.click_next_button(true);
       }
     }
