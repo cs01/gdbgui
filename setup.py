@@ -68,6 +68,7 @@ setup(
         "pygdbmi>=0.10.0.0b0, <0.11",  # parse gdb output
         "Pygments>=2.2.0, <3.0",  # syntax highlighting
         "greenlet==0.4.16",
+        "python-socketio>=4.6.1, <5.0",  # pinned to use socketio 2 under the hood (issue #366)
     ],
     classifiers=[
         "Intended Audience :: Developers",
