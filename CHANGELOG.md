@@ -2,6 +2,7 @@
 
 ## 0.14.0.2
 
+- Pinned python-socketio version
 - Pinned mypy version to unbreak linting
 - Fixed reverse debugging commands that were broken when `--gdb` flag was removed
 
