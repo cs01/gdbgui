@@ -193,7 +193,10 @@ def kill_session():
         manager.remove_debug_session_by_pid(pid)
         return jsonify({"success": True})
     else:
-        return Response("Missing required parameter: gdbpid", 401,)
+        return Response(
+            "Missing required parameter: gdbpid",
+            401,
+        )
 
 
 @blueprint.route("/send_signal_to_pid", methods=["POST"])

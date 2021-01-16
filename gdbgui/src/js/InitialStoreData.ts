@@ -23,6 +23,7 @@ const initial_store_data = {
   show_settings: false,
 
   debug_in_reverse: false,
+  reverse_supported: false,
   show_modal: false,
   modal_header: null,
   modal_body: null,

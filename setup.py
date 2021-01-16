@@ -14,16 +14,6 @@ from setuptools import find_packages, setup  # type: ignore
 CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 EXCLUDE_FROM_PACKAGES = ["tests"]
-REQUIRED = [
-    "Flask>=0.12.2, <1.0",  # http server
-    "Flask-Compress>=1.4.0, <2.0",  # to compress flask responses
-    "Flask-SocketIO>=2.9, <3.0",  # websocket server
-    "gevent>=1.2.2, <2.0",  # websocket handling
-    "gevent-websocket>=0.10.1, <0.11",  # also websocket
-    "eventlet>=0.25.0, <0.26",  # also websocket
-    "pygdbmi>=0.10.0.0b0, <0.11",  # parse gdb output
-    "Pygments>=2.2.0, <3.0",  # syntax highlighting
-]
 
 README = io.open(os.path.join(CURDIR, "README.md"), "r", encoding="utf-8").read()
 VERSION = (
@@ -68,7 +58,18 @@ setup(
         ]
     },
     zip_safe=False,
-    install_requires=REQUIRED,
+    install_requires=[
+        "Flask>=0.12.2, <1.0",  # http server
+        "Flask-Compress>=1.4.0, <2.0",  # to compress flask responses
+        "Flask-SocketIO>=2.9, <3.0",  # websocket server
+        "gevent>=1.2.2, <2.0",  # websocket handling
+        "gevent-websocket>=0.10.1, <0.11",  # also websocket
+        "eventlet>=0.25.0, <0.26",  # also websocket
+        "pygdbmi>=0.10.0.0b0, <0.11",  # parse gdb output
+        "Pygments>=2.2.0, <3.0",  # syntax highlighting
+        "greenlet==0.4.16",
+        "python-socketio>=4.6.1, <5.0",  # pinned to use socketio 2 under the hood (issue #366)
+    ],
     classifiers=[
         "Intended Audience :: Developers",
         "Operating System :: MacOS",

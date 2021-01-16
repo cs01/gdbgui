@@ -1,7 +1,9 @@
-import nox  # type: ignore
+import subprocess
 from pathlib import Path
 from sys import platform
-import subprocess
+
+import nox  # type: ignore
+
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
@@ -17,7 +19,13 @@ prettier_command = [
 ]
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
-lint_dependencies = ["black", "vulture", "flake8", "mypy", "check-manifest"]
+lint_dependencies = [
+    "black==20.8b1",
+    "vulture",
+    "flake8",
+    "mypy==0.782",
+    "check-manifest",
+]
 vulture_whitelist = ".vulture_whitelist.py"
 files_to_lint = ["gdbgui", "tests"] + [str(p) for p in Path(".").glob("*.py")]
 files_to_lint.remove(vulture_whitelist)
@@ -82,22 +90,16 @@ def lint(session):
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)
-    session.run(
-        "check-manifest", "--ignore", "gdbgui/static/js/*",
-    )
+    session.run("check-manifest", "--ignore", "gdbgui/static/js/*")
     session.run("python", "setup.py", "check", "--metadata", "--strict")
-    session.run(
-        *prettier_command, "--check", external=True,
-    )
+    session.run(*prettier_command, "--check", external=True)
 
 
 @nox.session(reuse_venv=True)
 def autoformat(session):
-    session.install("black")
+    session.install(*lint_dependencies)
     session.run("black", *files_to_lint)
-    session.run(
-        *prettier_command, "--write", external=True,
-    )
+    session.run(*prettier_command, "--write", external=True)
 
 
 @nox.session(reuse_venv=True)
@@ -112,13 +114,13 @@ def develop(session):
     session.run("yarn", "install", external=True)
     print("Watching JavaScript file and Python files for changes")
     with subprocess.Popen(["yarn", "start"]):
-        session.run("python", "gdbgui/backend.py")
+        session.run("python", "-m", "gdbgui")
 
 
 @nox.session(reuse_venv=True)
 def serve(session):
     session.install("-e", ".")
-    session.run("python", "gdbgui/backend.py", *session.posargs)
+    session.run("python", "-m", "gdbgui", *session.posargs)
 
 
 @nox.session(reuse_venv=True)
