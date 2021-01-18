@@ -19,6 +19,6 @@ type Feature =
 
 export function processFeatures(features: Array<Feature>) {
   if (features.indexOf("reverse") !== -1) {
-    store.set("debug_in_reverse", true);
+    store.set("reverse_supported", true);
   }
 }

@@ -1,9 +1,12 @@
 #!/bin/bash
 
-mpirun --oversubscribe -np $1 gdbgui-mpi/print_nodes
+mpirun --oversubscribe -np $1 print_nodes
+if [ ! -d gdbgui-mpi ]; then
+    mkdir gdbgui-mpi
+fi
 mv nodes_name gdbgui-mpi/
-mpirun --oversubscribe -np $1 gdbgui-mpi/launch_gdb_server ${@:2} # &
-rm gdbgui-mpi/nodes_name
+mpirun --oversubscribe -np $1 launch_gdb_server ${@:2} # &
+rm nodes_name
 #python -m gdbgui-mpi
 
 

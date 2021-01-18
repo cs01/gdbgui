@@ -11,7 +11,7 @@ class ControlButtons extends React.Component<{}, State> {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, ["gdb_pid"]);
+    store.connectComponentState(this, ["gdb_pid", "reverse_supported"]);
   }
   render() {
     let btn_class = "btn btn-default btn-sm";
@@ -34,8 +34,7 @@ class ControlButtons extends React.Component<{}, State> {
           type="button"
           title={
             "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
-            // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-            (initial_data.rr ? ". shift + c for reverse." : "")
+            (this.state.reverse_supported ? ". shift + c for reverse." : "")
           }
           className={btn_class}
         >
@@ -57,8 +56,7 @@ class ControlButtons extends React.Component<{}, State> {
           type="button"
           title={
             "Step over next function call keyboard shortcut: n or right arrow" +
-            // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-            (initial_data.rr ? ". shift + n for reverse." : "")
+            (this.state.reverse_supported ? ". shift + n for reverse." : "")
           }
           className={btn_class}
         >
@@ -71,8 +69,7 @@ class ControlButtons extends React.Component<{}, State> {
           type="button"
           title={
             "Step into next function call keyboard shortcut: s or down arrow" +
-            // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-            (initial_data.rr ? ". shift + s for reverse." : "")
+            (this.state.reverse_supported ? ". shift + s for reverse." : "")
           }
           className={btn_class}
         >
@@ -95,8 +92,7 @@ class ControlButtons extends React.Component<{}, State> {
             type="button"
             title={
               "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
-              // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-              (initial_data.rr ? ". shift + m for reverse." : "")
+              (this.state.reverse_supported ? ". shift + m for reverse." : "")
             }
             className="btn btn-default"
           >
@@ -108,8 +104,7 @@ class ControlButtons extends React.Component<{}, State> {
             type="button"
             title={
               "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +
-              // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-              (initial_data.rr ? ". shift + , for reverse." : "")
+              (this.state.reverse_supported ? ". shift + , for reverse." : "")
             }
             className="btn btn-default"
           >

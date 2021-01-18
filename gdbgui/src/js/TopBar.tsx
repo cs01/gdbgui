@@ -176,6 +176,7 @@ class TopBar extends React.Component<{}, State> {
       this,
       [
         "debug_in_reverse",
+        "reverse_supported",
         "source_code_state",
         "waiting_for_response",
         "show_filesystem",
@@ -304,30 +305,27 @@ class TopBar extends React.Component<{}, State> {
       );
     }
 
-    let reverse_checkbox = null;
-    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
-    if (initial_data.rr) {
-      reverse_checkbox = (
-        <label
-          title={
-            "when clicking buttons to the right, pass the `--reverse` " +
-            "flag to gdb in an attempt to debug in reverse. This is not always supported. " +
-            "rr is known to support reverse debugging. Keyboard shortcuts go in " +
-            "reverse when pressed with the shift key."
-          }
-          style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
-        >
-          <input
-            type="checkbox"
-            checked={store.get("debug_in_reverse")}
-            onChange={e => {
-              store.set("debug_in_reverse", e.target.checked);
-            }}
-          />
-          reverse
-        </label>
-      );
-    }
+    let reverse_checkbox = (
+      <label
+        title={
+          "when clicking buttons to the right, pass the `--reverse` " +
+          "flag to gdb in an attempt to debug in reverse. This is not always supported. " +
+          "rr is known to support reverse debugging. Keyboard shortcuts go in " +
+          "reverse when pressed with the shift key."
+        }
+        style={{ fontWeight: "normal", fontSize: "0.9em", margin: "5px" }}
+      >
+        <input
+          type="checkbox"
+          disabled={!this.state.reverse_supported}
+          checked={store.get("debug_in_reverse")}
+          onChange={e => {
+            store.set("debug_in_reverse", e.target.checked);
+          }}
+        />
+        reverse
+      </label>
+    );
 
     return (
       <div

@@ -64,13 +64,13 @@ gdbgui -r --auth --key private.key --cert host.cert
 
 Use Mozilla's [record and replay](https://rr-project.org) (rr) debugging supplement to gdb. rr lets your record a program (usually with a hard-to-reproduce bug in it), then deterministically replay it as many times as you want. You can even step forwards and backwards.
 ```
-gdbgui --gdb-cmd "rr replay"
+gdbgui --gdb-cmd "rr replay --"
 ```
 
 Use recording other than the most recent one
 
 ```
-gdbgui --gdb-cmd "rr replay RECORDED_DIRECTORY"
+gdbgui --gdb-cmd "rr replay RECORDED_DIRECTORY --"
 ```
 
 Don't automatically open the browser when launching

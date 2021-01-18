@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
     if (ret == 0)
     {
-        int name_max_s = name.size();
+        int name_max_s = name.size()+1;
 	int name_max_r = 0;
 
 	MPI_Allreduce(&name_max_s,&name_max_r,1,MPI_INT,MPI_MAX,MPI_COMM_WORLD);
@@ -40,14 +40,23 @@ int main(int argc, char** argv) {
 	if (world_rank == 0)
 	{
 		char * nodes;
-		nodes = new char [proc_name.size()*world_size];
-		MPI_Gather(proc_name.c_str(),proc_name.size(),MPI_CHAR,
-			      nodes,proc_name.size(),MPI_CHAR,0,MPI_COMM_WORLD);
+		nodes = new char [(proc_name.size()+1)*world_size];
+		MPI_Gather(proc_name.c_str(),proc_name.size()+1,MPI_CHAR,
+			      nodes,proc_name.size()+1,MPI_CHAR,0,MPI_COMM_WORLD);
+
+		// fiter names
+		std::stringstream sf;
+
+		for (int i = 0 ; i < world_size ; i++)
+		{
+			sf << std::string(&nodes[i*(proc_name.size()+1)]);
+		}		
+
 		FILE * pFile;
                 pFile = fopen("nodes_name","w");
                 if (pFile!=NULL)
                 {
-                    fputs (nodes,pFile);
+                    fputs (sf.str().c_str(),pFile);
                     fclose (pFile);
                 }
 		else
@@ -57,7 +66,7 @@ int main(int argc, char** argv) {
 	}
 	else
 	{
-            MPI_Gather(proc_name.c_str(),proc_name.size(),MPI_CHAR,
+            MPI_Gather(proc_name.c_str(),proc_name.size()+1,MPI_CHAR,
                        NULL,0,MPI_CHAR,0,MPI_COMM_WORLD);
 	}
     }
