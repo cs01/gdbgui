@@ -89,11 +89,12 @@ class SessionManager(object):
         gdbgui_startup_cmds = [
             f"new-ui {mi_version} {pty_for_gdbgui.name}",
             f"set inferior-tty {pty_for_debugged_program.name}",
+            f"set pagination off"
         ]
         # instead of writing to the pty after it starts, add startup
         # commands to gdb. This allows gdb to be run as sudo and prompt for a
         # password, for example.
-        gdbgui_startup_cmds_str = " ".join([f"-ex='{c}'" for c in gdbgui_startup_cmds])
+        gdbgui_startup_cmds_str = " ".join([f"-iex='{c}'" for c in gdbgui_startup_cmds])
         pty_for_gdb = Pty(cmd=f"{gdb_command} {gdbgui_startup_cmds_str}")
 
         pid = pty_for_gdb.pid
