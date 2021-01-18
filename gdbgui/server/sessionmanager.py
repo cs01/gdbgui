@@ -89,7 +89,7 @@ class SessionManager(object):
         gdbgui_startup_cmds = [
             f"new-ui {mi_version} {pty_for_gdbgui.name}",
             f"set inferior-tty {pty_for_debugged_program.name}",
-            f"set pagination off",
+            "set pagination off",
         ]
         # instead of writing to the pty after it starts, add startup
         # commands to gdb. This allows gdb to be run as sudo and prompt for a
