@@ -7,7 +7,7 @@ import nox  # type: ignore
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.6", "3.7", "3.8"]
+python = ["3.6", "3.7", "3.8", "3.9"]
 prettier_command = [
     "npx",
     "prettier@1.19.1",
@@ -35,7 +35,6 @@ publish_deps = ["setuptools", "wheel", "twine"]
 @nox.session(reuse_venv=True)
 def python_tests(session):
     session.install(".", "pytest", "pytest-cov")
-    session.run("python", "setup.py", "check", "--metadata", "--strict")
     tests = session.posargs or ["tests"]
     session.run(
         "pytest", "--cov=gdbgui", "--cov-config", ".coveragerc", "--cov-report=", *tests
@@ -88,7 +87,7 @@ def vulture(session):
 @nox.session()
 def lint(session):
     session.install(".", *lint_dependencies)
-    session.run("black", "--check", *files_to_lint)
+    session.run("black", "--diff", *files_to_lint)
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)

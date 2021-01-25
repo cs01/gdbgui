@@ -61,6 +61,16 @@ def check_run_and_wait_for_brakpoint(target_bkt, target_runs, test_client_socket
     return num_breakpoint_hit, num_running
 
 
+def set_pagination_off(test_client_socketio):
+    for i in range(0, 6):
+        cmds = ['-interpreter-exec console "set pagination off"']
+        test_client_socketio.emit(
+            "run_gdb_command_mpi",
+            {"processor": i, "cmd": cmds},
+            namespace="/gdb_listener",
+        )
+
+
 def set_breakpoint(test_client_socketio, pos):
     for i in range(0, 6):
         cmds = ["-break-insert main" + pos]
@@ -198,6 +208,8 @@ def test_load_mpi_program(test_client):
     # 6 connection, 12 gdb messages
     messages = test_client_socketio.get_received(namespace="/gdb_listener")
     assert len(messages) == 12
+
+    set_pagination_off(test_client_socketio)
 
     set_breakpoint(test_client_socketio, "")
     gdbgui.server.app.process_controllers_out()

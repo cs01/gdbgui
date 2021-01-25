@@ -79,7 +79,6 @@ exe = EXE(pyz,  # noqa
         f.write(spec)
 
 
-
 def verify(binary_path: str, version: str):
     cmd = [str(binary_path), "--version"]
     logging.info(f"Smoke test: Running {' '.join(cmd)}")
@@ -119,8 +118,7 @@ def main():
     generate_md5(binary_path, distpath / f"{binary_name}.md5")
     logging.info(f"Saved executable to {binary_path}")
     text_file = open("gdbgui_executable", "w")
-    n = text_file.write("{binary_path}".format(**locals())
-)
+    n = text_file.write("{binary_path}".format(**locals()))
     text_file.close()
 
 
