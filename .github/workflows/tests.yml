@@ -31,6 +31,7 @@ jobs:
           pip install nox
       - name: Install gdb gdbserver and openmpi ubuntu
         run: |
+          sudo apt-get update
           sudo apt-get install gdb gdbserver openmpi-bin libopenmpi-dev
       - name: Compiling node_names
         run: |
