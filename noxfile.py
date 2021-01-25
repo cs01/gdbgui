@@ -87,7 +87,7 @@ def vulture(session):
 @nox.session()
 def lint(session):
     session.install(".", *lint_dependencies)
-    session.run("black", "--diff", *files_to_lint)
+    session.run("black", "--check", *files_to_lint)
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)
