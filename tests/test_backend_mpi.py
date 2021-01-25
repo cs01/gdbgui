@@ -4,6 +4,8 @@ import re
 import subprocess
 import gdbgui.server
 import os
+from threading  import Thread
+from queue import Queue, Empty
 
 from gdbgui.server.app import app, socketio
 from gdbgui.server.constants import (
@@ -131,6 +133,12 @@ def continue_run(test_client_socketio):
         )
 
 
+def enqueue_output(out, queue):
+    for line in iter(out.readline, b''):
+        queue.put(line)
+    out.close()
+
+
 def test_load_mpi_program(test_client):
     response = test_client.get("/")
     assert response.status_code == 200
@@ -166,7 +174,31 @@ def test_load_mpi_program(test_client):
         env=my_env,
     )
 
+    q = Queue()
+    to = Thread(target=enqueue_output, args=(process.stdout, q))
+    to.daemon = True # thread dies with the program
+    to.start()
+
+    q2 = Queue()
+    te = Thread(target=enqueue_output, args=(process.stderr, q2))
+    te.daemon = True # thread dies with the program
+    te.start()
+
     time.sleep(5)
+
+    while True:
+        try:  line = q.get_nowait()
+        except Empty:
+            break
+        else: # got line
+            print(line)
+
+    while True:
+        try:  line = q2.get_nowait()
+        except Empty:
+            break
+        else: # got line
+            print(line)
 
     response = test_client.get("/mpi_processes_info")
 
