@@ -176,12 +176,12 @@ def test_load_mpi_program(test_client):
 
     q = Queue()
     to = Thread(target=enqueue_output, args=(process.stdout, q))
-    # to.daemon = True  # thread dies with the program
+    to.daemon = True  # thread dies with the program
     to.start()
 
     q2 = Queue()
     te = Thread(target=enqueue_output, args=(process.stderr, q2))
-    # te.daemon = True  # thread dies with the program
+    te.daemon = True  # thread dies with the program
     te.start()
 
     time.sleep(5)
