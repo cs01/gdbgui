@@ -167,7 +167,7 @@ def test_load_mpi_program(test_client):
         [
             "bash",
             "-c",
-            "./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
+            "ls ./gdbgui-mpi && ./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
