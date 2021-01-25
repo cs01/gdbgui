@@ -1,6 +1,8 @@
 #!/bin/bash
 
-mpirun --oversubscribe -np $1 print_nodes
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+mpirun --oversubscribe -np $1 $DIR/print_nodes
 if [ ! -d gdbgui-mpi ]; then
     mkdir gdbgui-mpi
 fi
