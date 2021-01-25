@@ -166,7 +166,7 @@ def test_load_mpi_program(test_client):
         env=my_env,
     )
 
-    time.sleep(1)
+    time.sleep(5)
 
     response = test_client.get("/mpi_processes_info")
 
