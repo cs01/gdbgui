@@ -7,7 +7,7 @@ if [ ! -d gdbgui-mpi ]; then
     mkdir gdbgui-mpi
 fi
 mv nodes_name gdbgui-mpi/
-mpirun --oversubscribe -np $1 launch_gdb_server ${@:2} # &
+mpirun --oversubscribe -np $1 $DIR/launch_gdb_server ${@:2} # &
 rm nodes_name
 #python -m gdbgui-mpi
 
