@@ -89,7 +89,7 @@ def check_breakpoint_set(
     time.sleep(1)
     # 6 connection, 6 gdb messages
     num_break_hit = 0
-    timeout = time.time() + 10
+    timeout = time.time() + 20
 
     print("Checking breakpoint set:")
 
