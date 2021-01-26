@@ -112,11 +112,11 @@ def check_breakpoint_set(
                             assert "gdb_response" in messages[i]["name"]
                             assert (
                                 "main(int, char**)"
-                                in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
+                                in break_message["func"]
                             )
                             if no_line_check is False:
                                 assert (
-                                    line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
+                                    line in break_message["line"]
                                 )
 
                             num_break_hit += 1
