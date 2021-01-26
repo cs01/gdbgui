@@ -101,7 +101,7 @@ def check_breakpoint_set(
             print(messages)
 
         for i in range(0, len(messages)):
-            print("Analyze: " + str(messages[i]) )
+            print("Analyze: " + str(messages[i]))
             if messages[i]["args"][0][0]["payload"].get("bkpt") is not None:
                 if "breakpoint" in messages[i]["args"][0][0]["payload"]["bkpt"]["type"]:
                     print("Break-set")
