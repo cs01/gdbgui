@@ -103,7 +103,7 @@ def check_breakpoint_set(
         for i in range(0, len(messages)):
             print("Analyze: " + str(messages[i]))
             for msg_pay in messages[i]["args"][0]:
-                payload=msg_pay["payload"]
+                payload = msg_pay["payload"]
                 if isinstance(payload, dict):
                     break_message = payload.get("bkpt")
                     if break_message is not None:
