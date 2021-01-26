@@ -323,7 +323,7 @@ def test_load_mpi_program(test_client):
 
     process.terminate()
 
-    time.sleep(2)
+    time.sleep(3)
 
     while True:
         try:
