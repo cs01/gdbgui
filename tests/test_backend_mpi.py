@@ -174,33 +174,33 @@ def test_load_mpi_program(test_client):
         env=my_env,
     )
 
-    q = Queue()
-    to = Thread(target=enqueue_output, args=(process.stdout, q))
-    to.daemon = True  # thread dies with the program
-    to.start()
+    # q = Queue()
+    # to = Thread(target=enqueue_output, args=(process.stdout, q))
+    # to.daemon = True  # thread dies with the program
+    # to.start()
 
-    q2 = Queue()
-    te = Thread(target=enqueue_output, args=(process.stderr, q2))
-    te.daemon = True  # thread dies with the program
-    te.start()
+    # q2 = Queue()
+    # te = Thread(target=enqueue_output, args=(process.stderr, q2))
+    # te.daemon = True  # thread dies with the program
+    # te.start()
 
     time.sleep(5)
 
-    while True:
-        try:
-            line = q.get_nowait()
-        except Empty:
-            break
-        else:  # got line
-            print(line)
+    # while True:
+    #    try:
+    #        line = q.get_nowait()
+    #    except Empty:
+    #        break
+    #    else:  # got line
+    #        print(line)
 
-    while True:
-        try:
-            line = q2.get_nowait()
-        except Empty:
-            break
-        else:  # got line
-            print(line)
+    #while True:
+    #    try:
+    #        line = q2.get_nowait()
+    #    except Empty:
+    #        break
+    #    else:  # got line
+    #        print(line)
 
     response = test_client.get("/mpi_processes_info")
 
