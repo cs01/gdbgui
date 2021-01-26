@@ -103,21 +103,16 @@ def check_breakpoint_set(
         for i in range(0, len(messages)):
             print("Analyze: " + str(messages[i]))
             for msg_pay in messages[i]["args"][0]:
-                payload = msg_pay["payload"]
-                if isinstance(payload,dict):
-                    break_message=payload.get("bkpt")
+                payload=msg_pay["payload"]
+                if isinstance(payload, dict):
+                    break_message = payload.get("bkpt")
                     if break_message is not None:
                         if "breakpoint" in break_message["type"]:
                             print("Break-set")
                             assert "gdb_response" in messages[i]["name"]
-                            assert (
-                                "main(int, char**)"
-                                in break_message["func"]
-                            )
+                            assert "main(int, char**)" in break_message["func"]
                             if no_line_check is False:
-                                assert (
-                                    line in break_message["line"]
-                                )
+                                assert line in break_message["line"]
 
                             num_break_hit += 1
 
