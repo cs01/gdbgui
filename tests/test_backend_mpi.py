@@ -38,7 +38,7 @@ def check_run_and_wait_for_brakpoint(target_bkt, target_runs, test_client_socket
     num_breakpoint_hit = 0
     num_running = 0
     print("Checking running and breakpoint hit:")
-    timeout = time.time() + 10
+    timeout = time.time() + 20
     while (
         num_breakpoint_hit < target_bkt or num_running < target_runs
     ) and time.time() < timeout:
