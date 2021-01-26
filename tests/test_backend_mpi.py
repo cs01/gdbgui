@@ -102,20 +102,24 @@ def check_breakpoint_set(
 
         for i in range(0, len(messages)):
             print("Analyze: " + str(messages[i]))
-            if messages[i]["args"][0][0]["payload"].get("bkpt") is not None:
-                if "breakpoint" in messages[i]["args"][0][0]["payload"]["bkpt"]["type"]:
-                    print("Break-set")
-                    assert "gdb_response" in messages[i]["name"]
-                    assert (
-                        "main(int, char**)"
-                        in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
-                    )
-                    if no_line_check is False:
-                        assert (
-                            line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
-                        )
+            for msg_pay in messages[i]["args"][0]:
+                payload = msg_pay["payload"]
+                if isinstance(payload,dict):
+                    break_message=payload.get("bkpt")
+                    if break_message is not None:
+                        if "breakpoint" in break_message["type"]:
+                            print("Break-set")
+                            assert "gdb_response" in messages[i]["name"]
+                            assert (
+                                "main(int, char**)"
+                                in messages[i]["args"][0][0]["payload"]["bkpt"]["func"]
+                            )
+                            if no_line_check is False:
+                                assert (
+                                    line in messages[i]["args"][0][0]["payload"]["bkpt"]["line"]
+                                )
 
-                    num_break_hit += 1
+                            num_break_hit += 1
 
     if num_break_hit == 0 and process is not None:
         # OK we try to print the output of launching the gdbserver
