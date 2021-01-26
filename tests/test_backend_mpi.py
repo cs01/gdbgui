@@ -321,5 +321,7 @@ def test_load_mpi_program(test_client):
     assert num_breakpoint_hit == 2
     assert num_running == 1
 
+    assert 0 == 1
+
     process.terminate()
     process.wait()
