@@ -38,7 +38,7 @@ def check_run_and_wait_for_brakpoint(target_bkt, target_runs, test_client_socket
     num_breakpoint_hit = 0
     num_running = 0
     print("Checking running and breakpoint hit:")
-    timeout = time.time() + 60
+    timeout = time.time() + 10
     while (
         num_breakpoint_hit < target_bkt or num_running < target_runs
     ) and time.time() < timeout:
@@ -64,7 +64,7 @@ def check_run_and_wait_for_brakpoint(target_bkt, target_runs, test_client_socket
 
 
 def set_pagination_off(test_client_socketio):
-    for i in range(0, 6):
+    for i in range(0, 2):
         cmds = ['-interpreter-exec console "set pagination off"']
         test_client_socketio.emit(
             "run_gdb_command_mpi",
@@ -74,7 +74,7 @@ def set_pagination_off(test_client_socketio):
 
 
 def set_breakpoint(test_client_socketio, pos):
-    for i in range(0, 6):
+    for i in range(0, 2):
         cmds = ["-break-insert main" + pos]
         test_client_socketio.emit(
             "run_gdb_command_mpi",
@@ -87,9 +87,9 @@ def check_breakpoint_set(
     test_client_socketio, line, target_bkt, no_line_check=True, process=None
 ):
     time.sleep(1)
-    # 6 connection, 6 gdb messages
+    # 2 connection, 2 gdb messages
     num_break_hit = 0
-    timeout = time.time() + 60
+    timeout = time.time() + 10
 
     print("Checking breakpoint set:")
 
@@ -120,11 +120,11 @@ def check_breakpoint_set(
         print(process.stderr.read())
         print(process.stdout.read())
 
-    assert num_break_hit == 6
+    assert num_break_hit == 2
 
 
 def continue_run(test_client_socketio):
-    for i in range(0, 6):
+    for i in range(0, 2):
         cmds = ["-exec-continue"]
         test_client_socketio.emit(
             "run_gdb_command_mpi",
@@ -167,7 +167,7 @@ def test_load_mpi_program(test_client):
         [
             "bash",
             "-c",
-            "ls ./gdbgui-mpi && ./gdbgui-mpi/launch_mpi_debugger 6 gdbgui-mpi/print_nodes",
+            "ls ./gdbgui-mpi && ./gdbgui-mpi/launch_mpi_debugger 2 gdbgui-mpi/print_nodes",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -207,18 +207,18 @@ def test_load_mpi_program(test_client):
     assert response.status_code == 200
 
     test_client_socketio.emit(
-        "open_mpi_sessions", {"processors": 6}, namespace="/gdb_listener"
+        "open_mpi_sessions", {"processors": 2}, namespace="/gdb_listener"
     )
     time.sleep(1)
     controllers = gdbgui.server.app.manager.get_controllers()
 
-    # check we have 6 sessions
-    assert len(controllers) == 6
+    # check we have 2 sessions
+    assert len(controllers) == 2
 
     # process the names and connect to gdb_servers
     lines = response.data.decode().split("\n")
     lines.pop()
-    assert len(lines) == 6
+    assert len(lines) == 2
     for line in lines:
         proc_name = line.split()
 
@@ -239,44 +239,44 @@ def test_load_mpi_program(test_client):
     messages = test_client_socketio.get_received(namespace="/gdb_listener")
     gdbgui.server.app.process_controllers_out()
 
-    # 6 connection, 12 gdb messages
+    # 2 connection, 4 gdb messages
     messages = test_client_socketio.get_received(namespace="/gdb_listener")
-    assert len(messages) == 12
+    assert len(messages) == 4
 
     set_pagination_off(test_client_socketio)
 
     set_breakpoint(test_client_socketio, "")
     gdbgui.server.app.process_controllers_out()
-    check_breakpoint_set(test_client_socketio, "8", 6, True, process)
+    check_breakpoint_set(test_client_socketio, "8", 2, True, process)
     continue_run(test_client_socketio)
 
     # At this point I am expexting to receive a lot of notification messages about reading information on libraries and so on in reality we are interested
     # in receiving the breakpoint hit
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
-        6, 6, test_client_socketio
+        2, 2, test_client_socketio
     )
 
-    assert num_running == 6
-    assert num_breakpoint_hit == 6
+    assert num_running == 2
+    assert num_breakpoint_hit == 2
 
     # now we set a breakpoint in a particular point of main.cpp and check we hit that breakpoint
 
     set_breakpoint(test_client_socketio, ".cpp:40")
     gdbgui.server.app.process_controllers_out()
-    check_breakpoint_set(test_client_socketio, "40", 6)
+    check_breakpoint_set(test_client_socketio, "40", 2)
 
     # run and check for breakpoint
     continue_run(test_client_socketio)
 
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
-        6, 6, test_client_socketio
+        2, 2, test_client_socketio
     )
 
-    assert num_running == 6
-    assert num_breakpoint_hit == 6
+    assert num_running == 2
+    assert num_breakpoint_hit == 2
 
     # we try step
-    for i in range(0, 6):
+    for i in range(0, 2):
         cmds = ["-exec-next"]
         test_client_socketio.emit(
             "run_gdb_command_mpi",
@@ -287,27 +287,27 @@ def test_load_mpi_program(test_client):
     gdbgui.server.app.process_controllers_out()
 
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
-        6, 6, test_client_socketio
+        2, 2, test_client_socketio
     )
 
-    assert num_running == 6
-    assert num_breakpoint_hit == 6
+    assert num_running == 2
+    assert num_breakpoint_hit == 2
 
     # create a breakpoint only valid fir processor 0
 
-    set_breakpoint(test_client_socketio, ".cpp:47")
+    set_breakpoint(test_client_socketio, ".cpp:50")
     gdbgui.server.app.process_controllers_out()
-    check_breakpoint_set(test_client_socketio, "47", 6)
+    check_breakpoint_set(test_client_socketio, "50", 2)
 
     # run and check for breakpoint
     continue_run(test_client_socketio)
 
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
-        1, 6, test_client_socketio
+        1, 2, test_client_socketio
     )
 
     assert num_breakpoint_hit == 1
-    assert num_running == 6
+    assert num_running == 2
 
     cmds = ["-exec-continue"]
     test_client_socketio.emit(
@@ -315,10 +315,10 @@ def test_load_mpi_program(test_client):
     )
 
     num_breakpoint_hit, num_running = check_run_and_wait_for_brakpoint(
-        6, 1, test_client_socketio
+        2, 1, test_client_socketio
     )
 
-    assert num_breakpoint_hit == 6
+    assert num_breakpoint_hit == 2
     assert num_running == 1
 
     process.terminate()
