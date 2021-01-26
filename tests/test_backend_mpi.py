@@ -341,6 +341,4 @@ def test_load_mpi_program(test_client):
         else:  # got line
             print(line)
 
-    assert 0 == 1
-
     process.wait()
