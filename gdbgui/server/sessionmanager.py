@@ -187,7 +187,7 @@ class SessionManager(object):
         return None
 
     def send_signal_to_all_debug_sessions_processes(self):
-        for debug_session in debug_session.to_dict()
+        for debug_session in debug_session.to_dict():
             print(f"PROCESS ID: {debug_session[\"pid\"]}")
 
     def exit_all_gdb_processes_except_client_id(self, client_id: str):
