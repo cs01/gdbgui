@@ -234,7 +234,7 @@ def send_signal_to_pid():
         # send the signal to all processes
         if pid_int == -1:
             manager.send_signal_to_all_debug_sessions_processes(signal_value)
-        else
+        else:
             os.kill(pid_int, signal_value)
     except Exception:
         return (
