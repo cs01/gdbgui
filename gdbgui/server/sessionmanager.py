@@ -36,6 +36,7 @@ class DebugSession:
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.client_ids: Set[str] = set()
         self.mpi_rank = -1
+        self.inferior_pid = -1
 
     def terminate(self):
         if self.pid:
@@ -186,9 +187,9 @@ class SessionManager(object):
 
         return None
 
-    def send_signal_to_all_debug_sessions_processes(self):
-        for debug_session in self.to_dict().items():
-            print("PROCESS ID: " + debug_session["pid"])
+    def send_signal_to_all_debug_sessions_processes(self, signal_id: int):
+        for debug_session, _ in self.debug_session_to_client_ids.items():
+            os.kill(debug_session.inferior_pid, signal_id)
 
     def exit_all_gdb_processes_except_client_id(self, client_id: str):
         logger.info("exiting all subprocesses except client id")

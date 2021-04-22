@@ -334,6 +334,11 @@ def process_controllers_out():
                 """Attach processor information"""
                 for r in response:
                     r["proc"] = debug_session.mpi_rank
+                    if r["type"] == "notify":
+                        if r["message"] == "thread-group-started":
+                            debug_session.inferior_pid = int(r["payload"]["pid"])
+
+                # Here we parse for thread-group-started to get the inferior_pid
 
                 for client_id in client_ids:
                     logger.info("emiting message to websocket client id " + client_id)
