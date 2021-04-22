@@ -27,12 +27,13 @@ test("debug session", () => {
   );
   const exe_python_server = spawn("python", ["-m", "gdbgui", "-n"]);
 
+  await new Promise(resolve => setTimeout(resolve, 4000));
+
   const puppeteer = require("puppeteer");
 
   return (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    page.waitFor(4000);
     await page.goto("http://127.0.0.1:5000");
 
     // Load page and connect to server and debug
