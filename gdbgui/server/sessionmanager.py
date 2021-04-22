@@ -102,7 +102,7 @@ class SessionManager(object):
         gdbgui_startup_cmds = [
             f"new-ui {mi_version} {pty_for_gdbgui.name}",
             f"set inferior-tty {pty_for_debugged_program.name}",
-            f"set pagination off",
+            "set pagination off",
         ]
         # instead of writing to the pty after it starts, add startup
         # commands to gdb. This allows gdb to be run as sudo and prompt for a
@@ -187,8 +187,8 @@ class SessionManager(object):
         return None
 
     def send_signal_to_all_debug_sessions_processes(self):
-        for debug_session in debug_session.to_dict():
-            print(f"PROCESS ID: " + debug_session["pid"])
+        for debug_session in self.to_dict().items():
+            print("PROCESS ID: " + debug_session["pid"])
 
     def exit_all_gdb_processes_except_client_id(self, client_id: str):
         logger.info("exiting all subprocesses except client id")
