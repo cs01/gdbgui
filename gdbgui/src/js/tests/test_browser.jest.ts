@@ -32,7 +32,7 @@ test("debug session", () => {
   return (async () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
-    page.waitFor(2000);
+    page.waitFor(4000);
     await page.goto("http://127.0.0.1:5000");
 
     // Load page and connect to server and debug
