@@ -1,4 +1,4 @@
-async function sleep_custom(ms: number) {
+async function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -11,7 +11,7 @@ async function close_test(browser: any, exe_python_server: any, exe_gdb_server: 
   // execute killing command kill does not propagate to all child processes
   console.log("Killing:", exe_gdb_server.pid.toString());
   let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
-  await sleep_custom(3000);
+  await sleep(3000);
 }
 
 test("debug session", () => {
@@ -33,7 +33,23 @@ test("debug session", () => {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     page.waitForTimeout(2000);
-    await page.goto("http://127.0.0.1:5000");
+
+    var connection_failed = true;
+    var n_try = 5;
+    do {
+      try {
+        await page.goto("http://127.0.0.1:5000", { waitUntil: "load", timeout: 2000 });
+        connection_failed = false;
+      } catch (e) {
+        console.log("catch:", e);
+        console.log("N attempt: ", n_try);
+        await sleep(2000);
+        n_try--;
+      }
+    } while (connection_failed == true && n_try > 0);
+
+    // Retry
+    await page.goto("http://127.0.0.1:5000", { waitUntil: "load", timeout: 2000 });
 
     // Load page and connect to server and debug
     const loaded = await page.evaluate(() => {
