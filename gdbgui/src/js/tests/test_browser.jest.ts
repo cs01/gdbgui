@@ -1,4 +1,4 @@
-function sleep(ms: number) {
+async function sleep_custom(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -11,7 +11,7 @@ async function close_test(browser: any, exe_python_server: any, exe_gdb_server: 
   // execute killing command kill does not propagate to all child processes
   console.log("Killing:", exe_gdb_server.pid.toString());
   let kill_cmd = spawn("bash", ["-c", "pkill mpirun"]);
-  await sleep(3000);
+  await sleep_custom(3000);
 }
 
 test("debug session", () => {
@@ -27,13 +27,13 @@ test("debug session", () => {
   );
   const exe_python_server = spawn("python", ["-m", "gdbgui", "-n"]);
 
-  await sleep(4000);
-
   const puppeteer = require("puppeteer");
 
   return (async () => {
+
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
+    page.waitForTimeout(2000);
     await page.goto("http://127.0.0.1:5000");
 
     // Load page and connect to server and debug
@@ -82,7 +82,7 @@ test("debug session", () => {
     await page.focus("input.form-control");
     await page.keyboard.type("*:60000");
 
-    page.waitFor(1000);
+    page.waitForTimeout(1000);
 
     const connection_gdb = await page.evaluate(() => {
       let top_div = document.getElementById("top");
@@ -107,7 +107,7 @@ test("debug session", () => {
 
     console.log("Connecting to MPI gdbservers", connection_gdb);
 
-    await page.waitFor(4000);
+    await page.waitForTimeout(4000);
 
     const break_on_line = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelector(
@@ -151,7 +151,7 @@ test("debug session", () => {
       return false;
     }
 
-    await page.waitFor(1000);
+    await page.waitForTimeout(1000);
 
     const confirm_break_on_line_40 = await page.evaluate(() => {
       let breakpoints = document.querySelectorAll<HTMLElement>("td.line_num.breakpoint");
@@ -182,7 +182,7 @@ test("debug session", () => {
 
     console.log("Press continue button:", continue_execution);
 
-    await page.waitFor(4000);
+    await page.waitForTimeout(4000);
 
     const break_on_line2 = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelector(
@@ -207,7 +207,7 @@ test("debug session", () => {
     await page.click("body");
     await page.keyboard.down("ArrowRight");
     await page.keyboard.up("ArrowRight");
-    await page.waitFor(1000);
+    await page.waitForTimeout(1000);
 
     const single_step_divergence = await page.evaluate(() => {
       let source_break_point_on_focus: HTMLElement = document.querySelector(
@@ -248,7 +248,7 @@ test("debug session", () => {
     await page.keyboard.type("world_rank");
     await page.keyboard.press("Enter");
 
-    await page.waitFor(1000);
+    await page.waitForTimeout(1000);
 
     const add_expression = await page.evaluate(() => {
       let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
@@ -280,7 +280,7 @@ test("debug session", () => {
     // Change focus proc3
 
     await page.click("#rect_proc_3");
-    await page.waitFor(1000);
+    await page.waitForTimeout(1000);
 
     const add_expression2 = await page.evaluate(() => {
       let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
