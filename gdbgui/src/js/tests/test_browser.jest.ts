@@ -27,7 +27,7 @@ test("debug session", () => {
   );
   const exe_python_server = spawn("python", ["-m", "gdbgui", "-n"]);
 
-  await new Promise(resolve => setTimeout(resolve, 4000));
+  await sleep(4000);
 
   const puppeteer = require("puppeteer");
 
