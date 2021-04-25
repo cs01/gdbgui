@@ -134,7 +134,7 @@ test("debug session", () => {
       return false;
     }
 
-    await page.waitForTimeout(4000);
+    await page.waitForTimeout(10000);
 
     const break_on_line = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelector(
@@ -155,7 +155,7 @@ test("debug session", () => {
     });
 
     console.log("Check the program load and breakpoint:", break_on_line);
-    if (break_on_line == false) {
+    if (break_on_line != 10) {
       return false;
     }
 
