@@ -6,6 +6,7 @@ import Util from "./Util";
 import FileOps from "./FileOps";
 import { FileLink } from "./Links";
 import constants from "./constants";
+import Cookies from "./Cookies";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -299,6 +300,17 @@ class Breakpoints extends React.Component {
       let number = Breakpoints.get_breakpoint_number(fullname, line);
       let cmd = [GdbApi.get_delete_break_cmd(number), GdbApi.get_break_list_cmd()];
       GdbApi.run_gdb_command(cmd);
+
+      // Remove the breakpoint from the cookies (if exist)
+      let name = store.get("threads")[0].name;
+      let bkp = Cookies.getCookie("breakpoint_" + name);
+      if (typeof bkp != "undefined") {
+        bkp = bkp.replace(String(fullname) + "," + String(line), "");
+        bkp = bkp.replace(",,", ",");
+        // remove the comma if the string start with it
+        bkp = bkp.replace(/^,/, "");
+        Cookies.setCookie("breakpoint_" + name, bkp);
+      }
     }
   }
   static add_or_remove_breakpoint(fullname: any, line: any) {
@@ -310,6 +322,22 @@ class Breakpoints extends React.Component {
   }
   static add_breakpoint(fullname: any, line: any) {
     GdbApi.run_gdb_command(GdbApi.get_insert_break_cmd(fullname, line));
+
+    let name = store.get("threads")[0].name;
+
+    // use cookies to add an entry for the breakpoint
+    let bkp = Cookies.getCookie("breakpoint_" + name);
+    if (typeof bkp === "undefined") {
+      bkp = "";
+    } else {
+      // Should not happen but we do not add the same breakpoint multiple-time
+      if (bkp.includes(String(fullname) + "," + String(line))) {
+        return;
+      }
+      bkp = bkp + ",";
+    }
+
+    Cookies.setCookie("breakpoint_" + name, bkp + String(fullname) + "," + String(line));
   }
   static has_breakpoint(fullname: any, line: any) {
     let bkpts = store.get("breakpoints");

@@ -4,6 +4,7 @@ import SourceCode from "./SourceCode";
 import Locals from "./Locals";
 import Memory from "./Memory";
 import constants from "./constants";
+import Cookies from "./Cookies";
 import React from "react";
 void React; // using jsx implicity uses React
 
@@ -32,6 +33,33 @@ const Actions = {
       }
       store.set("processors_states", prcs);
     }
+  },
+  set_cookies_breakpoints: function() {
+    if (store.get("set_cookies_bkps") == true) {
+      return;
+    }
+
+    let name = store.get("threads")[0].name;
+    let bkps = Cookies.getCookie("breakpoint_" + name);
+
+    let bkps_list: string[] = [];
+    let cmds: string[] = [];
+
+    if (typeof bkps != "undefined") {
+      bkps_list = bkps.split(",");
+
+      for (let i = 0; i < bkps_list.length; i = i + 2) {
+        let fullname: string = bkps_list[i];
+        let line: string = bkps_list[i + 1];
+        cmds = cmds.concat(GdbApi.get_insert_break_cmd(fullname, line));
+      }
+    } else {
+      // no breakpoints
+      return;
+    }
+
+    GdbApi.run_gdb_command(cmds);
+    store.set("set_cookies_bkps", true);
   },
   update_view_source_code: function(frame = {}) {
     store.set("inferior_program", constants.inferior_states.paused);

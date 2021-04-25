@@ -94,6 +94,7 @@ const initial_store_data = {
 
   // breakpoints
   breakpoints: [],
+  set_cookies_bkps: false,
 
   // expressions
   expressions: [], // array of dicts. Key is expression, value has various keys. See Expressions component.
