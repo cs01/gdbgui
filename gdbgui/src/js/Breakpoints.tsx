@@ -429,7 +429,10 @@ class Breakpoints extends React.Component {
       bkp_ck = bkp_ck + ",";
     }
 
-    Cookies.setCookie("breakpoint_" + name, bkp_ck + String(bkpt.fullname_to_display) + "," + String(bkpt.line));
+    Cookies.setCookie(
+      "breakpoint_" + name,
+      bkp_ck + String(bkpt.fullname_to_display) + "," + String(bkpt.line)
+    );
 
     return bkpt;
   }
