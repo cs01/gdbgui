@@ -155,7 +155,7 @@ test("debug session", () => {
     });
 
     console.log("Check the program load and breakpoint:", break_on_line);
-    if (break_on_line != 10) {
+    if (break_on_line != 10 && break_on_line != 8) {
       return false;
     }
 
