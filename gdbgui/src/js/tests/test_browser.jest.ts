@@ -22,7 +22,7 @@ test("debug session", () => {
   // Script with spaces in the filename:
   const exe_gdb_server = spawn(
     "./gdbgui-mpi/launch_mpi_debugger",
-    ["6", "gdbgui-mpi/print_nodes"],
+    ["2", "gdbgui-mpi/print_nodes"],
     { shell: true }
   );
   const exe_python_server = spawn("python", ["-m", "gdbgui", "-n"]);
@@ -134,7 +134,7 @@ test("debug session", () => {
       return false;
     }
 
-    await page.waitForTimeout(20000);
+    await page.waitForTimeout(4000);
 
     const break_on_line = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelector(
@@ -388,7 +388,7 @@ test("debug session", () => {
 
     //await page.click("#rect_proc_3");
     const add_expression3 = await page.evaluate(() => {
-      let ele = document.querySelector<HTMLElement>("#rect_proc_3");
+      let ele = document.querySelector<HTMLElement>("#rect_proc_1");
 
       if (ele != null) {
         ele.click();
@@ -429,7 +429,7 @@ test("debug session", () => {
     fs.writeFileSync("index.html", html);
 
     console.log("Expression check world_rank:", add_expression2);
-    if (add_expression2 != 3) {
+    if (add_expression2 != 1) {
       return false;
     }
 
