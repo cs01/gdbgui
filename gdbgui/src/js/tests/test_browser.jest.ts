@@ -134,7 +134,7 @@ test("debug session", () => {
       return false;
     }
 
-    await page.waitForTimeout(10000);
+    await page.waitForTimeout(20000);
 
     const break_on_line = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelector(
