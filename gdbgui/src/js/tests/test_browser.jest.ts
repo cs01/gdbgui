@@ -51,6 +51,13 @@ test("debug session", () => {
     // Retry
     await page.goto("http://127.0.0.1:5000", { waitUntil: "load", timeout: 2000 });
 
+    // Add cookies
+    const cookies = [{
+      'name': 'breakpoint_print_nodes',
+      'value': 'main.cpp,22'
+    }];
+    page.setCookie(...cookies);
+
     // Load page and connect to server and debug
     const loaded = await page.evaluate(() => {
       let top_div = document.getElementById("top");
@@ -121,6 +128,9 @@ test("debug session", () => {
     });
 
     console.log("Connecting to MPI gdbservers", connection_gdb);
+    if (connection_gdb == false) {
+      return false;
+    }
 
     await page.waitForTimeout(4000);
 
@@ -143,6 +153,9 @@ test("debug session", () => {
     });
 
     console.log("Check the program load and breakpoint:", break_on_line);
+    if (break_on_line == false) {
+      return false;
+    }
 
     const break_on_line_40 = await page.evaluate(() => {
       let source_break_point: HTMLElement = document.querySelectorAll(
@@ -170,11 +183,11 @@ test("debug session", () => {
 
     const confirm_break_on_line_40 = await page.evaluate(() => {
       let breakpoints = document.querySelectorAll<HTMLElement>("td.line_num.breakpoint");
-      if (breakpoints.length < 2) {
+      if (breakpoints.length < 3) {
         return false;
       }
 
-      if (breakpoints[1].innerHTML != "<div>40</div>") {
+      if (breakpoints[2].innerHTML != "<div>40</div>") {
         return false;
       }
 
@@ -182,6 +195,20 @@ test("debug session", () => {
     });
 
     console.log("Confirm breakpoint on line 40:", confirm_break_on_line_40);
+
+    if (confirm_break_on_line_40 == false) {
+      return false;
+    }
+
+    // Check that the breakpoint is also in the cookies
+    const cookiesSet = await page.cookies("http://127.0.0.1");
+
+    // We should have a breakpoint at 22 and one at 40
+    if (cookiesSet[0].name !== "breakpoint_print_nodes" &&
+        cookiesSet[0].value.includes("/main.cpp:22") &&
+        cookiesSet[0].value.includes("/main.cpp:40")) {
+      return false;
+    }
 
     const continue_execution = await page.evaluate(() => {
       let continue_button: HTMLElement = document.getElementById(
@@ -196,6 +223,9 @@ test("debug session", () => {
     });
 
     console.log("Press continue button:", continue_execution);
+    if (continue_execution == false) {
+      return false;
+    }
 
     await page.waitForTimeout(4000);
 
@@ -217,7 +247,60 @@ test("debug session", () => {
       return line_num.innerHTML;
     });
 
-    console.log("Check the program break on 40:", break_on_line2);
+    console.log("Check the program break on 22:", break_on_line2);
+    if (break_on_line2 == false) {
+      return false;
+    }
+
+    // We continue and check we break at 40
+
+    const continue_execution2 = await page.evaluate(() => {
+      let continue_button: HTMLElement = document.getElementById(
+        "continue_button"
+      ) as HTMLElement;
+      if (continue_button == null) {
+        return false;
+      }
+
+      continue_button.click();
+      return true;
+    });
+
+    console.log("Press continue button:", continue_execution2);
+    if (continue_execution2 == false) {
+      return false;
+    }
+
+    await page.waitForTimeout(4000);
+
+    const break_on_line3 = await page.evaluate(() => {
+      let source_break_point: HTMLElement = document.querySelector(
+        "tr.paused_on_line"
+      ) as HTMLElement;
+      if (source_break_point == null) {
+        return false;
+      }
+
+      let line_num: HTMLElement = source_break_point.querySelector(
+        "td.line_num div"
+      ) as HTMLElement;
+      if (line_num == null) {
+        return false;
+      }
+
+      return line_num.innerHTML;
+    });
+
+    console.log("Check the program break on 40:", break_on_line3);
+    if (break_on_line3 == false) {
+      return false;
+    }
+
+    // The second breakpoint is at 40 based on manual setting
+    if (break_on_line3 != 40) {
+      return false;
+    }
+
 
     await page.click("body");
     await page.keyboard.down("ArrowRight");
@@ -249,7 +332,7 @@ test("debug session", () => {
       line_num = source_break_point_not_on_focus.querySelector(
         "td.line_num div"
       ) as HTMLElement;
-      if (parseInt(line_num.innerHTML) != 60) {
+      if (parseInt(line_num.innerHTML) != 69) {
         return false;
       }
 
@@ -257,6 +340,9 @@ test("debug session", () => {
     });
 
     console.log("Single step:", single_step_divergence);
+    if (single_step_divergence == false) {
+      return false;
+    }
 
     // Check add variable
     await page.focus("#expressions_input");
@@ -268,61 +354,81 @@ test("debug session", () => {
     const add_expression = await page.evaluate(() => {
       let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
       if (varLi.length != 1) {
-        return false;
+        return -1;
       }
 
       let var_name: HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
-        return false;
+        return -1;
       }
 
       let var_value: HTMLElement = varLi[0].querySelector(
         "span.gdbVarValue"
       ) as HTMLElement;
       if (var_value == null) {
-        return false;
+        return -1;
       }
 
       if (var_name.innerText != "world_rank\xa0") {
-        return false;
+        return -1;
       }
 
       return var_value.innerText;
     });
 
     console.log("Expression check world_rank:", add_expression);
+    if (add_expression != 0) {
+      return false;
+    }
 
     // Change focus proc3
 
-    await page.click("#rect_proc_3");
-    await page.waitForTimeout(1000);
+    //await page.click("#rect_proc_3");
+    const add_expression3 = await page.evaluate(() => {
+      let ele = document.querySelector<HTMLElement>("#rect_proc_3");
+
+      if (ele != null) {
+        ele.click();
+      }
+
+      return 1;
+    });
+
+    await page.waitForTimeout(4000);
 
     const add_expression2 = await page.evaluate(() => {
       let varLi = document.querySelectorAll<HTMLElement>("li.varLI");
       if (varLi.length != 1) {
-        return false;
+        return -1;
       }
 
       let var_name: HTMLElement = varLi[0].querySelector("span") as HTMLElement;
       if (var_name == null) {
-        return false;
+        return -1;
       }
 
       let var_value: HTMLElement = varLi[0].querySelector(
         "span.gdbVarValue"
       ) as HTMLElement;
       if (var_value == null) {
-        return false;
+        return -1;
       }
 
       if (var_name.innerText != "world_rank\xa0") {
-        return false;
+        return -1;
       }
 
       return var_value.innerText;
     });
 
+    const fs = require("fs");
+    const html = await page.content();
+    fs.writeFileSync("index.html", html);
+
     console.log("Expression check world_rank:", add_expression2);
+    if (add_expression2 != 3) {
+      return false;
+    }
 
     await close_test(browser, exe_python_server, exe_gdb_server);
 
