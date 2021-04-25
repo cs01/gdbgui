@@ -52,10 +52,12 @@ test("debug session", () => {
     await page.goto("http://127.0.0.1:5000", { waitUntil: "load", timeout: 2000 });
 
     // Add cookies
-    const cookies = [{
-      'name': 'breakpoint_print_nodes',
-      'value': 'main.cpp,22'
-    }];
+    const cookies = [
+      {
+        name: "breakpoint_print_nodes",
+        value: "main.cpp,22"
+      }
+    ];
     page.setCookie(...cookies);
 
     // Load page and connect to server and debug
@@ -204,9 +206,11 @@ test("debug session", () => {
     const cookiesSet = await page.cookies("http://127.0.0.1");
 
     // We should have a breakpoint at 22 and one at 40
-    if (cookiesSet[0].name !== "breakpoint_print_nodes" &&
-        cookiesSet[0].value.includes("/main.cpp:22") &&
-        cookiesSet[0].value.includes("/main.cpp:40")) {
+    if (
+      cookiesSet[0].name !== "breakpoint_print_nodes" &&
+      cookiesSet[0].value.includes("/main.cpp:22") &&
+      cookiesSet[0].value.includes("/main.cpp:40")
+    ) {
       return false;
     }
 
@@ -300,7 +304,6 @@ test("debug session", () => {
     if (break_on_line3 != 40) {
       return false;
     }
-
 
     await page.click("body");
     await page.keyboard.down("ArrowRight");
