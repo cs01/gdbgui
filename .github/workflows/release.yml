@@ -19,7 +19,6 @@ jobs:
         run: |
           nox --non-interactive --session build_executable_linux
       - name: Upload linux executable
-        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
         with:
           name: gdbgui_linux
@@ -41,7 +40,6 @@ jobs:
         run: |
           nox --non-interactive --session build_executable_mac
       - name: Upload mac executable
-        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
         with:
           name: gdbgui_mac
@@ -63,7 +61,6 @@ jobs:
         run: |
           nox --non-interactive --session build_executable_windows
       - name: Upload windows executable
-        if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v1
         with:
           name: gdbgui_windows
