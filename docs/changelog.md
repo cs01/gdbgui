@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.13.2.2
+* Fix `ImportError: cannot import name 'NoGdbProcessError'` by pinning dependencies to ensure they are all compatible. Note that this means the only way gdbgui should be run is by installing inside a virtual environment, installing with pipx (as it uses virtual environments), or to run the executable build from gdbgui's release page.
+
 ## 0.13.2.1
 * No end user changes. This release builds the gdbgui executables with GitHub actions.
 

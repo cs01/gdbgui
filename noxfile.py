@@ -93,6 +93,7 @@ def develop(session):
     session.log("To use, run: '%s'", command)
 
 
+@nox.session(python="3.7")
 def build(session):
     session.install("setuptools", "wheel", "twine")
     session.run("rm", "-rf", "dist", external=True)

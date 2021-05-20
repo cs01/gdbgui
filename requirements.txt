@@ -1,3 +1,21 @@
-# https://caremad.io/posts/2013/07/setup-vs-requirement/
---index-url https://pypi.org/simple/
--e .
+bidict==0.21.2
+Brotli==1.0.9
+click==7.1.2
+dnspython==2.0.0
+eventlet==0.25.2
+Flask==0.12.5
+Flask-Compress==1.8.0
+Flask-SocketIO==2.9.6
+gevent==1.5.0
+gevent-websocket==0.10.1
+greenlet==0.4.16
+itsdangerous==1.1.0
+Jinja2==2.11.2
+MarkupSafe==1.1.1
+monotonic==1.5
+pygdbmi==0.9.0.3
+Pygments==2.7.3
+python-engineio==3.14.2
+python-socketio==4.6.1
+six==1.15.0
+Werkzeug==0.16.1
