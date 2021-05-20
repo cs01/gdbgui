@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.13.2.2
+* Pin dependencies to ensure they are all compatible. Note that this means the only way gdbgui should be install is either inside a virtual environment, with pipx (as it uses virtual environments), or to run the executable builds on gdbgui's release page.
+
 ## 0.13.2.1
 * No end user changes. This release builds the gdbgui executables with GitHub actions.
 
