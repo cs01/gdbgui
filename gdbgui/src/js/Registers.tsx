@@ -31,12 +31,7 @@ class Registers extends React.Component<{}, State> {
   }
   static get_update_cmds() {
     let cmds: any = [];
-    if (
-      [constants.inferior_states.paused, constants.inferior_states.running].indexOf(
-        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'boolean' is not assignable to pa... Remove this comment to see the full error message
-        store.get("inferior_program") > -1
-      )
-    ) {
+    if (store.get("inferior_program") == constants.inferior_states.running) {
       return cmds;
     }
     if (store.get("can_fetch_register_values") === true) {
@@ -93,9 +88,10 @@ class Registers extends React.Component<{}, State> {
         register_name_fetch_count <= MAX_REGISTER_NAME_FETCH_COUNT)
     ) {
       // Somehow register names and values do not match. Clear cached values, then refetch both.
+      let proc = store.get("process_on_focus");
       Registers.clear_register_name_cache();
       Registers.clear_cached_values();
-      GdbApi.run_gdb_command(Registers.get_update_cmds());
+      GdbApi.run_gdb_command(Registers.get_update_cmds(), proc);
     } else if (num_register_names === num_register_values) {
       let columns = ["name", "value (hex)", "value (decimal)", "description"],
         register_table_data = [],

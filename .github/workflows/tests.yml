@@ -7,11 +7,14 @@ on:
   push:
     branches:
       - master
+      - extension_to_mpi_programs
+      - extension_to_mpi_programs_save_restore_bkp
   release:
 
 jobs:
   run_tests:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 8
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -27,9 +30,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install nox
-      - name: Install gdb ubuntu
+      - name: Install gdb gdbserver and openmpi ubuntu
         run: |
-          sudo apt-get install gdb
+          sudo apt-get update
+          sudo apt-get install gdb gdbserver openmpi-bin libopenmpi-dev
+      - name: Compiling node_names
+        run: |
+          cd gdbgui-mpi && ./compile.sh
       - name: Execute Tests
         run: |
           nox --non-interactive --session tests-${{ matrix.python-version }}

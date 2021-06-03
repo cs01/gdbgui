@@ -7,6 +7,11 @@ graft gdbgui
 # are generated
 graft gdbgui/static/js
 
+include gdbgui-mpi/compile.sh
+include gdbgui-mpi/launch_gdb_server
+include gdbgui-mpi/launch_mpi_debugger
+include gdbgui-mpi/main.cpp
+
 prune examples
 prune downloads
 prune screenshots
@@ -15,6 +20,7 @@ prune docs
 prune docker
 prune images
 prune gdbgui/__pycache__
+prune gdbgui/server/__pycache__
 
 exclude mypy.ini
 exclude .eslintrc.json
