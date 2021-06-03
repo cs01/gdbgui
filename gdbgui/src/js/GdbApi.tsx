@@ -37,6 +37,7 @@ if (debug) {
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_data' does not exist on type 'Wi... Remove this comment to see the full error message
 const initial_data = window.initial_data;
 let socket: SocketIOClient.Socket;
+let mpi_state: boolean;
 const GdbApi = {
   getSocket: function() {
     return socket;
@@ -298,12 +299,20 @@ const GdbApi = {
     }, WAIT_TIME_SEC * 1000);
   },
   /**
+   * Set if the commands must be sent on all user sessions
+   * @param state mpi state
+   * @return nothing
+   */
+  set_mpi_state: function(state: boolean) {
+    mpi_state = state;
+  },
+  /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
    * validates command before sending, and updates the gdb console and status bar
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing
    */
-  run_gdb_command: function(cmd: any) {
+  run_gdb_command_single: function(cmd: any) {
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
     if (_.trim(cmd) === "") {
       return;
@@ -329,6 +338,66 @@ const GdbApi = {
       store.set("queuedGdbCommands", queuedGdbCommands);
     }
   },
+  /**
+   * runs a gdb cmd (or commands) directly in gdb on the backend
+   * validates command before sending, and updates the gdb console and status bar
+   * @param cmd: a string or array of strings, that are directly evaluated by gdb
+   * @param processor: Processor in which we want to execute the command
+   * @return nothing
+   */
+  run_gdb_command_mpi: function(cmd: any, processor: number) {
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
+    if (_.trim(cmd) === "") {
+      return;
+    }
+
+    let cmds = cmd;
+    // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
+    if (_.isString(cmds)) {
+      cmds = [cmds];
+    }
+
+    // add the send command to the console to show commands that are
+    // automatically run by gdb
+    if (store.get("show_all_sent_commands_in_console")) {
+      Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND);
+    }
+
+    GdbApi.waiting_for_response();
+    socket.emit("run_gdb_command_mpi", { processor: processor, cmd: cmds });
+  },
+  /**
+   * runs a gdb cmd (or commands) directly in gdb on the backend
+   * validates command before sending, and updates the gdb console and status bar
+   * @param cmd: a string or array of strings, that are directly evaluated by gdb
+   * @return nothing
+   */
+  run_gdb_command: function(cmd: any, processor = -1) {
+    if (mpi_state == true) {
+      GdbApi.run_gdb_command_mpi(cmd, processor);
+    } else {
+      GdbApi.run_gdb_command_single(cmd);
+    }
+  },
+  /**
+   * Change the process on focus
+   */
+  server_change_process_on_focus: function(proc: number) {
+    GdbApi.waiting_for_response();
+    socket.emit("change_process_focus", { proc: proc });
+  },
+  /**
+   * Open the MPI sessions
+   * @return nothing
+   */
+  open_mpi_sessions: function(processors: number) {
+    GdbApi.waiting_for_response();
+    socket.emit("open_mpi_sessions", { processors: processors });
+  },
+  /**
+   * Run a user-defined command, then refresh the store
+   * @param user_cmd (str or array): command or commands to run before refreshing store
+   */
   run_command_and_refresh_state: function(user_cmd: string | any[]) {
     let cmds: any[] = [];
     if (Array.isArray(user_cmd)) {
@@ -345,6 +414,23 @@ const GdbApi = {
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     store.set("inferior_program", constants.inferior_states.paused);
     GdbApi.run_gdb_command(cmds);
+  },
+  /**
+   * Get array of commands to refresh the state of the variables
+   */
+  refresh_state_for_change_process_on_focus: function() {
+    let expr = store.get("expressions");
+
+    for (let i = 0; i < expr.length; i++) {
+      GdbVariable.delete_gdb_variable_remote(expr[i].name);
+    }
+
+    for (let i = 0; i < expr.length; i++) {
+      GdbVariable.create_variable_no_fetch(expr[i].expression, expr[i].expr_type);
+    }
+
+    GdbVariable._delete_all_local_gdb_var_data();
+    GdbVariable.fetch_created_variables();
   },
   /**
    * Get array of commands to send to gdb that refreshes everything in the

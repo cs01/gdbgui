@@ -94,6 +94,7 @@ const initial_store_data = {
 
   // breakpoints
   breakpoints: [],
+  set_cookies_bkps: false,
 
   // expressions
   expressions: [], // array of dicts. Key is expression, value has various keys. See Expressions component.
@@ -112,6 +113,15 @@ const initial_store_data = {
 
   show_filesystem: false,
   middle_panes_split_obj: {},
+
+  process_on_focus: 0,
+  is_mpi: false,
+  nproc: 1,
+  processors_states: [],
+  paused_on_frame_prcs: [],
+  fullname_to_render_prcs: [],
+  line_of_source_to_flash_prcs: [],
+  current_assembly_address_prcs: [],
   gdbguiPty: null
 };
 

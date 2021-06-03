@@ -6,6 +6,10 @@
 
 /* when hovering, set background color of entire row */
 .monokai .paused_on_line {
+    background-color: #555;
+}
+
+.monokai .paused_on_line2 {
     background-color: #444;
 }
 

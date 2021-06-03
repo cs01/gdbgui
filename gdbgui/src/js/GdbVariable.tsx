@@ -94,6 +94,19 @@ let VarCreator = {
     }
   },
   /**
+   * Create a new variable in gdb. But does not start to fetch
+   */
+  create_variable_no_fetch: function(expression: any, expr_type: any) {
+    // @ts-expect-error ts-migrate(2322) FIXME: Type 'any' is not assignable to type 'never'.
+    VarCreator._queue.push({ expression: expression, expr_type: expr_type });
+  },
+  /**
+   * start to fetch all created variables
+   */
+  fetch_created_variables: function() {
+    VarCreator._fetch_next_in_queue();
+  },
+  /**
    * Create a new variable in gdb. gdb automatically chooses and assigns
    * a unique variable name.
    */
@@ -435,6 +448,12 @@ class GdbVariable extends React.Component {
   static create_variable(expression: any, expr_type: any) {
     VarCreator.create_variable(expression, expr_type);
   }
+  static create_variable_no_fetch(expression: any, expr_type: any) {
+    VarCreator.create_variable_no_fetch(expression, expr_type);
+  }
+  static fetch_created_variables() {
+    VarCreator.fetch_created_variables();
+  }
   static gdb_created_root_variable(r: any) {
     VarCreator.created_variable(r);
   }
@@ -751,6 +770,10 @@ class GdbVariable extends React.Component {
     // delete in gdb too
     GdbApi.run_gdb_command(`-var-delete ${gdbvar}`);
   }
+  static delete_gdb_variable_remote(gdbvar: string) {
+    // delete in gdb too
+    GdbApi.run_gdb_command(`-var-delete ${gdbvar}`);
+  }
   /**
    * Delete local copy of gdb variable (all its children are deleted too
    * since they are stored as fields in the object)
@@ -760,6 +783,13 @@ class GdbVariable extends React.Component {
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name '_'.
     _.remove(expressions, (v: any) => v.name === gdb_var_name);
     store.set("expressions", expressions);
+  }
+  /**
+   * Delete all local copy of gdb variable (all its children are deleted too
+   * since they are stored as fields in the object)
+   */
+  static _delete_all_local_gdb_var_data() {
+    store.set("expressions", []);
   }
   /**
    * Locally save the variable to our cached variables
