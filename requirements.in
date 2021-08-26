@@ -1,0 +1,4 @@
+Flask-SocketIO>5.1, <5.2
+Flask-Compress>1.10, <1.11
+pygdbmi>=0.10.0.0, <0.11
+Pygments>=2.2.0, <3.0

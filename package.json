@@ -12,8 +12,8 @@
   "dependencies": {
     "react": "^16.8",
     "react-dom": "^16.4",
-    "socket.io": "2.0.3",
-    "socket.io-client": "2.0.3",
+    "socket.io": "^4.1",
+    "socket.io-client": "^4.1",
     "statorgfc": "^0.1.6",
     "xterm": "4.8.0",
     "xterm-addon-fit": "^0.4.0",

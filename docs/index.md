@@ -85,4 +85,4 @@ gdbgui is distributed through
 
 ## Contact
 
-grassfedcode@gmail.com
+chadsmith.software@gmail.com

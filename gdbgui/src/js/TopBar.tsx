@@ -35,7 +35,7 @@ let show_license = function() {
       </p>
       <p>
         If you wish to redistribute gdbgui as part of a closed source product, you can do
-        so for a fee. Contact grassfedcode@gmail.com for details.
+        so for a fee. Contact chadsmith.software@gmail.com for details.
       </p>
     </React.Fragment>
   );
@@ -45,7 +45,7 @@ let About = {
   show_about: function() {
     Actions.show_modal(
       "About gdbgui",
-      <React.Fragment>Copyright © Chad Smith, grassfedcode.com</React.Fragment>
+      <React.Fragment>Copyright © Chad Smith, chadsmith.dev</React.Fragment>
     );
   }
 };
