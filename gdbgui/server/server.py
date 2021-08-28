@@ -90,7 +90,7 @@ def run_server(
         )
 
         print("exit gdbgui by pressing CTRL+C")
-        os.environ['WERKZEUG_RUN_MAIN'] = 'true'
+        os.environ["WERKZEUG_RUN_MAIN"] = "true"
         try:
             socketio.run(
                 app,

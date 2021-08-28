@@ -23,6 +23,7 @@ from gdbgui.server.server import run_server
 logger = logging.getLogger(__name__)
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
+
 def get_gdbgui_auth_user_credentials(auth_file, user, password):
     if auth_file and (user or password):
         print("Cannot supply auth file and username/password")
