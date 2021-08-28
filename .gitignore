@@ -12,7 +12,6 @@ gdbgui.spec
 *.pyc
 yarn-error.log
 venv
-.vscode
 site
 gdbgui/static/js/*
 __pycache__
