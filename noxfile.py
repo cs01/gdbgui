@@ -157,7 +157,7 @@ def publish_docs(session):
 def build_executable_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller<3.7")
+    session.install(".", "PyInstaller>=4.5, <4.6")
     session.run("python", "make_executable.py")
 
 
