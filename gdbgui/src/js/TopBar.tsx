@@ -18,7 +18,7 @@ let onkeyup_jump_to_line = (e: any) => {
   }
 };
 
-let show_license = function() {
+let show_license = function () {
   Actions.show_modal(
     "gdbgui license",
     <React.Fragment>
@@ -42,15 +42,25 @@ let show_license = function() {
 };
 
 let About = {
-  show_about: function() {
+  show_about: function () {
     Actions.show_modal(
       "About gdbgui",
-      <React.Fragment>Copyright © Chad Smith, chadsmith.dev</React.Fragment>
+      <div>
+        <div>
+          gdbgui, v{store.get('gdbgui_version')}
+        </div>
+        <div>
+          Copyright © Chad Smith
+        </div>
+        <div>
+          <a href='https://chadsmith.dev'>chadsmith.dev</a>
+        </div>
+      </div>
     );
   }
 };
 
-let show_session_info = function() {
+let show_session_info = function () {
   Actions.show_modal(
     "session information",
     <React.Fragment>
@@ -59,9 +69,11 @@ let show_session_info = function() {
           <tr>
             <td>gdb version: {store.get("gdb_version")}</td>
           </tr>
-
           <tr>
             <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
+          </tr>
+          <tr>
+            <td>gdbgui v{store.get("gdbgui_version")}</td>
           </tr>
         </tbody>
       </table>
@@ -253,7 +265,7 @@ class TopBar extends React.Component<{}, State> {
     let toggle_assm_button = "";
     if (
       this.state.source_code_state ===
-        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.ASSM_CACHED
     ) {
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
@@ -276,7 +288,7 @@ class TopBar extends React.Component<{}, State> {
     let reload_button_disabled = "disabled";
     if (
       this.state.source_code_state ===
-        constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
+      constants.source_code_states.ASSM_AND_SOURCE_CACHED ||
       this.state.source_code_state === constants.source_code_states.SOURCE_CACHED
     ) {
       reload_button_disabled = "";

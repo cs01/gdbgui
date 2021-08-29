@@ -2,13 +2,14 @@
 
 ## 0.15.0.0
 
-No new features, just bugfixes and compatibility fixes
+This release is focused mostly on Python 3.9 compatibility and updating dependencies
 
-- Support only Python 3.9 (though other Python versions may work)
+- Support only Python 3.9 (though other Python versions may still work)
 - Use only the threading async model for flask-socketio. No longer support gevent or eventlet.
 - [bugfix] Catch exception if gdb used in tty window crashes instead of gdbgui crashing along with it
-- Disable pagination in gdb ttyy by default. It can be turned back on with `set pagination off`.
+- Disable pagination in gdb tty by default. It can be turned back on with `set pagination off`.
 - Upgrade various dependencies for both the backend and frontend (Python and JavaScript)
+- Display gdbgui version in "about" and "session information"
 
 ## 0.14.0.2
 
