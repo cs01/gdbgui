@@ -5,7 +5,7 @@ build
 executable
 .DS_Store
 *.a.dSYM
-gdbgui.spec
+gdbgui_pyinstaller.spec
 *-link
 *-link.c
 *-link.dSYM
