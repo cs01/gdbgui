@@ -91,7 +91,9 @@ def lint(session):
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)
-    session.run("check-manifest", "--ignore", "gdbgui/static/js/*")
+    session.run(
+        "check-manifest", "--ignore", "gdbgui/static/js/*", "--ignore", "*pycache*"
+    )
     session.run("python", "setup.py", "check", "--metadata", "--strict")
     session.run(*prettier_command, "--check", external=True)
 
