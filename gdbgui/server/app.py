@@ -260,7 +260,7 @@ def read_and_forward_gdb_and_pty_output():
                     pass
 
             except Exception:
-                logger.error(traceback.format_exc())
+                logger.error("caught exception, continuing:" + traceback.format_exc())
 
         debug_sessions_to_remove += check_and_forward_pty_output()
         for debug_session in set(debug_sessions_to_remove):

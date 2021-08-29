@@ -45,7 +45,13 @@ let About = {
   show_about: function() {
     Actions.show_modal(
       "About gdbgui",
-      <React.Fragment>Copyright © Chad Smith, chadsmith.dev</React.Fragment>
+      <div>
+        <div>gdbgui, v{store.get("gdbgui_version")}</div>
+        <div>Copyright © Chad Smith</div>
+        <div>
+          <a href="https://chadsmith.dev">chadsmith.dev</a>
+        </div>
+      </div>
     );
   }
 };
@@ -59,9 +65,11 @@ let show_session_info = function() {
           <tr>
             <td>gdb version: {store.get("gdb_version")}</td>
           </tr>
-
           <tr>
             <td>gdb pid for this tab: {store.get("gdb_pid")}</td>
+          </tr>
+          <tr>
+            <td>gdbgui v{store.get("gdbgui_version")}</td>
           </tr>
         </tbody>
       </table>
