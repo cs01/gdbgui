@@ -14,7 +14,7 @@ const initial_store_data = {
   // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
   gdbgui_version: initial_data.gdbgui_version,
   latest_gdbgui_version: "(not fetched)",
-  gdb_version: 'unknown', // this is parsed from gdb's output
+  gdb_version: "unknown", // this is parsed from gdb's output
   gdb_version_array: [], // this is parsed from gdb's output
   gdb_pid: undefined,
   // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'initial_data'.
