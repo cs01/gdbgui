@@ -100,7 +100,7 @@ Like gdb, [`gdbserver`](https://sourceware.org/gdb/onlinedocs/gdb/Server.html) i
 
 gdbserver runs on a remote machine or embedded target, which, as the name suggests, runs a server. gdb communicates with gdbserver so you can debug on your local machine. To do this, the remote machine must run the server and program:
 
-`gdbserver 0.0.0.0:9000 mybinary.a`
+`gdbserver :9000 mybinary.a`
 
 Then you can launch `gdb` or `gdbgui` and connect to it. In `gdbgui`, use the dropdown to select `Connect to gdbserver`, and enter
 
