@@ -6,6 +6,7 @@ import Util from "./Util";
 import FileOps from "./FileOps";
 import { FileLink } from "./Links";
 import constants from "./constants";
+import Cookies from "./Cookies";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -299,6 +300,19 @@ class Breakpoints extends React.Component {
       let number = Breakpoints.get_breakpoint_number(fullname, line);
       let cmd = [GdbApi.get_delete_break_cmd(number), GdbApi.get_break_list_cmd()];
       GdbApi.run_gdb_command(cmd);
+
+      // Remove the breakpoint from the cookies (if exist)
+      let name = store.get("threads")[0].name;
+      let bkp = Cookies.getCookie("breakpoint_" + name);
+      if (typeof bkp != "undefined") {
+        bkp = bkp.replace(String(fullname) + "," + String(line), "");
+        bkp = bkp.replace(",,", ",");
+        // remove the comma if the string start with it
+        bkp = bkp.replace(/^,/, "");
+        // remove the comma if the string end with it
+        bkp = bkp.replace(/,\s*$/, "");
+        Cookies.setCookie("breakpoint_" + name, bkp);
+      }
     }
   }
   static add_or_remove_breakpoint(fullname: any, line: any) {
@@ -324,7 +338,11 @@ class Breakpoints extends React.Component {
     let bkpts = store.get("breakpoints");
     for (let b of bkpts) {
       if (b.fullname === fullname && b.line == line) {
-        return b.number;
+        if (b.is_child_breakpoint == true) {
+          return b.parent_breakpoint_number.toString();
+        } else {
+          return b.number;
+        }
       }
     }
     console.error(`could not find breakpoint for ${fullname}:${line}`);
@@ -395,6 +413,27 @@ class Breakpoints extends React.Component {
       bkpts.push(bkpt);
       store.set("breakpoints", bkpts);
     }
+
+    // Save the breakpoint on cookies
+    let name = store.get("threads")[0].name;
+
+    // use cookies to add an entry for the breakpoint
+    let bkp_ck = Cookies.getCookie("breakpoint_" + name);
+    if (typeof bkp_ck === "undefined") {
+      bkp_ck = "";
+    } else {
+      // Should not happen but we do not add the same breakpoint multiple-time
+      if (bkp_ck.includes(String(bkpt.fullname_to_display) + "," + String(bkpt.line))) {
+        return;
+      }
+      bkp_ck = bkp_ck + ",";
+    }
+
+    Cookies.setCookie(
+      "breakpoint_" + name,
+      bkp_ck + String(bkpt.fullname_to_display) + "," + String(bkpt.line)
+    );
+
     return bkpt;
   }
 }

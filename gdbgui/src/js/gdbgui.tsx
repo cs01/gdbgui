@@ -58,17 +58,25 @@ window.store = store;
 
 class Gdbgui extends React.PureComponent {
   componentWillMount() {
+    store.set("process_on_focus", -1);
     GdbApi.init();
     GlobalEvents.init();
     FileOps.init(); // this should be initialized before components that use store key 'source_code_state'
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on type '{ get(key: string): any; set(key: string, value: any): any; }'.
+    store.connectComponentState(this, ["is_mpi"]);
   }
   render() {
+    let mid_padding_style = { paddingTop: "60px" };
+    if (store.get("is_mpi") == true) {
+      mid_padding_style = { paddingTop: "95px" };
+    }
+
     return (
       <div className="splitjs_container">
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'initial_user_input' does not exist on ty... Remove this comment to see the full error message */}
         <TopBar initial_user_input={initial_data.initial_binary_and_args} />
 
-        <div id="middle" style={{ paddingTop: "60px" }}>
+        <div id="middle" style={mid_padding_style}>
           <div id="folders_view" className="content" style={{ backgroundColor: "#333" }}>
             <FoldersView />
           </div>

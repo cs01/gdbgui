@@ -85,7 +85,12 @@ const process_gdb_response = function(response_array: any) {
       }
     }
 
-    if (r.type === "result" && r.message === "done" && r.payload) {
+    if (
+      r.type === "result" &&
+      r.message === "done" &&
+      r.payload &&
+      r.proc == store.get("process_on_focus")
+    ) {
       // This is special GDB Machine Interface structured data that we
       // can render in the frontend
       if ("bkpt" in r.payload) {
@@ -128,6 +133,7 @@ const process_gdb_response = function(response_array: any) {
       if ("threads" in r.payload) {
         store.set("threads", r.payload.threads);
         store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
+        Actions.set_cookies_breakpoints();
       }
       if ("register-names" in r.payload) {
         let names = r.payload["register-names"];
@@ -271,7 +277,7 @@ const process_gdb_response = function(response_array: any) {
     if (r.message && r.message === "stopped") {
       if (r.payload && r.payload.reason) {
         if (r.payload.reason.includes("exited")) {
-          Actions.inferior_program_exited();
+          Actions.inferior_program_exited(r.proc);
         } else if (
           r.payload.reason.includes("breakpoint-hit") ||
           r.payload.reason.includes("end-stepping-range")
@@ -280,9 +286,9 @@ const process_gdb_response = function(response_array: any) {
             // @ts-expect-error ts-migrate(2339) FIXME: Property 'set_thread_id' does not exist on type 't... Remove this comment to see the full error message
             Threads.set_thread_id(r.payload["new-thread-id"]);
           }
-          Actions.inferior_program_paused(r.payload.frame);
+          Actions.inferior_program_paused(r.payload.frame, r.proc);
         } else if (r.payload.reason === "signal-received") {
-          Actions.inferior_program_paused(r.payload.frame);
+          Actions.inferior_program_paused(r.payload.frame, r.proc);
 
           if (r.payload["signal-name"] !== "SIGINT") {
             Actions.add_console_entries(
@@ -301,11 +307,16 @@ const process_gdb_response = function(response_array: any) {
           console.warn(r);
         }
       } else {
-        Actions.inferior_program_paused(r.payload.frame);
+        // This is semothing that drive me crazy it seems that under some condition gdb does not send the message connected
+        let prcs_state = store.get("processors_states");
+        if (r.proc != -1 && prcs_state[r.proc] == undefined) {
+          Actions.remote_connected(r.proc);
+        }
+        Actions.inferior_program_paused(r.payload.frame, r.proc);
       }
-    } else if (r.message && r.message === "connected") {
-      Actions.remote_connected();
-    }
+    } /* else if (r.message && r.message === "connected") {
+      Actions.remote_connected(r.proc);
+    }*/
   }
 };
 

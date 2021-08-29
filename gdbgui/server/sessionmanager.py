@@ -24,6 +24,7 @@ class DebugSession:
         command: str,
         mi_version: str,
         pid: int,
+        mpi_rank: int,
     ):
         self.command = command
         self.pygdbmi_controller = pygdbmi_controller
@@ -34,6 +35,8 @@ class DebugSession:
         self.pid = pid
         self.start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.client_ids: Set[str] = set()
+        self.mpi_rank = -1
+        self.inferior_pid = -1
 
     def terminate(self):
         if self.pid:
@@ -61,6 +64,12 @@ class DebugSession:
         if len(self.client_ids) == 0:
             self.terminate()
 
+    def get_mpi_rank(self):
+        return self.mpi_rank
+
+    def set_mpi_rank(self, mpi_rank):
+        self.mpi_rank = mpi_rank
+
 
 class SessionManager(object):
     def __init__(self):
@@ -82,7 +91,12 @@ class SessionManager(object):
         return debug_session
 
     def add_new_debug_session(
-        self, *, gdb_command: str, mi_version: str, client_id: str
+        self,
+        *,
+        gdb_command: str,
+        mi_version: str,
+        client_id: str,
+        include_client_id=True,
     ) -> DebugSession:
         pty_for_debugged_program = Pty()
         pty_for_gdbgui = Pty(echo=False)
@@ -110,9 +124,13 @@ class SessionManager(object):
             command=gdb_command,
             mi_version=mi_version,
             pid=pid,
+            mpi_rank=-1,
         )
-        debug_session.add_client(client_id)
-        self.debug_session_to_client_ids[debug_session] = [client_id]
+        if include_client_id is True:
+            debug_session.add_client(client_id)
+            self.debug_session_to_client_ids[debug_session] = [client_id]
+        else:
+            self.debug_session_to_client_ids[debug_session] = []
         return debug_session
 
     def remove_debug_session_by_pid(self, gdbpid: int) -> List[str]:
@@ -159,6 +177,30 @@ class SessionManager(object):
                 return debug_session
         return None
 
+    def debug_session_from_mpi_processor_id(
+        self, mpi_processor_id: int
+    ) -> Optional[DebugSession]:
+        for debug_session, client_ids in self.debug_session_to_client_ids.items():
+            this_mpi_processor = debug_session.get_mpi_rank()
+            if this_mpi_processor == mpi_processor_id:
+                return debug_session
+
+        return None
+
+    def send_signal_to_all_debug_sessions_processes(self, signal_id: int):
+        for debug_session, _ in self.debug_session_to_client_ids.items():
+            os.kill(debug_session.inferior_pid, signal_id)
+
+    def exit_all_gdb_processes_except_client_id(self, client_id: str):
+        logger.info("exiting all subprocesses except client id")
+        for (
+            debug_session,
+            client_ids,
+        ) in self.debug_session_to_client_ids.copy().items():
+            if client_id not in client_ids:
+                debug_session.terminate()
+                self.debug_session_to_client_ids.pop(debug_session)
+
     def get_dashboard_data(self) -> List[DebugSession]:
         return [
             debug_session.to_dict()
@@ -171,3 +213,6 @@ class SessionManager(object):
                 client_ids.remove(client_id)
                 debug_session.remove_client(client_id)
         self.remove_debug_sessions_with_no_clients()
+
+    def get_controllers(self):
+        return self.debug_session_to_client_ids

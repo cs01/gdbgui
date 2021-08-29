@@ -8,6 +8,7 @@ const TARGET_TYPES = {
   file: "file",
   server: "server",
   process: "process",
+  mpi_server: "mpi_server",
   target_download: "target_download"
 };
 
@@ -60,6 +61,12 @@ class BinaryLoader extends React.Component<{}, State> {
       button_text = "Connect to gdbserver";
       title = "Connect GDB to the remote target.";
       placeholder = "examples: 127.0.0.1:9999 | /dev/ttya";
+    } else if (this.state.target_type === TARGET_TYPES.mpi_server) {
+      // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+      // -target-select
+      button_text = "Connect to mpi-gdbserver";
+      title = "Connect GDBs to the mpi launched gdb-servers.";
+      placeholder = "examples: *:60000";
     } else if (this.state.target_type === TARGET_TYPES.process) {
       // -target-attach
       button_text = "Attach to Process";
@@ -103,6 +110,14 @@ class BinaryLoader extends React.Component<{}, State> {
                   onClick={() => this.setState({ target_type: TARGET_TYPES.process })}
                 >
                   Attach to Process
+                </a>
+              </li>
+              <li>
+                <a
+                  className="pointer"
+                  onClick={() => this.setState({ target_type: TARGET_TYPES.mpi_server })}
+                >
+                  Connect to MPI gdbservers
                 </a>
               </li>
             </ul>
@@ -249,6 +264,8 @@ class BinaryLoader extends React.Component<{}, State> {
       Actions.connect_to_gdbserver(user_input);
     } else if (this.state.target_type === TARGET_TYPES.process) {
       Actions.attach_to_process(user_input);
+    } else if (this.state.target_type === TARGET_TYPES.mpi_server) {
+      Actions.connect_to_gdbserver_mpi(user_input);
     }
   }
 }

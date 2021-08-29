@@ -3,6 +3,7 @@ import React from "react";
 import { store } from "statorgfc";
 import BinaryLoader from "./BinaryLoader";
 import ControlButtons from "./ControlButtons";
+import ProcessorsButtons from "./ProcessorsButtons";
 import Settings from "./Settings";
 import SourceCodeHeading from "./SourceCodeHeading";
 import ToolTipTourguide from "./ToolTipTourguide";
@@ -336,7 +337,6 @@ class TopBar extends React.Component<{}, State> {
           <BinaryLoader initial_user_input={this.props.initial_user_input} />
           {spinner}
           {reverse_checkbox}
-
           {this.get_controls()}
 
           <span
@@ -432,6 +432,7 @@ class TopBar extends React.Component<{}, State> {
             <SourceCodeHeading />
           </div>
         </div>
+        <ProcessorsButtons />
       </div>
     );
   }

@@ -419,6 +419,30 @@ ul.varUL {
   font-size: 0.9em;
 }
 
+.proc_styled {
+    border: 0;
+    line-height: 1.6;
+    padding: 0 15px;
+    font-size: 16px;
+    text-align: center;
+    color: #000;
+    border-radius: 10px;
+    background-color: rgb(0
+      , 255, 0);
+  
+    box-shadow: inset 2px 2px 3px rgba(255, 255, 255, .6),
+                inset -2px -2px 3px rgba(0, 0, 0, .6);
+}
+
+.proc_styled:hover {
+    background-color: rgba(0, 255, 0, 1);
+}
+
+.proc_styled:active {
+    box-shadow: inset -2px -2px 3px rgba(255, 255, 255, .6),
+                inset 2px 2px 3px rgba(0, 0, 0, .6);
+}
+
 /* Make refresh icon spin - http://www.bootply.com/128062*/
 .glyphicon-refresh-animate {
   -animation: spin 0.7s infinite linear;
