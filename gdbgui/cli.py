@@ -16,9 +16,12 @@ from typing import List, Optional
 
 from gdbgui import __version__
 from gdbgui.server.app import app, socketio
-from gdbgui.server.constants import DEFAULT_GDB_EXECUTABLE, DEFAULT_HOST, DEFAULT_PORT
-from gdbgui.server.server import run_server
-
+from gdbgui.server.constants import (
+    DEFAULT_GDB_EXECUTABLE,
+    DEFAULT_HOST,
+    DEFAULT_PORT,
+)
+import gdbgui.server.server
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -245,7 +248,7 @@ def main():
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )
 
-    run_server(
+    gdbgui.server.server.run_server(
         app=app,
         socketio=socketio,
         host=args.host,

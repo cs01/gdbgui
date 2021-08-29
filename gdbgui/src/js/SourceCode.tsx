@@ -40,7 +40,11 @@ class SourceCode extends React.Component<{}, State> {
       "source_linenum_to_display_start",
       "source_linenum_to_display_end",
       "max_lines_of_code_to_fetch",
-      "source_code_infinite_scrolling"
+      "source_code_infinite_scrolling",
+      "processors_states",
+      "fullname_to_render_prcs",
+      "line_of_source_to_flash_prcs",
+      "current_assembly_address_prcs"
     ]);
 
     // bind methods
@@ -159,7 +163,7 @@ class SourceCode extends React.Component<{}, State> {
   _get_source_line(
     source: any,
     line_should_flash: any,
-    is_gdb_paused_on_this_line: any,
+    gdb_paused_on_this_line_type: number,
     line_num_being_rendered: any,
     has_bkpt: any,
     has_disabled_bkpt: any,
@@ -169,8 +173,10 @@ class SourceCode extends React.Component<{}, State> {
   ) {
     let row_class = ["srccode"];
 
-    if (is_gdb_paused_on_this_line) {
+    if (gdb_paused_on_this_line_type === 1) {
       row_class.push("paused_on_line");
+    } else if (gdb_paused_on_this_line_type === 2) {
+      row_class.push("paused_on_line2");
     } else if (line_should_flash) {
       row_class.push("flash");
     }
@@ -180,7 +186,7 @@ class SourceCode extends React.Component<{}, State> {
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      if (is_gdb_paused_on_this_line) {
+      if (gdb_paused_on_this_line_type === 1) {
         id = "scroll_to_line";
       }
     } else if (
@@ -289,13 +295,25 @@ class SourceCode extends React.Component<{}, State> {
 
   is_gdb_paused_on_this_line(line_num_being_rendered: any, line_gdb_is_paused_on: any) {
     if (this.state.paused_on_frame) {
-      return (
+      if (
         line_num_being_rendered === line_gdb_is_paused_on &&
         this.state.paused_on_frame.fullname === this.state.fullname_to_render
-      );
-    } else {
-      return false;
+      ) {
+        return 1;
+      }
     }
+
+    for (let i = 0; i < this.state.fullname_to_render_prcs.length; i++) {
+      if (
+        this.state.processors_states[i] === constants.inferior_states.paused &&
+        this.state.fullname_to_render_prcs[i] === this.state.fullname_to_render &&
+        this.state.line_of_source_to_flash_prcs[i] === line_num_being_rendered
+      ) {
+        return 2;
+      }
+    }
+
+    return 0;
   }
   get_view_more_tr(fullname: any, linenum: any, node_key: any) {
     return (
@@ -381,6 +399,8 @@ class SourceCode extends React.Component<{}, State> {
         : 0;
 
     const line_of_source_to_flash = this.state.line_of_source_to_flash;
+    const line_of_source_to_flash_prcs = this.state.line_of_source_to_flash_prcs;
+    const fullname_to_render_prcs = this.state.fullname_to_render_prcs;
     const {
       start_linenum_to_render,
       end_linenum_to_render
@@ -408,7 +428,7 @@ class SourceCode extends React.Component<{}, State> {
       body.push(
         this._get_source_line(
           cur_line_of_code,
-          line_of_source_to_flash === line_num_being_rendered,
+          line_of_source_to_flash === line_num_being_rendered ? 1 : 0,
           is_gdb_paused_on_this_line,
           line_num_being_rendered,
           has_bkpt,
