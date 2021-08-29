@@ -242,7 +242,7 @@ class Dashboard extends React.PureComponent<any, { sessions: GdbguiSession[] }> 
         <footer className="h-40 bold text-lg bg-black text-gray-500 text-center flex flex-col justify-center">
           <p>gdbgui</p>
           <p>The browser-based frontend to gdb</p>
-          <a href="https://grassfedcode.com">Copyright Chad Smith</a>
+          <a href="https://chadsmith.dev">Copyright Chad Smith</a>
         </footer>
       </div>
     );

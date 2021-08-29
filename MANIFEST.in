@@ -8,6 +8,7 @@ graft gdbgui
 graft gdbgui/static/js
 
 prune examples
+prune .vscode
 prune downloads
 prune screenshots
 prune tests
@@ -15,6 +16,8 @@ prune docs
 prune docker
 prune images
 prune gdbgui/__pycache__
+prune gdbgui/server/__pycache__
+prune gdbgui/src/
 
 exclude mypy.ini
 exclude .eslintrc.json
@@ -26,6 +29,7 @@ exclude jest.config.js
 exclude make_executable.py
 exclude mkdocs.yml
 exclude package.json
+exclude requirements.in
 exclude requirements.txt
 exclude tsconfig.json
 exclude tslint.json

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import distutils.text_file
 
 USING_WINDOWS = os.name == "nt"
 if USING_WINDOWS:
@@ -26,7 +27,7 @@ setup(
     name="gdbgui",
     version=VERSION,
     author="Chad Smith",
-    author_email="grassfedcode@gmail.com",
+    author_email="chadsmith.software@gmail.com",
     description="Browser-based frontend to gdb. Debug C, C++, Go, or Rust.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -58,18 +59,9 @@ setup(
         ]
     },
     zip_safe=False,
-    install_requires=[
-        "Flask>=0.12.2, <1.0",  # http server
-        "Flask-Compress>=1.4.0, <2.0",  # to compress flask responses
-        "Flask-SocketIO>=2.9, <3.0",  # websocket server
-        "gevent>=1.2.2, <2.0",  # websocket handling
-        "gevent-websocket>=0.10.1, <0.11",  # also websocket
-        "eventlet>=0.25.0, <0.26",  # also websocket
-        "pygdbmi>=0.10.0.0b0, <0.11",  # parse gdb output
-        "Pygments>=2.2.0, <3.0",  # syntax highlighting
-        "greenlet==0.4.16",
-        "python-socketio>=4.6.1, <5.0",  # pinned to use socketio 2 under the hood (issue #366)
-    ],
+    install_requires=distutils.text_file.TextFile(
+        filename="./requirements.in"
+    ).readlines(),
     classifiers=[
         "Intended Audience :: Developers",
         "Operating System :: MacOS",
@@ -78,9 +70,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     python_requires=">=3.6",
     project_urls={

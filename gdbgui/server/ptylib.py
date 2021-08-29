@@ -74,7 +74,10 @@ class Pty:
         timeout_sec = 0
         (data_to_read, _, _) = select.select([self.stdout], [], [], timeout_sec)
         if data_to_read:
-            response = os.read(self.stdout, self.max_read_bytes).decode()
+            try:
+                response = os.read(self.stdout, self.max_read_bytes).decode()
+            except OSError:
+                return None
             return response
         return None
 

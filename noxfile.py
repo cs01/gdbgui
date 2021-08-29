@@ -7,7 +7,8 @@ import nox  # type: ignore
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.6", "3.7", "3.8"]
+python = ["3.9"]
+
 prettier_command = [
     "npx",
     "prettier@1.19.1",
@@ -90,7 +91,9 @@ def lint(session):
     session.run("flake8", *files_to_lint)
     session.run("mypy", *files_to_lint)
     vulture(session)
-    session.run("check-manifest", "--ignore", "gdbgui/static/js/*")
+    session.run(
+        "check-manifest", "--ignore", "gdbgui/static/js/*", "--ignore", "*pycache*"
+    )
     session.run("python", "setup.py", "check", "--metadata", "--strict")
     session.run(*prettier_command, "--check", external=True)
 
@@ -157,7 +160,7 @@ def publish_docs(session):
 def build_executable_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller<3.7")
+    session.install(".", "PyInstaller>=4.5, <4.6")
     session.run("python", "make_executable.py")
 
 

@@ -21,8 +21,7 @@ from gdbgui.server.server import run_server
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-logging.basicConfig(format="(%(asctime)s) %(msg)s")
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 
 def get_gdbgui_auth_user_credentials(auth_file, user, password):
@@ -244,6 +243,8 @@ def main():
             "see http://stackoverflow.com/questions/39702871/gdb-kind-of-doesnt-work-on-macos-sierra\n"
             "and https://sourceware.org/gdb/onlinedocs/gdb/Starting.html"
         )
+
+    logger.setLevel(logging.DEBUG if args.debug else logging.INFO)
 
     run_server(
         app=app,

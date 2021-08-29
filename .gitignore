@@ -5,14 +5,13 @@ build
 executable
 .DS_Store
 *.a.dSYM
-gdbgui.spec
+gdbgui_pyinstaller.spec
 *-link
 *-link.c
 *-link.dSYM
 *.pyc
 yarn-error.log
 venv
-.vscode
 site
 gdbgui/static/js/*
 __pycache__

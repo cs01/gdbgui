@@ -1,2 +1,1 @@
-* Twitter: @grassfedcode
-* Email: grassfedcode@gmail.com
+* Email: chadsmith.software@gmail.com

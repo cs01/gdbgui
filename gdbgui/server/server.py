@@ -64,21 +64,8 @@ def run_server(
         protocol = "http://"
         url_with_prefix = "http://" + url
 
-    if debug:
-        async_mode = "eventlet"
-    else:
-        async_mode = "gevent"
-
-    socketio.server_options["async_mode"] = async_mode
-    try:
-        socketio.init_app(app)
-    except Exception:
-        print(
-            'failed to initialize socketio app with async mode "%s". Continuing with async mode "threading".'
-            % async_mode
-        )
-        socketio.server_options["async_mode"] = "threading"
-        socketio.init_app(app)
+    socketio.server_options["allow_upgrades"] = False
+    socketio.init_app(app)
 
     if testing is False:
         if host == DEFAULT_HOST:
@@ -103,7 +90,7 @@ def run_server(
         )
 
         print("exit gdbgui by pressing CTRL+C")
-
+        os.environ["WERKZEUG_RUN_MAIN"] = "true"
         try:
             socketio.run(
                 app,

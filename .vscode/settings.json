@@ -1,0 +1,12 @@
+{
+    "python.formatting.provider": "black",
+    "[python]": {
+        "editor.formatOnSave": true
+    },
+    "[json]": {
+        "editor.formatOnSave": true
+    },
+    "files.associations": {
+        "*.spec": "python"
+    }
+}
