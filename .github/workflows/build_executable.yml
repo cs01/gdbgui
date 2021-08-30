@@ -40,5 +40,4 @@ jobs:
         with:
           name: gdbgui_${{ matrix.buildname }}
           path: |
-            ./executable/${{ matrix.buildname }}
-            ./build/pex
+            ./build/executable

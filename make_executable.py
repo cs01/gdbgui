@@ -92,7 +92,7 @@ def generate_md5(binary: Path, output_file: Path):
 def main():
     binary_name = "gdbgui_%s" % __version__
     spec_path = "gdbgui_pyinstaller.spec"
-    distpath = (Path("executable") / platform_dir).resolve()
+    distpath = Path("build/executable").resolve()
     extension = ".exe" if platform == "win32" else ""
     binary_path = Path(distpath) / f"{binary_name}{extension}"
 
