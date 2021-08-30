@@ -163,7 +163,7 @@ def build_executable_current_platform(session):
     session.run("yarn", "build", external=True)
     session.install(".", "PyInstaller>=4.5, <4.6")
     session.run("python", "make_executable.py")
-    build_pex(session)
+    session.nofity("build_pex")
 
 
 @nox.session(reuse_venv=True)
