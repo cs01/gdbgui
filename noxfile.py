@@ -199,7 +199,7 @@ def build_pex(session):
         "-c",
         "gdbgui",
         "-o",
-        pex_path,
+        str(pex_path),
         external=True,
     )
     checksum = hashlib.md5(pex_path.read_bytes()).hexdigest()
