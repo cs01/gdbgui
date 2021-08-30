@@ -13,14 +13,6 @@ from pathlib import Path
 import logging
 
 logging.basicConfig(level=logging.INFO)
-if platform.startswith("linux"):
-    platform_dir = "linux"
-elif platform.startswith("darwin"):
-    platform_dir = "mac"
-elif platform == "win32":
-    platform_dir = "windows"
-else:
-    raise Exception("Unknown platform")
 
 
 def write_spec_with_gdbgui_version_in_name(spec_path, binary_name):
