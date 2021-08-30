@@ -5,6 +5,8 @@
 This release is focused mostly on Python 3.9 compatibility and updating dependencies
 
 - Support only Python 3.9 (though other Python versions may still work)
+- Build gdbgui as a [pex](https://pypi.org/project/pex/) executable.
+  - These are executable Python environments that are self-contained with the exception of requiring a specific Python version installed in the environment running the executable. The pex executables should have better compatibility than PyInstaller executables, which sometimes have missing shared libraries depending on the operating system.
 - Use only the threading async model for flask-socketio. No longer support gevent or eventlet.
 - [bugfix] Catch exception if gdb used in tty window crashes instead of gdbgui crashing along with it
 - Disable pagination in gdb tty by default. It can be turned back on with `set pagination off`.

@@ -85,4 +85,5 @@ gdbgui is distributed through
 
 ## Contact
 
+https://chadsmith.dev
 chadsmith.software@gmail.com

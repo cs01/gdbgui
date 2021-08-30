@@ -2,6 +2,7 @@ import subprocess
 from pathlib import Path
 from sys import platform
 
+import hashlib
 import nox  # type: ignore
 
 
@@ -162,6 +163,7 @@ def build_executable_current_platform(session):
     session.run("yarn", "build", external=True)
     session.install(".", "PyInstaller>=4.5, <4.6")
     session.run("python", "make_executable.py")
+    build_pex(session)
 
 
 @nox.session(reuse_venv=True)
@@ -183,3 +185,23 @@ def build_executable_windows(session):
     if not platform.startswith("win32"):
         raise Exception(f"Unexpected platform {platform}")
     session.notify("build_executable_current_platform")
+
+
+@nox.session(python=python)
+def build_pex(session):
+    """Builds a pex of gdbgui"""
+    # NOTE: frontend must be built before running this
+    session.install("pex==2.1.45")
+    pex_path = Path("build/pex/gdbgui.pex")
+    session.run(
+        "pex",
+        ".",
+        "-c",
+        "gdbgui",
+        "-o",
+        pex_path,
+        external=True,
+    )
+    checksum = hashlib.md5(pex_path.read_bytes()).hexdigest()
+    with open(f"{pex_path}.md5", "w+") as f:
+        f.write(checksum + "\n")
