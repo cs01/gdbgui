@@ -39,5 +39,6 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: gdbgui_${{ matrix.buildname }}
-          path: ./executable/${{ matrix.buildname }} |
-          ./build/pex
+          path: |
+            ./executable/${{ matrix.buildname }}
+            ./build/pex
