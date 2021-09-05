@@ -14,11 +14,12 @@ if using_pyinstaller:
     BASE_PATH = Path(pyinstaller_base_dir or "")
 else:
     BASE_PATH = Path(os.path.realpath(__file__)).parent.parent
-    PARENTDIR = BASE_PATH.parent
-    sys.path.append(str(PARENTDIR))
+    # PARENTDIR = BASE_PATH.parent
+    # sys.path.append(str(PARENTDIR))
+STATIC_DIR = BASE_PATH / "built-react-app"
 
-TEMPLATE_DIR = BASE_PATH / "templates"
-STATIC_DIR = BASE_PATH / "static"
+
+print(STATIC_DIR)
 
 
 def colorize(text):

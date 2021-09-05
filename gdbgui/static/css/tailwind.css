@@ -1,9 +1,0 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
-
-button:focus {
-  /* For some reason normalize.css is getting injected into the html page, and it adds a 5px outline
-  on focused buttons */
-  outline-width: 0;
-}

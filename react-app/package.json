@@ -1,0 +1,73 @@
+{
+  "name": "gdbgui",
+  "license": "GPL-3.0",
+  "proxy": "http://localhost:5000",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@craco/craco": "^6.2.0",
+    "@testing-library/jest-dom": "^5.11.4",
+    "@testing-library/react": "^11.1.0",
+    "@testing-library/user-event": "^12.1.10",
+    "@types/jest": "^27.0.1",
+    "@types/node": "^16.7.10",
+    "@types/react": "^17.0.19",
+    "@types/react-dom": "^17.0.9",
+    "awesomplete": "^1.1.5",
+    "bootstrap": "3.3.6",
+    "jquery": "^3.6.0",
+    "jquery.flot": "0.8.3",
+    "lodash": "^4.17.21",
+    "moment": "2.17.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3",
+    "socket.io": "^4.1",
+    "socket.io-client": "^4.1",
+    "split.js": "1.2.0",
+    "statorgfc": "^0.1.6",
+    "typescript": "^4.4.2",
+    "vis": "4.20.1",
+    "web-vitals": "^1.0.1",
+    "xterm": "4.8.0",
+    "xterm-addon-fit": "^0.4.0",
+    "xterm-addon-web-links": "^0.4.0",
+    "xterm-addon-webgl": "^0.4.0"
+  },
+  "scripts": {
+    "start": "craco start",
+    "build": "BUILD_PATH=../gdbgui/built-react-app/ craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/awesomplete": "^1.1.11",
+    "@types/jquery": "^3.5.6",
+    "@types/lodash": "^4.14.172",
+    "@types/socket.io": "^2.1.11",
+    "@types/socket.io-client": "^1.4.33",
+    "@types/split.js": "^1.6.0",
+    "autoprefixer": "^9",
+    "postcss": "^7",
+    "prettier": "^2.3.2",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat"
+  }
+}

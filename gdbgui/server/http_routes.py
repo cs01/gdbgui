@@ -12,24 +12,27 @@ from flask import (
     session,
     Response,
 )
+from flask.helpers import send_from_directory
 from pygments.lexers import get_lexer_for_filename  # type: ignore
 
 from gdbgui import htmllistformatter, __version__
 
-from .constants import TEMPLATE_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ
+from .constants import STATIC_DIR, USING_WINDOWS, SIGNAL_NAME_TO_OBJ
 from .http_util import (
-    add_csrf_token_to_session,
     authenticate,
     client_error,
-    csrf_protect,
 )
 
 logger = logging.getLogger(__file__)
-blueprint = Blueprint("http_routes", __name__, template_folder=str(TEMPLATE_DIR))
+blueprint = Blueprint(
+    "http_routes",
+    __name__,
+    static_folder=str(STATIC_DIR),
+    static_url_path="",
+)
 
 
 @blueprint.route("/read_file", methods=["GET"])
-@csrf_protect
 def read_file():
     """Read a file and return its contents as an array"""
 
@@ -105,7 +108,6 @@ def read_file():
 
 
 @blueprint.route("/get_last_modified_unix_sec", methods=["GET"])
-@csrf_protect
 def get_last_modified_unix_sec():
     """Get last modified unix time for a given file"""
     path = request.args.get("path")
@@ -131,15 +133,12 @@ def help_route():
 def dashboard():
     manager = current_app.config.get("_manager")
 
-    add_csrf_token_to_session()
-
     """display a dashboard with a list of all running gdb processes
     and ability to kill them, or open a new tab to work with that
     GdbController instance"""
     return render_template(
         "dashboard.html",
         gdbgui_sessions=manager.get_dashboard_data(),
-        csrf_token=session["csrf_token"],
         default_command=current_app.config["gdb_command"],
     )
 
@@ -147,32 +146,37 @@ def dashboard():
 @blueprint.route("/", methods=["GET"])
 @authenticate
 def gdbgui():
-    """Render the main gdbgui interface"""
-    gdbpid = request.args.get("gdbpid", 0)
-    gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
-    add_csrf_token_to_session()
+    return send_from_directory(STATIC_DIR, "index.html")
 
-    THEMES = ["monokai", "light"]
-    initial_data = {
-        "csrf_token": session["csrf_token"],
-        "gdbgui_version": __version__,
-        "gdbpid": gdbpid,
-        "gdb_command": gdb_command,
-        "initial_binary_and_args": current_app.config["initial_binary_and_args"],
-        "project_home": current_app.config["project_home"],
-        "remap_sources": current_app.config["remap_sources"],
-        "themes": THEMES,
-        "signals": SIGNAL_NAME_TO_OBJ,
-        "using_windows": USING_WINDOWS,
-    }
 
-    return render_template(
-        "gdbgui.html",
-        version=__version__,
-        debug=current_app.debug,
-        initial_data=initial_data,
-        themes=THEMES,
-    )
+#     return app.send_static_file(path)
+
+
+#     gdbpid = request.args.get("gdbpid", 0)
+#     gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
+#     add_csrf_token_to_session()
+
+#     THEMES = ["monokai", "light"]
+#     initial_data = {
+#         "csrf_token": session["csrf_token"],
+#         "gdbgui_version": __version__,
+#         "gdbpid": gdbpid,
+#         "gdb_command": gdb_command,
+#         "initial_binary_and_args": current_app.config["initial_binary_and_args"],
+#         "project_home": current_app.config["project_home"],
+#         "remap_sources": current_app.config["remap_sources"],
+#         "themes": THEMES,
+#         "signals": SIGNAL_NAME_TO_OBJ,
+#         "using_windows": USING_WINDOWS,
+#     }
+
+#     return render_template(
+#         "gdbgui.html",
+#         version=__version__,
+#         debug=current_app.debug,
+#         initial_data=initial_data,
+#         themes=THEMES,
+#     )
 
 
 @blueprint.route("/dashboard_data", methods=["GET"])
