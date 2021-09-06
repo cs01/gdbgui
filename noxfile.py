@@ -135,7 +135,8 @@ def build(session):
     session.run("yarn", "build", external=True)
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
-    session.run("pip", "install", *glob.glob("dist/*.tar.gz"))
+    for built_package in glob.glob("dist/*"):
+        session.run("pip", "install", "--force-reinstall", built_package)
 
 
 @nox.session(reuse_venv=True)
