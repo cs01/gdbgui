@@ -31,7 +31,7 @@ app.config["remap_sources"] = {}
 manager = SessionManager()
 app.config["_manager"] = manager
 app.secret_key = binascii.hexlify(os.urandom(24)).decode("utf-8")
-socketio = SocketIO(manage_session=False)
+socketio = SocketIO(manage_session=False, cors_allowed_origins="*")
 
 
 @socketio.on("connect", namespace="/gdb_listener")

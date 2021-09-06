@@ -35,17 +35,24 @@ if (debug) {
 let socket: SocketIOClient.Socket;
 const GdbApi = {
   getSocket: function () {
+    if (!socket) {
+      GdbApi.init();
+    }
     return socket;
   },
   init: function () {
     const TIMEOUT_MIN = 5;
-    socket = io.connect(`/gdb_listener`, {
+    const opts = {
       timeout: TIMEOUT_MIN * 60 * 1000,
       query: {
         gdbpid: initial_data.gdbpid,
         gdb_command: initial_data.gdb_command,
       },
-    });
+    };
+    socket =
+      process.env.NODE_ENV === "development"
+        ? io.connect("http://localhost:5000", { ...opts, path: "/gdb_listener" })
+        : io.connect("/gdb_listener", opts);
 
     socket.on("connect", function () {
       log("connected");
@@ -311,7 +318,7 @@ const GdbApi = {
       cmds = [cmds];
     }
 
-    if (socket.connected) {
+    if (socket?.connected) {
       socket.emit("run_gdb_command", { cmd: cmds });
       GdbApi.waiting_for_response();
       // add the send command to the console to show commands that are

@@ -81,7 +81,8 @@ const Actions = {
       entries = [entries];
     }
 
-    const pty = store.get("gdbguiPty");
+    // @ts-ignore
+    const pty = window.gdbguiPty;
     if (pty) {
       entries.forEach((data: string) => {
         const entriesToIgnore = [

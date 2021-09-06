@@ -20,13 +20,13 @@ import ToolTipTourguide from "./ToolTipTourguide";
 let onmouseup_in_parent_callbacks: any = [],
   onmousemove_in_parent_callbacks: any = [];
 
-let onmouseup_in_parent_callback = function() {
+let onmouseup_in_parent_callback = function () {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmouseup_in_parent_callbacks.map(fn => fn());
+  onmouseup_in_parent_callbacks.map((fn) => fn());
 };
-let onmousemove_in_parent_callback = function(e: any) {
+let onmousemove_in_parent_callback = function (e: any) {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmousemove_in_parent_callbacks.map(fn => {
+  onmousemove_in_parent_callbacks.map((fn) => {
     fn(e);
   });
 };
@@ -50,7 +50,7 @@ class Collapser extends React.Component<{}, CollapserState> {
       autosize: true,
       height_px: null, // if an integer, force height to this value
       _mouse_y_click_pos_px: null,
-      _height_when_clicked: null
+      _height_when_clicked: null,
     };
     this.onmousedown_resizer = this.onmousedown_resizer.bind(this);
     this.onmouseup_resizer = this.onmouseup_resizer.bind(this);
@@ -76,7 +76,7 @@ class Collapser extends React.Component<{}, CollapserState> {
       let dh = e.pageY - this._page_y_orig;
       this.setState({
         height_px: this._height_when_clicked + dh,
-        autosize: false
+        autosize: false,
       });
     }
   }
@@ -86,7 +86,7 @@ class Collapser extends React.Component<{}, CollapserState> {
   render() {
     let style = {
       height: this.state.autosize ? "auto" : this.state.height_px + "px",
-      overflow: this.state.autosize ? "visible" : "auto"
+      overflow: this.state.autosize ? "visible" : "auto",
     };
 
     let reset_size_button = "";
@@ -104,7 +104,7 @@ class Collapser extends React.Component<{}, CollapserState> {
             align: "right",
             position: "relative",
             top: "-10px",
-            cursor: "pointer"
+            cursor: "pointer",
           }}
         >
           reset height
@@ -148,7 +148,7 @@ class Collapser extends React.Component<{}, CollapserState> {
           // @ts-expect-error ts-migrate(2339) FIXME: Property 'id' does not exist on type 'Readonly<{}>... Remove this comment to see the full error message
           id={this.props.id}
           style={style}
-          ref={n => (this.collapser_box_node = n)}
+          ref={(n) => (this.collapser_box_node = n)}
         >
           {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'content' does not exist on type 'Readonl... Remove this comment to see the full error message */}
           {this.props.content}
@@ -160,17 +160,19 @@ class Collapser extends React.Component<{}, CollapserState> {
   }
 }
 
-class RightSidebar extends React.Component {
+class RightSidebar extends React.Component<any> {
+  constructor(props: any) {
+    super(props);
+  }
   render() {
     let input_style = {
         display: "inline",
         width: "100px",
         padding: "6px 6px",
         height: "25px",
-        fontSize: "1em"
+        fontSize: "1em",
       },
       mi_output = "";
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'debug' does not exist on type 'Readonly<... Remove this comment to see the full error message
     if (this.props.debug) {
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
       mi_output = (

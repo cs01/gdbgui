@@ -336,7 +336,8 @@ class TopBar extends React.Component<{ initial_user_input: Array<string> }, Stat
     return (
       <div
         id="top"
-        style={{ background: "#f5f6f7", position: "absolute", width: "100%" }}
+        style={{ position: "absolute" }}
+        className="bg-gray-100 w-full h-full overflow-hidden"
       >
         <div className="flexrow">
           <BinaryLoader initial_user_input={this.props.initial_user_input} />

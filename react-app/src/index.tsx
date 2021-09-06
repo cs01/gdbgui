@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
-// import "./index.css";
+import "./index.css";
 import "./app/static/css/gdbgui.css";
 import "./app/static/vendor/css/pygments/monokai.css";
 import "./app/static/vendor/css/pygments/light.css";

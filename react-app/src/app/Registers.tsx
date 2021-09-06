@@ -31,6 +31,7 @@ class Registers extends React.Component<{}, State> {
     ]);
   }
   static get_update_cmds() {
+    register_name_fetch_count++;
     let cmds: any = [];
     if (
       [constants.inferior_states.paused, constants.inferior_states.running].indexOf(
@@ -43,7 +44,6 @@ class Registers extends React.Component<{}, State> {
       if (store.get("register_names").length === 0) {
         if (register_name_fetch_count <= MAX_REGISTER_NAME_FETCH_COUNT) {
           clearTimeout(register_name_fetch_timeout);
-          register_name_fetch_count++;
           // only fetch register names when we don't have them
           // assumption is that the names don't change over time
           cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + "-data-list-register-names");

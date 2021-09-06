@@ -1,3 +1,5 @@
+import { FitAddon } from "xterm-addon-fit";
+
 let constants = {
   ENTER_BUTTON_NUM: 13,
   TAB_BUTTON_NUM: 9,
@@ -20,12 +22,12 @@ let constants = {
     STD_OUT: "STD_OUT",
     GDBGUI_OUTPUT: "GDBGUI_OUTPUT",
     GDBGUI_OUTPUT_RAW: "GDBGUI_OUTPUT_RAW",
-    AUTOCOMPLETE_OPTION: "AUTOCOMPLETE_OPTION"
+    AUTOCOMPLETE_OPTION: "AUTOCOMPLETE_OPTION",
   },
 
   source_code_selection_states: {
     USER_SELECTION: "USER_SELECTION",
-    PAUSED_FRAME: "PAUSED_FRAME"
+    PAUSED_FRAME: "PAUSED_FRAME",
   },
 
   source_code_states: {
@@ -36,14 +38,14 @@ let constants = {
     FETCHING_ASSM: "FETCHING_ASSM",
     ASSM_UNAVAILABLE: "ASSM_UNAVAILABLE",
     FILE_MISSING: "FILE_MISSING",
-    NONE_AVAILABLE: "NONE_AVAILABLE"
+    NONE_AVAILABLE: "NONE_AVAILABLE",
   },
 
   inferior_states: {
     unknown: "unknown",
     running: "running",
     paused: "paused",
-    exited: "exited"
+    exited: "exited",
   },
 
   tree_component_id: "tree",
@@ -59,8 +61,8 @@ let constants = {
     lgreen: "\x1B[1;32m",
     blue: "\x1B[0;34m",
     lblue: "\x1B[1;34m",
-    yellow: "\x1B[0;33m"
-  }
+    yellow: "\x1B[0;33m",
+  },
 };
 
 const colorTypeMap = {};
@@ -90,5 +92,5 @@ constants["DISASSEMBLY_FOR_MISSING_FILE_INT"] = parseInt(
 constants["CREATE_VAR_INT"] = parseInt(constants.CREATE_VAR_STR);
 // @ts-expect-error ts-migrate(2551) FIXME: Property 'INLINE_DISASSEMBLY_INT' does not exist o... Remove this comment to see the full error message
 constants["INLINE_DISASSEMBLY_INT"] = parseInt(constants.INLINE_DISASSEMBLY_STR);
-
+export const ptyFontSize = 14;
 export default Object.freeze(constants);

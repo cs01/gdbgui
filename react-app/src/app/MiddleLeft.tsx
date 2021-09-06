@@ -11,9 +11,8 @@ class MiddleLeft extends React.Component {
   fetch_more_at_top_timeout: any;
   onscroll_timeout: any;
   source_code_container_node: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
+  constructor(props: any) {
+    super(props);
     this.onscroll_container = this.onscroll_container.bind(this);
     this.onscroll_timeout = null;
     this.fetch_more_at_top_timeout = null;
@@ -22,7 +21,7 @@ class MiddleLeft extends React.Component {
     return (
       <div
         id="code_container"
-        style={{ overflow: "auto", height: "100%" }}
+        style={{ overflow: "auto", height: "100%", minHeight: "200px" }}
         ref={(el) => (this.source_code_container_node = el)}
       >
         <SourceCode />
