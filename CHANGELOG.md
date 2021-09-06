@@ -1,6 +1,12 @@
 # gdbgui release history
 
+## 0.16.0.0
+
+- Fix css issues in frontend
+- [dev] Rewrite frontend, remove lots of tech debt
+
 ## 0.15.2.0
+
 - Update default python version to 3.12
 - utf-8 decode error bugfix
 - fix registers cannot be displayed bug
