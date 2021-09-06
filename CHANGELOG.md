@@ -1,5 +1,11 @@
 # gdbgui release history
 
+## 0.15.0.1
+
+This release has no changes to features or usability. The only change is to include a file used by other package maintainers.
+
+- Include all files needed to rebuild from source (#403)
+
 ## 0.15.0.0
 
 This release is focused mostly on Python 3.9 compatibility and updating dependencies
