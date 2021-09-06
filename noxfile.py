@@ -4,7 +4,7 @@ from sys import platform
 
 import hashlib
 import nox  # type: ignore
-
+import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
@@ -131,9 +131,11 @@ def serve(session):
 def build(session):
     session.install(*publish_deps)
     session.run("rm", "-rf", "dist", "build", external=True)
+    session.run("yarn", external=True)
     session.run("yarn", "build", external=True)
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
+    session.run("pip", "install", *glob.glob("dist/*.tar.gz"))
 
 
 @nox.session(reuse_venv=True)
