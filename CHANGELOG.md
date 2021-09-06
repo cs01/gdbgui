@@ -2,7 +2,7 @@
 
 ## 0.15.0.1
 
-This release has no changes to feature or usability. The only change is to include a file used by other package maintainers.
+This release has no changes to features or usability. The only change is to include a file used by other package maintainers.
 
 - Include all files needed to rebuild from source (#403)
 
