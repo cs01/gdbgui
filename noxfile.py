@@ -46,9 +46,8 @@ def python_tests(session):
 
 @nox.session(reuse_venv=True)
 def js_tests(session):
-    session.run("yarn", "install", external=True)
-    session.run("yarn", "test", external=True)
-    session.run("yarn", "build", external=True)
+    build_frontend(session)
+    session.run("yarn", "--cwd", "./react-app", "test", external=True)
 
 
 @nox.session(reuse_venv=True, python=python)
@@ -115,9 +114,16 @@ def docs(session):
 @nox.session(reuse_venv=True)
 def develop(session):
     session.install("-e", ".")
-    session.run("yarn", "install", external=True)
+    session.run("yarn", "--cwd", "./react-app" "install", external=True)
     print("Watching JavaScript file and Python files for changes")
-    with subprocess.Popen(["yarn", "start"]):
+    with subprocess.Popen(
+        [
+            "yarn",
+            "--cwd",
+            "./react-app",
+            "start",
+        ]
+    ):
         session.run("python", "-m", "gdbgui")
 
 
@@ -132,8 +138,7 @@ def build(session):
     """Build python distribution (sdist and wheels)"""
     session.install(*publish_deps)
     session.run("rm", "-rf", "dist", "build", external=True)
-    session.run("yarn", external=True)
-    session.run("yarn", "build", external=True)
+    build_frontend(session)
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
     for built_package in glob.glob("dist/*"):
@@ -162,10 +167,15 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
+@nox.session(reuse_venv=True)
+def build_frontend(session):
+    session.run("yarn", "--cwd", "./react-app", "install", external=True)
+    session.run("yarn", "--cwd", "./react-app", "build", external=True)
+
+
 @nox.session(reuse_venv=True, python="3.12")
 def build_executables_current_platform(session):
-    session.run("yarn", "install", external=True)
-    session.run("yarn", "build", external=True)
+    build_frontend(session)
     session.install(".", "PyInstaller==6.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
