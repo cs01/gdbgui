@@ -16,7 +16,7 @@ const terminalRef = React.createRef<any>();
 export function InferiorTerminal(props: {}) {
   useLayoutEffect(() => {
     terminal.open(terminalRef.current);
-    terminal.writeln(`inferior program connected here`);
+    terminal.writeln(`This terminal is connected to the program being debugged`);
 
     terminal.onKey(
       (

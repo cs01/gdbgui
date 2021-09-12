@@ -67,13 +67,13 @@ class SourceCode extends React.Component<{}, State> {
   }
 
   componentDidUpdate() {
-    let source_is_displayed =
+    const source_is_displayed =
       this.state.source_code_state === constants.source_code_states.SOURCE_CACHED ||
       this.state.source_code_state ===
         constants.source_code_states.ASSM_AND_SOURCE_CACHED;
     if (source_is_displayed) {
       if (this.state.make_current_line_visible) {
-        let success = SourceCode.make_current_line_visible();
+        const success = SourceCode.make_current_line_visible();
         if (success) {
           store.set("make_current_line_visible", false);
         }
@@ -86,12 +86,12 @@ class SourceCode extends React.Component<{}, State> {
     switch (this.state.source_code_state) {
       case states.ASSM_AND_SOURCE_CACHED: // fallthrough
       case states.SOURCE_CACHED: {
-        let obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render);
+        const obj = FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render);
         if (!obj) {
           console.error("expected to find source file");
           return this.get_body_empty();
         }
-        let paused_addr = this.state.paused_on_frame
+        const paused_addr = this.state.paused_on_frame
             ? this.state.paused_on_frame.addr
             : null,
           start_linenum = store.get("source_linenum_to_display_start"),
@@ -114,7 +114,7 @@ class SourceCode extends React.Component<{}, State> {
         );
       }
       case states.ASSM_CACHED: {
-        let paused_addr = this.state.paused_on_frame
+        const paused_addr = this.state.paused_on_frame
             ? this.state.paused_on_frame.addr
             : null,
           assm_array = this.state.disassembly_for_missing_file;
@@ -128,7 +128,7 @@ class SourceCode extends React.Component<{}, State> {
         );
       }
       case states.ASSM_UNAVAILABLE: {
-        let paused_addr = this.state.paused_on_frame
+        const paused_addr = this.state.paused_on_frame
           ? this.state.paused_on_frame.addr
           : null;
         return (
@@ -168,7 +168,7 @@ class SourceCode extends React.Component<{}, State> {
     assembly_for_line: any,
     paused_addr: any
   ) {
-    let row_class = ["srccode"];
+    const row_class = ["srccode"];
 
     if (is_gdb_paused_on_this_line) {
       row_class.push("paused_on_line");
@@ -202,10 +202,10 @@ class SourceCode extends React.Component<{}, State> {
       gutter_cls = "breakpoint";
     }
 
-    let assembly_content = [];
+    const assembly_content = [];
     if (assembly_for_line) {
       let i = 0;
-      for (let assm of assembly_for_line) {
+      for (const assm of assembly_for_line) {
         assembly_content.push(SourceCode._get_assm_content(i, assm, paused_addr));
         assembly_content.push(<br key={"br" + i} />);
         i++;
@@ -242,7 +242,7 @@ class SourceCode extends React.Component<{}, State> {
    * example return value: mov $0x400684,%edi(00) main+8 0x0000000000400585
    */
   static _get_assm_content(key: any, assm: any, paused_addr: any) {
-    let opcodes = assm.opcodes ? (
+    const opcodes = assm.opcodes ? (
         <span className="instrContent">{`(${assm.opcodes})`}</span>
       ) : (
         ""
@@ -366,9 +366,9 @@ class SourceCode extends React.Component<{}, State> {
     end_linenum: any,
     num_lines_in_file: any
   ) {
-    let body = [];
+    const body = [];
 
-    let bkpt_lines = Breakpoints.get_breakpoint_lines_for_file(
+    const bkpt_lines = Breakpoints.get_breakpoint_lines_for_file(
         this.state.fullname_to_render
       ),
       disabled_breakpoint_lines = Breakpoints.get_disabled_breakpoint_lines_for_file(
@@ -393,8 +393,8 @@ class SourceCode extends React.Component<{}, State> {
 
     let line_num_being_rendered = start_linenum_to_render;
     while (line_num_being_rendered <= end_linenum_to_render) {
-      let cur_line_of_code = source_code_obj[line_num_being_rendered];
-      let has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1,
+      const cur_line_of_code = source_code_obj[line_num_being_rendered];
+      const has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1,
         has_disabled_bkpt =
           disabled_breakpoint_lines.indexOf(line_num_being_rendered) !== -1,
         has_conditional_bkpt =
@@ -456,9 +456,9 @@ class SourceCode extends React.Component<{}, State> {
   }
 
   get_body_assembly_only(assm_array: any, paused_addr: any) {
-    let body = [],
-      i = 0;
-    for (let assm of assm_array) {
+    const body = [];
+    let i = 0;
+    for (const assm of assm_array) {
       body.push(this._get_assm_row(i, assm, paused_addr));
       i++;
     }
@@ -478,11 +478,11 @@ class SourceCode extends React.Component<{}, State> {
   static is_source_line_visible(jq_selector: any) {
     if (jq_selector.length !== 1) {
       // make sure something is selected before trying to scroll to it
-      throw "Unexpected jquery selector";
+      throw new Error("Unexpected jquery selector");
     }
 
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    let top_of_container = SourceCode.el_code_container.position().top,
+    const top_of_container = SourceCode.el_code_container.position().top,
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       height_of_container = SourceCode.el_code_container.height(),
       bottom_of_container = top_of_container + height_of_container,
@@ -512,7 +512,7 @@ class SourceCode extends React.Component<{}, State> {
       if (!is_visible) {
         // line is out of view, scroll so it's in the middle of the table
         const time_to_scroll = 0;
-        let scroll_top = top_of_line - (top_of_table + height_of_container / 2);
+        const scroll_top = top_of_line - (top_of_table + height_of_container / 2);
         // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
         SourceCode.el_code_container.animate({ scrollTop: scroll_top }, time_to_scroll);
       }

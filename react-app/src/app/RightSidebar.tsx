@@ -17,16 +17,16 @@ import Tree from "./Tree";
 import Threads from "./Threads";
 import ToolTipTourguide from "./ToolTipTourguide";
 
-let onmouseup_in_parent_callbacks: any = [],
+const onmouseup_in_parent_callbacks: any = [],
   onmousemove_in_parent_callbacks: any = [];
 
-let onmouseup_in_parent_callback = function () {
+const onmouseup_in_parent_callback = function () {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmouseup_in_parent_callbacks.map((fn) => fn());
+  onmouseup_in_parent_callbacks.forEach((fn) => fn());
 };
-let onmousemove_in_parent_callback = function (e: any) {
+const onmousemove_in_parent_callback = function (e: any) {
   // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmousemove_in_parent_callbacks.map((fn) => {
+  onmousemove_in_parent_callbacks.forEach((fn) => {
     fn(e);
   });
 };
@@ -73,7 +73,7 @@ class Collapser extends React.Component<{}, CollapserState> {
   }
   onmousemove_resizer(e: any) {
     if (this._resizing) {
-      let dh = e.pageY - this._page_y_orig;
+      const dh = e.pageY - this._page_y_orig;
       this.setState({
         height_px: this._height_when_clicked + dh,
         autosize: false,
@@ -84,7 +84,7 @@ class Collapser extends React.Component<{}, CollapserState> {
     this.setState({ autosize: true });
   }
   render() {
-    let style = {
+    const style = {
       height: this.state.autosize ? "auto" : this.state.height_px + "px",
       overflow: this.state.autosize ? "visible" : "auto",
     };
@@ -161,18 +161,15 @@ class Collapser extends React.Component<{}, CollapserState> {
 }
 
 class RightSidebar extends React.Component<any> {
-  constructor(props: any) {
-    super(props);
-  }
   render() {
-    let input_style = {
-        display: "inline",
-        width: "100px",
-        padding: "6px 6px",
-        height: "25px",
-        fontSize: "1em",
-      },
-      mi_output = "";
+    const input_style = {
+      display: "inline",
+      width: "100px",
+      padding: "6px 6px",
+      height: "25px",
+      fontSize: "1em",
+    };
+    let mi_output = "";
     if (this.props.debug) {
       // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
       mi_output = (

@@ -149,6 +149,23 @@ def gdbgui():
     return send_from_directory(STATIC_DIR, "index.html")
 
 
+@blueprint.route("/initial_data", methods=["GET"])
+@authenticate
+def get_initial_data():
+    return jsonify(
+        {
+            "gdb_command": current_app.config["gdb_command"],
+            "gdbgui_version": __version__,
+            "initial_binary_and_args": current_app.config["initial_binary_and_args"],
+            "project_home": current_app.config["project_home"],
+            "remap_sources": current_app.config["remap_sources"],
+            "signals": SIGNAL_NAME_TO_OBJ,
+            "using_windows": USING_WINDOWS,
+        }
+    )
+    # return send_from_directory(STATIC_DIR, "index.html")
+
+
 #     return app.send_static_file(path)
 
 
@@ -162,12 +179,12 @@ def gdbgui():
 #         "gdbgui_version": __version__,
 #         "gdbpid": gdbpid,
 #         "gdb_command": gdb_command,
-#         "initial_binary_and_args": current_app.config["initial_binary_and_args"],
-#         "project_home": current_app.config["project_home"],
-#         "remap_sources": current_app.config["remap_sources"],
+# "initial_binary_and_args": current_app.config["initial_binary_and_args"],
+# "project_home": current_app.config["project_home"],
+# "remap_sources": current_app.config["remap_sources"],
 #         "themes": THEMES,
-#         "signals": SIGNAL_NAME_TO_OBJ,
-#         "using_windows": USING_WINDOWS,
+# "signals": SIGNAL_NAME_TO_OBJ,
+# "using_windows": USING_WINDOWS,
 #     }
 
 #     return render_template(

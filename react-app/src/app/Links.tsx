@@ -4,15 +4,15 @@ import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";
 
 type Props = {
-  file?: string;
-  fullname?: string;
-  line: string;
+  file: Nullable<string>;
+  fullname: Nullable<string>;
+  line: number;
   num_lines?: number;
 };
 
 export class FileLink extends React.Component<Props> {
   render() {
-    let line = parseInt(this.props.line);
+    let line = this.props.line;
     let onclick = () => {},
       cls = "";
     if (!this.props.file || !line) {
@@ -53,9 +53,9 @@ export class FileLink extends React.Component<Props> {
 
 type FrameLinkProps = {
   addr: string;
-  file?: string;
-  fullname?: string;
-  line: string;
+  file: Nullable<string>;
+  fullname: Nullable<string>;
+  line: number;
 };
 
 export class FrameLink extends React.Component<FrameLinkProps> {

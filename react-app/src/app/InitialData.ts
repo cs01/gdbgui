@@ -1,6 +1,13 @@
-type InitialData = {
+// import { atom } from "recoil";
+
+// const gdbCommand = atom({
+//   key: "initialData",
+//   default: 32,
+// });
+
+export type InitialData = {
   gdbgui_version: string;
-  gdbpid: number;
+  gdbpid: Nullable<number>;
   gdb_command: string;
   initial_binary_and_args: Array<string>;
   project_home: string;

@@ -36,22 +36,24 @@ let socket: SocketIOClient.Socket;
 const GdbApi = {
   getSocket: function () {
     if (!socket) {
-      GdbApi.init();
+      throw new Error("webocket has not been set up");
     }
     return socket;
   },
-  init: function () {
+  init: function (gdbCommand: string, gdbPid: Nullable<number>) {
     const TIMEOUT_MIN = 5;
-    const opts = {
+    const opts: SocketIOClient.ConnectOpts = {
       timeout: TIMEOUT_MIN * 60 * 1000,
+      reconnection: false,
       query: {
-        gdbpid: initial_data.gdbpid,
-        gdb_command: initial_data.gdb_command,
+        gdbpid: gdbPid ?? 0,
+        gdb_command: gdbCommand,
       },
     };
+
     socket =
       process.env.NODE_ENV === "development"
-        ? io.connect("http://localhost:5000", { ...opts, path: "/gdb_listener" })
+        ? io.connect("http://127.0.0.1:5000/gdb_listener", opts)
         : io.connect("/gdb_listener", opts);
 
     socket.on("connect", function () {

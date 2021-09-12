@@ -1,5 +1,4 @@
 import React, { useLayoutEffect } from "react";
-import GdbApi from "./GdbApi";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { ptyFontSize } from "./constants";
@@ -11,7 +10,7 @@ const terminal = new Terminal({
   scrollback: 9999,
   fontSize: ptyFontSize,
 });
-// @ts-ignore  todo use a global store
+// @ts-ignore  TODO use a proper global store or recoil
 window.gdbguiPty = terminal;
 const fitAddon = new FitAddon();
 

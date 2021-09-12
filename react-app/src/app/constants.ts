@@ -1,6 +1,4 @@
-import { FitAddon } from "xterm-addon-fit";
-
-let constants = {
+const constants = {
   ENTER_BUTTON_NUM: 13,
   TAB_BUTTON_NUM: 9,
   LEFT_BUTTON_NUM: 37,

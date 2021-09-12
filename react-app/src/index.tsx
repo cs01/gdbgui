@@ -9,10 +9,12 @@ import "./app/static/css/splitjs-gdbgui.css";
 // import "bootstrap";
 import { Gdbgui } from "./app/gdbgui";
 import reportWebVitals from "./reportWebVitals";
-
+import { RecoilRoot } from "recoil";
 ReactDOM.render(
   <React.StrictMode>
-    <Gdbgui />
+    <RecoilRoot>
+      <Gdbgui />
+    </RecoilRoot>
   </React.StrictMode>,
   document.getElementById("root")
 );

@@ -6,14 +6,14 @@
  *
  */
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 // @ts-expect-error ts-migrate(2305) FIXME: Module '"statorgfc"' has no exported member 'middl... Remove this comment to see the full error message
 import { store, middleware } from "statorgfc";
 
 import constants from "./constants";
 import GdbApi from "./GdbApi";
 import FileOps from "./FileOps";
-import FoldersView from "./FoldersView";
+// import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
 import initial_store_data from "./InitialStoreData";
@@ -23,12 +23,10 @@ import RightSidebar from "./RightSidebar";
 import Settings from "./Settings";
 import ToolTip from "./ToolTip";
 import TopBar from "./TopBar";
-import ToolTipTourguide from "./ToolTipTourguide";
-import { debug, initial_data } from "./InitialData";
-import { Terminals } from "./Terminals";
-import _ from "lodash";
-import $ from "jquery";
+// import ToolTipTourguide from "./ToolTipTourguide";
+import { debug, InitialData } from "./InitialData";
 import { ReflexContainer, ReflexSplitter, ReflexElement } from "react-reflex";
+// import { atom, selector, useRecoilState, useRecoilValue } from "recoil";
 
 import "react-reflex/styles.css";
 import { GdbTerminal } from "./GdbTerminal";
@@ -57,18 +55,41 @@ if (debug) {
 window.store = store;
 
 export function Gdbgui() {
+  const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
   useEffect(() => {
-    GdbApi.init();
-    GlobalEvents.init();
-    FileOps.init();
+    async function initialize() {
+      const initialData: InitialData = await (await fetch("/initial_data")).json();
+      GdbApi.init(initialData.gdb_command, initialData.gdbpid);
+      GlobalEvents.init();
+      FileOps.init();
+      setInitialData(initialData);
+    }
+    initialize();
   }, []);
-
+  if (!initialData) {
+    return <div className="h-full w-full">Loading...</div>;
+  }
   return (
     <div className="h-full w-full">
       <Settings />
+      <HoverVar />
+      <Modal />
+      <ToolTip />
+      <textarea
+        style={{
+          width: "0px",
+          height: "0px",
+          position: "absolute",
+          top: "0",
+          left: "-1000px",
+        }}
+        ref={(node) => {
+          store.set("textarea_to_copy_to_clipboard", node);
+        }}
+      />
       <ReflexContainer orientation="horizontal">
-        <ReflexElement minSize={60} flex={0.01}>
-          <TopBar initial_user_input={["asdf"]} />
+        <ReflexElement size={60}>
+          <TopBar initial_user_input={initialData.initial_binary_and_args} />
         </ReflexElement>
         <ReflexElement flex={0.7} minSize={100}>
           <ReflexContainer orientation="vertical">
@@ -80,7 +101,7 @@ export function Gdbgui() {
 
             <ReflexElement minSize={100}>
               <div className="pane-content">
-                <RightSidebar signals={initial_data.signals} debug={debug} />
+                <RightSidebar signals={initialData.signals} debug={debug} />
               </div>
             </ReflexElement>
           </ReflexContainer>
@@ -172,18 +193,18 @@ export function Gdbgui() {
 //         <HoverVar />
 // <Settings />
 //         <ToolTip />
-//         <textarea
-//           style={{
-//             width: "0px",
-//             height: "0px",
-//             position: "absolute",
-//             top: "0",
-//             left: "-1000px",
-//           }}
-//           ref={(node) => {
-//             store.set("textarea_to_copy_to_clipboard", node);
-//           }}
-//         />
+// <textarea
+//   style={{
+//     width: "0px",
+//     height: "0px",
+//     position: "absolute",
+//     top: "0",
+//     left: "-1000px",
+//   }}
+//   ref={(node) => {
+//     store.set("textarea_to_copy_to_clipboard", node);
+//   }}
+// />
 //       </div>
 //     );
 // }

@@ -42,7 +42,7 @@ const process_gdb_response = function (response_array: any) {
     return response.token === constants.CREATE_VAR_INT;
   };
 
-  for (let r of response_array) {
+  for (const r of response_array) {
     // gdb mi output
     GdbMiOutput.add_mi_output(r);
 
@@ -90,10 +90,10 @@ const process_gdb_response = function (response_array: any) {
       // This is special GDB Machine Interface structured data that we
       // can render in the frontend
       if ("bkpt" in r.payload) {
-        let new_bkpt = r.payload.bkpt;
+        const new_bkpt = r.payload.bkpt;
 
         // remove duplicate breakpoints
-        let cmds = store
+        const cmds = store
           .get("breakpoints")
           .filter(
             (b: any) =>
@@ -105,15 +105,15 @@ const process_gdb_response = function (response_array: any) {
         GdbApi.run_gdb_command(cmds);
 
         // save this breakpoint
-        let bkpt = Breakpoints.save_breakpoint(r.payload.bkpt);
+        const bkpt = Breakpoints.save_breakpoint(r.payload.bkpt);
 
         // if executable does not have debug symbols (i.e. not compiled with -g flag)
         // gdb will not return a path, but rather the function name. The function name is
         // not a file, and therefore it cannot be displayed. Make sure the path is known before
         // trying to render the file of the newly created breakpoint.
-        if (_.isString(bkpt.fullname_to_display)) {
+        if (_.isString(bkpt.fullNameToDisplay)) {
           // a normal breakpoint or child breakpoint
-          Actions.view_file(bkpt.fullname_to_display, parseInt(bkpt.line));
+          Actions.view_file(bkpt.fullNameToDisplay, bkpt.line);
         }
 
         // refresh all breakpoints
@@ -130,7 +130,7 @@ const process_gdb_response = function (response_array: any) {
         store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
       }
       if ("register-names" in r.payload) {
-        let names = r.payload["register-names"];
+        const names = r.payload["register-names"];
         // filter out empty names
         store.set(
           "register_names",
@@ -146,7 +146,7 @@ const process_gdb_response = function (response_array: any) {
       }
       if ("files" in r.payload) {
         if (r.payload.files.length > 0) {
-          let source_file_paths = _.uniq(
+          const source_file_paths = _.uniq(
             r.payload.files.map((f: any) => f.fullname)
           ).sort();
           store.set("source_file_paths", source_file_paths);
@@ -154,17 +154,17 @@ const process_gdb_response = function (response_array: any) {
           let language = "c_family";
           if (source_file_paths.some((p: any) => p.endsWith(".rs"))) {
             language = "rust";
-            let gdb_version_array = store.get("gdb_version_array");
-            // rust cannot view registers with gdb 7.12.x
-            if (gdb_version_array[0] == 7 && gdb_version_array[1] == 12) {
-              Actions.add_console_entries(
-                `Warning: Due to a bug in gdb version ${store.get(
-                  "gdb_version"
-                )}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`,
-                constants.console_entry_type.STD_ERR
-              );
-              store.set("can_fetch_register_values", false);
-            }
+            // const gdb_version_array = store.get("gdb_version_array");
+            // // rust cannot view registers with gdb 7.12.x
+            // if (gdb_version_array[0] == 7 && gdb_version_array[1] == 12) {
+            //   Actions.add_console_entries(
+            //     `Warning: Due to a bug in gdb version ${store.get(
+            //       "gdb_version"
+            //     )}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`,
+            //     constants.console_entry_type.STD_ERR
+            //   );
+            //   store.set("can_fetch_register_values", false);
+            // }
           } else if (source_file_paths.some((p: any) => p.endsWith(".go"))) {
             language = "go";
           }
@@ -246,8 +246,8 @@ const process_gdb_response = function (response_array: any) {
       if (store.get("gdb_version") === undefined) {
         // parse gdb version from string such as
         // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
-        let m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g;
-        let a = m.exec(r.payload);
+        const m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g;
+        const a = m.exec(r.payload);
         if (Array.isArray(a) && a.length === 2) {
           store.set("gdb_version", a[1]);
           store.set("gdb_version_array", a[1].split("."));

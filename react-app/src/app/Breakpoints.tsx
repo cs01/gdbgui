@@ -33,10 +33,45 @@ const BreakpointSourceLineCache = {
   },
 };
 
-type BreakpointState = any;
-
-class Breakpoint extends React.Component<{}, BreakpointState> {
-  constructor(props: {}) {
+type BreakpointState = {
+  breakpoint_condition: string;
+  editing_breakpoint_condition: boolean;
+};
+type GdbBreakpoint = {
+  addr: string; //"0x0000555555555228";
+  disp: string; // "keep";
+  enabled: "y" | "n"; // "y";
+  file: string; //"hello.c";
+  fullname: string; //"/home/csmith/git/gdbgui/examples/c/hello.c";
+  func: string; // "main";
+  line: string; // "51";
+  number: string; //"4";
+  "original-location": string; // "/home/csmith/git/gdbgui/examples/c/hello.c:51";
+  "thread-groups": Array<string>; // ["i1"];
+  times: string; // "0";
+  type: string; // "breakpoint";
+};
+type GdbGuiBreakpoint = {
+  addr: string;
+  disp: string;
+  enabled: "y" | "n";
+  file: string;
+  fullname: string;
+  func: string;
+  line: number;
+  number: number;
+  "original-location": string;
+  "thread-groups": Array<string>;
+  times: number;
+  type: string;
+  isChildBreakpoint: boolean;
+  isNormalBreakpoint: boolean;
+  isParentBreakpoint: boolean;
+  parentBreakpointNumber: Nullable<number>;
+  fullNameToDisplay: Nullable<string>;
+};
+class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointState> {
+  constructor(props: { bkpt: GdbGuiBreakpoint }) {
     super(props);
     this.state = {
       breakpoint_condition: "",
@@ -51,7 +86,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
       line = BreakpointSourceLineCache.get_line(fullname, linenum);
       // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
     } else if (FileOps.line_is_cached(fullname, linenum)) {
-      let syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum);
+      const syntax_highlighted_line = FileOps.get_line_from_file(fullname, linenum);
       line = _.trim(Util.get_text_from_html(syntax_highlighted_line));
 
       if (line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE) {
@@ -87,10 +122,10 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
   get_num_times_hit(bkpt: any) {
     if (
       bkpt.times === undefined || // E.g. 'bkpt' is a child breakpoint
-      bkpt.times == 0
+      bkpt.times === 0
     ) {
       return "";
-    } else if (bkpt.times == 1) {
+    } else if (bkpt.times === 1) {
       return "1 hit";
     } else {
       return `${bkpt.times} hits`;
@@ -114,21 +149,20 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
     });
   }
   render() {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'bkpt' does not exist on type 'Readonly<{... Remove this comment to see the full error message
-    let b = this.props.bkpt,
+    const b = this.props.bkpt,
       checked = b.enabled === "y" ? "checked" : "",
-      source_line = this.get_source_line(b.fullname_to_display, b.line);
+      source_line = this.get_source_line(b.fullNameToDisplay, b.line);
 
     let info_glyph, function_jsx, bkpt_num_to_delete;
-    if (b.is_child_breakpoint) {
-      bkpt_num_to_delete = b.parent_breakpoint_number;
+    if (b.isChildBreakpoint) {
+      bkpt_num_to_delete = b.parentBreakpointNumber;
       info_glyph = (
         <span
           className="glyphicon glyphicon-th-list"
           title="Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
         />
       );
-    } else if (b.is_parent_breakpoint) {
+    } else if (b.isParentBreakpoint) {
       info_glyph = (
         <span
           className="glyphicon glyphicon-th-list"
@@ -142,22 +176,18 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
     }
 
     const delete_jsx = this.get_delete_jsx(bkpt_num_to_delete);
-    let location_jsx = (
-      <FileLink
-        fullname={b.fullname_to_display}
-        file={b.fullname_to_display}
-        line={b.line}
-      />
+    const location_jsx = (
+      <FileLink fullname={b.fullNameToDisplay} file={b.fullNameToDisplay} line={b.line} />
     );
 
-    if (b.is_parent_breakpoint) {
+    if (b.isParentBreakpoint) {
       function_jsx = (
         <span className="placeholder">
           {info_glyph} parent breakpoint on inline, template, or ambiguous location
         </span>
       );
     } else {
-      let func = b.func === undefined ? "(unknown function)" : b.func;
+      const func = b.func === undefined ? "(unknown function)" : b.func;
       let break_condition = (
         <div
           onClick={this.on_break_cond_click.bind(this)}
@@ -224,7 +254,7 @@ class Breakpoint extends React.Component<{}, BreakpointState> {
     return (
       <div
         className="breakpoint"
-        onClick={() => Actions.view_file(b.fullname_to_display, b.line)}
+        onClick={() => Actions.view_file(b.fullNameToDisplay, b.line)}
       >
         <table
           style={{
@@ -269,9 +299,8 @@ class Breakpoints extends React.Component {
     store.connectComponentState(this, ["breakpoints"]);
   }
   render() {
-    let breakpoints_jsx = [];
-    for (let b of store.get("breakpoints")) {
-      // @ts-expect-error ts-migrate(2322) FIXME: Property 'bkpt' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
+    const breakpoints_jsx = [];
+    for (const b of store.get("breakpoints")) {
       breakpoints_jsx.push(<Breakpoint bkpt={b} key={b.number} />);
     }
 
@@ -294,14 +323,14 @@ class Breakpoints extends React.Component {
       GdbApi.get_break_list_cmd(),
     ]);
   }
-  static remove_breakpoint_if_present(fullname: any, line: any) {
+  static remove_breakpoint_if_present(fullname: string, line: number) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
-      let number = Breakpoints.get_breakpoint_number(fullname, line);
-      let cmd = [GdbApi.get_delete_break_cmd(number), GdbApi.get_break_list_cmd()];
+      const number = Breakpoints.get_breakpoint_number(fullname, line);
+      const cmd = [GdbApi.get_delete_break_cmd(number), GdbApi.get_break_list_cmd()];
       GdbApi.run_gdb_command(cmd);
     }
   }
-  static add_or_remove_breakpoint(fullname: any, line: any) {
+  static add_or_remove_breakpoint(fullname: string, line: number) {
     if (Breakpoints.has_breakpoint(fullname, line)) {
       Breakpoints.remove_breakpoint_if_present(fullname, line);
     } else {
@@ -312,18 +341,18 @@ class Breakpoints extends React.Component {
     GdbApi.run_gdb_command(GdbApi.get_insert_break_cmd(fullname, line));
   }
   static has_breakpoint(fullname: any, line: any) {
-    let bkpts = store.get("breakpoints");
-    for (let b of bkpts) {
-      if (b.fullname === fullname && b.line == line) {
+    const bkpts = store.get("breakpoints");
+    for (const b of bkpts) {
+      if (b.fullname === fullname && b.line === line) {
         return true;
       }
     }
     return false;
   }
-  static get_breakpoint_number(fullname: any, line: any) {
-    let bkpts = store.get("breakpoints");
-    for (let b of bkpts) {
-      if (b.fullname === fullname && b.line == line) {
+  static get_breakpoint_number(fullname: string, line: number) {
+    const bkpts = store.get("breakpoints");
+    for (const b of bkpts) {
+      if (b.fullname === fullname && b.line === line) {
         return b.number;
       }
     }
@@ -338,64 +367,70 @@ class Breakpoints extends React.Component {
   static get_breakpoint_lines_for_file(fullname: any) {
     return store
       .get("breakpoints")
-      .filter((b: any) => b.fullname_to_display === fullname && b.enabled === "y")
+      .filter((b: any) => b.fullNameToDisplay === fullname && b.enabled === "y")
       .map((b: any) => parseInt(b.line));
   }
   static get_disabled_breakpoint_lines_for_file(fullname: any) {
     return store
       .get("breakpoints")
-      .filter((b: any) => b.fullname_to_display === fullname && b.enabled !== "y")
+      .filter((b: any) => b.fullNameToDisplay === fullname && b.enabled !== "y")
       .map((b: any) => parseInt(b.line));
   }
   static get_conditional_breakpoint_lines_for_file(fullname: any) {
     return store
       .get("breakpoints")
-      .filter((b: any) => b.fullname_to_display === fullname && b.cond !== undefined)
+      .filter((b: any) => b.fullNameToDisplay === fullname && b.cond !== undefined)
       .map((b: any) => parseInt(b.line));
   }
   static save_breakpoints(payload: any) {
     store.set("breakpoints", []);
     if (payload && payload.BreakpointTable && payload.BreakpointTable.body) {
-      for (let breakpoint of payload.BreakpointTable.body) {
+      for (const breakpoint of payload.BreakpointTable.body) {
         Breakpoints.save_breakpoint(breakpoint);
       }
     }
   }
-  static save_breakpoint(breakpoint: any) {
-    let bkpt = Object.assign({}, breakpoint);
+  static save_breakpoint(bkpt: GdbBreakpoint): GdbGuiBreakpoint {
+    // parent breakpoints have numbers like "5.6", whereas normal
+    // breakpoints and parent breakpoints have numbers like "5"
+    const isParentBreakpoint = bkpt.addr === "(MULTIPLE)";
+    const isChildBreakpoint = parseInt(bkpt.number) !== parseFloat(bkpt.number);
+    const isNormalBreakpoint = !isParentBreakpoint && !isChildBreakpoint;
+    const parentBreakpointNumber = isChildBreakpoint ? parseInt(bkpt.number) : null;
 
-    bkpt.is_parent_breakpoint = bkpt.addr === "(MULTIPLE)";
-
-    // parent breakpoints have numbers like "5.6", whereas normal breakpoints and parent breakpoints have numbers like "5"
-    bkpt.is_child_breakpoint = parseInt(bkpt.number) !== parseFloat(bkpt.number);
-    bkpt.is_normal_breakpoint = !bkpt.is_parent_breakpoint && !bkpt.is_child_breakpoint;
-
-    if (bkpt.is_child_breakpoint) {
-      bkpt.parent_breakpoint_number = parseInt(bkpt.number);
-    }
-
-    if ("fullname" in breakpoint && breakpoint.fullname) {
+    let fullNameToDisplay: Nullable<string>;
+    let line = parseInt(bkpt.line);
+    if (bkpt.fullname) {
       // this is a normal/child breakpoint; gdb gives it the fullname
-      bkpt.fullname_to_display = breakpoint.fullname;
-    } else if ("original-location" in breakpoint && breakpoint["original-location"]) {
+      fullNameToDisplay = bkpt.fullname;
+    } else if ("original-location" in bkpt && bkpt["original-location"]) {
       // this breakpoint is the parent breakpoint of multiple other breakpoints. gdb does not give it
       // the fullname field, but rather the "original-location" field.
       // example breakpoint['original-location']: /home/file.h:19
       // so we need to parse out the line number, and store it
-      [bkpt.fullname_to_display, bkpt.line] = Util.parse_fullname_and_line(
-        breakpoint["original-location"]
-      );
+      [fullNameToDisplay, line] = Util.parse_fullname_and_line(bkpt["original-location"]);
     } else {
-      bkpt.fullname_to_display = null;
+      fullNameToDisplay = null;
     }
 
+    const gdbguiBreakpoint = {
+      ...bkpt,
+      number: parseInt(bkpt.number),
+      times: parseInt(bkpt.times),
+      line,
+      isParentBreakpoint: isParentBreakpoint,
+      isChildBreakpoint: isChildBreakpoint,
+      isNormalBreakpoint: isNormalBreakpoint,
+      parentBreakpointNumber,
+      fullNameToDisplay,
+    };
     // add the breakpoint if it's not stored already
-    let bkpts = store.get("breakpoints");
-    if (bkpts.indexOf(bkpt) === -1) {
-      bkpts.push(bkpt);
+    const bkpts = store.get("breakpoints");
+    if (bkpts.indexOf(gdbguiBreakpoint) === -1) {
+      bkpts.push(gdbguiBreakpoint);
       store.set("breakpoints", bkpts);
     }
-    return bkpt;
+    return gdbguiBreakpoint;
   }
 }
 

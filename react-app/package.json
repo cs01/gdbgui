@@ -1,7 +1,7 @@
 {
   "name": "gdbgui",
   "license": "GPL-3.0",
-  "proxy": "http://localhost:5000",
+  "proxy": "http://127.0.0.1:5000",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -23,6 +23,7 @@
     "react-dom": "^17.0.2",
     "react-reflex": "^4.0.3",
     "react-scripts": "4.0.3",
+    "recoil": "^0.4.1",
     "socket.io": "^4.1",
     "socket.io-client": "^4.1",
     "split.js": "1.2.0",
@@ -45,7 +46,11 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "no-var": 1,
+      "prefer-const": 1
+    }
   },
   "browserslist": {
     "production": [
