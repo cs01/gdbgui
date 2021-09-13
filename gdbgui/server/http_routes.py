@@ -32,25 +32,15 @@ blueprint = Blueprint(
 )
 
 
-@blueprint.route("/read_file", methods=["GET"])
+@blueprint.route("/read_file", methods=["GET", "POST"])
 def read_file():
     """Read a file and return its contents as an array"""
-
-    def should_highlight():
-        try:
-            return json.loads(request.args.get("highlight", "true"))
-        except Exception as e:
-            if current_app.debug:
-                print("Raising exception since debug is on")
-                raise e
-
-            else:
-                return True  # highlight argument was invalid for some reason, default to true
-
-    path = request.args.get("path")
-    start_line = int(request.args.get("start_line"))
+    data = request.get_json()
+    path = data["path"]
+    start_line = int(data["start_line"])
     start_line = max(1, start_line)  # make sure it's not negative
-    end_line = int(request.args.get("end_line"))
+    end_line = int(data["end_line"])
+    should_highlight = data["highlight"]
 
     if path and os.path.isfile(path):
         try:
@@ -75,7 +65,7 @@ def read_file():
             except Exception:
                 lexer = None
 
-            if lexer and should_highlight():
+            if lexer and should_highlight:
                 highlighted = True
                 # convert string into tokens
                 tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))

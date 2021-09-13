@@ -59,6 +59,7 @@ export function Gdbgui() {
   useEffect(() => {
     async function initialize() {
       const initialData: InitialData = await (await fetch("/initial_data")).json();
+
       GdbApi.init(initialData.gdb_command, initialData.gdbpid);
       GlobalEvents.init();
       FileOps.init();
@@ -66,6 +67,7 @@ export function Gdbgui() {
     }
     initialize();
   }, []);
+
   if (!initialData) {
     return <div className="h-full w-full">Loading...</div>;
   }

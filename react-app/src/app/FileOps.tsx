@@ -25,7 +25,11 @@ const FileFetcher: {
 } = {
   _isFetching: false,
   _queue: [],
-  _fetch: function (fullname: string, startLine: number, endLine: number) {
+  _fetch: async function (
+    fullname: string,
+    startLine: Nullable<number>,
+    endLine: Nullable<number>
+  ) {
     if (FileOps.is_missing_file(fullname)) {
       // file doesn't exist and we already know about it
       // don't keep trying to fetch disassembly
@@ -52,17 +56,35 @@ const FileFetcher: {
       path: fullname,
       highlight: store.get("highlight_source_code"),
     };
+    const response = await fetch("/read_file", {
+      body: JSON.stringify(data),
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
 
-    $.ajax({
-      url: "/read_file",
-      cache: false,
-      type: "GET",
-      data: data,
-      success: function (response) {
-        const sourceCodeObj = {};
-        let linenum = response.start_line;
-        for (const line of response.source_code_array) {
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+    function handleError() {
+      Actions.add_console_entries(
+        `${response.statusText} (${response.status} error)`,
+        constants.console_entry_type.STD_ERR
+      );
+      FileOps.add_missing_file(fullname);
+    }
+
+    if (response.ok) {
+      try {
+        const responseJson: {
+          start_line: number;
+          last_modified_unix_sec: number;
+          source_code_array: Array<string>;
+          num_lines_in_file: number;
+        } = await response.json();
+
+        const sourceCodeObj: { [lineNum: number]: string } = {};
+        let linenum = responseJson.start_line;
+        for (const line of responseJson.source_code_array) {
           sourceCodeObj[linenum] = line;
           linenum++;
         }
@@ -70,30 +92,21 @@ const FileFetcher: {
         FileOps.add_source_file_to_cache(
           fullname,
           sourceCodeObj,
-          response.last_modified_unix_sec,
-          response.num_lines_in_file
+          responseJson.last_modified_unix_sec,
+          responseJson.num_lines_in_file
         );
-      },
-      error: function (response) {
-        if (response.responseJSON && response.responseJSON.message) {
-          Actions.add_console_entries(
-            _.escape(response.responseJSON.message),
-            constants.console_entry_type.STD_ERR
-          );
-        } else {
-          Actions.add_console_entries(
-            `${response.statusText} (${response.status} error)`,
-            constants.console_entry_type.STD_ERR
-          );
-        }
-        FileOps.add_missing_file(fullname);
-      },
-      complete: function () {
-        FileFetcher._isFetching = false;
-        FileFetcher._queue = FileFetcher._queue.filter((o) => o.fullname !== fullname);
-        FileFetcher._fetchNext();
-      },
-    });
+      } catch (e) {
+        handleError();
+      }
+    } else {
+      handleError();
+    }
+
+    FileFetcher._isFetching = false;
+
+    FileFetcher._queue = FileFetcher._queue.filter((o) => o.fullname !== fullname);
+
+    FileFetcher._fetchNext();
   },
   _fetchNext: function () {
     if (FileFetcher._isFetching) {
@@ -101,8 +114,11 @@ const FileFetcher: {
     }
     if (FileFetcher._queue.length) {
       const obj = FileFetcher._queue.shift();
-      // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-      FileFetcher._fetch(obj.fullname, obj.start_line, obj.end_line);
+      if (!obj) {
+        FileFetcher._fetchNext();
+        return;
+      }
+      FileFetcher._fetch(obj.fullname, obj.startLine, obj.endLine);
     }
   },
   fetchComplete() {

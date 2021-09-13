@@ -5,7 +5,6 @@
 import constants from "./constants";
 import GdbApi from "./GdbApi";
 import { store } from "statorgfc";
-import $ from "jquery";
 
 const GlobalEvents = {
   init: function () {
@@ -15,8 +14,7 @@ const GlobalEvents = {
         e.preventDefault();
       }
     };
-    $("body").on("keydown", GlobalEvents.body_keydown);
-    // $('[data-toggle="tooltip"]').tooltip();
+    document.body.addEventListener("keydown", GlobalEvents.bodyKeydown);
 
     window.onbeforeunload = () =>
       "text here makes dialog appear when exiting. Set function to back to null for nomal behavior.";
@@ -25,7 +23,7 @@ const GlobalEvents = {
    * keyboard shortcuts to interact with gdb.
    * enabled only when key is depressed on a target that is NOT an input.
    */
-  body_keydown: function (e: any) {
+  bodyKeydown: function (e: any) {
     const modifier = e.altKey || e.ctrlKey || e.metaKey;
 
     if (e.target.nodeName !== "INPUT" && !modifier) {
