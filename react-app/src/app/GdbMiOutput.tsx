@@ -56,19 +56,19 @@ class GdbMiOutput extends React.Component<{}, State> {
     this.el.scrollTop = this.el.scrollHeight;
   }
   static add_mi_output(mi_obj: any) {
-    let new_str = JSON.stringify(mi_obj, null, 4)
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-        .replace(/[^(\\)]\\n/g)
-        .replace("<", "&lt;")
-        .replace(">", "&gt;"),
-      gdb_mi_output = store.get("gdb_mi_output");
+    const newStr = JSON.stringify(mi_obj, null, 4)
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+      .replace(/[^(\\)]\\n/g)
+      .replace("<", "&lt;")
+      .replace(">", "&gt;");
+    const gdbMiOutput = store.get("gdb_mi_output");
 
-    while (gdb_mi_output.length > GdbMiOutput.MAX_OUTPUT_ENTRIES) {
-      gdb_mi_output.shift();
+    while (gdbMiOutput.length > GdbMiOutput.MAX_OUTPUT_ENTRIES) {
+      gdbMiOutput.shift();
     }
-    gdb_mi_output.push(new_str);
+    gdbMiOutput.push(newStr);
 
-    store.set("gdb_mi_output", gdb_mi_output);
+    store.set("gdb_mi_output", gdbMiOutput);
   }
 }
 

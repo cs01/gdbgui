@@ -35,14 +35,16 @@ class HoverVar extends React.Component {
     store.connectComponentState(this, ["expressions"]);
   }
   render() {
-    let hover_objs = store.get("expressions").filter((o: any) => o.expr_type === "hover"),
-      obj;
+    const hover_objs = store
+      .get("expressions")
+      .filter((o: any) => o.expr_type === "hover");
+    let obj;
     if (Array.isArray(hover_objs) && hover_objs.length === 1) {
       obj = hover_objs[0];
     }
     this.obj = obj;
     if (obj) {
-      let style = {
+      const style = {
         position: "absolute",
         left: HoverVar.left + "px",
         top: HoverVar.top + "px",
@@ -67,8 +69,8 @@ class HoverVar extends React.Component {
   static mouseover_variable(e: any) {
     HoverVar.clear_hover_state();
 
-    let rect = e.target.getBoundingClientRect(),
-      var_name = e.target.textContent;
+    const rect = e.target.getBoundingClientRect();
+    const varName = e.target.textContent;
 
     // store coordinates of where the box should be displayed
     HoverVar.left = rect.left;
@@ -78,9 +80,9 @@ class HoverVar extends React.Component {
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
     HoverVar.enter_timeout = setTimeout(() => {
       if (store.get("inferior_program") === constants.inferior_states.paused) {
-        let ignore_errors = true;
+        const ignore_errors = true;
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 3.
-        GdbVariable.create_variable(var_name, "hover", ignore_errors);
+        GdbVariable.create_variable(varName, "hover", ignore_errors);
       }
     }, WAIT_TIME_SEC * 1000);
   }
@@ -106,7 +108,7 @@ class HoverVar extends React.Component {
   static clear_hover_state() {
     clearTimeout(HoverVar.enter_timeout);
     clearTimeout(HoverVar.exit_timeout);
-    let exprs_objs_to_remove = store
+    const exprs_objs_to_remove = store
       .get("expressions")
       .filter((obj: any) => obj.expr_type === "hover");
     exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));

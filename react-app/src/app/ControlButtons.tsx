@@ -14,7 +14,7 @@ class ControlButtons extends React.Component<{}, State> {
     store.connectComponentState(this, ["gdb_pid", "reverse_supported"]);
   }
   render() {
-    let btn_class = "btn btn-default btn-sm";
+    const btnClass = "btn btn-default btn-sm";
 
     return (
       <React.Fragment>
@@ -23,7 +23,7 @@ class ControlButtons extends React.Component<{}, State> {
           onClick={() => GdbApi.click_run_button()}
           type="button"
           title="Start inferior program from the beginning keyboard shortcut: r"
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-repeat" />
         </button>
@@ -36,7 +36,7 @@ class ControlButtons extends React.Component<{}, State> {
             "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
             (this.state.reverse_supported ? ". shift + c for reverse." : "")
           }
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-play" />
         </button>
@@ -45,7 +45,7 @@ class ControlButtons extends React.Component<{}, State> {
           onClick={() => Actions.send_signal("SIGINT", this.state.gdb_pid)}
           type="button"
           title="Send Interrupt signal (SIGINT) to gdb process to pause it (if it's running)"
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-pause" />
         </button>
@@ -58,7 +58,7 @@ class ControlButtons extends React.Component<{}, State> {
             "Step over next function call keyboard shortcut: n or right arrow" +
             (this.state.reverse_supported ? ". shift + n for reverse." : "")
           }
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-step-forward" />
         </button>
@@ -71,7 +71,7 @@ class ControlButtons extends React.Component<{}, State> {
             "Step into next function call keyboard shortcut: s or down arrow" +
             (this.state.reverse_supported ? ". shift + s for reverse." : "")
           }
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-arrow-down" />
         </button>
@@ -81,7 +81,7 @@ class ControlButtons extends React.Component<{}, State> {
           onClick={() => GdbApi.click_return_button()}
           type="button"
           title="Step out of current function keyboard shortcut: u or up arrow"
-          className={btn_class}
+          className={btnClass}
         >
           <span className="glyphicon glyphicon-arrow-up" />
         </button>

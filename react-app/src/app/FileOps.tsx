@@ -15,7 +15,7 @@ if (debug) {
   };
 }
 
-let FileFetcher = {
+const FileFetcher = {
   _is_fetching: false,
   _queue: [],
   _fetch: function (fullname: any, start_line: any, end_line: any) {
@@ -50,9 +50,9 @@ let FileFetcher = {
       type: "GET",
       data: data,
       success: function (response) {
-        let source_code_obj = {};
+        const source_code_obj = {};
         let linenum = response.start_line;
-        for (let line of response.source_code_array) {
+        for (const line of response.source_code_array) {
           // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
           source_code_obj[linenum] = line;
           linenum++;
@@ -94,7 +94,7 @@ let FileFetcher = {
       return;
     }
     if (FileFetcher._queue.length) {
-      let obj = FileFetcher._queue.shift();
+      const obj = FileFetcher._queue.shift();
       // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
       FileFetcher._fetch(obj.fullname, obj.start_line, obj.end_line);
     }
@@ -166,17 +166,12 @@ const FileOps = {
       return;
     }
 
-    let source_code_selection_state = store.get("source_code_selection_state"),
-      fullname = null,
-      is_paused = false,
-      paused_addr = null,
-      paused_frame_fullname = null,
-      paused_frame = store.get("paused_on_frame");
-
-    if (paused_frame) {
-      paused_frame_fullname = paused_frame.fullname;
-    }
-
+    const source_code_selection_state = store.get("source_code_selection_state");
+    let fullname = null;
+    let is_paused = false;
+    let paused_addr = null;
+    const paused_frame = store.get("paused_on_frame");
+    const paused_frame_fullname = paused_frame ? paused_frame.fullname : null;
     let require_cached_line_num;
     if (
       source_code_selection_state ===
@@ -195,40 +190,39 @@ const FileOps = {
       require_cached_line_num = parseInt(store.get("line_of_source_to_flash"));
     }
 
-    let source_code_infinite_scrolling = store.get("source_code_infinite_scrolling"),
-      assembly_is_cached = FileOps.assembly_is_cached(fullname),
-      file_is_missing = FileOps.is_missing_file(fullname),
-      start_line,
-      end_line;
-    ({ start_line, end_line, require_cached_line_num } = FileOps.get_start_and_end_lines(
+    const source_code_infinite_scrolling = store.get("source_code_infinite_scrolling");
+    const assembly_is_cached = FileOps.assembly_is_cached(fullname);
+    const file_is_missing = FileOps.is_missing_file(fullname);
+    const obj = FileOps.getStartAndEndLines(
       fullname,
       require_cached_line_num,
       source_code_infinite_scrolling
-    ));
+    );
 
-    FileOps.update_source_code_state(
+    FileOps.updateSourceCodeState(
       fullname,
-      start_line,
-      require_cached_line_num,
-      end_line,
+      obj.start_line,
+      obj.require_cached_line_num,
+      obj.end_line,
       assembly_is_cached,
       file_is_missing,
       is_paused,
       paused_addr
     );
   },
-  get_start_and_end_lines(
+  getStartAndEndLines(
     fullname: any,
     require_cached_line_num: any,
     source_code_infinite_scrolling: any
   ) {
-    let start_line, end_line;
+    let start_line;
+    let end_line;
     if (source_code_infinite_scrolling) {
       start_line = store.get("source_linenum_to_display_start");
       end_line = store.get("source_linenum_to_display_end");
       require_cached_line_num = start_line;
     } else {
-      let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+      const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
       if (!require_cached_line_num) {
         require_cached_line_num = 1;
       }
@@ -253,7 +247,7 @@ const FileOps = {
 
     return { start_line, end_line, require_cached_line_num };
   },
-  update_source_code_state(
+  updateSourceCodeState(
     fullname: any,
     start_line: any,
     require_cached_line_num: any,
@@ -263,11 +257,10 @@ const FileOps = {
     is_paused: any,
     paused_addr: any
   ) {
-    const states = constants.source_code_states,
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 3 arguments, but got 2.
-      line_is_cached = FileOps.line_is_cached(fullname, require_cached_line_num);
+    const states = constants.source_code_states;
+    const lineIsCached = FileOps.lineIsCached(fullname, require_cached_line_num);
 
-    if (fullname && line_is_cached) {
+    if (fullname && lineIsCached) {
       // we have file cached. We may have assembly cached too.
       store.set(
         "source_code_state",
@@ -319,8 +312,7 @@ const FileOps = {
     return source_file_obj.num_lines_in_file;
   },
   lines_are_cached: function (fullname: any, start_line: any, end_line: any) {
-    let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname),
-      linenum = start_line;
+    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (!source_file_obj) {
       return false;
     }
@@ -330,17 +322,18 @@ const FileOps = {
       return false;
     }
 
-    let safe_end_line = Math.min(end_line, num_lines_in_file);
+    const safe_end_line = Math.min(end_line, num_lines_in_file);
 
+    let linenum = start_line;
     while (linenum <= safe_end_line) {
-      if (!FileOps.line_is_cached(fullname, linenum, source_file_obj)) {
+      if (!FileOps.lineIsCached(fullname, linenum, source_file_obj)) {
         return false;
       }
       linenum++;
     }
     return true;
   },
-  line_is_cached: function (fullname: any, linenum: any, source_file_obj: any) {
+  lineIsCached: function (fullname: any, linenum: any, source_file_obj?: any) {
     if (!source_file_obj) {
       source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     }
@@ -351,14 +344,14 @@ const FileOps = {
     );
   },
   get_line_from_file: function (fullname: any, linenum: any) {
-    let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (!source_file_obj) {
       return null;
     }
     return source_file_obj.source_code_obj[linenum];
   },
   assembly_is_cached: function (fullname: any) {
-    let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     return (
       source_file_obj &&
       source_file_obj.assembly &&
@@ -366,8 +359,8 @@ const FileOps = {
     );
   },
   get_source_file_obj_from_cache: function (fullname: any) {
-    let cached_files = store.get("cached_source_files");
-    for (let sf of cached_files) {
+    const cached_files = store.get("cached_source_files");
+    for (const sf of cached_files) {
       if (sf.fullname === fullname) {
         return sf;
       }
@@ -380,21 +373,21 @@ const FileOps = {
     last_modified_unix_sec: any,
     num_lines_in_file: any
   ) {
-    let cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (cached_file_obj === null) {
       // nothing cached in the front end, add a new entry
-      let new_source_file = {
-          fullname: fullname,
-          source_code_obj: source_code_obj,
-          assembly: {},
-          last_modified_unix_sec: last_modified_unix_sec,
-          num_lines_in_file: num_lines_in_file,
-          exists: true,
-        },
-        cached_source_files = store.get("cached_source_files");
+      const new_source_file = {
+        fullname: fullname,
+        source_code_obj: source_code_obj,
+        assembly: {},
+        last_modified_unix_sec: last_modified_unix_sec,
+        num_lines_in_file: num_lines_in_file,
+        exists: true,
+      };
+      const cachedSourceFiles = store.get("cached_source_files");
 
-      cached_source_files.push(new_source_file);
-      store.set("cached_source_files", cached_source_files);
+      cachedSourceFiles.push(new_source_file);
+      store.set("cached_source_files", cachedSourceFiles);
       FileOps.warning_shown_for_old_binary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
@@ -444,7 +437,7 @@ const FileOps = {
     }
   },
   get_cached_assembly_for_file: function (fullname: any) {
-    for (let file of store.get("cached_source_files")) {
+    for (const file of store.get("cached_source_files")) {
       if (file.fullname === fullname) {
         return file.assembly;
       }
@@ -458,8 +451,8 @@ const FileOps = {
     store.set("cached_source_files", []);
   },
   fetch_more_source_at_beginning() {
-    let fullname = store.get("fullname_to_render");
-    let center_on_line = store.get("source_linenum_to_display_start") - 1;
+    const fullname = store.get("fullname_to_render");
+    const center_on_line = store.get("source_linenum_to_display_start") - 1;
     // store.set('source_code_infinite_scrolling', true)
     store.set(
       "source_linenum_to_display_start",
@@ -486,12 +479,12 @@ const FileOps = {
   fetch_more_source_at_end() {
     store.set("source_code_infinite_scrolling", true);
 
-    let fullname = store.get("fullname_to_render");
+    const fullname = store.get("fullname_to_render");
     let end_line =
       store.get("source_linenum_to_display_end") +
       Math.ceil(store.get("max_lines_of_code_to_fetch") / 2);
 
-    let source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (source_file_obj) {
       // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
@@ -512,7 +505,7 @@ const FileOps = {
     return store.get("missing_files").indexOf(fullname) !== -1;
   },
   add_missing_file: function (fullname: any) {
-    let missing_files = store.get("missing_files");
+    const missing_files = store.get("missing_files");
     missing_files.push(fullname);
     store.set("missing_files", missing_files);
   },
@@ -562,15 +555,15 @@ const FileOps = {
       );
     }
 
-    let fullname = store.get("fullname_to_render"),
-      line = parseInt(store.get("line_of_source_to_flash"));
+    const fullname = store.get("fullname_to_render");
+    let line = parseInt(store.get("line_of_source_to_flash"));
     if (!line) {
       line = 1;
     }
     FileOps.fetch_disassembly(fullname, line, mi_response_format);
   },
   fetch_disassembly: function (fullname: any, start_line: any, mi_response_format: any) {
-    let cmd = FileOps.get_fetch_disassembly_command(
+    const cmd = FileOps.get_fetch_disassembly_command(
       fullname,
       start_line,
       mi_response_format
@@ -588,8 +581,8 @@ const FileOps = {
       "Fetching assembly since file is missing",
       constants.console_entry_type.GDBGUI_OUTPUT
     );
-    let start = parseInt(hex_addr, 16),
-      end = start + 100;
+    const start = parseInt(hex_addr, 16);
+    const end = start + 100;
     FileOps.disassembly_addr_being_fetched = hex_addr;
     GdbApi.run_gdb_command(
       constants.DISASSEMBLY_FOR_MISSING_FILE_STR +
@@ -597,7 +590,7 @@ const FileOps = {
     );
   },
   fetch_disassembly_for_missing_file_failed: function () {
-    let addr_being_fetched = FileOps.disassembly_addr_being_fetched;
+    const addr_being_fetched = FileOps.disassembly_addr_being_fetched;
     // @ts-expect-error ts-migrate(2538) FIXME: Type 'null' cannot be used as an index type.
     FileOps.unfetchable_disassembly_addresses[addr_being_fetched] = true;
     FileOps.disassembly_addr_being_fetched = null;
@@ -619,7 +612,7 @@ const FileOps = {
       console.error("Attempted to save unexpected assembly", mi_assembly);
     }
 
-    let fullname = mi_assembly[0].fullname;
+    const fullname = mi_assembly[0].fullname;
     // @ts-expect-error ts-migrate(2551) FIXME: Property 'DISASSEMBLY_FOR_MISSING_FILE_INT' does n... Remove this comment to see the full error message
     if (mi_token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
       store.set("disassembly_for_missing_file", mi_assembly);
@@ -628,24 +621,24 @@ const FileOps = {
 
     // convert assembly to an object, with key corresponding to line numbers
     // and values corresponding to asm instructions for that line
-    let assembly_to_save = {};
-    for (let obj of mi_assembly) {
+    const assembly_to_save = {};
+    for (const obj of mi_assembly) {
       // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'numbe... Remove this comment to see the full error message
       assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn;
     }
 
-    let cached_source_files = store.get("cached_source_files");
-    for (let cached_file of cached_source_files) {
+    const cached_source_files = store.get("cached_source_files");
+    for (const cached_file of cached_source_files) {
       if (cached_file.fullname === fullname) {
         cached_file.assembly = Object.assign(cached_file.assembly, assembly_to_save);
 
         // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
-        let max_assm_line = Math.max(Object.keys(cached_file.assembly)),
-          // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
-          max_source_line = Math.max(Object.keys(cached_file.source_code_obj));
-        if (max_assm_line > max_source_line) {
-          cached_file.source_code_obj[max_assm_line] = "";
-          for (let i = 0; i < max_assm_line; i++) {
+        const maxAssmLine = Math.max(Object.keys(cached_file.assembly));
+        // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'string[]' is not assignable to p... Remove this comment to see the full error message
+        const maxSourceLine = Math.max(Object.keys(cached_file.source_code_obj));
+        if (maxAssmLine > maxSourceLine) {
+          cached_file.source_code_obj[maxAssmLine] = "";
+          for (let i = 0; i < maxAssmLine; i++) {
             if (!cached_file.source_code_obj[i]) {
               cached_file.source_code_obj[i] = "";
             }

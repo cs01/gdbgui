@@ -234,7 +234,7 @@ const GdbApi = {
     } else if (e.currentTarget.dataset.cmd0 !== undefined) {
       // run multiple commands
       // i.e. <a data-cmd0='cmd 0' data-cmd1='cmd 1' data-...>
-      let cmds = [];
+      const cmds = [];
       let i = 0;
       let cmd = e.currentTarget.dataset[`cmd${i}`];
       // extract all commands into an array, then run them
@@ -371,7 +371,7 @@ const GdbApi = {
     cmds = cmds.concat(Registers.get_update_cmds());
 
     // re-fetch memory over desired range as specified by DOM inputs
-    cmds = cmds.concat(Memory.get_gdb_commands_from_state());
+    cmds = cmds.concat(Memory.getGdbCommandsFromState());
 
     // refresh breakpoints
     cmds.push(GdbApi.get_break_list_cmd());
@@ -405,7 +405,7 @@ const GdbApi = {
   },
   get_load_binary_and_arguments_cmds(binary: any, args: any) {
     // tell gdb which arguments to use when calling the binary, before loading the binary
-    let cmds = [
+    const cmds = [
       `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
       `-file-exec-and-symbols ${binary}`, // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
     ];

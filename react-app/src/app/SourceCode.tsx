@@ -92,10 +92,10 @@ class SourceCode extends React.Component<{}, State> {
           return this.get_body_empty();
         }
         const paused_addr = this.state.paused_on_frame
-            ? this.state.paused_on_frame.addr
-            : null,
-          start_linenum = store.get("source_linenum_to_display_start"),
-          end_linenum = store.get("source_linenum_to_display_end");
+          ? this.state.paused_on_frame.addr
+          : null;
+        const start_linenum = store.get("source_linenum_to_display_start");
+        const end_linenum = store.get("source_linenum_to_display_end");
         return this.get_body_source_and_assm(
           obj.fullname,
           obj.source_code_obj,
@@ -114,11 +114,11 @@ class SourceCode extends React.Component<{}, State> {
         );
       }
       case states.ASSM_CACHED: {
-        const paused_addr = this.state.paused_on_frame
-            ? this.state.paused_on_frame.addr
-            : null,
-          assm_array = this.state.disassembly_for_missing_file;
-        return this.get_body_assembly_only(assm_array, paused_addr);
+        const pausedAddr = this.state.paused_on_frame
+          ? this.state.paused_on_frame.addr
+          : null;
+        const asmArray = this.state.disassembly_for_missing_file;
+        return this.get_body_assembly_only(asmArray, pausedAddr);
       }
       case states.FETCHING_ASSM: {
         return (
@@ -243,24 +243,24 @@ class SourceCode extends React.Component<{}, State> {
    */
   static _get_assm_content(key: any, assm: any, paused_addr: any) {
     const opcodes = assm.opcodes ? (
-        <span className="instrContent">{`(${assm.opcodes})`}</span>
-      ) : (
-        ""
-      ),
-      instruction = Memory.make_addrs_into_links_react(assm.inst),
-      func_name = assm["func-name"],
-      offset = assm.offset,
-      addr = assm.address,
-      on_current_instruction = paused_addr === assm.address,
-      cls = on_current_instruction ? "current_assembly_command" : "",
-      asterisk = on_current_instruction ? (
-        <span
-          className="glyphicon glyphicon-chevron-right"
-          style={{ width: "10px", display: "inline-block" }}
-        />
-      ) : (
-        <span style={{ width: "10px", display: "inline-block" }}> </span>
-      );
+      <span className="instrContent">{`(${assm.opcodes})`}</span>
+    ) : (
+      ""
+    );
+    const instruction = Memory.make_addrs_into_links_react(assm.inst);
+    const func_name = assm["func-name"];
+    const offset = assm.offset;
+    const addr = assm.address;
+    const on_current_instruction = paused_addr === assm.address;
+    const cls = on_current_instruction ? "current_assembly_command" : "";
+    const asterisk = on_current_instruction ? (
+      <span
+        className="glyphicon glyphicon-chevron-right"
+        style={{ width: "10px", display: "inline-block" }}
+      />
+    ) : (
+      <span style={{ width: "10px", display: "inline-block" }}> </span>
+    );
     return (
       <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
         {/* @ts-expect-error ts-migrate(2769) FIXME: Property 'fontFamily' is missing in type '{ paddin... Remove this comment to see the full error message */}
@@ -368,19 +368,19 @@ class SourceCode extends React.Component<{}, State> {
   ) {
     const body = [];
 
-    const bkpt_lines = Breakpoints.get_breakpoint_lines_for_file(
+    const breakpointLines = Breakpoints.get_breakpoint_lines_for_file(
+      this.state.fullname_to_render
+    );
+    const disabledBreakpointLines = Breakpoints.get_disabled_breakpoint_lines_for_file(
+      this.state.fullname_to_render
+    );
+    const conditionalBreakpointLines =
+      Breakpoints.get_conditional_breakpoint_lines_for_file(
         this.state.fullname_to_render
-      ),
-      disabled_breakpoint_lines = Breakpoints.get_disabled_breakpoint_lines_for_file(
-        this.state.fullname_to_render
-      ),
-      conditional_breakpoint_lines =
-        Breakpoints.get_conditional_breakpoint_lines_for_file(
-          this.state.fullname_to_render
-        ),
-      line_gdb_is_paused_on = this.state.paused_on_frame
-        ? parseInt(this.state.paused_on_frame.line)
-        : 0;
+      );
+    const gdbPausedOnLine = this.state.paused_on_frame
+      ? parseInt(this.state.paused_on_frame.line)
+      : 0;
 
     const line_of_source_to_flash = this.state.line_of_source_to_flash;
     const { start_linenum_to_render, end_linenum_to_render } =
@@ -393,28 +393,28 @@ class SourceCode extends React.Component<{}, State> {
 
     let line_num_being_rendered = start_linenum_to_render;
     while (line_num_being_rendered <= end_linenum_to_render) {
-      const cur_line_of_code = source_code_obj[line_num_being_rendered];
-      const has_bkpt = bkpt_lines.indexOf(line_num_being_rendered) !== -1,
-        has_disabled_bkpt =
-          disabled_breakpoint_lines.indexOf(line_num_being_rendered) !== -1,
-        has_conditional_bkpt =
-          conditional_breakpoint_lines.indexOf(line_num_being_rendered) !== -1,
-        is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line(
-          line_num_being_rendered,
-          line_gdb_is_paused_on
-        ),
-        assembly_for_line = assembly[line_num_being_rendered];
+      const currentLineOfCode = source_code_obj[line_num_being_rendered];
+      const hasBreakpoint = breakpointLines.indexOf(line_num_being_rendered) !== -1;
+      const hasDisabledBreakpoint =
+        disabledBreakpointLines.indexOf(line_num_being_rendered) !== -1;
+      const hasConditionalBreakpoint =
+        conditionalBreakpointLines.indexOf(line_num_being_rendered) !== -1;
+      const isGdbPausedOnThisLine = this.is_gdb_paused_on_this_line(
+        line_num_being_rendered,
+        gdbPausedOnLine
+      );
+      const asmForLine = assembly[line_num_being_rendered];
 
       body.push(
         this._get_source_line(
-          cur_line_of_code,
+          currentLineOfCode,
           line_of_source_to_flash === line_num_being_rendered,
-          is_gdb_paused_on_this_line,
+          isGdbPausedOnThisLine,
           line_num_being_rendered,
-          has_bkpt,
-          has_disabled_bkpt,
-          has_conditional_bkpt,
-          assembly_for_line,
+          hasBreakpoint,
+          hasDisabledBreakpoint,
+          hasConditionalBreakpoint,
+          asmForLine,
           paused_addr
         )
       );
@@ -482,20 +482,29 @@ class SourceCode extends React.Component<{}, State> {
     }
 
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    const top_of_container = SourceCode.el_code_container.position().top,
-      // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-      height_of_container = SourceCode.el_code_container.height(),
-      bottom_of_container = top_of_container + height_of_container,
-      top_of_line = jq_selector.position().top,
-      bottom_of_line = top_of_line + jq_selector.height(),
-      top_of_table = jq_selector.closest("table").position().top,
-      is_visible =
-        top_of_line >= top_of_container && bottom_of_line <= bottom_of_container;
+    const top_of_container = SourceCode.el_code_container.position().top;
+    // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
+    const containerHeight = SourceCode.el_code_container.height();
+    const containerBottom = top_of_container + containerHeight;
+    const lineTop = jq_selector.position().top;
+    const lineBottom = lineTop + jq_selector.height();
+    const tableTop = jq_selector.closest("table").position().top;
+    const isVisible = lineTop >= top_of_container && lineBottom <= containerBottom;
 
-    if (is_visible) {
-      return { is_visible: true, top_of_line, top_of_table, height_of_container };
+    if (isVisible) {
+      return {
+        is_visible: true,
+        top_of_line: lineTop,
+        top_of_table: tableTop,
+        height_of_container: containerHeight,
+      };
     } else {
-      return { is_visible: false, top_of_line, top_of_table, height_of_container };
+      return {
+        is_visible: false,
+        top_of_line: lineTop,
+        top_of_table: tableTop,
+        height_of_container: containerHeight,
+      };
     }
   }
   /**

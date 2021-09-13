@@ -16,14 +16,14 @@ class CopyToClipboard extends React.Component<Props> {
       <span
         className={"pointer glyphicon glyphicon-book"}
         style={{ color: "#ccc", display: "inline" }}
-        ref={node => (this.node = node)}
+        ref={(node) => (this.node = node)}
         onMouseOver={() => {
           ToolTip.show_tooltip_on_node("copy to clipboard", this.node);
         }}
         onMouseLeave={ToolTip.hide_tooltip}
         onClick={() => {
           try {
-            let textarea = store.get("textarea_to_copy_to_clipboard");
+            const textarea = store.get("textarea_to_copy_to_clipboard");
             textarea.value = this.props.content;
             textarea.select();
             if (document.execCommand("copy") === true) {

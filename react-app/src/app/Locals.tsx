@@ -16,14 +16,14 @@ class Locals extends React.Component {
     store.connectComponentState(this, ["expressions", "locals"]);
   }
   render() {
-    let content = [];
-    let sorted_local_objs = _.sortBy(
+    const content = [];
+    const sorted_local_objs = _.sortBy(
       store.get("locals"),
       (unsorted_obj: any) => unsorted_obj.name
     );
 
-    for (let local of sorted_local_objs) {
-      let obj = this.get_autocreated_obj_from_expr(local.name);
+    for (const local of sorted_local_objs) {
+      const obj = this.get_autocreated_obj_from_expr(local.name);
       if (obj) {
         content.push(
           <GdbVariable
@@ -58,7 +58,7 @@ class Locals extends React.Component {
     }
   }
   get_autocreated_obj_from_expr(expr: any) {
-    for (let obj of store.get("expressions")) {
+    for (const obj of store.get("expressions")) {
       if (obj.expression === expr && obj.expr_type === "local") {
         return obj;
       }
@@ -66,7 +66,7 @@ class Locals extends React.Component {
     return null;
   }
   static clear_autocreated_exprs() {
-    let exprs_objs_to_remove = store
+    const exprs_objs_to_remove = store
       .get("expressions")
       .filter((obj: any) => obj.expr_type === "local");
     exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
@@ -76,7 +76,7 @@ class Locals extends React.Component {
     Locals.clear_autocreated_exprs();
   }
   static save_locals(locals: any) {
-    let locals_with_meta = locals.map((local: any) => {
+    const locals_with_meta = locals.map((local: any) => {
       // add field to local
       local.can_be_expanded = Locals.can_local_be_expanded(local) ? true : false;
       return local;

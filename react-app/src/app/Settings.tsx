@@ -25,11 +25,10 @@ class Settings extends React.Component {
       "pretty_print",
       "refresh_state_after_sending_console_command",
       "show_all_sent_commands_in_console",
-      "highlight_source_code"
+      "highlight_source_code",
     ]);
-    this.get_update_max_lines_of_code_to_fetch = this.get_update_max_lines_of_code_to_fetch.bind(
-      this
-    );
+    this.get_update_max_lines_of_code_to_fetch =
+      this.get_update_max_lines_of_code_to_fetch.bind(this);
   }
   static toggle_key(key: any) {
     store.set(key, !store.get(key));
@@ -61,13 +60,13 @@ class Settings extends React.Component {
           <input
             style={{ width: "100px", marginLeft: "10px" }}
             defaultValue={store.get("max_lines_of_code_to_fetch")}
-            ref={el => (this.max_source_file_lines_input = el)}
+            ref={(el) => (this.max_source_file_lines_input = el)}
           />
           <button
-            ref={n => (this.save_button = n)}
+            ref={(n) => (this.save_button = n)}
             onClick={() => {
-              let new_value = parseInt(this.max_source_file_lines_input.value);
-              Actions.update_max_lines_of_code_to_fetch(new_value);
+              const newValue = parseInt(this.max_source_file_lines_input.value);
+              Actions.update_max_lines_of_code_to_fetch(newValue);
               // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '1' is not assignable to paramete... Remove this comment to see the full error message
               ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
             }}
@@ -109,7 +108,7 @@ class Settings extends React.Component {
               Theme:{" "}
               <select
                 value={store.get("current_theme")}
-                onChange={function(e) {
+                onChange={function (e) {
                   store.set("current_theme", e.currentTarget.value);
                   localStorage.setItem("theme", e.currentTarget.value);
                 }}
@@ -129,8 +128,8 @@ class Settings extends React.Component {
     return (
       <div
         className={store.get("show_settings") ? "fullscreen_modal" : "hidden"}
-        ref={el => (this.settings_node = el)}
-        onClick={e => {
+        ref={(el) => (this.settings_node = el)}
+        onClick={(e) => {
           if (e.target === this.settings_node) {
             Settings.toggle_key("show_settings");
           }

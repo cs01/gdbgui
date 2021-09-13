@@ -107,8 +107,8 @@ const Actions = {
       return;
     }
     // Update status
-    let entries = [],
-      error = false;
+    const entries = [];
+    let error = false;
     if (mi_obj.message) {
       if (mi_obj.message === "error") {
         error = true;
@@ -118,21 +118,21 @@ const Actions = {
     }
     if (mi_obj.payload) {
       const interesting_keys = ["msg", "reason", "signal-name", "signal-meaning"];
-      for (let k of interesting_keys) {
+      for (const k of interesting_keys) {
         if (mi_obj.payload[k]) {
           entries.push(mi_obj.payload[k]);
         }
       }
 
       if (mi_obj.payload.frame) {
-        for (let i of ["file", "func", "line", "addr"]) {
+        for (const i of ["file", "func", "line", "addr"]) {
           if (i in mi_obj.payload.frame) {
             entries.push(`${i}: ${mi_obj.payload.frame[i]}`);
           }
         }
       }
     }
-    let type = error
+    const type = error
       ? constants.console_entry_type.STD_ERR
       : constants.console_entry_type.STD_OUT;
     Actions.add_console_entries(entries, type);
@@ -151,7 +151,7 @@ const Actions = {
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
     Actions.inferior_program_exited();
-    let cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
+    const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
     GdbApi.run_gdb_command(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
@@ -165,7 +165,7 @@ const Actions = {
   },
   remote_connected() {
     Actions.inferior_program_paused();
-    let cmds = [];
+    const cmds = [];
     if (store.get("auto_add_breakpoint_to_main")) {
       Actions.add_console_entries(
         "Connected to remote target! Adding breakpoint to main, then continuing target execution.",
@@ -206,8 +206,8 @@ const Actions = {
   },
   clear_cached_assembly() {
     store.set("disassembly_for_missing_file", []);
-    let cached_source_files = store.get("cached_source_files");
-    for (let file of cached_source_files) {
+    const cached_source_files = store.get("cached_source_files");
+    for (const file of cached_source_files) {
       file.assembly = {};
     }
     store.set("cached_source_files", cached_source_files);

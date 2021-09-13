@@ -149,11 +149,13 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
     });
   }
   render() {
-    const b = this.props.bkpt,
-      checked = b.enabled === "y" ? "checked" : "",
-      source_line = this.get_source_line(b.fullNameToDisplay, b.line);
+    const b = this.props.bkpt;
+    const checked = b.enabled === "y" ? "checked" : "";
+    const source_line = this.get_source_line(b.fullNameToDisplay, b.line);
 
-    let info_glyph, function_jsx, bkpt_num_to_delete;
+    let info_glyph;
+    let function_jsx;
+    let bkpt_num_to_delete;
     if (b.isChildBreakpoint) {
       bkpt_num_to_delete = b.parentBreakpointNumber;
       info_glyph = (

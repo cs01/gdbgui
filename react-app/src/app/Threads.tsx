@@ -39,7 +39,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       "threads",
       "current_thread_id",
       "stack",
-      "selected_frame_num"
+      "selected_frame_num",
     ]);
   }
 
@@ -59,15 +59,15 @@ class Threads extends React.Component<{}, ThreadsState> {
       return <span className="placeholder" />;
     }
 
-    let content = [];
+    const content = [];
 
-    for (let thread of this.state.threads) {
-      let is_current_thread_being_rendered =
+    for (const thread of this.state.threads) {
+      const isCurrentThreadBeingRendered =
         parseInt(thread.id) === this.state.current_thread_id;
-      let stack = Threads.get_stack_for_thread(
+      const stack = Threads.get_stack_for_thread(
         thread.frame,
         this.state.stack,
-        is_current_thread_being_rendered
+        isCurrentThreadBeingRendered
       );
       let row_data;
       try {
@@ -75,13 +75,13 @@ class Threads extends React.Component<{}, ThreadsState> {
           stack,
           this.state.selected_frame_num,
           thread.id,
-          is_current_thread_being_rendered
+          isCurrentThreadBeingRendered
         );
       } catch (err) {
         row_data = ["unknown", "unknown", "unknown"];
         console.log(err);
       }
-      content.push(Threads.get_thread_header(thread, is_current_thread_being_rendered));
+      content.push(Threads.get_thread_header(thread, isCurrentThreadBeingRendered));
       content.push(
         // @ts-expect-error ts-migrate(2769) FIXME: Type 'string' is not assignable to type 'never'.
         <ReactTable
@@ -106,7 +106,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     // we also have the output of `-stack-list-frames` (stack_data), which
     // is the full stack of the selected thread
     if (is_current_thread_being_rendered) {
-      for (let frame of stack_data) {
+      for (const frame of stack_data) {
         if (frame && cur_frame && frame.addr === cur_frame.addr) {
           return stack_data;
         }
@@ -116,8 +116,8 @@ class Threads extends React.Component<{}, ThreadsState> {
   }
 
   static get_thread_header(thread: any, is_current_thread_being_rendered: any) {
-    let selected,
-      cls = "";
+    let selected;
+    let cls = "";
     if (is_current_thread_being_rendered) {
       cls = "bold";
       selected = (
@@ -165,7 +165,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     frame_num: any
   ) {
     let onclick;
-    let classes = [];
+    const classes = [];
     let title;
 
     if (is_selected_frame) {
@@ -187,7 +187,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       classes.push("pointer");
       title = `click to select this thead (thread id ${thread_id})`;
     }
-    let key = thread_id + frame_num;
+    const key = thread_id + frame_num;
 
     return [
       <span key={key} title={title} className={classes.join(" ")} onClick={onclick}>
@@ -196,7 +196,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       <FileLink fullname={frame.fullname} file={frame.file} line={frame.line} />,
       <MemoryLink addr={frame.addr} />,
       // @ts-expect-error ts-migrate(2769) FIXME: Property 'args' does not exist on type 'IntrinsicA... Remove this comment to see the full error message
-      <FrameArguments args={frame.args} />
+      <FrameArguments args={frame.args} />,
     ];
   }
 
@@ -206,10 +206,10 @@ class Threads extends React.Component<{}, ThreadsState> {
     thread_id: any,
     is_current_thread_being_rendered: any
   ) {
-    let row_data = [];
+    const row_data = [];
     let frame_num = 0;
-    for (let frame of stack) {
-      let is_selected_frame =
+    for (const frame of stack) {
+      const is_selected_frame =
         selected_frame_num === frame_num && is_current_thread_being_rendered;
       row_data.push(
         Threads.get_frame_row(

@@ -42,11 +42,11 @@ class Memory extends React.Component<{}, State> {
       );
     }
 
-    let data = [],
-      hex_vals_for_this_addr = [],
-      char_vals_for_this_addr = [],
-      i = 0,
-      hex_addr_to_display = null;
+    const data = [];
+    let hex_vals_for_this_addr = [];
+    let char_vals_for_this_addr = [];
+    let i = 0;
+    let hexAddrToDisplay = null;
 
     let bytes_per_line =
       parseInt(store.get("bytes_per_line")) || Memory.DEFAULT_BYTES_PER_LINE;
@@ -57,7 +57,7 @@ class Memory extends React.Component<{}, State> {
         key="moretop"
         className="pointer"
         style={{ fontStyle: "italic", fontSize: "0.8em" }}
-        onClick={Memory.click_read_preceding_memory}
+        onClick={Memory.clickReadPrecedingMemory}
       >
         more
       </span>,
@@ -65,28 +65,28 @@ class Memory extends React.Component<{}, State> {
       "",
     ]);
 
-    for (let hex_addr in store.get("memory_cache")) {
-      if (!hex_addr_to_display) {
-        hex_addr_to_display = hex_addr;
+    for (const hex_addr in store.get("memory_cache")) {
+      if (!hexAddrToDisplay) {
+        hexAddrToDisplay = hex_addr;
       }
 
       if (i % bytes_per_line === 0 && hex_vals_for_this_addr.length > 0) {
         // begin new row
         data.push([
-          Memory.make_addrs_into_links_react(hex_addr_to_display),
+          Memory.make_addrs_into_links_react(hexAddrToDisplay),
           hex_vals_for_this_addr.join(" "),
           char_vals_for_this_addr,
         ]);
 
         // update which address we're collecting values for
         i = 0;
-        hex_addr_to_display = hex_addr;
+        hexAddrToDisplay = hex_addr;
         hex_vals_for_this_addr = [];
         char_vals_for_this_addr = [];
       }
-      let hex_value = store.get("memory_cache")[hex_addr];
+      const hex_value = store.get("memory_cache")[hex_addr];
       hex_vals_for_this_addr.push(hex_value);
-      let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, ".");
+      const char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, ".");
       char_vals_for_this_addr.push(
         <span key={i} className="memory_char">
           {char}
@@ -99,7 +99,7 @@ class Memory extends React.Component<{}, State> {
       // memory range requested wasn't divisible by bytes per line
       // add the remaining memory
       data.push([
-        Memory.make_addrs_into_links_react(hex_addr_to_display),
+        Memory.make_addrs_into_links_react(hexAddrToDisplay),
         hex_vals_for_this_addr.join(" "),
         char_vals_for_this_addr,
       ]);
@@ -111,7 +111,7 @@ class Memory extends React.Component<{}, State> {
           key="morebottom"
           className="pointer"
           style={{ fontStyle: "italic", fontSize: "0.8em" }}
-          onClick={Memory.click_read_more_memory}
+          onClick={Memory.clickReadMoreMemory}
         >
           more
         </span>,
@@ -124,14 +124,14 @@ class Memory extends React.Component<{}, State> {
     return <ReactTable data={data} header={["address", "hex", "char"]} />;
   }
   render() {
-    let input_style = {
-        display: "inline",
-        width: "100px",
-        padding: "6px 6px",
-        height: "25px",
-        fontSize: "1em",
-      },
-      content = this.get_memory_component_jsx_content();
+    const input_style = {
+      display: "inline",
+      width: "100px",
+      padding: "6px 6px",
+      height: "25px",
+      fontSize: "1em",
+    };
+    const content = this.get_memory_component_jsx_content();
     return (
       <div>
         <input
@@ -186,26 +186,26 @@ class Memory extends React.Component<{}, State> {
     Memory.fetch_memory_from_state();
   }
 
-  static get_gdb_commands_from_state() {
-    let start_addr = parseInt(_.trim(store.get("start_addr")), 16),
-      end_addr = parseInt(_.trim(store.get("end_addr")), 16);
+  static getGdbCommandsFromState() {
+    const startAddr = parseInt(_.trim(store.get("start_addr")), 16);
+    let endAddr = parseInt(_.trim(store.get("end_addr")), 16);
 
-    if (!window.isNaN(start_addr) && window.isNaN(end_addr)) {
-      end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
+    if (!window.isNaN(startAddr) && window.isNaN(endAddr)) {
+      endAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
     }
 
-    let cmds = [];
-    if (_.isInteger(start_addr) && end_addr) {
-      if (start_addr > end_addr) {
-        end_addr = start_addr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
-        store.set("end_addr", "0x" + end_addr.toString(16));
-      } else if (end_addr - start_addr > Memory.MAX_ADDRESS_DELTA_BYTES) {
-        let orig_end_addr = end_addr;
-        end_addr = start_addr + Memory.MAX_ADDRESS_DELTA_BYTES;
-        store.set("end_addr", "0x" + end_addr.toString(16));
+    const cmds = [];
+    if (_.isInteger(startAddr) && endAddr) {
+      if (startAddr > endAddr) {
+        endAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
+        store.set("end_addr", "0x" + endAddr.toString(16));
+      } else if (endAddr - startAddr > Memory.MAX_ADDRESS_DELTA_BYTES) {
+        const orig_end_addr = endAddr;
+        endAddr = startAddr + Memory.MAX_ADDRESS_DELTA_BYTES;
+        store.set("end_addr", "0x" + endAddr.toString(16));
         Actions.add_console_entries(
           `Cannot fetch ${
-            orig_end_addr - start_addr
+            orig_end_addr - startAddr
           } bytes. Changed end address to ${store.get(
             "end_addr"
           )} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
@@ -213,45 +213,45 @@ class Memory extends React.Component<{}, State> {
         );
       }
 
-      let cur_addr = start_addr;
-      while (cur_addr <= end_addr) {
+      let cur_addr = startAddr;
+      while (cur_addr <= endAddr) {
         // TODO read more than 1 byte at a time?
         cmds.push(`-data-read-memory-bytes ${"0x" + cur_addr.toString(16)} 1`);
         cur_addr = cur_addr + 1;
       }
     }
 
-    if (!window.isNaN(start_addr)) {
-      store.set("start_addr", "0x" + start_addr.toString(16));
+    if (!window.isNaN(startAddr)) {
+      store.set("start_addr", "0x" + startAddr.toString(16));
     }
-    if (!window.isNaN(end_addr)) {
-      store.set("end_addr", "0x" + end_addr.toString(16));
+    if (!window.isNaN(endAddr)) {
+      store.set("end_addr", "0x" + endAddr.toString(16));
     }
 
     return cmds;
   }
 
   static fetch_memory_from_state() {
-    let cmds = Memory.get_gdb_commands_from_state();
+    const cmds = Memory.getGdbCommandsFromState();
     Memory.clear_cache();
     GdbApi.run_gdb_command(cmds);
   }
 
-  static click_read_preceding_memory() {
+  static clickReadPrecedingMemory() {
     // update starting value, then re-fetch
-    let NUM_ROWS = 3;
-    let start_addr = parseInt(_.trim(store.get("start_addr")), 16),
-      byte_offset = store.get("bytes_per_line") * NUM_ROWS;
-    store.set("start_addr", "0x" + (start_addr - byte_offset).toString(16));
+    const NUM_ROWS = 3;
+    const startAddr = parseInt(_.trim(store.get("start_addr")), 16);
+    const byteOffset = store.get("bytes_per_line") * NUM_ROWS;
+    store.set("start_addr", "0x" + (startAddr - byteOffset).toString(16));
     Memory.fetch_memory_from_state();
   }
 
-  static click_read_more_memory() {
+  static clickReadMoreMemory() {
     // update ending value, then re-fetch
-    let NUM_ROWS = 3;
-    let end_addr = parseInt(_.trim(store.get("end_addr")), 16),
-      byte_offset = store.get("bytes_per_line") * NUM_ROWS;
-    store.set("end_addr", "0x" + (end_addr + byte_offset).toString(16));
+    const NUM_ROWS = 3;
+    const endAddr = parseInt(_.trim(store.get("end_addr")), 16);
+    const byteOffset = store.get("bytes_per_line") * NUM_ROWS;
+    store.set("end_addr", "0x" + (endAddr + byteOffset).toString(16));
     Memory.fetch_memory_from_state();
   }
 
@@ -260,11 +260,11 @@ class Memory extends React.Component<{}, State> {
    * return react component
    */
   static make_addrs_into_links_react(text: any) {
-    let matches = text.match(/(0x[\d\w]+)/g);
+    const matches = text.match(/(0x[\d\w]+)/g);
     if (text && matches && matches.length) {
-      let addr = matches[0];
-      let leading_text = text.slice(0, text.indexOf(addr));
-      let trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length);
+      const addr = matches[0];
+      const leading_text = text.slice(0, text.indexOf(addr));
+      const trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length);
       let suffix_component = trailing_text;
       if (trailing_text) {
         // recursive call to turn additional addressed after the first
@@ -286,8 +286,8 @@ class Memory extends React.Component<{}, State> {
     // strip leading zeros off address provided by gdb
     // i.e. 0x000123 turns to
     // 0x123
-    let hex_str_truncated = "0x" + parseInt(hex_str, 16).toString(16);
-    let cache = store.get("memory_cache");
+    const hex_str_truncated = "0x" + parseInt(hex_str, 16).toString(16);
+    const cache = store.get("memory_cache");
     cache[hex_str_truncated] = hex_val;
     store.set("memory_cache", cache);
   }

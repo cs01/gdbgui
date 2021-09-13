@@ -37,7 +37,7 @@ class BinaryLoader extends React.Component<{ initial_user_input: Array<string> }
         JSON.parse(localStorage.getItem("past_binaries"))
       );
       if (!this.state.user_input) {
-        let most_recent_binary = this.state.past_binaries[0];
+        const most_recent_binary = this.state.past_binaries[0];
         // @ts-expect-error ts-migrate(2542) FIXME: Index signature in type 'Readonly<any>' only permi... Remove this comment to see the full error message
         this.state.user_input = most_recent_binary;
       }
@@ -47,7 +47,9 @@ class BinaryLoader extends React.Component<{ initial_user_input: Array<string> }
     }
   }
   render() {
-    let button_text, title, placeholder;
+    let button_text;
+    let title;
+    let placeholder;
 
     if (this.state.target_type === TARGET_TYPES.file) {
       button_text = "Load Binary";
@@ -82,28 +84,28 @@ class BinaryLoader extends React.Component<{ initial_user_input: Array<string> }
 
             <ul className="dropdown-menu">
               <li>
-                <a
+                <button
                   className="pointer"
                   onClick={() => this.setState({ target_type: TARGET_TYPES.file })}
                 >
                   Load Binary
-                </a>
+                </button>
               </li>
               <li>
-                <a
+                <button
                   className="pointer"
                   onClick={() => this.setState({ target_type: TARGET_TYPES.server })}
                 >
                   Connect to gdbserver
-                </a>
+                </button>
               </li>
               <li>
-                <a
+                <button
                   className="pointer"
                   onClick={() => this.setState({ target_type: TARGET_TYPES.process })}
                 >
                   Attach to Process
-                </a>
+                </button>
               </li>
             </ul>
 
@@ -215,20 +217,14 @@ class BinaryLoader extends React.Component<{ initial_user_input: Array<string> }
    * @return     {Object}  { the binary (string) and arguments (array) parsed from user input }
    */
   _parse_binary_and_args_from_user_input(user_input: any) {
-    let list_of_params = Util.string_to_array_safe_quotes(user_input),
-      binary = "",
-      args: any = [],
-      len = list_of_params?.length;
-    if (len === 1) {
-      binary = list_of_params[0];
-    } else if (len > 1) {
-      binary = list_of_params[0];
-      args = list_of_params.slice(1, len);
-    }
+    const list_of_params = Util.string_to_array_safe_quotes(user_input);
+    const len = list_of_params?.length;
+    const args = len === 1 ? [] : list_of_params.slice(1, len);
+    const binary = list_of_params[0];
     return { binary: binary, args: args.join(" ") };
   }
   set_target_app() {
-    let user_input = this.state?.user_input?.trim();
+    const user_input = this.state?.user_input?.trim();
 
     if (user_input === "") {
       Actions.add_console_entries(

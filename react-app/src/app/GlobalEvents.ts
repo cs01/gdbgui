@@ -26,10 +26,10 @@ const GlobalEvents = {
    * enabled only when key is depressed on a target that is NOT an input.
    */
   body_keydown: function (e: any) {
-    let modifier = e.altKey || e.ctrlKey || e.metaKey;
+    const modifier = e.altKey || e.ctrlKey || e.metaKey;
 
     if (e.target.nodeName !== "INPUT" && !modifier) {
-      let char = String.fromCharCode(e.keyCode).toLowerCase();
+      const char = String.fromCharCode(e.keyCode).toLowerCase();
       if (e.keyCode === constants.DOWN_BUTTON_NUM || char === "s") {
         GdbApi.click_step_button();
       } else if (e.keyCode === constants.RIGHT_BUTTON_NUM) {

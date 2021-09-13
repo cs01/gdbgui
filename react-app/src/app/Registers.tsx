@@ -12,8 +12,8 @@ import register_descriptions from "./register_descriptions";
 import _ from "lodash";
 
 const MAX_REGISTER_NAME_FETCH_COUNT = 5;
-let register_name_fetch_count = 0,
-  register_name_fetch_timeout: any = null;
+let register_name_fetch_count = 0;
+let register_name_fetch_timeout: any = null;
 
 type State = any;
 
@@ -30,9 +30,9 @@ class Registers extends React.Component<{}, State> {
       "can_fetch_register_values",
     ]);
   }
-  static get_update_cmds() {
+  static get_update_cmds(): Array<string> {
     register_name_fetch_count++;
-    let cmds: any = [];
+    const cmds: string[] = [];
     if (
       [constants.inferior_states.paused, constants.inferior_states.running].indexOf(
         store.get("inferior_program")
@@ -78,8 +78,8 @@ class Registers extends React.Component<{}, State> {
     Registers.clear_cached_values();
   }
   render() {
-    let num_register_names = store.get("register_names").length,
-      num_register_values = Object.keys(store.get("current_register_values")).length;
+    const num_register_names = store.get("register_names").length;
+    const num_register_values = Object.keys(store.get("current_register_values")).length;
 
     if (this.state.inferior_program !== constants.inferior_states.paused) {
       return <span className="placeholder">no data to display</span>;
@@ -97,33 +97,33 @@ class Registers extends React.Component<{}, State> {
       Registers.clear_cached_values();
       GdbApi.run_gdb_command(Registers.get_update_cmds());
     } else if (num_register_names === num_register_values) {
-      let columns = ["name", "value (hex)", "value (decimal)", "description"],
-        register_table_data = [],
-        register_names = store.get("register_names"),
-        register_values = store.get("current_register_values"),
-        prev_register_values = store.get("previous_register_values");
+      const columns = ["name", "value (hex)", "value (decimal)", "description"];
+      const register_table_data = [];
+      const register_names = store.get("register_names");
+      const register_values = store.get("current_register_values");
+      const prev_register_values = store.get("previous_register_values");
 
-      for (let i in register_names) {
-        let name = register_names[i],
-          obj = _.find(register_values, (v: any) => v["number"] === i),
-          hex_val_raw = "",
-          disp_hex_val = "",
-          disp_dec_val = "",
-          // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          register_description = register_descriptions[name] || "";
+      for (const i in register_names) {
+        let name = register_names[i];
+        const obj = _.find(register_values, (v: any) => v["number"] === i);
+        let hex_val_raw = "";
+        let disp_hex_val = "";
+        let disp_dec_val = "";
+        // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
+        const register_description = register_descriptions[name] || "";
 
         if (obj && obj.value) {
           hex_val_raw = obj["value"];
 
-          let old_obj = _.find(prev_register_values, (v: any) => v["number"] === i),
-            old_hex_val_raw,
-            changed = false;
-          if (old_obj) {
-            old_hex_val_raw = old_obj["value"];
+          const oldObj = _.find(prev_register_values, (v: any) => v["number"] === i);
+          let oldHexValRaw;
+          let changed = false;
+          if (oldObj) {
+            oldHexValRaw = oldObj["value"];
           }
 
           // if the value changed, highlight it
-          if (old_hex_val_raw !== undefined && hex_val_raw !== old_hex_val_raw) {
+          if (oldHexValRaw !== undefined && hex_val_raw !== oldHexValRaw) {
             changed = true;
           }
 

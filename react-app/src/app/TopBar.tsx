@@ -12,13 +12,13 @@ import Actions from "./Actions";
 import constants from "./constants";
 import Util from "./Util";
 
-let onkeyup_jump_to_line = (e: any) => {
+const onkeyupJumpToLine = (e: any) => {
   if (e.keyCode === constants.ENTER_BUTTON_NUM) {
     Actions.set_line_state(e.currentTarget.value);
   }
 };
 
-let show_license = function () {
+const showLicense = function () {
   Actions.show_modal(
     "gdbgui license",
     <React.Fragment>
@@ -41,7 +41,7 @@ let show_license = function () {
   );
 };
 
-let About = {
+const About = {
   show_about: function () {
     Actions.show_modal(
       "About gdbgui",
@@ -56,7 +56,7 @@ let About = {
   },
 };
 
-let show_session_info = function () {
+const show_session_info = function () {
   Actions.show_modal(
     "session information",
     <React.Fragment>
@@ -83,15 +83,13 @@ const menu = (
     className="nav navbar-nav navbar-right"
   >
     <li id="menudropdown" className="dropdown">
-      <a
-        href="#"
+      <button
         data-toggle="dropdown"
-        role="button"
         style={{ height: 25, padding: 0, paddingRight: 20 }}
         className="dropdown-toggle"
       >
         <span className="glyphicon glyphicon-menu-hamburger"> </span>
-      </a>
+      </button>
       <ul className="dropdown-menu">
         <li>
           <a title="dashboard" className="pointer" href="/dashboard">
@@ -99,18 +97,18 @@ const menu = (
           </a>
         </li>
         <li>
-          <a
+          <button
             title="show guide"
             className="pointer"
             onClick={ToolTipTourguide.start_guide}
           >
             Show Guide
-          </a>
+          </button>
         </li>
         <li>
-          <a onClick={show_session_info} className="pointer">
+          <button onClick={show_session_info} className="pointer">
             Session Information
-          </a>
+          </button>
         </li>
 
         <li role="separator" className="divider" />
@@ -133,14 +131,14 @@ const menu = (
 
         <li role="separator" className="divider" />
         <li>
-          <a onClick={show_license} className="pointer">
+          <button onClick={showLicense} className="pointer">
             License
-          </a>
+          </button>
         </li>
         <li>
-          <a onClick={About.show_about} className="pointer">
+          <button onClick={About.show_about} className="pointer">
             About gdbgui
-          </a>
+          </button>
         </li>
       </ul>
 
@@ -288,7 +286,7 @@ class TopBar extends React.Component<{ initial_user_input: Array<string> }, Stat
     ) {
       reload_button_disabled = "";
     }
-    let reload_button = (
+    const reload_button = (
       <button
         onClick={FileOps.refresh_cached_source_files}
         type="button"
@@ -311,7 +309,7 @@ class TopBar extends React.Component<{ initial_user_input: Array<string> }, Stat
       );
     }
 
-    let reverse_checkbox = (
+    const reverse_checkbox = (
       <label
         title={
           "when clicking buttons to the right, pass the `--reverse` " +
@@ -366,13 +364,13 @@ class TopBar extends React.Component<{ initial_user_input: Array<string> }, Stat
               className="btn btn-default btn-xs"
               title="Toggle file explorer visibility"
               onClick={() => {
-                let middle_pane_sizes = store.get("middle_panes_split_obj").getSizes(),
-                  file_explorer_size = middle_pane_sizes[0],
-                  source_size = middle_pane_sizes[1],
-                  sidebar_size = middle_pane_sizes[2],
-                  new_file_explorer_size,
-                  new_source_size,
-                  new_sidebar_size;
+                const middle_pane_sizes = store.get("middle_panes_split_obj").getSizes();
+                const file_explorer_size = middle_pane_sizes[0];
+                const source_size = middle_pane_sizes[1];
+                const sidebar_size = middle_pane_sizes[2];
+                let new_file_explorer_size;
+                let new_source_size;
+                let new_sidebar_size;
 
                 if (store.get("show_filesystem")) {
                   // hide it since it's shown right now
@@ -415,7 +413,7 @@ class TopBar extends React.Component<{ initial_user_input: Array<string> }, Stat
           </div>
 
           <input
-            onKeyUp={onkeyup_jump_to_line}
+            onKeyUp={onkeyupJumpToLine}
             autoComplete="on"
             title="Enter line number, then press enter"
             placeholder="jump to line"

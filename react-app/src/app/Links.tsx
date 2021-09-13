@@ -13,8 +13,8 @@ type Props = {
 export class FileLink extends React.Component<Props> {
   render() {
     let line = this.props.line;
-    let onclick = () => {},
-      cls = "";
+    let onclick = () => {};
+    let cls = "";
     if (!this.props.file || !line) {
       line = 0;
     }

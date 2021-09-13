@@ -37,15 +37,15 @@ class ToolTip extends React.Component {
     if (!tooltip.node || tooltip.hidden) {
       return null;
     }
-    let rect = tooltip.node.getBoundingClientRect(),
-      assumed_width_px = 200,
-      distance_to_right_edge = window.innerWidth - rect.x,
-      horizontal_buffer =
-        distance_to_right_edge < assumed_width_px
-          ? assumed_width_px - distance_to_right_edge
-          : 0,
-      left = rect.x - horizontal_buffer + "px",
-      top = rect.y + tooltip.node.offsetHeight + "px";
+    const rect = tooltip.node.getBoundingClientRect();
+    const assumed_width_px = 200;
+    const distance_to_right_edge = window.innerWidth - rect.x;
+    const horizontal_buffer =
+      distance_to_right_edge < assumed_width_px
+        ? assumed_width_px - distance_to_right_edge
+        : 0;
+    const left = rect.x - horizontal_buffer + "px";
+    const top = rect.y + tooltip.node.offsetHeight + "px";
     if (_.isInteger(tooltip.show_for_n_sec)) {
       this.timeout = setTimeout(ToolTip.hide_tooltip, tooltip.show_for_n_sec * 1000);
     }

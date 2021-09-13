@@ -48,8 +48,12 @@
       "react-app/jest"
     ],
     "rules": {
-      "no-var": 1,
-      "prefer-const": 1
+      "no-var": 2,
+      "prefer-const": 2,
+      "one-var": [
+        "error",
+        "never"
+      ]
     }
   },
   "browserslist": {

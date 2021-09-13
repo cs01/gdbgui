@@ -113,7 +113,7 @@ function get_stored(key: any, default_val: any) {
   try {
     if (localStorage.hasOwnProperty(key)) {
       // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-      let cached = JSON.parse(localStorage.getItem(key));
+      const cached = JSON.parse(localStorage.getItem(key));
       if (typeof cached === typeof default_val) {
         return cached;
       }
@@ -127,16 +127,16 @@ function get_stored(key: any, default_val: any) {
 }
 
 // restore saved localStorage data
-for (let key in initial_store_data) {
+for (const key in initial_store_data) {
   // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
-  let default_val = initial_store_data[key];
+  const default_val = initial_store_data[key];
   // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
   initial_store_data[key] = get_stored(key, default_val);
 }
 
 if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
   // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
-  let savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
+  const savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
   if (_.isInteger(savedval) && savedval > 0) {
     initial_store_data["max_lines_of_code_to_fetch"] = savedval;
   }

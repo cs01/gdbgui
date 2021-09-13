@@ -17,16 +17,14 @@ import Tree from "./Tree";
 import Threads from "./Threads";
 import ToolTipTourguide from "./ToolTipTourguide";
 
-const onmouseup_in_parent_callbacks: any = [],
-  onmousemove_in_parent_callbacks: any = [];
+const onmouseupInParentCallbacks: Array<() => void> = [];
+const onmousemoveInParentCallbacks: Array<(event: any) => void> = [];
 
-const onmouseup_in_parent_callback = function () {
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmouseup_in_parent_callbacks.forEach((fn) => fn());
+const onmouseupInParentCallback = function () {
+  onmouseupInParentCallbacks.forEach((fn) => fn());
 };
-const onmousemove_in_parent_callback = function (e: any) {
-  // @ts-expect-error ts-migrate(7006) FIXME: Parameter 'fn' implicitly has an 'any' type.
-  onmousemove_in_parent_callbacks.forEach((fn) => {
+const onmousemoveInParentCallback = function (e: any) {
+  onmousemoveInParentCallbacks.forEach((fn) => {
     fn(e);
   });
 };
@@ -57,8 +55,8 @@ class Collapser extends React.Component<{}, CollapserState> {
     this.onmousemove_resizer = this.onmousemove_resizer.bind(this);
     this.onclick_restore_autosize = this.onclick_restore_autosize.bind(this);
 
-    onmouseup_in_parent_callbacks.push(this.onmouseup_resizer.bind(this));
-    onmousemove_in_parent_callbacks.push(this.onmousemove_resizer.bind(this));
+    onmouseupInParentCallbacks.push(this.onmouseup_resizer.bind(this));
+    onmousemoveInParentCallbacks.push(this.onmousemove_resizer.bind(this));
   }
   toggle_visibility() {
     this.setState({ collapsed: !this.state.collapsed });
@@ -181,8 +179,8 @@ class RightSidebar extends React.Component<any> {
     return (
       <div
         className="content"
-        onMouseUp={onmouseup_in_parent_callback}
-        onMouseMove={onmousemove_in_parent_callback}
+        onMouseUp={onmouseupInParentCallback}
+        onMouseMove={onmousemoveInParentCallback}
       >
         <ToolTipTourguide
           // @ts-expect-error ts-migrate(2322) FIXME: Property 'position' does not exist on type 'Intrin... Remove this comment to see the full error message

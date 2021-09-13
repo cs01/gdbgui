@@ -17,7 +17,7 @@ class ToolTipTourguide extends React.Component<{}, State> {
     store.connectComponentState(this, [
       "tour_guide_step",
       "num_tour_guide_steps",
-      "show_tour_guide"
+      "show_tour_guide",
     ]);
   }
   componentWillMount() {
@@ -49,7 +49,8 @@ class ToolTipTourguide extends React.Component<{}, State> {
     }
   }
   get_position(position_name: any) {
-    let top, left;
+    let top;
+    let left;
     switch (position_name) {
       case "left":
         top = "100%";
@@ -93,7 +94,8 @@ class ToolTipTourguide extends React.Component<{}, State> {
       return null;
     }
 
-    let top, left;
+    let top;
+    let left;
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'top' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
     if (this.props.top && this.props.left) {
       // @ts-expect-error ts-migrate(2339) FIXME: Property 'top' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
@@ -106,12 +108,12 @@ class ToolTipTourguide extends React.Component<{}, State> {
     }
 
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'step_num' does not exist on type 'Readon... Remove this comment to see the full error message
-    let is_last_step = this.props.step_num + 1 === this.state.num_tour_guide_steps,
-      dismiss = is_last_step ? null : (
-        <span className="btn btn-default pointer" onClick={ToolTipTourguide.dismiss}>
-          Dismiss
-        </span>
-      );
+    const is_last_step = this.props.step_num + 1 === this.state.num_tour_guide_steps;
+    const dismiss = is_last_step ? null : (
+      <span className="btn btn-default pointer" onClick={ToolTipTourguide.dismiss}>
+        Dismiss
+      </span>
+    );
     return (
       <div
         // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message
@@ -128,7 +130,8 @@ class ToolTipTourguide extends React.Component<{}, State> {
           whiteSpace: "normal",
           left: left,
           top: top,
-          fontSize: "small"
+          fontSize: "small",
+          pointer: "normal",
         }}
       >
         {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'content' does not exist on type 'Readonl... Remove this comment to see the full error message */}

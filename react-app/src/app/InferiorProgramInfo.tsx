@@ -13,14 +13,14 @@ class InferiorProgramInfo extends React.Component<{}, State> {
     this.get_dropdown = this.get_dropdown.bind(this);
     this.state = {
       selected_signal: "SIGINT",
-      other_pid: ""
+      other_pid: "",
     };
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
   get_li_for_signal(s: any, signal_key: any) {
-    let onclick = function() {
-      let obj = {};
+    const onclick = function () {
+      const obj = {};
       // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
       obj[signal_key] = s;
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
@@ -30,21 +30,21 @@ class InferiorProgramInfo extends React.Component<{}, State> {
     return (
       <li key={s} className="pointer" value={s} onClick={onclick}>
         {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'signals' does not exist on type 'Readonl... Remove this comment to see the full error message */}
-        <a>{`${s} (${this.props.signals[s]})`}</a>
+        <span>{`${s} (${this.props.signals[s]})`}</span>
       </li>
     );
   }
   get_signal_choices(signal_key: any) {
-    let signals = [];
+    const signals = [];
     // push SIGINT and SIGKILL to top
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'signals' does not exist on type 'Readonl... Remove this comment to see the full error message
-    for (let s in this.props.signals) {
+    for (const s in this.props.signals) {
       if (s === "SIGKILL" || s === "SIGINT") {
         signals.push(this.get_li_for_signal(s, signal_key));
       }
     }
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'signals' does not exist on type 'Readonl... Remove this comment to see the full error message
-    for (let s in this.props.signals) {
+    for (const s in this.props.signals) {
       if (s !== "SIGKILL" && s !== "SIGINT") {
         signals.push(this.get_li_for_signal(s, signal_key));
       }
@@ -71,7 +71,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
     );
   }
   render() {
-    let gdb_button = (
+    const gdbButton = (
       <button
         className="btn btn-default btn-xs"
         // id="step_instruction_button"
@@ -102,7 +102,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
       );
     }
 
-    let other_input_and_button = (
+    const otherInputAndButton = (
       <button
         disabled={!this.state.other_pid}
         className="btn btn-default btn-xs"
@@ -121,11 +121,11 @@ class InferiorProgramInfo extends React.Component<{}, State> {
         {this.get_dropdown()}
         &nbsp;to&nbsp;
         <div className="btn-group" role="group">
-          {gdb_button}
+          {gdbButton}
           {inferior_button}
         </div>
         <p>
-          {other_input_and_button}
+          {otherInputAndButton}
           <input
             placeholder="pid"
             style={{
@@ -133,9 +133,9 @@ class InferiorProgramInfo extends React.Component<{}, State> {
               height: "25px",
               width: "75px",
               border: "1px solid #ccc",
-              borderRadius: "4px"
+              borderRadius: "4px",
             }}
-            onChange={e => {
+            onChange={(e) => {
               this.setState({ other_pid: e.currentTarget.value });
             }}
             value={this.state.other_pid}
