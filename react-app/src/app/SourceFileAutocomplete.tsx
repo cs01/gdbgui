@@ -67,7 +67,7 @@ class SourceFileAutocomplete extends React.Component {
         line;
       // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
       [fullname, line] = Util.parse_fullname_and_line(user_input, default_line);
-      FileOps.user_select_file_to_view(fullname, line);
+      FileOps.userSelectFileToView(fullname, line);
     } else if (store.get("source_file_paths").length === 0) {
       // source file list has not been fetched yet, so fetch it
       Actions.fetch_source_files();
@@ -105,7 +105,7 @@ class SourceFileAutocomplete extends React.Component {
     // perform action when an item is selected
     this.html_input.addEventListener("awesomplete-selectcomplete", function (e: any) {
       let fullname = e.currentTarget.value;
-      FileOps.user_select_file_to_view(fullname, 1);
+      FileOps.userSelectFileToView(fullname, 1);
     });
   }
 }

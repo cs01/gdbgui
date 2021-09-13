@@ -15,11 +15,11 @@ import $ from "jquery";
 type State = any;
 
 class SourceCode extends React.Component<{}, State> {
-  static el_code_container = null; // todo: no jquery
-  static el_code_container_node = null;
-  static code_container_node = null;
-  static view_more_top_node = null;
-  static view_more_bottom_node = null;
+  static elCodeContainer = null; // todo: no jquery
+  static elCodeContainerNode = null;
+  static codeContainerNode = null;
+  static viewMoreTopNode = null;
+  static viewMoreBottomNode = null;
 
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
@@ -45,11 +45,11 @@ class SourceCode extends React.Component<{}, State> {
     ]);
 
     // bind methods
-    this.get_body_assembly_only = this.get_body_assembly_only.bind(this);
-    this._get_source_line = this._get_source_line.bind(this);
-    this._get_assm_row = this._get_assm_row.bind(this);
-    this.click_gutter = this.click_gutter.bind(this);
-    this.is_gdb_paused_on_this_line = this.is_gdb_paused_on_this_line.bind(this);
+    this.getBodyAsmOnly = this.getBodyAsmOnly.bind(this);
+    this._getSourceline = this._getSourceline.bind(this);
+    this._getAsmRow = this._getAsmRow.bind(this);
+    this.clickGutter = this.clickGutter.bind(this);
+    this.isGdbPausedOnThisLine = this.isGdbPausedOnThisLine.bind(this);
   }
 
   render() {
@@ -118,7 +118,7 @@ class SourceCode extends React.Component<{}, State> {
           ? this.state.paused_on_frame.addr
           : null;
         const asmArray = this.state.disassembly_for_missing_file;
-        return this.get_body_assembly_only(asmArray, pausedAddr);
+        return this.getBodyAsmOnly(asmArray, pausedAddr);
       }
       case states.FETCHING_ASSM: {
         return (
@@ -153,27 +153,27 @@ class SourceCode extends React.Component<{}, State> {
       }
     }
   }
-  click_gutter(line_num: any) {
-    Breakpoints.add_or_remove_breakpoint(this.state.fullname_to_render, line_num);
+  clickGutter(lineNum: any) {
+    Breakpoints.addOrRemoveBreakpoint(this.state.fullname_to_render, lineNum);
   }
 
-  _get_source_line(
+  _getSourceline(
     source: any,
-    line_should_flash: any,
-    is_gdb_paused_on_this_line: any,
-    line_num_being_rendered: any,
-    has_bkpt: any,
-    has_disabled_bkpt: any,
-    has_conditional_bkpt: any,
-    assembly_for_line: any,
-    paused_addr: any
+    lineShouldFlash: any,
+    isGdbPausedOnThisline: any,
+    lineNumBeingRendered: any,
+    hasBreakpoint: boolean,
+    hasDisabledBreakpoint: any,
+    hasConditionalBreakpoint: any,
+    asmForLine: any,
+    pausedAddr: any
   ) {
-    const row_class = ["srccode"];
+    const rowClasses = ["srccode"];
 
-    if (is_gdb_paused_on_this_line) {
-      row_class.push("paused_on_line");
-    } else if (line_should_flash) {
-      row_class.push("flash");
+    if (isGdbPausedOnThisline) {
+      rowClasses.push("paused_on_line");
+    } else if (lineShouldFlash) {
+      rowClasses.push("flash");
     }
 
     let id = "";
@@ -181,40 +181,40 @@ class SourceCode extends React.Component<{}, State> {
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      if (is_gdb_paused_on_this_line) {
+      if (isGdbPausedOnThisline) {
         id = "scroll_to_line";
       }
     } else if (
       this.state.source_code_selection_state ===
       constants.source_code_selection_states.USER_SELECTION
     ) {
-      if (line_should_flash) {
+      if (lineShouldFlash) {
         id = "scroll_to_line";
       }
     }
 
-    let gutter_cls = "";
-    if (has_disabled_bkpt) {
-      gutter_cls = "disabled_breakpoint";
-    } else if (has_conditional_bkpt) {
-      gutter_cls = "conditional_breakpoint";
-    } else if (has_bkpt) {
-      gutter_cls = "breakpoint";
+    let gutterClass = "";
+    if (hasDisabledBreakpoint) {
+      gutterClass = "disabled_breakpoint";
+    } else if (hasConditionalBreakpoint) {
+      gutterClass = "conditional_breakpoint";
+    } else if (hasBreakpoint) {
+      gutterClass = "breakpoint";
     }
 
     const assembly_content = [];
-    if (assembly_for_line) {
+    if (asmForLine) {
       let i = 0;
-      for (const assm of assembly_for_line) {
-        assembly_content.push(SourceCode._get_assm_content(i, assm, paused_addr));
+      for (const assm of asmForLine) {
+        assembly_content.push(SourceCode._get_assm_content(i, assm, pausedAddr));
         assembly_content.push(<br key={"br" + i} />);
         i++;
       }
     }
 
     return (
-      <tr id={id} key={line_num_being_rendered} className={`${row_class.join(" ")}`}>
-        {this.get_linenum_td(line_num_being_rendered, gutter_cls)}
+      <tr id={id} key={lineNumBeingRendered} className={`${rowClasses.join(" ")}`}>
+        {this.get_linenum_td(lineNumBeingRendered, gutterClass)}
 
         <td style={{ verticalAlign: "top" }} className="loc">
           <span className="wsp" dangerouslySetInnerHTML={{ __html: source }} />
@@ -230,7 +230,7 @@ class SourceCode extends React.Component<{}, State> {
         style={{ verticalAlign: "top", width: "30px" }}
         className={"line_num " + gutter_cls}
         onClick={() => {
-          this.click_gutter(linenum);
+          this.clickGutter(linenum);
         }}
       >
         <div>{linenum}</div>
@@ -278,7 +278,7 @@ class SourceCode extends React.Component<{}, State> {
     );
   }
 
-  _get_assm_row(key: any, assm: any, paused_addr: any) {
+  _getAsmRow(key: any, assm: any, paused_addr: any) {
     return (
       <tr key={key} className="srccode">
         <td className="assembly loc">
@@ -288,7 +288,7 @@ class SourceCode extends React.Component<{}, State> {
     );
   }
 
-  is_gdb_paused_on_this_line(line_num_being_rendered: any, line_gdb_is_paused_on: any) {
+  isGdbPausedOnThisLine(line_num_being_rendered: any, line_gdb_is_paused_on: any) {
     if (this.state.paused_on_frame) {
       return (
         line_num_being_rendered === line_gdb_is_paused_on &&
@@ -368,16 +368,15 @@ class SourceCode extends React.Component<{}, State> {
   ) {
     const body = [];
 
-    const breakpointLines = Breakpoints.get_breakpoint_lines_for_file(
+    const breakpointLines = Breakpoints.getBreakpointLinesForFile(
       this.state.fullname_to_render
     );
-    const disabledBreakpointLines = Breakpoints.get_disabled_breakpoint_lines_for_file(
+    const disabledBreakpointLines = Breakpoints.getDisabledBreakpointLinesForFile(
       this.state.fullname_to_render
     );
-    const conditionalBreakpointLines =
-      Breakpoints.get_conditional_breakpoint_lines_for_file(
-        this.state.fullname_to_render
-      );
+    const conditionalBreakpointLines = Breakpoints.getConditionalBreakpointLinesForFile(
+      this.state.fullname_to_render
+    );
     const gdbPausedOnLine = this.state.paused_on_frame
       ? parseInt(this.state.paused_on_frame.line)
       : 0;
@@ -399,14 +398,14 @@ class SourceCode extends React.Component<{}, State> {
         disabledBreakpointLines.indexOf(line_num_being_rendered) !== -1;
       const hasConditionalBreakpoint =
         conditionalBreakpointLines.indexOf(line_num_being_rendered) !== -1;
-      const isGdbPausedOnThisLine = this.is_gdb_paused_on_this_line(
+      const isGdbPausedOnThisLine = this.isGdbPausedOnThisLine(
         line_num_being_rendered,
         gdbPausedOnLine
       );
       const asmForLine = assembly[line_num_being_rendered];
 
       body.push(
-        this._get_source_line(
+        this._getSourceline(
           currentLineOfCode,
           line_of_source_to_flash === line_num_being_rendered,
           isGdbPausedOnThisLine,
@@ -421,8 +420,8 @@ class SourceCode extends React.Component<{}, State> {
       line_num_being_rendered++;
     }
 
-    SourceCode.view_more_top_node = null;
-    SourceCode.view_more_bottom_node = null;
+    SourceCode.viewMoreTopNode = null;
+    SourceCode.viewMoreBottomNode = null;
 
     // add "view more" buttons if necessary
     if (start_linenum_to_render > start_linenum) {
@@ -455,11 +454,11 @@ class SourceCode extends React.Component<{}, State> {
     return body;
   }
 
-  get_body_assembly_only(assm_array: any, paused_addr: any) {
+  getBodyAsmOnly(assm_array: any, paused_addr: any) {
     const body = [];
     let i = 0;
     for (const assm of assm_array) {
-      body.push(this._get_assm_row(i, assm, paused_addr));
+      body.push(this._getAsmRow(i, assm, paused_addr));
       i++;
     }
     return body;
@@ -473,7 +472,7 @@ class SourceCode extends React.Component<{}, State> {
     );
   }
   static make_current_line_visible() {
-    return SourceCode._make_jq_selector_visible($("#scroll_to_line"));
+    return SourceCode._makeJqSelectorVisible($("#scroll_to_line"));
   }
   static is_source_line_visible(jq_selector: any) {
     if (jq_selector.length !== 1) {
@@ -482,9 +481,9 @@ class SourceCode extends React.Component<{}, State> {
     }
 
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    const top_of_container = SourceCode.el_code_container.position().top;
+    const top_of_container = SourceCode.elCodeContainer.position().top;
     // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-    const containerHeight = SourceCode.el_code_container.height();
+    const containerHeight = SourceCode.elCodeContainer.height();
     const containerBottom = top_of_container + containerHeight;
     const lineTop = jq_selector.position().top;
     const lineBottom = lineTop + jq_selector.height();
@@ -493,17 +492,17 @@ class SourceCode extends React.Component<{}, State> {
 
     if (isVisible) {
       return {
-        is_visible: true,
-        top_of_line: lineTop,
-        top_of_table: tableTop,
-        height_of_container: containerHeight,
+        isVisible: true,
+        topOfLine: lineTop,
+        topOfTable: tableTop,
+        heightOfContainer: containerHeight,
       };
     } else {
       return {
-        is_visible: false,
-        top_of_line: lineTop,
-        top_of_table: tableTop,
-        height_of_container: containerHeight,
+        isVisible: false,
+        topOfLine: lineTop,
+        topOfTable: tableTop,
+        heightOfContainer: containerHeight,
       };
     }
   }
@@ -512,18 +511,22 @@ class SourceCode extends React.Component<{}, State> {
    * Used to jump around to various lines
    * returns true on success
    */
-  static _make_jq_selector_visible(jq_selector: any) {
-    if (jq_selector.length === 1) {
+  static _makeJqSelectorVisible(jqSelector: any) {
+    if (jqSelector.length === 1) {
       // make sure something is selected before trying to scroll to it
-      const { is_visible, top_of_line, top_of_table, height_of_container } =
-        SourceCode.is_source_line_visible(jq_selector);
+      const {
+        isVisible: is_visible,
+        topOfLine: top_of_line,
+        topOfTable: top_of_table,
+        heightOfContainer: height_of_container,
+      } = SourceCode.is_source_line_visible(jqSelector);
 
       if (!is_visible) {
         // line is out of view, scroll so it's in the middle of the table
         const time_to_scroll = 0;
         const scroll_top = top_of_line - (top_of_table + height_of_container / 2);
         // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
-        SourceCode.el_code_container.animate({ scrollTop: scroll_top }, time_to_scroll);
+        SourceCode.elCodeContainer.animate({ scrollTop: scroll_top }, time_to_scroll);
       }
       return true;
     } else {

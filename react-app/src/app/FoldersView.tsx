@@ -7,7 +7,7 @@ import FileSystem from "./FileSystem";
 import Actions from "./Actions";
 import { initial_data } from "./InitialData";
 
-const default_rootnode = {
+const defaultRootnode = {
   name: 'Load inferior program, then click "Fetch source files" to populate this window',
   children: [],
   toggled: false,
@@ -28,12 +28,12 @@ function get_child_node_with_name(name: any, curnode: any) {
 type State = any;
 
 class FoldersView extends React.Component<{}, State> {
-  max_filesystem_entries: any;
-  project_home: any;
+  maxFilesystemEntries: any;
+  projectHome: any;
   constructor(props: {}) {
     super(props);
     this.state = {
-      rootnode: default_rootnode,
+      rootnode: defaultRootnode,
     };
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(
@@ -42,8 +42,8 @@ class FoldersView extends React.Component<{}, State> {
       this.update_filesystem_data.bind(this)
     );
 
-    this.max_filesystem_entries = 300;
-    this.project_home = initial_data.project_home;
+    this.maxFilesystemEntries = 300;
+    this.projectHome = initial_data.project_home;
     this.onToggle = this.onToggle.bind(this);
     this.onClickName = this.onClickName.bind(this);
     this.reveal_path = this.reveal_path.bind(this);
@@ -57,7 +57,7 @@ class FoldersView extends React.Component<{}, State> {
         source_code_state === constants.source_code_states.SOURCE_CACHED ||
         source_code_state === constants.source_code_states.ASSM_AND_SOURCE_CACHED,
       can_reveal = file_is_rendered && this.state.source_file_paths.length,
-      hiding_entries = this.state.source_file_paths.length > this.max_filesystem_entries;
+      hiding_entries = this.state.source_file_paths.length > this.maxFilesystemEntries;
 
     return (
       <div>
@@ -100,8 +100,8 @@ class FoldersView extends React.Component<{}, State> {
 
         {hiding_entries ? (
           <p style={{ color: "black", background: "orange", padding: "4px" }}>
-            Maximum entries in tree below is {this.max_filesystem_entries} (hiding{" "}
-            {store.get("source_file_paths").length - this.max_filesystem_entries}). All
+            Maximum entries in tree below is {this.maxFilesystemEntries} (hiding{" "}
+            {store.get("source_file_paths").length - this.maxFilesystemEntries}). All
             files can still be searched for in the input above.
           </p>
         ) : (
@@ -131,7 +131,7 @@ class FoldersView extends React.Component<{}, State> {
       curnode = curnode.parent;
     }
     if (path.length) {
-      FileOps.user_select_file_to_view(path.join("/"), 1);
+      FileOps.userSelectFileToView(path.join("/"), 1);
     }
   }
   reveal_path(path: any) {
@@ -143,8 +143,8 @@ class FoldersView extends React.Component<{}, State> {
       this.state.cursor.active = false;
     }
 
-    if (this.project_home) {
-      path = path.replace(this.project_home, "");
+    if (this.projectHome) {
+      path = path.replace(this.projectHome, "");
     }
 
     let names = path.split("/").filter((n: any) => n !== ""),
@@ -173,21 +173,21 @@ class FoldersView extends React.Component<{}, State> {
     let source_paths = this.state.source_file_paths;
     if (!Array.isArray(source_paths) || !source_paths.length) {
       this.setState({
-        rootnode: default_rootnode,
+        rootnode: defaultRootnode,
       });
       return;
     }
 
     let rootnode = {
-      name: this.project_home || "root",
+      name: this.projectHome || "root",
       toggled: true,
       children: [],
     };
 
     let relative_source_paths = source_paths;
 
-    if (this.project_home) {
-      let project_home = this.project_home;
+    if (this.projectHome) {
+      let project_home = this.projectHome;
       relative_source_paths = source_paths
         .filter((p) => p.startsWith(project_home))
         .map((p) => {

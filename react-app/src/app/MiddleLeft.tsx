@@ -8,21 +8,21 @@ import FileOps from "./FileOps";
 import $ from "jquery";
 
 class MiddleLeft extends React.Component {
-  fetch_more_at_top_timeout: any;
-  onscroll_timeout: any;
-  source_code_container_node: any;
+  fetchMoreAtTopTimeout: any;
+  onscrollTimeout: any;
+  sourceCodeContainerNode: any;
   constructor(props: any) {
     super(props);
-    this.onscroll_container = this.onscroll_container.bind(this);
-    this.onscroll_timeout = null;
-    this.fetch_more_at_top_timeout = null;
+    this.onscrollContainer = this.onscrollContainer.bind(this);
+    this.onscrollTimeout = null;
+    this.fetchMoreAtTopTimeout = null;
   }
   render() {
     return (
       <div
         id="code_container"
         style={{ overflow: "auto", height: "100%", minHeight: "200px" }}
-        ref={(el) => (this.source_code_container_node = el)}
+        ref={(el) => (this.sourceCodeContainerNode = el)}
       >
         <SourceCode />
       </div>
@@ -30,38 +30,38 @@ class MiddleLeft extends React.Component {
   }
   componentDidMount() {
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'JQuery<HTMLElement>' is not assignable to ty... Remove this comment to see the full error message
-    SourceCode.el_code_container = $("#code_container"); // todo: no jquery
+    SourceCode.elCodeContainer = $("#code_container"); // todo: no jquery
 
-    if (this.source_code_container_node) {
-      this.source_code_container_node.onscroll = this.onscroll_container.bind(this);
+    if (this.sourceCodeContainerNode) {
+      this.sourceCodeContainerNode.onscroll = this.onscrollContainer.bind(this);
     }
   }
 
-  onscroll_container() {
-    clearTimeout(this.onscroll_timeout);
-    this.onscroll_timeout = setTimeout(this.check_to_autofetch_more_source, 100);
+  onscrollContainer() {
+    clearTimeout(this.onscrollTimeout);
+    this.onscrollTimeout = setTimeout(this.checkToAutofetchMoreSource, 100);
   }
 
-  check_to_autofetch_more_source() {
+  checkToAutofetchMoreSource() {
     // test if "view more" buttons are visible, and if so, fetch more source
 
-    let fetching_for_top = false; // don't fetch for more at bottom and top at same time
-    if (SourceCode.view_more_top_node) {
-      const { is_visible } = SourceCode.is_source_line_visible(
+    let fetchingForTop = false; // don't fetch for more at bottom and top at same time
+    if (SourceCode.viewMoreTopNode) {
+      const { isVisible } = SourceCode.is_source_line_visible(
         // @ts-ignore
-        $(SourceCode.view_more_top_node)
+        $(SourceCode.viewMoreTopNode)
       );
-      if (is_visible) {
-        fetching_for_top = true;
+      if (isVisible) {
+        fetchingForTop = true;
         FileOps.fetch_more_source_at_beginning();
       }
     }
 
-    if (!fetching_for_top && SourceCode.view_more_bottom_node) {
-      const { is_visible } = SourceCode.is_source_line_visible(
-        $(SourceCode.view_more_bottom_node)
+    if (!fetchingForTop && SourceCode.viewMoreBottomNode) {
+      const { isVisible } = SourceCode.is_source_line_visible(
+        $(SourceCode.viewMoreBottomNode)
       );
-      if (is_visible) {
+      if (isVisible) {
         FileOps.fetch_more_source_at_end();
       }
     }

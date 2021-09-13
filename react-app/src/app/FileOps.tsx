@@ -6,40 +6,49 @@ import { debug } from "./InitialData";
 import _ from "lodash";
 import $ from "jquery";
 
-let debug_print: any;
+let debugPrint: any;
 if (debug) {
-  debug_print = console.info;
+  debugPrint = console.info;
 } else {
-  debug_print = function () {
+  debugPrint = function () {
     // stubbed out
   };
 }
 
-const FileFetcher = {
-  _is_fetching: false,
+const FileFetcher: {
+  _isFetching: boolean;
+  _queue: Array<{ fullname: string; startLine: number; endLine: number }>;
+  _fetch: (fullname: string, startLine: number, endLine: number) => void;
+  _fetchNext: () => void;
+  fetchComplete: () => void;
+  fetch: (fullname: any, startLine: any, endLine: any) => void;
+} = {
+  _isFetching: false,
   _queue: [],
-  _fetch: function (fullname: any, start_line: any, end_line: any) {
+  _fetch: function (fullname: string, startLine: number, endLine: number) {
     if (FileOps.is_missing_file(fullname)) {
       // file doesn't exist and we already know about it
       // don't keep trying to fetch disassembly
       console.warn(`tried to fetch a file known to be missing ${fullname}`);
-      FileFetcher._is_fetching = false;
-      FileFetcher._fetch_next();
+      FileFetcher._isFetching = false;
+      FileFetcher._fetchNext();
       return;
     }
 
     if (!_.isString(fullname)) {
       console.warn(`trying to fetch filename that is not a string`, fullname);
       FileOps.add_missing_file(fullname);
-      FileFetcher._is_fetching = false;
-      FileFetcher._fetch_next();
+      FileFetcher._isFetching = false;
+      FileFetcher._fetchNext();
     }
 
-    FileFetcher._is_fetching = true;
+    FileFetcher._isFetching = true;
 
     const data = {
-      start_line: start_line,
-      end_line: end_line,
+      // eslint-disable-next-line camelcase
+      start_line: startLine,
+      // eslint-disable-next-line camelcase
+      end_line: endLine,
       path: fullname,
       highlight: store.get("highlight_source_code"),
     };
@@ -50,17 +59,17 @@ const FileFetcher = {
       type: "GET",
       data: data,
       success: function (response) {
-        const source_code_obj = {};
+        const sourceCodeObj = {};
         let linenum = response.start_line;
         for (const line of response.source_code_array) {
           // @ts-expect-error ts-migrate(7053) FIXME: Element implicitly has an 'any' type because expre... Remove this comment to see the full error message
-          source_code_obj[linenum] = line;
+          sourceCodeObj[linenum] = line;
           linenum++;
         }
 
         FileOps.add_source_file_to_cache(
           fullname,
-          source_code_obj,
+          sourceCodeObj,
           response.last_modified_unix_sec,
           response.num_lines_in_file
         );
@@ -80,17 +89,14 @@ const FileFetcher = {
         FileOps.add_missing_file(fullname);
       },
       complete: function () {
-        FileFetcher._is_fetching = false;
-
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type 'never'... Remove this comment to see the full error message
+        FileFetcher._isFetching = false;
         FileFetcher._queue = FileFetcher._queue.filter((o) => o.fullname !== fullname);
-
-        FileFetcher._fetch_next();
+        FileFetcher._fetchNext();
       },
     });
   },
-  _fetch_next: function () {
-    if (FileFetcher._is_fetching) {
+  _fetchNext: function () {
+    if (FileFetcher._isFetching) {
       return;
     }
     if (FileFetcher._queue.length) {
@@ -99,37 +105,34 @@ const FileFetcher = {
       FileFetcher._fetch(obj.fullname, obj.start_line, obj.end_line);
     }
   },
-  fetch_complete() {
-    FileFetcher._is_fetching = false;
-    FileFetcher._fetch_next();
+  fetchComplete() {
+    FileFetcher._isFetching = false;
+    FileFetcher._fetchNext();
   },
-  fetch: function (fullname: any, start_line: any, end_line: any) {
-    if (!start_line) {
-      start_line = 1;
+  fetch: function (fullname: any, startLine: any, endLine: any) {
+    if (!startLine) {
+      startLine = 1;
       console.warn("expected start line");
     }
-    if (!end_line) {
-      end_line = start_line;
+    if (!endLine) {
+      endLine = startLine;
       console.warn("expected end line");
     }
 
-    if (FileOps.lines_are_cached(fullname, start_line, end_line)) {
-      debug_print(
-        `not fetching ${fullname}:${start_line}:${end_line} because it's cached`
-      );
+    if (FileOps.lines_are_cached(fullname, startLine, endLine)) {
+      debugPrint(`not fetching ${fullname}:${startLine}:${endLine} because it's cached`);
       return;
     }
 
-    // @ts-expect-error ts-migrate(2322) FIXME: Type 'any' is not assignable to type 'never'.
-    FileFetcher._queue.push({ fullname, start_line, end_line });
-    FileFetcher._fetch_next();
+    FileFetcher._queue.push({ fullname, startLine: startLine, endLine: endLine });
+    FileFetcher._fetchNext();
   },
 };
 
 const FileOps = {
-  warning_shown_for_old_binary: false,
-  unfetchable_disassembly_addresses: {},
-  disassembly_addr_being_fetched: null,
+  warningShownForOldBinary: false,
+  unfetchableDisassemblyAddresses: {},
+  disassemblyAddrBeingFetched: null,
   init: function () {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(
@@ -148,10 +151,10 @@ const FileOps = {
         "cached_source_files",
         "max_lines_of_code_to_fetch",
       ],
-      FileOps._store_change_callback
+      FileOps._storeChangeCallback
     );
   },
-  user_select_file_to_view: function (fullname: any, line: any) {
+  userSelectFileToView: function (fullname: any, line: any) {
     store.set(
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
@@ -161,42 +164,41 @@ const FileOps = {
     store.set("make_current_line_visible", true);
     store.set("source_code_infinite_scrolling", false);
   },
-  _store_change_callback: function () {
+  _storeChangeCallback: function () {
     if (store.get("inferior_program") === constants.inferior_states.running) {
       return;
     }
 
-    const source_code_selection_state = store.get("source_code_selection_state");
+    const sourceCodeSelectionState = store.get("source_code_selection_state");
     let fullname = null;
-    let is_paused = false;
-    let paused_addr = null;
-    const paused_frame = store.get("paused_on_frame");
-    const paused_frame_fullname = paused_frame ? paused_frame.fullname : null;
-    let require_cached_line_num;
+    let isPaused = false;
+    let pausedAddr = null;
+    const pausedFrame = store.get("paused_on_frame");
+    const pausedFrameFullname = pausedFrame ? pausedFrame.fullname : null;
+    let requireCachedLineNum;
     if (
-      source_code_selection_state ===
-      constants.source_code_selection_states.USER_SELECTION
+      sourceCodeSelectionState === constants.source_code_selection_states.USER_SELECTION
     ) {
       fullname = store.get("fullname_to_render");
-      is_paused = false;
-      paused_addr = null;
-      require_cached_line_num = parseInt(store.get("line_of_source_to_flash"));
+      isPaused = false;
+      pausedAddr = null;
+      requireCachedLineNum = parseInt(store.get("line_of_source_to_flash"));
     } else if (
-      source_code_selection_state === constants.source_code_selection_states.PAUSED_FRAME
+      sourceCodeSelectionState === constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      is_paused = store.get("inferior_program") === constants.inferior_states.paused;
-      paused_addr = store.get("current_assembly_address");
-      fullname = paused_frame_fullname;
-      require_cached_line_num = parseInt(store.get("line_of_source_to_flash"));
+      isPaused = store.get("inferior_program") === constants.inferior_states.paused;
+      pausedAddr = store.get("current_assembly_address");
+      fullname = pausedFrameFullname;
+      requireCachedLineNum = parseInt(store.get("line_of_source_to_flash"));
     }
 
-    const source_code_infinite_scrolling = store.get("source_code_infinite_scrolling");
-    const assembly_is_cached = FileOps.assembly_is_cached(fullname);
-    const file_is_missing = FileOps.is_missing_file(fullname);
+    const sourceCodeInfiniteScrolling = store.get("source_code_infinite_scrolling");
+    const asmIsCached = FileOps.assembly_is_cached(fullname);
+    const fileIsMissing = FileOps.is_missing_file(fullname);
     const obj = FileOps.getStartAndEndLines(
       fullname,
-      require_cached_line_num,
-      source_code_infinite_scrolling
+      requireCachedLineNum,
+      sourceCodeInfiniteScrolling
     );
 
     FileOps.updateSourceCodeState(
@@ -204,48 +206,52 @@ const FileOps = {
       obj.start_line,
       obj.require_cached_line_num,
       obj.end_line,
-      assembly_is_cached,
-      file_is_missing,
-      is_paused,
-      paused_addr
+      asmIsCached,
+      fileIsMissing,
+      isPaused,
+      pausedAddr
     );
   },
   getStartAndEndLines(
     fullname: any,
-    require_cached_line_num: any,
-    source_code_infinite_scrolling: any
+    requireCachedLineNum: any,
+    sourceCodeInfiniteScrolling: any
   ) {
-    let start_line;
-    let end_line;
-    if (source_code_infinite_scrolling) {
-      start_line = store.get("source_linenum_to_display_start");
-      end_line = store.get("source_linenum_to_display_end");
-      require_cached_line_num = start_line;
+    let startLine;
+    let endLine;
+    if (sourceCodeInfiniteScrolling) {
+      startLine = store.get("source_linenum_to_display_start");
+      endLine = store.get("source_linenum_to_display_end");
+      requireCachedLineNum = startLine;
     } else {
-      const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
-      if (!require_cached_line_num) {
-        require_cached_line_num = 1;
+      const sourceFileObj = FileOps.get_source_file_obj_from_cache(fullname);
+      if (!requireCachedLineNum) {
+        requireCachedLineNum = 1;
       }
 
-      start_line = Math.max(
-        Math.floor(require_cached_line_num - store.get("max_lines_of_code_to_fetch") / 2),
+      startLine = Math.max(
+        Math.floor(requireCachedLineNum - store.get("max_lines_of_code_to_fetch") / 2),
         1
       );
-      end_line = Math.ceil(start_line + store.get("max_lines_of_code_to_fetch"));
+      endLine = Math.ceil(startLine + store.get("max_lines_of_code_to_fetch"));
 
-      if (source_file_obj) {
+      if (sourceFileObj) {
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-        end_line = Math.ceil(Math.min(end_line, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
+        endLine = Math.ceil(Math.min(endLine, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
       }
-      if (start_line > end_line) {
-        start_line = Math.floor(
-          Math.max(1, end_line - store.get("max_lines_of_code_to_fetch"))
+      if (startLine > endLine) {
+        startLine = Math.floor(
+          Math.max(1, endLine - store.get("max_lines_of_code_to_fetch"))
         );
       }
-      require_cached_line_num = Math.min(require_cached_line_num, end_line);
+      requireCachedLineNum = Math.min(requireCachedLineNum, endLine);
     }
 
-    return { start_line, end_line, require_cached_line_num };
+    return {
+      start_line: startLine,
+      end_line: endLine,
+      require_cached_line_num: requireCachedLineNum,
+    };
   },
   updateSourceCodeState(
     fullname: any,
@@ -284,7 +290,7 @@ const FileOps = {
     ) {
       store.set("source_code_state", states.ASSM_CACHED);
     } else if (is_paused && paused_addr) {
-      if (paused_addr in FileOps.unfetchable_disassembly_addresses) {
+      if (paused_addr in FileOps.unfetchableDisassemblyAddresses) {
         store.set("source_code_state", states.ASSM_UNAVAILABLE);
       } else {
         // get disassembly
@@ -388,7 +394,7 @@ const FileOps = {
 
       cachedSourceFiles.push(new_source_file);
       store.set("cached_source_files", cachedSourceFiles);
-      FileOps.warning_shown_for_old_binary = false;
+      FileOps.warningShownForOldBinary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
         new_source_file.last_modified_unix_sec
@@ -410,7 +416,7 @@ const FileOps = {
       if (
         src_last_modified_unix_sec >
           store.get("inferior_binary_path_last_modified_unix_sec") &&
-        FileOps.warning_shown_for_old_binary === false
+        FileOps.warningShownForOldBinary === false
       ) {
         Actions.show_modal(
           "Warning",
@@ -432,7 +438,7 @@ const FileOps = {
             </p>
           </div>
         );
-        FileOps.warning_shown_for_old_binary = true;
+        FileOps.warningShownForOldBinary = true;
       }
     }
   },
@@ -583,17 +589,17 @@ const FileOps = {
     );
     const start = parseInt(hex_addr, 16);
     const end = start + 100;
-    FileOps.disassembly_addr_being_fetched = hex_addr;
+    FileOps.disassemblyAddrBeingFetched = hex_addr;
     GdbApi.run_gdb_command(
       constants.DISASSEMBLY_FOR_MISSING_FILE_STR +
         `-data-disassemble -s 0x${start.toString(16)} -e 0x${end.toString(16)} -- 0`
     );
   },
   fetch_disassembly_for_missing_file_failed: function () {
-    const addr_being_fetched = FileOps.disassembly_addr_being_fetched;
+    const addr_being_fetched = FileOps.disassemblyAddrBeingFetched;
     // @ts-expect-error ts-migrate(2538) FIXME: Type 'null' cannot be used as an index type.
-    FileOps.unfetchable_disassembly_addresses[addr_being_fetched] = true;
-    FileOps.disassembly_addr_being_fetched = null;
+    FileOps.unfetchableDisassemblyAddresses[addr_being_fetched] = true;
+    FileOps.disassemblyAddrBeingFetched = null;
     Actions.add_console_entries(
       "Failed to retrieve assembly for missing file",
       constants.console_entry_type.GDBGUI_OUTPUT
@@ -606,7 +612,7 @@ const FileOps = {
    *  constants.DISASSEMBLY_FOR_MISSING_FILE_INT when source file is undefined or does not exist on filesystem
    */
   save_new_assembly: function (mi_assembly: any, mi_token: any) {
-    FileOps.disassembly_addr_being_fetched = null;
+    FileOps.disassemblyAddrBeingFetched = null;
 
     if (!Array.isArray(mi_assembly) || mi_assembly.length === 0) {
       console.error("Attempted to save unexpected assembly", mi_assembly);

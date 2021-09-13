@@ -105,7 +105,7 @@ const process_gdb_response = function (response_array: any) {
         GdbApi.run_gdb_command(cmds);
 
         // save this breakpoint
-        const bkpt = Breakpoints.save_breakpoint(r.payload.bkpt);
+        const bkpt = Breakpoints.saveBreakpoint(r.payload.bkpt);
 
         // if executable does not have debug symbols (i.e. not compiled with -g flag)
         // gdb will not return a path, but rather the function name. The function name is
@@ -120,7 +120,7 @@ const process_gdb_response = function (response_array: any) {
         GdbApi.refresh_breakpoints();
       }
       if ("BreakpointTable" in r.payload) {
-        Breakpoints.save_breakpoints(r.payload);
+        Breakpoints.saveBreakpoints(r.payload);
       }
       if ("stack" in r.payload) {
         Threads.update_stack(r.payload.stack);
@@ -146,13 +146,13 @@ const process_gdb_response = function (response_array: any) {
       }
       if ("files" in r.payload) {
         if (r.payload.files.length > 0) {
-          const source_file_paths = _.uniq(
+          const sourceFilePaths = _.uniq(
             r.payload.files.map((f: any) => f.fullname)
           ).sort();
-          store.set("source_file_paths", source_file_paths);
+          store.set("source_file_paths", sourceFilePaths);
 
           let language = "c_family";
-          if (source_file_paths.some((p: any) => p.endsWith(".rs"))) {
+          if (sourceFilePaths.some((p: any) => p.endsWith(".rs"))) {
             language = "rust";
             // const gdb_version_array = store.get("gdb_version_array");
             // // rust cannot view registers with gdb 7.12.x
@@ -165,7 +165,7 @@ const process_gdb_response = function (response_array: any) {
             //   );
             //   store.set("can_fetch_register_values", false);
             // }
-          } else if (source_file_paths.some((p: any) => p.endsWith(".go"))) {
+          } else if (sourceFilePaths.some((p: any) => p.endsWith(".go"))) {
             language = "go";
           }
           store.set("language", language);
