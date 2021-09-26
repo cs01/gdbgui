@@ -3,7 +3,7 @@ import Util from "../Util";
 /* eslint-env jest */
 
 test("parses spaces", () => {
-  const fn = Util.string_to_array_safe_quotes;
+  const fn = Util.stringToArraySafeQuotes;
   expect(fn("hi")).toEqual(["hi"]);
   expect(fn('"hi bye"')).toEqual(['"hi bye"']);
   expect(fn("hi bye")).toEqual(["hi", "bye"]);

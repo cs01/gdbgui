@@ -49,7 +49,7 @@ const Util = {
       user_input_array.length === 2 ? user_input_array[1] : default_line_if_not_found;
     return [fullname, parseInt(line)];
   },
-  string_to_array_safe_quotes(str: any) {
+  stringToArraySafeQuotes(str: string): Array<string> {
     const output = [];
     let cur_str = "";
     let in_quotes = false;

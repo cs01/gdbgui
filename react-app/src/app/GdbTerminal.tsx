@@ -88,5 +88,5 @@ export function GdbTerminal(props: {}) {
     }, 2000);
     fitAddon.fit();
   }, []);
-  return <div className="bg-gray-800 h-full w-full" ref={terminalRef} />;
+  return <div className="bg-black h-full w-full" ref={terminalRef} />;
 }

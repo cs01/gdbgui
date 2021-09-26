@@ -403,7 +403,7 @@ const GdbApi = {
   get_break_list_cmd: function () {
     return "-break-list";
   },
-  get_load_binary_and_arguments_cmds(binary: any, args: any) {
+  get_load_binary_and_arguments_cmds(binary: string, args: string) {
     // tell gdb which arguments to use when calling the binary, before loading the binary
     const cmds = [
       `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
