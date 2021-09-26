@@ -12,7 +12,6 @@ export type InitialData = {
   initial_binary_and_args: Array<string>;
   project_home: string;
   remap_sources: { [file: string]: string };
-  themes: Array<string>;
   signals: Object;
   using_windows: boolean;
 };
@@ -23,7 +22,6 @@ const defaultInitialData: InitialData = {
   initial_binary_and_args: [],
   project_home: "/dev/react",
   remap_sources: {},
-  themes: ["monokai"],
   signals: {},
   using_windows: false,
 };

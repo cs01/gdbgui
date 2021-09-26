@@ -1,4 +1,5 @@
 import _ from "lodash";
+import { atom } from "recoil";
 import constants from "./constants";
 import { initial_data, debug } from "./InitialData";
 
@@ -32,8 +33,6 @@ const initial_store_data = {
   textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
 
   // preferences
-  themes: initial_data.themes,
-  current_theme: localStorage.getItem("theme") || initial_data.themes[0],
   highlight_source_code: true, // get saved boolean to highlight source code
   max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
   auto_add_breakpoint_to_main: true,
@@ -142,4 +141,9 @@ if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
   }
 }
 
+export const todoListState = atom({
+  key: "todoListState",
+  default: [],
+});
+console.log(todoListState.key);
 export default initial_store_data;

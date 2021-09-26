@@ -22,7 +22,6 @@ import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
 import Settings from "./Settings";
 import ToolTip from "./ToolTip";
-import TopBar from "./TopBar";
 // import ToolTipTourguide from "./ToolTipTourguide";
 import { debug, InitialData } from "./InitialData";
 import { ReflexContainer, ReflexSplitter, ReflexElement } from "react-reflex";
@@ -32,6 +31,8 @@ import "react-reflex/styles.css";
 import { GdbTerminal } from "./GdbTerminal";
 import { InferiorTerminal } from "./InferiorTerminal";
 import { GdbGuiTerminal } from "./GdbGuiTerminal";
+import { Nav } from "./Nav";
+import { TargetSelector } from "./TargetSelector";
 
 const store_options = {
   immutable: false,
@@ -72,7 +73,7 @@ export function Gdbgui() {
     return <div className="h-full w-full">Loading...</div>;
   }
   return (
-    <div className="h-full w-full">
+    <div className="h-screen text-gray-300">
       <Settings />
       <HoverVar />
       <Modal />
@@ -90,12 +91,12 @@ export function Gdbgui() {
         }}
       />
       <ReflexContainer orientation="horizontal">
-        <ReflexElement size={60}>
-          <TopBar initial_user_input={initialData.initial_binary_and_args} />
-        </ReflexElement>
-        <ReflexElement flex={0.7} minSize={100}>
+        <ReflexElement flex={0.85} minSize={100} className="bg-gray-800">
+          <Nav />
+          <TargetSelector initial_user_input={initialData.initial_binary_and_args} />
           <ReflexContainer orientation="vertical">
             <ReflexElement className="left-pane" flex={0.6} minSize={100}>
+              {/* {"left"} */}
               <MiddleLeft />
             </ReflexElement>
 
@@ -103,7 +104,8 @@ export function Gdbgui() {
 
             <ReflexElement minSize={100}>
               <div className="pane-content">
-                <RightSidebar signals={initialData.signals} debug={debug} />
+                {"right"}
+                {/* <RightSidebar signals={initialData.signals} debug={debug} /> */}
               </div>
             </ReflexElement>
           </ReflexContainer>
@@ -111,7 +113,7 @@ export function Gdbgui() {
 
         <ReflexSplitter className="p-1" />
 
-        <ReflexElement minSize={100}>
+        <ReflexElement minSize={10}>
           <ReflexContainer orientation="vertical">
             <ReflexElement minSize={20} flex={0.5}>
               <GdbTerminal />

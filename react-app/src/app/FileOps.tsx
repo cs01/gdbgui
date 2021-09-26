@@ -4,7 +4,6 @@ import constants from "./constants";
 import Actions from "./Actions";
 import { debug } from "./InitialData";
 import _ from "lodash";
-import $ from "jquery";
 
 let debugPrint: any;
 if (debug) {
@@ -65,11 +64,16 @@ const FileFetcher: {
       },
     });
 
-    function handleError() {
-      Actions.add_console_entries(
-        `${response.statusText} (${response.status} error)`,
-        constants.console_entry_type.STD_ERR
-      );
+    async function handleError() {
+      try {
+        const errorMessage = (await response.json()).message;
+        Actions.add_console_entries(errorMessage, constants.console_entry_type.STD_ERR);
+      } catch (e) {
+        Actions.add_console_entries(
+          `${response.statusText} (${response.status} error)`,
+          constants.console_entry_type.STD_ERR
+        );
+      }
       FileOps.add_missing_file(fullname);
     }
 
@@ -170,7 +174,7 @@ const FileOps = {
       FileOps._storeChangeCallback
     );
   },
-  userSelectFileToView: function (fullname: any, line: any) {
+  userSelectFileToView: function (fullname: string, line: number) {
     store.set(
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
@@ -229,9 +233,9 @@ const FileOps = {
     );
   },
   getStartAndEndLines(
-    fullname: any,
-    requireCachedLineNum: any,
-    sourceCodeInfiniteScrolling: any
+    fullname: string,
+    requireCachedLineNum: number | undefined,
+    sourceCodeInfiniteScrolling: boolean
   ) {
     let startLine;
     let endLine;

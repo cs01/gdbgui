@@ -5,6 +5,7 @@ import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 import { ptyFontSize } from "./constants";
 import Actions from "./Actions";
+import { initial_data } from "./InitialData";
 
 function customKeyEventHandler(config: {
   pty_name: string;
@@ -51,7 +52,6 @@ const terminalRef = React.createRef<any>();
 export function GdbTerminal(props: {}) {
   useLayoutEffect(() => {
     terminal.open(terminalRef.current);
-    terminal.writeln(`Welcome to gdbgui!`);
 
     terminal.attachCustomKeyEventHandler(
       // @ts-expect-error

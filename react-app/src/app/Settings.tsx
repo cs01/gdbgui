@@ -16,8 +16,6 @@ class Settings extends React.Component {
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
     store.connectComponentState(this, [
       "debug",
-      "current_theme",
-      "themes",
       "gdb_version",
       "gdb_pid",
       "show_settings",
@@ -102,23 +100,6 @@ class Settings extends React.Component {
             "highlight_source_code",
             "Add syntax highlighting to source files"
           )}
-
-          <tr>
-            <td>
-              Theme:{" "}
-              <select
-                value={store.get("current_theme")}
-                onChange={function (e) {
-                  store.set("current_theme", e.currentTarget.value);
-                  localStorage.setItem("theme", e.currentTarget.value);
-                }}
-              >
-                {store.get("themes").map((t: any) => (
-                  <option key={t}>{t}</option>
-                ))}
-              </select>
-            </td>
-          </tr>
         </tbody>
       </table>
     );

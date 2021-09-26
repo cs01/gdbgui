@@ -1,11 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import "./app/static/css/gdbgui.css";
+// import "./app/static/css/gdbgui.css";
 import "./app/static/vendor/css/pygments/monokai.css";
-import "./app/static/vendor/css/pygments/light.css";
-import "./app/static/vendor/css/gdbgui_awesomeplete.css";
-import "./app/static/css/splitjs-gdbgui.css";
+// import "./app/static/vendor/css/pygments/light.css";
+// import "./app/static/vendor/css/gdbgui_awesomeplete.css";
 // import "bootstrap";
 import { Gdbgui } from "./app/gdbgui";
 import reportWebVitals from "./reportWebVitals";

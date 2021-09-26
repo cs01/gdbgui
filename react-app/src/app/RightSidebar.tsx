@@ -15,7 +15,6 @@ import Memory from "./Memory";
 import Registers from "./Registers";
 import Tree from "./Tree";
 import Threads from "./Threads";
-import ToolTipTourguide from "./ToolTipTourguide";
 
 const onmouseupInParentCallbacks: Array<() => void> = [];
 const onmousemoveInParentCallbacks: Array<(event: any) => void> = [];
@@ -182,34 +181,6 @@ class RightSidebar extends React.Component<any> {
         onMouseUp={onmouseupInParentCallback}
         onMouseMove={onmousemoveInParentCallback}
       >
-        <ToolTipTourguide
-          // @ts-expect-error ts-migrate(2322) FIXME: Property 'position' does not exist on type 'Intrin... Remove this comment to see the full error message
-          position={"topleft"}
-          content={
-            <div>
-              <h5>
-                This sidebar contains a visual, interactive representation of the state of
-                your program
-              </h5>
-              <p>
-                You can see which function the process is stopped in, explore variables,
-                and much more.
-              </p>
-              <p>
-                There is more to discover, but this should be enough to get you started.
-              </p>
-              <p>
-                Something missing? Found a bug?{" "}
-                <a href="https://github.com/cs01/gdbgui/issues/">Create an issue</a> on
-                github.
-              </p>
-
-              <p>Happy debugging!</p>
-            </div>
-          }
-          step_num={5}
-        />
-
         {/* @ts-expect-error ts-migrate(2322) FIXME: Property 'title' does not exist on type 'Intrinsic... Remove this comment to see the full error message */}
         <Collapser title="threads" content={<Threads />} />
 

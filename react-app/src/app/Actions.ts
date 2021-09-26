@@ -145,7 +145,7 @@ const Actions = {
     store.set("modal_body", body);
     store.set("show_modal", true);
   },
-  set_gdb_binary_and_arguments(binary: any, args: any) {
+  setGdbBinaryAndArguments(binary: any, args: any) {
     // remove list of source files associated with the loaded binary since we're loading a new one
     store.set("source_file_paths", []);
     store.set("language", "c_family");
@@ -155,7 +155,7 @@ const Actions = {
     GdbApi.run_gdb_command(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
-  connect_to_gdbserver(user_input: any) {
+  connectToGdbserver(user_input: any) {
     // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
     store.set("source_file_paths", []);
     store.set("language", "c_family");
