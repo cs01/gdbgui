@@ -8,7 +8,7 @@
 
 import React, { useEffect, useState } from "react";
 // @ts-expect-error ts-migrate(2305) FIXME: Module '"statorgfc"' has no exported member 'middl... Remove this comment to see the full error message
-import { store, middleware } from "statorgfc";
+import { store as DEPRECATED_store, middleware } from "statorgfc";
 
 import constants from "./constants";
 import GdbApi from "./GdbApi";
@@ -16,7 +16,7 @@ import FileOps from "./FileOps";
 // import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-import initial_store_data from "./InitialStoreData";
+import initialStoreData from "./InitialStoreData";
 import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
@@ -39,12 +39,12 @@ const store_options = {
   debounce_ms: 10,
 };
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
-store.initialize(initial_store_data, store_options);
+DEPRECATED_store.initialize(initialStoreData, store_options);
 if (debug) {
   // log call store changes in console except if changed key was in
   // constants.keys_to_not_log_changes_in_console
   // @ts-expect-error ts-migrate(2339) FIXME: Property 'use' does not exist on type '{ get(key: ... Remove this comment to see the full error message
-  store.use(function (key: any, oldval: any, newval: any) {
+  DEPRECATED_store.use(function (key: any, oldval: any, newval: any) {
     if (constants.keys_to_not_log_changes_in_console.indexOf(key) === -1) {
       middleware.logChanges(key, oldval, newval);
     }
@@ -53,7 +53,7 @@ if (debug) {
 }
 // make this visible in the console
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'store' does not exist on type 'Window & ... Remove this comment to see the full error message
-window.store = store;
+window.store = DEPRECATED_store;
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
@@ -87,7 +87,7 @@ export function Gdbgui() {
           left: "-1000px",
         }}
         ref={(node) => {
-          store.set("textarea_to_copy_to_clipboard", node);
+          DEPRECATED_store.set("textarea_to_copy_to_clipboard", node);
         }}
       />
       <ReflexContainer orientation="horizontal">
@@ -213,10 +213,6 @@ export function Gdbgui() {
 //     );
 // }
 // componentDidMount() {
-//   if (debug) {
-//     // @ts-expect-error ts-migrate(2339) FIXME: Property 'getUnwatchedKeys' does not exist on type... Remove this comment to see the full error message
-//     console.warn(store.getUnwatchedKeys());
-//   }
 //   // Split the body into different panes using splitjs (https://github.com/nathancahill/Split.js)
 //   let middle_panes_split_obj = Split(
 //     ["#folders_view", "#source_code_view", "#controls_sidebar"],

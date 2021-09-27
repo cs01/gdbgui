@@ -1,5 +1,4 @@
 import _ from "lodash";
-import { atom } from "recoil";
 import constants from "./constants";
 import { initial_data, debug } from "./InitialData";
 
@@ -8,7 +7,7 @@ import { initial_data, debug } from "./InitialData";
  * All fields in here should be shared by > 1 component, otherwise they should
  * exist as local state for that component.
  */
-const initial_store_data = {
+const initialStoreData = {
   // environment
   debug, // if gdbgui is run in debug mode
   gdbgui_version: initial_data.gdbgui_version,
@@ -126,24 +125,19 @@ function get_stored(key: any, default_val: any) {
 }
 
 // restore saved localStorage data
-for (const key in initial_store_data) {
+for (const key in initialStoreData) {
   // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
-  const default_val = initial_store_data[key];
+  const default_val = initialStoreData[key];
   // @ts-expect-error ts-migrate(7053) FIXME: No index signature with a parameter of type 'strin... Remove this comment to see the full error message
-  initial_store_data[key] = get_stored(key, default_val);
+  initialStoreData[key] = get_stored(key, default_val);
 }
 
 if (localStorage.hasOwnProperty("max_lines_of_code_to_fetch")) {
   // @ts-expect-error ts-migrate(2345) FIXME: Type 'null' is not assignable to type 'string'.
   const savedval = JSON.parse(localStorage.getItem("max_lines_of_code_to_fetch"));
   if (_.isInteger(savedval) && savedval > 0) {
-    initial_store_data["max_lines_of_code_to_fetch"] = savedval;
+    initialStoreData["max_lines_of_code_to_fetch"] = savedval;
   }
 }
 
-export const todoListState = atom({
-  key: "todoListState",
-  default: [],
-});
-console.log(todoListState.key);
-export default initial_store_data;
+export default initialStoreData;
