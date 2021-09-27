@@ -116,7 +116,7 @@ class Store<T> {
       }
     }
   }
-  public get(key: keyof T): T[typeof key] {
+  public get(key: keyof T): any {
     return this.store[key];
   }
   /**
@@ -141,8 +141,6 @@ class Store<T> {
    * Emit event to subscribers based on timeout rules
    *
    * @param key     key to change
-   * @param oldval  original value (for logging purposes)
-   * @param value   new value to assign
    */
   private enqueueChangedKey(key: keyof T) {
     if (store.keysWithUnpublishedChanges.indexOf(key as any) === -1) {
@@ -219,12 +217,12 @@ function shallowEqual(objA: any, objB: any) {
 
   return true;
 }
-function is_object(ref: any) {
+function isObject(ref: any) {
   return ref instanceof Object && ref.constructor === Object;
 }
 
 function valueHasChanged(a: any, b: any) {
-  if (is_object(a) || Array.isArray(a)) {
+  if (isObject(a) || Array.isArray(a)) {
     // since objects can be updated by reference, we don't
     // know if the value changed or not since the reference
     // is still the same. Err on the side of caution assume

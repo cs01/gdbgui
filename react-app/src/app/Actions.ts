@@ -1,4 +1,4 @@
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
 import SourceCode from "./SourceCode";
 import Locals from "./Locals";
