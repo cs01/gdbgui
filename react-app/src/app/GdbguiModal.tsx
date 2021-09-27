@@ -13,40 +13,36 @@ class Modal extends React.Component<{}, State> {
     store.connectComponentState(this, ["show_modal", "modal_body", "modal_header"]);
   }
 
-  // padding: 10px;
-  // width: 100%;
-  // height: 100%;
-  // position: fixed;
-  // left: 0;
-  // top: 0;
-  // z-index: 120;
-  // background: rgba(0, 0, 0, 0.8);
-  // overflow: auto;
-
   render() {
     return (
       <div
+        style={{ zIndex: this.state.show_modal ? 9999 : -100 }}
         className={
-          this.state.show_modal
-            ? "fixed m-auto align-middle items-center max-w-xl z-50 overflow-auto p-10  bg-gray-200"
-            : "  hidden"
+          (this.state.show_modal ? "bg-opacity-80 " : "bg-opacity-0 ") +
+          "w-screen h-screen bg-black absolute left-0 top-0 z-40 flex justify-center items-center"
         }
         ref={(el) => (this.fullscreen_node = el)}
         onClick={(e) => {
           if (e.target === this.fullscreen_node) {
-            Actions.toggle_modal_visibility();
+            store.set("show_modal", false);
           }
         }}
       >
-        <div>
+        <div
+          className={
+            this.state.show_modal
+              ? "p-10 border-2 border-purple-800 bg-gray-800 rounded-lg max-w-2xl "
+              : "  hidden"
+          }
+        >
           <h4>{this.state.modal_header}</h4>
 
           <div className="py-10">{this.state.modal_body}</div>
 
-          <div className="absolute right-0">
+          <div className="flex flex-col items-end">
             <button
               type="button"
-              className="btn btn-blue"
+              className="btn btn-purple"
               onClick={Actions.toggle_modal_visibility}
             >
               Close
