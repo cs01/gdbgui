@@ -50,7 +50,7 @@ const constants = {
 
   default_max_lines_of_code_to_fetch: 500,
 
-  keys_to_not_log_changes_in_console: ["gdb_mi_output"],
+  doNotLogChanges: ["gdb_mi_output"],
   xtermColors: {
     reset: "\x1B[0m",
     red: "\x1B[31m",

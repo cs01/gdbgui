@@ -1,6 +1,6 @@
 import React from "react";
 import ReactTable from "./ReactTable";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { FileLink } from "./Links";
@@ -34,8 +34,7 @@ class Threads extends React.Component<{}, ThreadsState> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, [
+    store.reactComponentState(this, [
       "threads",
       "current_thread_id",
       "stack",
@@ -119,10 +118,10 @@ class Threads extends React.Component<{}, ThreadsState> {
     let selected;
     let cls = "";
     if (is_current_thread_being_rendered) {
-      cls = "bold";
+      cls = "font-bold";
       selected = (
         <span
-          className="label label-primary"
+          className=" bg-yellow-700"
           title="This thread is selected. Variables can be inspected for the current frame of this thread."
         >
           selected
@@ -131,12 +130,11 @@ class Threads extends React.Component<{}, ThreadsState> {
     } else {
       selected = (
         <button
-          className="pointer btn btn-default btn-xs"
+          className="btn btn-default text-sm"
           onClick={() => {
             Threads.select_thread_id(thread.id);
           }}
           title="Select this thread"
-          style={{ fontSize: "75%" }}
         >
           select
         </button>

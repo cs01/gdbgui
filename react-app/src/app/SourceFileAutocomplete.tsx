@@ -1,4 +1,4 @@
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import constants from "./constants";
 import Actions from "./Actions";
 import Util from "./Util";
@@ -18,7 +18,6 @@ class SourceFileAutocomplete extends React.Component {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(["source_file_paths"], this.store_change_callback.bind(this));
   }
   store_change_callback() {
@@ -56,7 +55,7 @@ class SourceFileAutocomplete extends React.Component {
   }
   keyup_source_file_input(e: any) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      let user_input = _.trim(e.currentTarget.value);
+      const user_input = _.trim(e.currentTarget.value);
 
       if (user_input.length === 0) {
         return;

@@ -7,16 +7,14 @@
  */
 
 import React, { useEffect, useState } from "react";
-// @ts-expect-error ts-migrate(2305) FIXME: Module '"statorgfc"' has no exported member 'middl... Remove this comment to see the full error message
-import { store as DEPRECATED_store, middleware } from "statorgfc";
-
+import { store, useGlobalState } from "./GlobalState";
 import constants from "./constants";
 import GdbApi from "./GdbApi";
 import FileOps from "./FileOps";
 // import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-import initialStoreData from "./InitialStoreData";
+import initialGlobalState from "./InitialGlobalState";
 import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
@@ -33,27 +31,7 @@ import { InferiorTerminal } from "./InferiorTerminal";
 import { GdbGuiTerminal } from "./GdbGuiTerminal";
 import { Nav } from "./Nav";
 import { TargetSelector } from "./TargetSelector";
-
-const store_options = {
-  immutable: false,
-  debounce_ms: 10,
-};
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'initialize' does not exist on type '{ ge... Remove this comment to see the full error message
-DEPRECATED_store.initialize(initialStoreData, store_options);
-if (debug) {
-  // log call store changes in console except if changed key was in
-  // constants.keys_to_not_log_changes_in_console
-  // @ts-expect-error ts-migrate(2339) FIXME: Property 'use' does not exist on type '{ get(key: ... Remove this comment to see the full error message
-  DEPRECATED_store.use(function (key: any, oldval: any, newval: any) {
-    if (constants.keys_to_not_log_changes_in_console.indexOf(key) === -1) {
-      middleware.logChanges(key, oldval, newval);
-    }
-    return true;
-  });
-}
-// make this visible in the console
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'store' does not exist on type 'Window & ... Remove this comment to see the full error message
-window.store = DEPRECATED_store;
+import { GdbguiEditor } from "./GdbguiEditor";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
@@ -87,31 +65,37 @@ export function Gdbgui() {
           left: "-1000px",
         }}
         ref={(node) => {
-          DEPRECATED_store.set("textarea_to_copy_to_clipboard", node);
+          store.set("textarea_to_copy_to_clipboard", node);
         }}
       />
       <ReflexContainer orientation="horizontal">
-        <ReflexElement flex={0.85} minSize={100} className="bg-gray-800">
-          <Nav />
-          <TargetSelector initial_user_input={initialData.initial_binary_and_args} />
-          <ReflexContainer orientation="vertical">
+        <ReflexElement flex={0.85} minSize={100} className="bg-gray-800 ">
+          <div className="fixed bg-gray-800 w-full z-10">
+            <Nav />
+            <TargetSelector initial_user_input={initialData.initial_binary_and_args} />
+          </div>
+          <ReflexContainer
+            orientation="vertical"
+            className="h-full"
+            style={{ paddingTop: "92px" }}
+          >
             <ReflexElement className="left-pane" flex={0.6} minSize={100}>
               {/* {"left"} */}
-              <MiddleLeft />
+              {/* <MiddleLeft /> */}
+              <GdbguiEditor />
             </ReflexElement>
 
-            <ReflexSplitter className="p-1" />
+            <ReflexSplitter className="" />
 
             <ReflexElement minSize={100}>
               <div className="pane-content">
-                {"right"}
-                {/* <RightSidebar signals={initialData.signals} debug={debug} /> */}
+                <RightSidebar signals={initialData.signals} debug={debug} />
               </div>
             </ReflexElement>
           </ReflexContainer>
         </ReflexElement>
 
-        <ReflexSplitter className="p-1" />
+        <ReflexSplitter className="" />
 
         <ReflexElement minSize={10}>
           <ReflexContainer orientation="vertical">
@@ -119,13 +103,13 @@ export function Gdbgui() {
               <GdbTerminal />
             </ReflexElement>
 
-            <ReflexSplitter className="p-1" />
+            <ReflexSplitter className="" />
 
             <ReflexElement minSize={20}>
               <GdbGuiTerminal />
             </ReflexElement>
 
-            <ReflexSplitter className="p-1" />
+            <ReflexSplitter className="" />
 
             <ReflexElement minSize={20}>
               <InferiorTerminal />

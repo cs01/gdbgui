@@ -1,6 +1,6 @@
 import React from "react";
 import Util from "./Util";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 type State = any;
 
@@ -13,8 +13,7 @@ class ToolTipTourguide extends React.Component<{}, State> {
     }
     // @ts-expect-error ts-migrate(2551) FIXME: Property 'ref' does not exist on type 'ToolTipTour... Remove this comment to see the full error message
     this.ref = React.createRef();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, [
+    store.reactComponentState(this, [
       "tour_guide_step",
       "num_tour_guide_steps",
       "show_tour_guide",

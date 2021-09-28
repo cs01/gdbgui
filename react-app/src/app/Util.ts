@@ -1,4 +1,4 @@
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 /**
  * Some general utility methods

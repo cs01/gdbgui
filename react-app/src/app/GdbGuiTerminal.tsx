@@ -21,7 +21,11 @@ export function GdbGuiTerminal(props: {}) {
     terminal.writeln(`gdbgui's diagnostic messages displayed here`);
     terminal.loadAddon(fitAddon);
     setInterval(() => {
-      fitAddon.fit();
+      try {
+        fitAddon.fit();
+      } catch (e) {
+        //
+      }
     }, 2000);
     fitAddon.fit();
   }, []);

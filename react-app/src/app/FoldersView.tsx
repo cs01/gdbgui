@@ -1,5 +1,5 @@
 import React from "react";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import FileOps from "./FileOps";
 import constants from "./constants";
 import SourceFileAutocomplete from "./SourceFileAutocomplete";
@@ -35,8 +35,7 @@ class FoldersView extends React.Component<{}, State> {
     this.state = {
       rootnode: defaultRootnode,
     };
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(
+    store.reactComponentState(
       this,
       ["source_code_state", "source_file_paths"],
       this.update_filesystem_data.bind(this)

@@ -1,4 +1,4 @@
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
 import constants from "./constants";
 import Actions from "./Actions";
@@ -154,7 +154,6 @@ const FileOps = {
   unfetchableDisassemblyAddresses: {},
   disassemblyAddrBeingFetched: null,
   init: function () {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(
       [
         "inferior_program",

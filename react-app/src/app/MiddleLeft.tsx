@@ -21,7 +21,7 @@ class MiddleLeft extends React.Component {
     return (
       <div
         id="code_container"
-        style={{ overflow: "auto", height: "100%", minHeight: "200px" }}
+        className="overflow-auto h-full whitespace-pre font-mono text-xs"
         ref={(el) => (this.sourceCodeContainerNode = el)}
       >
         <SourceCode />

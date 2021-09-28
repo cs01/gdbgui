@@ -2,7 +2,7 @@
  * An object to manage the websocket connection to the python server that manages gdb,
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import Registers from "./Registers";
 import Memory from "./Memory";
 import Actions from "./Actions";

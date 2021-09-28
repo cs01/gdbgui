@@ -1,6 +1,6 @@
 // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Support-Commands.html#GDB_002fMI-Support-Commands
 
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 type Feature =
   | "thread-info"
   | "reverse"

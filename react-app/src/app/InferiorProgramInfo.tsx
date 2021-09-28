@@ -1,7 +1,7 @@
 import React from "react";
 
 import Actions from "./Actions";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 type State = any;
 
@@ -15,8 +15,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
       selected_signal: "SIGINT",
       other_pid: "",
     };
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, ["inferior_pid", "gdb_pid"]);
+    store.reactComponentState(this, ["inferior_pid", "gdb_pid"]);
   }
   get_li_for_signal(s: any, signal_key: any) {
     const onclick = function () {

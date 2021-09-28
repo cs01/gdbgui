@@ -7,7 +7,7 @@
 import React from "react";
 import Memory from "./Memory";
 import constants from "./constants";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
 import Actions from "./Actions";

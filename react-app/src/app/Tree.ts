@@ -2,7 +2,7 @@
 // utilizes the amazing http://visjs.org library
 
 /* global vis */
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbVariable from "./GdbVariable";
 import constants from "./constants";
 
@@ -11,7 +11,6 @@ const Tree = {
   width_input: null,
   height_input: null,
   init: function () {
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'subscribeToKeys' does not exist on type ... Remove this comment to see the full error message
     store.subscribeToKeys(
       ["root_gdb_tree_var", "expressions", "root_gdb_tree_var"],
       Tree._render

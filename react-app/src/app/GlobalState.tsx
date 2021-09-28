@@ -1,30 +1,38 @@
+import constants from "./constants";
 import { debug } from "./InitialData";
-import initialStoreData from "./InitialStoreData";
-
+import initialGlobalState from "./InitialGlobalState";
+import { useState } from "react";
 type Middleware = (key: string, oldval: any, newval: any) => boolean;
 
-export function logChangesMiddleware(key: string, oldval: unknown, newval: unknown) {
-  console.log(key, oldval, " -> ", newval);
-  return true; // return true means next middleware can be called
+export function logChangesMiddleware(
+  key: string,
+  oldval: unknown,
+  newval: unknown
+): boolean {
+  if (constants.doNotLogChanges.indexOf(key) === -1) {
+    console.log(key, oldval, " -> ", newval);
+  }
+  return true;
 }
 
 function intersection(arr1: Array<string>, arr2: Array<string>) {
   return arr1.filter((i) => arr2.indexOf(i) !== -1);
 }
 
+type StoreShape = typeof initialGlobalState;
+type StoreKey = keyof StoreShape;
 type StoreUpdateCallBack = (changedKeys: Array<any>) => void;
 
-class Store<T> {
-  private store: T;
+class Store {
+  readonly store = initialGlobalState;
   private debounceMs: number = 0;
   private callbackId = 0; // this should always be unique and always increase
   private callbacks: Array<{ id: number; callback: StoreUpdateCallBack }> = [];
   private middleware: Array<Middleware>;
-  private keysWithUnpublishedChanges: Array<keyof T> = [];
+  private keysWithUnpublishedChanges: Array<StoreKey> = [];
   private debounceTimeout: NodeJS.Timeout | null = null;
 
-  constructor(initialStore: T, debounceMs: number, initialMiddleware: Array<Middleware>) {
-    this.store = initialStore;
+  constructor(debounceMs: number, initialMiddleware: Array<Middleware>) {
     this.debounceMs = debounceMs;
     this.middleware = initialMiddleware;
   }
@@ -36,10 +44,10 @@ class Store<T> {
    * Call this from the Component's constructor:
    *  store.connectComponentState(this, ['key1', 'key2'])
    */
-  connectComponentState(
+  reactComponentState(
     component: React.Component,
-    keysToWatchForChanges: Array<keyof T>,
-    additonalCallback: Nullable<(changedKeys: Array<keyof T>) => void> = null
+    keysToWatchForChanges: Array<StoreKey>,
+    additonalCallback: Nullable<(changedKeys: Array<StoreKey>) => void> = null
   ) {
     component.state = component.state || {}; // initialize if not set
     for (const k of keysToWatchForChanges) {
@@ -47,7 +55,7 @@ class Store<T> {
       component.state[k] = this.store[k];
     }
 
-    const callback = (changedKeys: Array<keyof T>): void => {
+    const callback = (changedKeys: Array<StoreKey>): void => {
       const watchedKeysDidChange = intersection(
         keysToWatchForChanges as Array<string>,
         changedKeys as Array<string>
@@ -55,7 +63,6 @@ class Store<T> {
 
       if (watchedKeysDidChange) {
         const stateUpdateObj: { [key: string]: unknown } = {};
-        // @ts-expect-error
         keysToWatchForChanges.forEach((key) => (stateUpdateObj[key] = this.store[key]));
         component.setState(stateUpdateObj);
 
@@ -74,49 +81,44 @@ class Store<T> {
    * when one of a subset of the keys has been updated
    */
   public subscribeToKeys(
-    keysToWatchForChanges: Array<keyof T>,
+    keysToWatchForChanges: Array<StoreKey>,
     callback: StoreUpdateCallBack
   ) {
     // call this function whenever the store changes
-    function _callback(changedKeys: Array<keyof T>): void {
+    function _callback(changedKeys: Array<StoreKey>): void {
       if (
         intersection(keysToWatchForChanges as string[], changedKeys as string[]).length
       ) {
         callback(changedKeys);
       }
     }
-    return store.subscribe(_callback);
+    return this.subscribe(_callback);
   }
 
   /**
    * Add listener(s) to store changes.
    */
-  private subscribe(callback: StoreUpdateCallBack): () => void {
+  public subscribe(callback: StoreUpdateCallBack): () => void {
     this.callbackId++;
-    const id = store.callbackId;
+    const id = this.callbackId;
     const unsubscribe = () => {
-      this.callbacks = store.callbacks.filter((cb) => cb.id !== id);
+      this.callbacks = this.callbacks.filter((cb) => cb.id !== id);
     };
-    store.callbacks.push({ id: id, callback });
+    this.callbacks.push({ id: id, callback });
     return unsubscribe;
   }
-  /**
-   * set key or keys of store object
-   * @param {str/obj} key_or_new_store: if str, this key is replaced. If obj, all keys of the obj replace store's keys.
-   * @param {any} value: If key was provided, the associated value. The type of the value for this key cannot change. Exceptions to this rule
-   * are to/from null or undefined. Otherwise if you try to change, say, `1` to `'2'`, a type error will occur (int to string is not permitted).
-   */
-  public set(key: keyof T, value: T[typeof key]): void {
+  public set(key: StoreKey, value: unknown): void {
     const oldval = this.store[key];
     if (valueHasChanged(oldval, value)) {
       const updateStore = this.runMiddleware(key, oldval, value);
       if (updateStore) {
+        // @ts-expect-error
         this.store[key] = value;
         this.enqueueChangedKey(key);
       }
     }
   }
-  public get(key: keyof T): any {
+  public get(key: StoreKey): any {
     return this.store[key];
   }
   /**
@@ -128,7 +130,7 @@ class Store<T> {
   public use(middleware: Middleware) {
     this.middleware.push(middleware);
   }
-  private runMiddleware(key: keyof T, oldval: unknown, newval: unknown) {
+  private runMiddleware(key: StoreKey, oldval: unknown, newval: unknown) {
     for (const fn of this.middleware) {
       const keepGoing = fn(key as string, oldval, newval);
       if (!keepGoing) {
@@ -142,12 +144,14 @@ class Store<T> {
    *
    * @param key     key to change
    */
-  private enqueueChangedKey(key: keyof T) {
-    if (store.keysWithUnpublishedChanges.indexOf(key as any) === -1) {
-      store.keysWithUnpublishedChanges.push(key as any);
+  private enqueueChangedKey(key: StoreKey) {
+    if (this.keysWithUnpublishedChanges.indexOf(key as any) === -1) {
+      this.keysWithUnpublishedChanges.push(key as any);
     }
-    store.clearDebounceTimeout();
-    this.debounceTimeout = setTimeout(this.publish, this.debounceMs);
+    this.clearDebounceTimeout();
+    this.debounceTimeout = setTimeout(() => {
+      this.flushChanges();
+    }, this.debounceMs);
   }
   private clearDebounceTimeout() {
     if (this.debounceTimeout) {
@@ -159,7 +163,7 @@ class Store<T> {
    * Run subscribers' callback functions. An array of the changed keys is passed to the callback function.
    * Be careful how often this is called, since re-rendering components can become expensive.
    */
-  private publish() {
+  private flushChanges() {
     const changedKeys = this.keysWithUnpublishedChanges;
     if (changedKeys.length === 0) {
       console.error("no keys were changed, yet we are trying to publish a store change");
@@ -232,4 +236,28 @@ function valueHasChanged(a: any, b: any) {
     return !shallowEqual(a, b);
   }
 }
-export const store = new Store(initialStoreData, 10, debug ? [logChangesMiddleware] : []);
+
+export const store = new Store(10, debug ? [logChangesMiddleware] : []);
+
+// React hook
+export const useGlobalState = (key: StoreKey) => {
+  const [reactValue, setReactValue] = useState(store.get(key));
+
+  store.subscribe((changedKeys: Array<StoreKey>): void => {
+    const watchedKeysDidChange = intersection(
+      [key] as Array<string>,
+      changedKeys as Array<string>
+    ).length;
+
+    if (watchedKeysDidChange) {
+      setReactValue(store.get(key));
+    }
+  });
+
+  return [
+    reactValue,
+    (newValue: unknown) => {
+      store.set(key, newValue);
+    },
+  ];
+};

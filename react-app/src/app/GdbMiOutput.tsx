@@ -8,7 +8,7 @@
  */
 import _ from "lodash";
 import React from "react";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 type State = any;
 
@@ -19,8 +19,7 @@ class GdbMiOutput extends React.Component<{}, State> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, ["gdb_mi_output"]);
+    store.reactComponentState(this, ["gdb_mi_output"]);
     this._debounced_scroll_to_bottom = _.debounce(
       this._scroll_to_bottom.bind(this),
       300,

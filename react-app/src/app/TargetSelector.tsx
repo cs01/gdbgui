@@ -30,10 +30,20 @@ function addUserInputToHistory(binaryAndArgs: string) {
   );
 }
 
+function getInitialUserInput(): string {
+  try {
+    const prevInput: Array<string> = JSON.parse(
+      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
+    );
+    return prevInput[0];
+  } catch (e) {
+    localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
+    return "";
+  }
+}
+
 export function TargetSelector(props: { initial_user_input: string[] }) {
-  const [userInput, setUserInput] = useState(
-    "/home/csmith/git/gdbgui/examples/c/hello_c.a"
-  );
+  const [userInput, setUserInput] = useState(getInitialUserInput());
   const targetTypes = [
     {
       name: "Binary Executable",
@@ -135,6 +145,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
             chosenOption.onClick();
           }
         }}
+        value={userInput}
       />
       <datalist id={pastBinariesId}>
         {["/home/csmith/git/gdbgui/examples/c/hello_c.a"].map((userInput) => (

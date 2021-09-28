@@ -2,7 +2,7 @@
  * A component to render source code, assembly, and break points
  */
 
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import React from "react";
 import FileOps from "./FileOps";
 import Breakpoints from "./Breakpoints";
@@ -24,8 +24,7 @@ class SourceCode extends React.Component<{}, State> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, [
+    store.reactComponentState(this, [
       "fullname_to_render",
       "cached_source_files",
       "missing_files",
@@ -190,11 +189,11 @@ class SourceCode extends React.Component<{}, State> {
 
     let gutterClass = "";
     if (hasDisabledBreakpoint) {
-      gutterClass = "disabled_breakpoint";
+      gutterClass = "bg-orange-600 text-white";
     } else if (hasConditionalBreakpoint) {
-      gutterClass = "conditional_breakpoint";
+      gutterClass = "bg-red-600 text-white";
     } else if (hasBreakpoint) {
-      gutterClass = "breakpoint";
+      gutterClass = "bg-blue-600 text-white";
     }
 
     const assembly_content = [];
@@ -211,7 +210,7 @@ class SourceCode extends React.Component<{}, State> {
       <tr id={id} key={lineNumBeingRendered} className={`${rowClasses.join(" ")}`}>
         {this.get_linenum_td(lineNumBeingRendered, gutterClass)}
 
-        <td style={{ verticalAlign: "top" }} className="loc">
+        <td className="align-text-top hover:bg-gray-700">
           <span className="wsp" dangerouslySetInnerHTML={{ __html: source }} />
         </td>
 
@@ -228,7 +227,7 @@ class SourceCode extends React.Component<{}, State> {
           this.clickGutter(linenum);
         }}
       >
-        <div>{linenum}</div>
+        <button>{linenum}</button>
       </td>
     );
   }
@@ -236,17 +235,17 @@ class SourceCode extends React.Component<{}, State> {
   /**
    * example return value: mov $0x400684,%edi(00) main+8 0x0000000000400585
    */
-  static _get_assm_content(key: any, assm: any, paused_addr: any) {
-    const opcodes = assm.opcodes ? (
-      <span className="instrContent">{`(${assm.opcodes})`}</span>
+  static _get_assm_content(key: any, getAsmContent: any, paused_addr: any) {
+    const opcodes = getAsmContent.opcodes ? (
+      <span className="instrContent">{`(${getAsmContent.opcodes})`}</span>
     ) : (
       ""
     );
-    const instruction = Memory.make_addrs_into_links_react(assm.inst);
-    const func_name = assm["func-name"];
-    const offset = assm.offset;
-    const addr = assm.address;
-    const on_current_instruction = paused_addr === assm.address;
+    const instruction = Memory.make_addrs_into_links_react(getAsmContent.inst);
+    const func_name = getAsmContent["func-name"];
+    const offset = getAsmContent.offset;
+    const addr = getAsmContent.address;
+    const on_current_instruction = paused_addr === getAsmContent.address;
     const cls = on_current_instruction ? "current_assembly_command" : "";
     const asterisk = on_current_instruction ? (
       <span

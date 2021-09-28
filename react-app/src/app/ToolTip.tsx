@@ -1,14 +1,13 @@
 import _ from "lodash";
 import React from "react";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 class ToolTip extends React.Component {
   timeout: any;
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, ["tooltip"]);
+    store.reactComponentState(this, ["tooltip"]);
     this.timeout = null;
   }
   static hide_tooltip() {

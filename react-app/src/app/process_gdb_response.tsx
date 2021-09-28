@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import GdbMiOutput from "./GdbMiOutput";
 import Breakpoints from "./Breakpoints";
 import constants from "./constants";

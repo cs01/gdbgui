@@ -4,7 +4,7 @@
 
 import constants from "./constants";
 import GdbApi from "./GdbApi";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 
 const GlobalEvents = {
   init: function () {

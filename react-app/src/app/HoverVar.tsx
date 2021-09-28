@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { store } from "statorgfc";
+import { store } from "./GlobalState";
 import constants from "./constants";
 import GdbVariable from "./GdbVariable";
 import $ from "jquery";
@@ -31,8 +31,7 @@ class HoverVar extends React.Component {
     $("body").on("mouseenter", "#hovervar", HoverVar.mouseover_hover_window);
     $("body").on("mouseleave", "#hovervar", HoverVar.mouseout_hover_window);
 
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'connectComponentState' does not exist on... Remove this comment to see the full error message
-    store.connectComponentState(this, ["expressions"]);
+    store.reactComponentState(this, ["expressions"]);
   }
   render() {
     const hover_objs = store
