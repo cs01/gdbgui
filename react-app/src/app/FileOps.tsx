@@ -4,6 +4,7 @@ import constants from "./constants";
 import Actions from "./Actions";
 import { debug } from "./InitialData";
 import _ from "lodash";
+import React, { ReactChild } from "react";
 
 let debugPrint: any;
 if (debug) {
@@ -13,6 +14,16 @@ if (debug) {
     // stubbed out
   };
 }
+
+export type SourceFile = {
+  fullname: string;
+  source_code_obj: any;
+  assembly: Object;
+  sourceCode: Array<string>;
+  last_modified_unix_sec: number;
+  num_lines_in_file: number;
+  exists: boolean;
+};
 
 const FileFetcher: {
   _isFetching: boolean;
@@ -97,7 +108,8 @@ const FileFetcher: {
           fullname,
           sourceCodeObj,
           responseJson.last_modified_unix_sec,
-          responseJson.num_lines_in_file
+          responseJson.num_lines_in_file,
+          responseJson.source_code_array
         );
       } catch (e) {
         handleError();
@@ -383,7 +395,9 @@ const FileOps = {
       Object.keys(source_file_obj.assembly).length
     );
   },
-  get_source_file_obj_from_cache: function (fullname: any) {
+  get_source_file_obj_from_cache: function (
+    fullname: Nullable<string>
+  ): Nullable<SourceFile> {
     const cached_files = store.get("cached_source_files");
     for (const sf of cached_files) {
       if (sf.fullname === fullname) {
@@ -396,14 +410,16 @@ const FileOps = {
     fullname: any,
     source_code_obj: any,
     last_modified_unix_sec: any,
-    num_lines_in_file: any
+    num_lines_in_file: any,
+    sourceCode: Array<string>
   ) {
     const cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (cached_file_obj === null) {
       // nothing cached in the front end, add a new entry
-      const new_source_file = {
+      const new_source_file: SourceFile = {
         fullname: fullname,
         source_code_obj: source_code_obj,
+        sourceCode,
         assembly: {},
         last_modified_unix_sec: last_modified_unix_sec,
         num_lines_in_file: num_lines_in_file,

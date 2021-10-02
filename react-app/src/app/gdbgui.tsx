@@ -7,15 +7,15 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { store, useGlobalState } from "./GlobalState";
-import constants from "./constants";
+import { store } from "./GlobalState";
+// import constants from "./constants";
 import GdbApi from "./GdbApi";
 import FileOps from "./FileOps";
 // import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-import initialGlobalState from "./InitialGlobalState";
-import MiddleLeft from "./MiddleLeft";
+// import initialGlobalState from "./InitialGlobalState";
+// import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
 import RightSidebar from "./RightSidebar";
 import Settings from "./Settings";
@@ -32,6 +32,7 @@ import { GdbGuiTerminal } from "./GdbGuiTerminal";
 import { Nav } from "./Nav";
 import { TargetSelector } from "./TargetSelector";
 import { GdbguiEditor } from "./GdbguiEditor";
+import { Footer } from "./Footer";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
@@ -51,7 +52,7 @@ export function Gdbgui() {
     return <div className="h-full w-full">Loading...</div>;
   }
   return (
-    <div className="h-screen text-gray-300">
+    <div className="h-screen text-gray-300 bg-black">
       <Settings />
       <HoverVar />
       <Modal />
@@ -80,8 +81,6 @@ export function Gdbgui() {
             style={{ paddingTop: "92px" }}
           >
             <ReflexElement className="left-pane" flex={0.6} minSize={100}>
-              {/* {"left"} */}
-              {/* <MiddleLeft /> */}
               <GdbguiEditor />
             </ReflexElement>
 
@@ -97,7 +96,7 @@ export function Gdbgui() {
 
         <ReflexSplitter className="" />
 
-        <ReflexElement minSize={10}>
+        <ReflexElement minSize={10} className="pb-10">
           <ReflexContainer orientation="vertical">
             <ReflexElement minSize={20} flex={0.5}>
               <GdbTerminal />
@@ -117,6 +116,7 @@ export function Gdbgui() {
           </ReflexContainer>
         </ReflexElement>
       </ReflexContainer>
+      <Footer />{" "}
     </div>
   );
 }

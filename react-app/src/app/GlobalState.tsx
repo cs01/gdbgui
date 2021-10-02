@@ -261,3 +261,21 @@ export const useGlobalState = (key: StoreKey) => {
     },
   ];
 };
+
+// React hook
+export const useGlobalValue = (key: StoreKey) => {
+  const [reactValue, setReactValue] = useState(store.get(key));
+
+  store.subscribe((changedKeys: Array<StoreKey>): void => {
+    const watchedKeysDidChange = intersection(
+      [key] as Array<string>,
+      changedKeys as Array<string>
+    ).length;
+
+    if (watchedKeysDidChange) {
+      setReactValue(store.get(key));
+    }
+  });
+
+  return reactValue;
+};

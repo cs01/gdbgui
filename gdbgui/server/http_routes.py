@@ -60,21 +60,6 @@ def read_file():
                 raw_source_code_lines_of_interest = raw_source_code_list[
                     (start_line - 1) : (end_line)
                 ]
-            try:
-                lexer = get_lexer_for_filename(path)
-            except Exception:
-                lexer = None
-
-            if lexer and should_highlight:
-                highlighted = True
-                # convert string into tokens
-                tokens = lexer.get_tokens("\n".join(raw_source_code_lines_of_interest))
-                # format tokens into nice, marked up list of html
-                formatter = (
-                    htmllistformatter.HtmlListFormatter()
-                )  # Don't add newlines after each line
-                source_code = formatter.get_marked_up_list(tokens)
-            else:
                 highlighted = False
                 source_code = raw_source_code_lines_of_interest
 

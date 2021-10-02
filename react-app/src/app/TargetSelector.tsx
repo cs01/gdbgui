@@ -8,6 +8,17 @@ import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
 import { userInputLocalStorageKey } from "./localStorageKeys";
+import {
+  RefreshIcon,
+  PlayIcon,
+  PauseIcon,
+  ArrowCircleRightIcon,
+  ArrowCircleDownIcon,
+  ArrowSmRightIcon,
+  ArrowSmDownIcon,
+} from "@heroicons/react/outline";
+import GdbApi from "./GdbApi";
+import { useGlobalValue } from "./GlobalState";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
@@ -31,15 +42,16 @@ function addUserInputToHistory(binaryAndArgs: string) {
 }
 
 function getInitialUserInput(): string {
-  try {
-    const prevInput: Array<string> = JSON.parse(
-      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
-    );
-    return prevInput[0];
-  } catch (e) {
-    localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
-    return "";
-  }
+  return "/home/csmith/git/gdbgui/examples/c/hello_c.a";
+  // try {
+  //   const prevInput: Array<string> = JSON.parse(
+  //     localStorage.getItem(userInputLocalStorageKey) ?? "[]"
+  //   );
+  //   return prevInput[0];
+  // } catch (e) {
+  //   localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
+  //   return "";
+  // }
 }
 
 export function TargetSelector(props: { initial_user_input: string[] }) {
@@ -155,9 +167,93 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       <button
         className="btn btn-purple mr-2 text-sm"
         onClick={chosenOption.onClick}
-        title="Start debugging"
+        title="Load configured target and input"
       >
-        Debug
+        Load
+      </button>
+      <DebugControls />
+    </div>
+  );
+}
+
+function DebugControls() {
+  const gdbPid = useGlobalValue("gdb_pid");
+  const reverseSupported = useGlobalValue("reverse_supported");
+  return (
+    <div className="flex">
+      <button title="Start inferior program from the beginning keyboard shortcut: r">
+        <RefreshIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_run_button()}
+        />
+      </button>
+      <button
+        title={
+          "Continue until breakpoint is hit or inferior program exits keyboard shortcut: c" +
+          (reverseSupported ? ". shift + c for reverse." : "")
+        }
+      >
+        <PlayIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_continue_button()}
+        />
+      </button>
+      <button title="Send Interrupt signal (SIGINT) to gdb process to pause it (if it's running)">
+        <PauseIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => Actions.send_signal("SIGINT", gdbPid)}
+        />
+      </button>
+      <button
+        title={
+          "Step over next function call keyboard shortcut: n or right arrow" +
+          (reverseSupported ? ". shift + n for reverse." : "")
+        }
+      >
+        <ArrowCircleRightIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_next_button()}
+        />
+      </button>
+      <button
+        title={
+          "Step into next function call keyboard shortcut: s or down arrow" +
+          (reverseSupported ? ". shift + s for reverse." : "")
+        }
+      >
+        <ArrowCircleDownIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_step_button()}
+        />
+      </button>
+      <button
+        title={
+          "Next Instruction: Execute one machine instruction, stepping over function calls keyboard shortcut: m" +
+          (reverseSupported ? ". shift + m for reverse." : "")
+        }
+      >
+        <ArrowSmRightIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_next_instruction_button()}
+        />
+      </button>
+      <button
+        title={
+          "Step Instruction: Execute one machine instruction, stepping into function calls keyboard shortcut: ','" +
+          (reverseSupported ? ". shift + , for reverse." : "")
+        }
+      >
+        <ArrowSmDownIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => GdbApi.click_step_instruction_button()}
+        />
       </button>
     </div>
   );
