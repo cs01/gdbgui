@@ -93,7 +93,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
   return (
     <div className="w-full align-middle content-center flex h-auto my-2 items-start ">
       <Menu as="div" className="ml-2 mr-1 inline-block text-left z-10 ">
-        <div className="bg-gray-700 hover:bg-gray-700 focus:ring-purple-200 focus:ring-2">
+        <div className="bg-gray-800 hover:bg-gray-800 focus:ring-purple-200 focus:ring-2">
           <Menu.Button className="inline-flex whitespace-nowrap justify-center w-full rounded-l-sm shadow-sm pl-1 pr-4 py-2 text-sm font-medium  focus:outline-none ">
             <ChevronDownIcon className="mr-1 ml-1 h-5 w-5" aria-hidden="true" />
             Target Type: &nbsp;<span className="font-bold">{chosenOption.name}</span>
@@ -109,7 +109,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="origin-top-left bg-gray-700 absolute left-0 mt-2 w-56 rounded-md shadow-lg  ring-1 ring-black ring-opacity-5 focus:outline-none">
+          <Menu.Items className="origin-top-left bg-gray-800 absolute left-0 mt-2 w-56 rounded-md shadow-lg  ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="py-2">
               {targetTypes.map((option) => {
                 return (
@@ -140,7 +140,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       </Menu>
       <input
         className={
-          "bg-gray-700 flex-grow p-2 w-full mr-1 " +
+          "bg-gray-800 flex-grow p-2 w-full mr-1 " +
           "rounded-sm focus:outline-none focus:ring-0 " +
           "text-sm"
         }

@@ -6,7 +6,7 @@
 
 import React from "react";
 import { store } from "./GlobalState";
-import GdbMiOutput from "./GdbMiOutput";
+import { saveNewMiOutput } from "./GdbMiOutput";
 import Breakpoints from "./Breakpoints";
 import constants from "./constants";
 import Threads from "./Threads";
@@ -43,7 +43,7 @@ const isCreatingVar = (response: any) => {
 
 function handleGdbMessage(r: GdbMiMessage) {
   // gdb mi output
-  GdbMiOutput.add_mi_output(r);
+  saveNewMiOutput(r);
 
   if (isError(r)) {
     if (isCreatingVar(r)) {

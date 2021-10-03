@@ -73,7 +73,7 @@ export type GlobalState = {
 
   waiting_for_response: boolean;
 
-  gdb_mi_output: any[];
+  gdb_mi_output: Array<GdbMiMessage>;
 
   // if we try to write something before the websocket is connected, store it here
   queuedGdbCommands: Array<string>;

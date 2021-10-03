@@ -243,12 +243,7 @@ export const useGlobalState = (key: StoreKey) => {
   const [reactValue, setReactValue] = useState(store.data[key]);
 
   store.subscribe((changedKeys: Array<StoreKey>): void => {
-    const watchedKeysDidChange = intersection(
-      [key] as Array<string>,
-      changedKeys as Array<string>
-    ).length;
-
-    if (watchedKeysDidChange) {
+    if (changedKeys.indexOf(key) !== -1) {
       setReactValue(store.data[key]);
     }
   });
@@ -265,13 +260,8 @@ export const useGlobalState = (key: StoreKey) => {
 export const useGlobalValue = (key: StoreKey) => {
   const [reactValue, setReactValue] = useState(store.data[key]);
 
-  store.subscribe((changedKeys: Array<StoreKey>): void => {
-    const watchedKeysDidChange = intersection(
-      [key] as Array<string>,
-      changedKeys as Array<string>
-    ).length;
-
-    if (watchedKeysDidChange) {
+  store.subscribe(function (changedKeys: Array<StoreKey>): void {
+    if (changedKeys.indexOf(key) !== -1) {
       setReactValue(store.data[key]);
     }
   });

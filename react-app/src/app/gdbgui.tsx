@@ -8,23 +8,15 @@
 
 import React, { useEffect, useState } from "react";
 import { store } from "./GlobalState";
-// import constants from "./constants";
 import FileOps from "./FileOps";
-// import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-// import initialGlobalState from "./InitialGlobalState";
-// import MiddleLeft from "./MiddleLeft";
 import Modal from "./GdbguiModal";
-import RightSidebar from "./RightSidebar";
+import { RightSidebar } from "./RightSidebar";
 import Settings from "./Settings";
 import ToolTip from "./ToolTip";
-// import ToolTipTourguide from "./ToolTipTourguide";
 import { debug, InitialData } from "./InitialData";
 import { ReflexContainer, ReflexSplitter, ReflexElement } from "react-reflex";
-// import { atom, selector, useRecoilState, useRecoilValue } from "recoil";
-
-import "react-reflex/styles.css";
 import { GdbTerminal } from "./GdbTerminal";
 import { InferiorTerminal } from "./InferiorTerminal";
 import { GdbGuiTerminal } from "./GdbGuiTerminal";
@@ -33,6 +25,7 @@ import { TargetSelector } from "./TargetSelector";
 import { GdbguiEditor } from "./GdbguiEditor";
 import { Footer } from "./Footer";
 import { GdbWebsocket } from "./Websocket";
+import "react-reflex/styles.css";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
@@ -70,8 +63,8 @@ export function Gdbgui() {
         }}
       />
       <ReflexContainer orientation="horizontal">
-        <ReflexElement flex={0.85} minSize={100} className="bg-gray-800 ">
-          <div className="fixed bg-gray-800 w-full z-10">
+        <ReflexElement flex={0.85} minSize={100} className="bg-black text-gray-300">
+          <div className="fixed bg-black w-full z-10">
             <Nav />
             <TargetSelector initial_user_input={initialData.initial_binary_and_args} />
           </div>
