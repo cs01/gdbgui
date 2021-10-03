@@ -39,8 +39,8 @@ class Registers extends React.Component<{}, State> {
     ) {
       return cmds;
     }
-    if (store.get("can_fetch_register_values") === true) {
-      if (store.get("register_names").length === 0) {
+    if (store.data.can_fetch_register_values === true) {
+      if (store.data.register_names.length === 0) {
         if (register_name_fetch_count <= MAX_REGISTER_NAME_FETCH_COUNT) {
           clearTimeout(register_name_fetch_timeout);
           // only fetch register names when we don't have them
@@ -77,8 +77,8 @@ class Registers extends React.Component<{}, State> {
     Registers.clear_cached_values();
   }
   render() {
-    const num_register_names = store.get("register_names").length;
-    const num_register_values = Object.keys(store.get("current_register_values")).length;
+    const num_register_names = store.data.register_names.length;
+    const num_register_values = Object.keys(store.data.current_register_values).length;
 
     if (this.state.inferior_program !== constants.inferior_states.paused) {
       return <span className="placeholder">no data to display</span>;
@@ -98,9 +98,9 @@ class Registers extends React.Component<{}, State> {
     } else if (num_register_names === num_register_values) {
       const columns = ["name", "value (hex)", "value (decimal)", "description"];
       const register_table_data = [];
-      const register_names = store.get("register_names");
-      const register_values = store.get("current_register_values");
-      const prev_register_values = store.get("previous_register_values");
+      const register_names = store.data.register_names;
+      const register_values = store.data.current_register_values;
+      const prev_register_values = store.data.previous_register_values;
 
       for (const i in register_names) {
         let name = register_names[i];

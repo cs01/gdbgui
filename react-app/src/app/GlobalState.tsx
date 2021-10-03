@@ -2,6 +2,7 @@ import constants from "./constants";
 import { debug } from "./InitialData";
 import initialGlobalState from "./InitialGlobalState";
 import { useState } from "react";
+import { GlobalState } from "./types";
 type Middleware = (key: string, oldval: any, newval: any) => boolean;
 
 export function logChangesMiddleware(
@@ -19,12 +20,11 @@ function intersection(arr1: Array<string>, arr2: Array<string>) {
   return arr1.filter((i) => arr2.indexOf(i) !== -1);
 }
 
-type StoreShape = typeof initialGlobalState;
-type StoreKey = keyof StoreShape;
+type StoreKey = keyof GlobalState;
 type StoreUpdateCallBack = (changedKeys: Array<any>) => void;
 
 class Store {
-  readonly store = initialGlobalState;
+  readonly data: GlobalState = initialGlobalState;
   private debounceMs: number = 0;
   private callbackId = 0; // this should always be unique and always increase
   private callbacks: Array<{ id: number; callback: StoreUpdateCallBack }> = [];
@@ -52,7 +52,7 @@ class Store {
     component.state = component.state || {}; // initialize if not set
     for (const k of keysToWatchForChanges) {
       // @ts-expect-error connectComponentState should only be called from constructor
-      component.state[k] = this.store[k];
+      component.state[k] = this.data[k];
     }
 
     const callback = (changedKeys: Array<StoreKey>): void => {
@@ -62,8 +62,10 @@ class Store {
       ).length;
 
       if (watchedKeysDidChange) {
-        const stateUpdateObj: { [key: string]: unknown } = {};
-        keysToWatchForChanges.forEach((key) => (stateUpdateObj[key] = this.store[key]));
+        // @ts-expect-error
+        const stateUpdateObj: GlobalState = {};
+        // @ts-expect-error
+        keysToWatchForChanges.forEach((key) => (stateUpdateObj[key] = this.data[key]));
         component.setState(stateUpdateObj);
 
         // if some other custom callback is required by the component
@@ -108,18 +110,15 @@ class Store {
     return unsubscribe;
   }
   public set(key: StoreKey, value: unknown): void {
-    const oldval = this.store[key];
+    const oldval = this.data[key];
     if (valueHasChanged(oldval, value)) {
       const updateStore = this.runMiddleware(key, oldval, value);
       if (updateStore) {
         // @ts-expect-error
-        this.store[key] = value;
+        this.data[key] = value;
         this.enqueueChangedKey(key);
       }
     }
-  }
-  public get(key: StoreKey): any {
-    return this.store[key];
   }
   /**
    * use a middleware function
@@ -241,7 +240,7 @@ export const store = new Store(10, debug ? [logChangesMiddleware] : []);
 
 // React hook
 export const useGlobalState = (key: StoreKey) => {
-  const [reactValue, setReactValue] = useState(store.get(key));
+  const [reactValue, setReactValue] = useState(store.data[key]);
 
   store.subscribe((changedKeys: Array<StoreKey>): void => {
     const watchedKeysDidChange = intersection(
@@ -250,7 +249,7 @@ export const useGlobalState = (key: StoreKey) => {
     ).length;
 
     if (watchedKeysDidChange) {
-      setReactValue(store.get(key));
+      setReactValue(store.data[key]);
     }
   });
 
@@ -264,7 +263,7 @@ export const useGlobalState = (key: StoreKey) => {
 
 // React hook
 export const useGlobalValue = (key: StoreKey) => {
-  const [reactValue, setReactValue] = useState(store.get(key));
+  const [reactValue, setReactValue] = useState(store.data[key]);
 
   store.subscribe((changedKeys: Array<StoreKey>): void => {
     const watchedKeysDidChange = intersection(
@@ -273,7 +272,7 @@ export const useGlobalValue = (key: StoreKey) => {
     ).length;
 
     if (watchedKeysDidChange) {
-      setReactValue(store.get(key));
+      setReactValue(store.data[key]);
     }
   });
 

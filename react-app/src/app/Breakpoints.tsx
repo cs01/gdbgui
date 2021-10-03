@@ -2,7 +2,7 @@ import React from "react";
 import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
 import Actions from "./Actions";
-import Util from "./Util";
+import { Util } from "./Util";
 import FileOps from "./FileOps";
 import { FileLink } from "./Links";
 import constants from "./constants";
@@ -255,7 +255,7 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
     return (
       <div
         className="breakpoint"
-        onClick={() => Actions.view_file(b.fullNameToDisplay, b.line)}
+        onClick={() => Actions.viewFile(b.fullNameToDisplay, b.line)}
       >
         <table
           style={{
@@ -301,7 +301,7 @@ class Breakpoints extends React.Component {
   }
   render() {
     const breakpointsJsx = [];
-    for (const b of store.get("breakpoints")) {
+    for (const b of store.data.breakpoints) {
       breakpointsJsx.push(<Breakpoint bkpt={b} key={b.number} />);
     }
 
@@ -337,18 +337,18 @@ class Breakpoints extends React.Component {
       GdbApi.run_gdb_command(cmd);
     }
   }
-  static addOrRemoveBreakpoint(fullname: string, line: number) {
+  static toggleBreakpoint(fullname: string, line: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
       Breakpoints.removeBreakpointIfPresent(fullname, line);
     } else {
       Breakpoints.addBreakpoint(fullname, line);
     }
   }
-  static addBreakpoint(fullname: any, line: any) {
-    GdbApi.run_gdb_command(GdbApi.get_insert_break_cmd(fullname, line));
+  static addBreakpoint(fullname: string, line: number) {
+    GdbApi.requestAddBreakpoint(fullname, line);
   }
   static hasBreakpoint(fullname: any, line: any) {
-    const bkpts = store.get("breakpoints");
+    const bkpts = store.data.breakpoints;
     for (const b of bkpts) {
       if (b.fullname === fullname && b.line === line) {
         return true;
@@ -357,7 +357,7 @@ class Breakpoints extends React.Component {
     return false;
   }
   static getBreakpointNumber(fullname: string, line: number) {
-    const bkpts = store.get("breakpoints");
+    const bkpts = store.data.breakpoints;
     for (const b of bkpts) {
       if (b.fullname === fullname && b.line === line) {
         return b.number;
@@ -372,20 +372,17 @@ class Breakpoints extends React.Component {
     ]);
   }
   static getBreakpointLinesForFile(fullname: any) {
-    return store
-      .get("breakpoints")
+    return store.data.breakpoints
       .filter((b: any) => b.fullNameToDisplay === fullname && b.enabled === "y")
       .map((b: any) => parseInt(b.line));
   }
   static getDisabledBreakpointLinesForFile(fullname: any) {
-    return store
-      .get("breakpoints")
+    return store.data.breakpoints
       .filter((b: any) => b.fullNameToDisplay === fullname && b.enabled !== "y")
       .map((b: any) => parseInt(b.line));
   }
   static getConditionalBreakpointLinesForFile(fullname: any) {
-    return store
-      .get("breakpoints")
+    return store.data.breakpoints
       .filter((b: any) => b.fullNameToDisplay === fullname && b.cond !== undefined)
       .map((b: any) => parseInt(b.line));
   }
@@ -432,7 +429,7 @@ class Breakpoints extends React.Component {
       fullNameToDisplay,
     };
     // add the breakpoint if it's not stored already
-    const bkpts = store.get("breakpoints");
+    const bkpts = store.data.breakpoints;
     if (bkpts.indexOf(gdbguiBreakpoint) === -1) {
       bkpts.push(gdbguiBreakpoint);
       store.set("breakpoints", bkpts);

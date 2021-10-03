@@ -1,23 +1,26 @@
 import _ from "lodash";
 import constants from "./constants";
 import { initial_data, debug } from "./InitialData";
+import { GlobalState } from "./types";
 
 /**
  * The initial store data. Keys cannot be added after initialization.
  * All fields in here should be shared by > 1 component, otherwise they should
  * exist as local state for that component.
  */
-const initialGlobalState = {
+const initialGlobalState: GlobalState = {
   // environment
   debug, // if gdbgui is run in debug mode
   gdbgui_version: initial_data.gdbgui_version,
   latest_gdbgui_version: "(not fetched)",
   gdb_version: "unknown", // this is parsed from gdb's output
   gdb_version_array: [], // this is parsed from gdb's output
-  gdb_pid: undefined,
+  gdb_pid: null,
   gdb_command: initial_data.gdb_command,
   can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
   show_settings: false,
+
+  gdbWebsocket: null,
 
   debug_in_reverse: false,
   reverse_supported: false,
@@ -25,14 +28,10 @@ const initialGlobalState = {
   modal_header: null,
   modal_body: null,
 
-  show_tour_guide: true,
-  tour_guide_step: 0,
-  num_tour_guide_steps: 0,
   tooltip: { hidden: false, content: "placeholder", node: null, show_for_n_sec: null },
   textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
 
   // preferences
-  highlight_source_code: true, // get saved boolean to highlight source code
   max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
   auto_add_breakpoint_to_main: true,
 
@@ -43,9 +42,9 @@ const initialGlobalState = {
   inferior_program: constants.inferior_states.unknown,
   inferior_pid: null,
 
-  paused_on_frame: undefined,
+  paused_on_frame: null,
   selected_frame_num: 0,
-  current_thread_id: undefined,
+  current_thread_id: null,
   stack: [],
   locals: [],
   threads: [],
@@ -65,10 +64,6 @@ const initialGlobalState = {
   source_code_state: constants.source_code_states.NONE_AVAILABLE,
   source_code_selection_state: constants.source_code_selection_states.PAUSED_FRAME,
 
-  source_code_infinite_scrolling: false,
-  source_linenum_to_display_start: 0,
-  source_linenum_to_display_end: 0,
-
   // binary selection
   inferior_binary_path: null,
   inferior_binary_path_last_modified_unix_sec: null,
@@ -82,7 +77,7 @@ const initialGlobalState = {
   memory_cache: {},
   start_addr: "",
   end_addr: "",
-  bytes_per_line: "8",
+  bytes_per_line: 8,
 
   // breakpoints
   breakpoints: [],
@@ -95,16 +90,10 @@ const initialGlobalState = {
 
   gdb_mi_output: [],
 
-  gdb_autocomplete_options: [],
-
-  gdb_console_entries: [],
-
   // if we try to write something before the websocket is connected, store it here
   queuedGdbCommands: [],
 
   show_filesystem: false,
-  middle_panes_split_obj: {},
-  gdbguiPty: null,
 };
 
 function get_stored(key: any, default_val: any) {

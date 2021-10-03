@@ -32,7 +32,7 @@ class ToolTip extends React.Component {
   }
   render() {
     clearTimeout(this.timeout);
-    const tooltip = store.get("tooltip");
+    const tooltip = store.data.tooltip;
     if (!tooltip.node || tooltip.hidden) {
       return null;
     }

@@ -29,4 +29,4 @@ const defaultInitialData: InitialData = {
 export const initial_data: InitialData = window.initial_data ?? defaultInitialData;
 
 // @ts-ignore
-export const debug: boolean = window.debug ?? true;
+export const debug: boolean = process.env.NODE_ENV === "development";

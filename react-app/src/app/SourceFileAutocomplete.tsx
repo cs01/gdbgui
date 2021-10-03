@@ -1,7 +1,7 @@
 import { store } from "./GlobalState";
 import constants from "./constants";
 import Actions from "./Actions";
-import Util from "./Util";
+import { Util } from "./Util";
 import FileOps from "./FileOps";
 import React from "react";
 import _ from "lodash";
@@ -22,8 +22,8 @@ class SourceFileAutocomplete extends React.Component {
   }
   store_change_callback() {
     if (this.awesomeplete_input) {
-      if (!_.isEqual(this.awesomeplete_input._list, store.get("source_file_paths"))) {
-        this.awesomeplete_input.list = store.get("source_file_paths");
+      if (!_.isEqual(this.awesomeplete_input._list, store.data.source_file_paths)) {
+        this.awesomeplete_input.list = store.data.source_file_paths;
       }
     }
   }
@@ -67,13 +67,13 @@ class SourceFileAutocomplete extends React.Component {
       // @ts-expect-error ts-migrate(2345) FIXME: Argument of type 'number' is not assignable to par... Remove this comment to see the full error message
       [fullname, line] = Util.parse_fullname_and_line(user_input, default_line);
       FileOps.userSelectFileToView(fullname, line);
-    } else if (store.get("source_file_paths").length === 0) {
+    } else if (store.data.source_file_paths.length === 0) {
       // source file list has not been fetched yet, so fetch it
       Actions.fetch_source_files();
     }
   }
   onclick_dropdown() {
-    if (store.get("source_file_paths").length === 0) {
+    if (store.data.source_file_paths.length === 0) {
       // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
       // request that gdb populate this list.
       Actions.fetch_source_files();

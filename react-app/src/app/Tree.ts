@@ -37,7 +37,7 @@ const Tree = {
   gdb_var_being_updated: null, // if user clicks deep in a tree, only rerender that subtree, don't start from root again
 
   _render: function () {
-    const gdbvar = store.get("root_gdb_tree_var");
+    const gdbvar = store.data.root_gdb_tree_var;
     if (!gdbvar) {
       // @ts-expect-error ts-migrate(2531) FIXME: Object is possibly 'null'.
       Tree.el.innerHTML = `
@@ -49,7 +49,7 @@ const Tree = {
       return;
     }
 
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     const gdb_root_var_to_update = Tree.gdb_var_being_updated
       ? Tree.gdb_var_being_updated
       : gdbvar;

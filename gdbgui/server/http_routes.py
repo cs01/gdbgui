@@ -40,7 +40,6 @@ def read_file():
     start_line = int(data["start_line"])
     start_line = max(1, start_line)  # make sure it's not negative
     end_line = int(data["end_line"])
-    should_highlight = data["highlight"]
 
     if path and os.path.isfile(path):
         try:
@@ -60,7 +59,6 @@ def read_file():
                 raw_source_code_lines_of_interest = raw_source_code_list[
                     (start_line - 1) : (end_line)
                 ]
-                highlighted = False
                 source_code = raw_source_code_lines_of_interest
 
             return jsonify(
@@ -68,7 +66,6 @@ def read_file():
                     "source_code_array": source_code,
                     "path": path,
                     "last_modified_unix_sec": last_modified,
-                    "highlighted": highlighted,
                     "start_line": start_line,
                     "end_line": end_line,
                     "num_lines_in_file": num_lines_in_file,

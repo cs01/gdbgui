@@ -29,26 +29,26 @@ const GlobalEvents = {
     if (e.target.nodeName !== "INPUT" && !modifier) {
       const char = String.fromCharCode(e.keyCode).toLowerCase();
       if (e.keyCode === constants.DOWN_BUTTON_NUM || char === "s") {
-        GdbApi.click_step_button();
+        GdbApi.requestStep();
       } else if (e.keyCode === constants.RIGHT_BUTTON_NUM) {
-        GdbApi.click_next_button();
+        GdbApi.requestNext();
       } else if (char === "n") {
-        GdbApi.click_next_button(e.shiftKey);
+        GdbApi.requestNext(e.shiftKey);
       } else if (char === "c") {
-        GdbApi.click_continue_button(e.shiftKey);
+        GdbApi.requestContinue(e.shiftKey);
       } else if (e.keyCode === constants.UP_BUTTON_NUM || char === "u") {
         GdbApi.click_return_button();
       } else if (char === "r") {
         GdbApi.click_run_button();
       } else if (char === "m") {
-        GdbApi.click_next_instruction_button(e.shiftKey);
+        GdbApi.requestSendNextInstruction(e.shiftKey);
       } else if (e.keyCode === constants.COMMA_BUTTON_NUM) {
-        GdbApi.click_step_instruction_button(e.shiftKey);
+        GdbApi.requestSendStepInstruction(e.shiftKey);
       } else if (
         e.keyCode === constants.LEFT_BUTTON_NUM &&
-        store.get("reverse_supported")
+        store.data.reverse_supported
       ) {
-        GdbApi.click_next_button(true);
+        GdbApi.requestNext(true);
       }
     }
   },

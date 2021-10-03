@@ -17,7 +17,7 @@ class Locals extends React.Component {
   render() {
     const content = [];
     const sorted_local_objs = _.sortBy(
-      store.get("locals"),
+      store.data.locals,
       (unsorted_obj: any) => unsorted_obj.name
     );
 
@@ -57,7 +57,7 @@ class Locals extends React.Component {
     }
   }
   get_autocreated_obj_from_expr(expr: any) {
-    for (const obj of store.get("expressions")) {
+    for (const obj of store.data.expressions) {
       if (obj.expression === expr && obj.expr_type === "local") {
         return obj;
       }
@@ -65,9 +65,9 @@ class Locals extends React.Component {
     return null;
   }
   static clear_autocreated_exprs() {
-    const exprs_objs_to_remove = store
-      .get("expressions")
-      .filter((obj: any) => obj.expr_type === "local");
+    const exprs_objs_to_remove = store.data.expressions.filter(
+      (obj: any) => obj.expr_type === "local"
+    );
     exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
   }
   static clear() {

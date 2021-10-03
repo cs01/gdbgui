@@ -9,7 +9,6 @@
 import React, { useEffect, useState } from "react";
 import { store } from "./GlobalState";
 // import constants from "./constants";
-import GdbApi from "./GdbApi";
 import FileOps from "./FileOps";
 // import FoldersView from "./FoldersView";
 import GlobalEvents from "./GlobalEvents";
@@ -33,14 +32,15 @@ import { Nav } from "./Nav";
 import { TargetSelector } from "./TargetSelector";
 import { GdbguiEditor } from "./GdbguiEditor";
 import { Footer } from "./Footer";
+import { GdbWebsocket } from "./Websocket";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
   useEffect(() => {
     async function initialize() {
       const initialData: InitialData = await (await fetch("/initial_data")).json();
-
-      GdbApi.init(initialData.gdb_command, initialData.gdbpid);
+      const gdbWebsocket = new GdbWebsocket(initialData.gdb_command, initialData.gdbpid);
+      store.set("gdbWebsocket", gdbWebsocket);
       GlobalEvents.init();
       FileOps.init();
       setInitialData(initialData);
@@ -205,7 +205,7 @@ export function Gdbgui() {
 //       minSize: 100,
 //       cursor: "col-resize",
 //       direction: "horizontal", // horizontal makes a left/right pane, and a divider running vertically
-//       sizes: store.get("show_filesystem") ? [30, 40, 29] : [0, 70, 29], // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
+//       sizes: store.data.show_filesystem ? [30, 40, 29] : [0, 70, 29], // adding to exactly 100% is a little buggy due to splitjs, so keep it to 99
 //     }
 //   );
 
@@ -221,7 +221,7 @@ export function Gdbgui() {
 // // Fetch the latest version only if using in normal mode. If debugging, we tend to
 // // refresh quite a bit, which might make too many requests to github and cause them
 // // to block our ip? Either way it just seems weird to make so many ajax requests.
-// if (!store.get("debug")) {
+// if (!store.data.debug) {
 //   // fetch version
 //   $.ajax({
 //     url: "https://raw.githubusercontent.com/cs01/gdbgui/master/gdbgui/VERSION.txt",

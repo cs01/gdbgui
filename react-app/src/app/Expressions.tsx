@@ -15,7 +15,7 @@ class Expressions extends React.Component {
 
   render() {
     const sortedExpressionObjs = _.sortBy(
-      store.get("expressions"),
+      store.data.expressions,
       (unsortedObj: any) => unsortedObj.expression
     );
     // only render variables in scope that were not created for the Locals component

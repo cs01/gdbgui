@@ -42,17 +42,6 @@ class Threads extends React.Component<{}, ThreadsState> {
     ]);
   }
 
-  static select_thread_id(thread_id: any) {
-    GdbApi.select_thread_id(thread_id);
-  }
-
-  static select_frame(framenum: any) {
-    store.set("selected_frame_num", framenum);
-    store.set("line_of_source_to_flash", null);
-    store.set("make_current_line_visible", true);
-    GdbApi.select_frame(framenum);
-  }
-
   render() {
     if (this.state.threads.length <= 0) {
       return <span className="placeholder" />;
@@ -132,7 +121,7 @@ class Threads extends React.Component<{}, ThreadsState> {
         <button
           className="btn btn-default text-sm"
           onClick={() => {
-            Threads.select_thread_id(thread.id);
+            GdbApi.requestSelectThreadId(thread.id);
           }}
           title="Select this thread"
         >
@@ -173,14 +162,14 @@ class Threads extends React.Component<{}, ThreadsState> {
       title = `this is the active frame of the selected thread (frame id ${frame_num})`;
     } else if (is_current_thread_being_rendered) {
       onclick = () => {
-        Threads.select_frame(frame_num);
+        GdbApi.requestSelectFrame(frame_num);
       };
       classes.push("pointer");
       title = `click to select this frame (frame id ${frame_num})`;
     } else {
       // different thread, allow user to switch threads
       onclick = () => {
-        Threads.select_thread_id(thread_id);
+        GdbApi.requestSelectThreadId(thread_id);
       };
       classes.push("pointer");
       title = `click to select this thead (thread id ${thread_id})`;
@@ -228,13 +217,13 @@ class Threads extends React.Component<{}, ThreadsState> {
   }
   static update_stack(stack: any) {
     store.set("stack", stack);
-    store.set("paused_on_frame", stack[store.get("selected_frame_num") || 0]);
+    store.set("paused_on_frame", stack[store.data.selected_frame_num || 0]);
     store.set(
       "fullname_to_render",
-      store.get("paused_on_frame") ? store.get("paused_on_frame").fullname : {}
+      store.data.paused_on_frame ? store.data.paused_on_frame.fullname : {}
     );
-    store.set("line_of_source_to_flash", parseInt(store.get("paused_on_frame").line));
-    store.set("current_assembly_address", store.get("paused_on_frame").addr);
+    store.set("line_of_source_to_flash", parseInt(store.data.paused_on_frame.line));
+    store.set("current_assembly_address", store.data.paused_on_frame.addr);
     store.set("make_current_line_visible", true);
   }
   set_thread_id(id: any) {

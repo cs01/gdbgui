@@ -60,7 +60,7 @@ class GdbMiOutput extends React.Component<{}, State> {
       .replace(/[^(\\)]\\n/g)
       .replace("<", "&lt;")
       .replace(">", "&gt;");
-    const gdbMiOutput = store.get("gdb_mi_output");
+    const gdbMiOutput = store.data.gdb_mi_output;
 
     while (gdbMiOutput.length > GdbMiOutput.MAX_OUTPUT_ENTRIES) {
       gdbMiOutput.shift();

@@ -22,14 +22,15 @@ class Settings extends React.Component {
       "pretty_print",
       "refresh_state_after_sending_console_command",
       "show_all_sent_commands_in_console",
-      "highlight_source_code",
     ]);
     this.get_update_max_lines_of_code_to_fetch =
       this.get_update_max_lines_of_code_to_fetch.bind(this);
   }
   static toggle_key(key: any) {
-    store.set(key, !store.get(key));
-    localStorage.setItem(key, JSON.stringify(store.get(key)));
+    // @ts-expect-error
+    store.set(key, !store.data[key]);
+    // @ts-expect-error
+    localStorage.setItem(key, JSON.stringify(store.data[key]));
   }
   static get_checkbox_row(store_key: any, text: any) {
     return (
@@ -39,7 +40,8 @@ class Settings extends React.Component {
             <label>
               <input
                 type="checkbox"
-                checked={store.get(store_key)}
+                // @ts-expect-error
+                checked={store.data[store_key]}
                 onChange={() => Settings.toggle_key(store_key)}
               />
               {text}
@@ -56,7 +58,7 @@ class Settings extends React.Component {
           Maximum number of source file lines to display:
           <input
             style={{ width: "100px", marginLeft: "10px" }}
-            defaultValue={store.get("max_lines_of_code_to_fetch")}
+            defaultValue={store.data.max_lines_of_code_to_fetch}
             ref={(el) => (this.max_source_file_lines_input = el)}
           />
           <button
@@ -95,10 +97,6 @@ class Settings extends React.Component {
             "show_all_sent_commands_in_console",
             "Print all sent commands in console, including those sent automatically by gdbgui"
           )}
-          {Settings.get_checkbox_row(
-            "highlight_source_code",
-            "Add syntax highlighting to source files"
-          )}
         </tbody>
       </table>
     );
@@ -107,7 +105,7 @@ class Settings extends React.Component {
   render() {
     return (
       <div
-        className={store.get("show_settings") ? "fullscreen_modal" : "hidden"}
+        className={store.data.show_settings ? "fullscreen_modal" : "hidden"}
         ref={(el) => (this.settings_node = el)}
         onClick={(e) => {
           if (e.target === this.settings_node) {

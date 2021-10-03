@@ -1,8 +1,8 @@
 import React, { useLayoutEffect } from "react";
-import GdbApi from "./GdbApi";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { ptyFontSize } from "./constants";
+import { store } from "./GlobalState";
 
 const terminal = new Terminal({
   cursorBlink: true,
@@ -26,14 +26,20 @@ export function InferiorTerminal(props: {}) {
         },
         ev
       ) => {
-        GdbApi.getSocket().emit("pty_interaction", {
-          data: { pty_name: "program_pty", key: data.key, action: "write" },
+        store.data.gdbWebsocket?.publishPtyData({
+          pty_name: "program_pty",
+          key: data.key,
+          action: "write",
         });
       }
     );
-    GdbApi.getSocket().on("program_pty_response", function (pty_response: string) {
-      terminal.write(pty_response);
-    });
+
+    store.data.gdbWebsocket?.addWebsocketEventHandler(
+      "program_pty_response",
+      (pty_response: string) => {
+        terminal.write(pty_response);
+      }
+    );
     terminal.loadAddon(fitAddon);
     setInterval(() => {
       try {

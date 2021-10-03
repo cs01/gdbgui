@@ -7,161 +7,17 @@ import Registers from "./Registers";
 import Memory from "./Memory";
 import Actions from "./Actions";
 import constants from "./constants";
-import process_gdb_response from "./process_gdb_response";
-import io from "socket.io-client";
-import { debug, initial_data } from "./InitialData";
+import { initial_data } from "./InitialData";
 import _ from "lodash";
 import $ from "jquery";
+import { GdbWebsocket } from "./Websocket";
 
-// print to console if debug is true
-let log: {
-  (arg0: string): void;
-  (...data: any[]): void;
-  (message?: any, ...optionalParams: any[]): void;
-  (): void;
-};
-if (debug) {
-  log = console.info;
-} else {
-  log = function () {
-    // stubbed out
-  };
-}
-
-/**
- * This object contains methods to interact with
- * gdb, but does not directly render anything in the DOM.
- */
-let socket: SocketIOClient.Socket;
 const GdbApi = {
-  getSocket: function () {
-    if (!socket) {
-      throw new Error("webocket has not been set up");
-    }
-    return socket;
-  },
-  init: function (gdbCommand: string, gdbPid: Nullable<number>) {
-    const TIMEOUT_MIN = 5;
-    const opts: SocketIOClient.ConnectOpts = {
-      timeout: TIMEOUT_MIN * 60 * 1000,
-      reconnection: false,
-      query: {
-        gdbpid: gdbPid ?? 0,
-        gdb_command: gdbCommand,
-      },
-    };
-
-    socket =
-      process.env.NODE_ENV === "development"
-        ? io.connect("http://127.0.0.1:5000/gdb_listener", opts)
-        : io.connect("/gdb_listener", opts);
-
-    socket.on("connect", function () {
-      log("connected");
-      const queuedGdbCommands = store.get("queuedGdbCommands");
-      if (queuedGdbCommands) {
-        GdbApi.run_gdb_command(queuedGdbCommands);
-        store.set("queuedGdbCommands", []);
-      }
-    });
-
-    socket.on("gdb_response", function (response_array: any) {
-      // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-      clearTimeout(GdbApi._waiting_for_response_timeout);
-      store.set("waiting_for_response", false);
-      process_gdb_response(response_array);
-    });
-    socket.on("fatal_server_error", function (data: { message: null | string }) {
-      Actions.add_console_entries(
-        `Message from server: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-      socket.close();
-    });
-    socket.on("error_running_gdb_command", function (data: { message: any }) {
-      Actions.add_console_entries(
-        `Error occurred on server when running gdb command: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-      socket.close();
-    });
-
-    socket.on("server_error", function (data: { message: any }) {
-      Actions.add_console_entries(
-        `Server message: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
-    });
-
-    socket.on(
-      "debug_session_connection_event",
-      function (gdb_pid_obj: {
-        pid: number;
-        message: string | void;
-        ok: boolean;
-        started_new_gdb_process: boolean;
-      }) {
-        const gdb_pid = gdb_pid_obj.pid;
-        const message = gdb_pid_obj.message;
-        const error = !gdb_pid_obj.ok;
-        const started_new_gdb_process = gdb_pid_obj.started_new_gdb_process;
-
-        if (message) {
-          Actions.add_console_entries(
-            message,
-            error
-              ? constants.console_entry_type.STD_ERR
-              : constants.console_entry_type.GDBGUI_OUTPUT
-          );
-        }
-        if (error) {
-          socket.close();
-          return;
-        }
-        store.set("gdb_pid", gdb_pid);
-
-        if (started_new_gdb_process) {
-          GdbApi.run_initial_commands();
-        } else {
-          Actions.refresh_state_for_gdb_pause();
-        }
-      }
-    );
-
-    socket.on("disconnect", function () {
-      // we no longer need to warn the user before they exit the page since the gdb process
-      // on the server is already gone
-      window.onbeforeunload = () => null;
-
-      Actions.show_modal(
-        "",
-        <>
-          <p>
-            The connection to the gdb session has been closed. This tab will no longer
-            function as expected.
-          </p>
-          <p className="font-bold">
-            To start a new session or connect to a different session, go to the{" "}
-            <a href="/dashboard">dashboard</a>.
-          </p>
-        </>
-      );
-      Actions.add_console_entries(
-        `The connection to the gdb session has been closed. To start a new session, go to ${window.location.origin}/dashboard`,
-        constants.console_entry_type.STD_ERR
-      );
-
-      // if (debug) {
-      //   window.location.reload(true);
-      // }
-    });
-  },
-  _waiting_for_response_timeout: null,
   click_run_button: function () {
-    Actions.inferior_program_starting();
+    Actions.onEventInferiorProgramStarting();
     GdbApi.run_gdb_command("-exec-run");
   },
-  run_initial_commands: function () {
+  runInitialCommands: function () {
     const cmds = ["-list-features", "-list-target-features"];
     for (const src in initial_data.remap_sources) {
       const dst = initial_data.remap_sources[src];
@@ -169,29 +25,29 @@ const GdbApi = {
     }
     GdbApi.run_gdb_command(cmds);
   },
-  inferior_is_paused: function () {
+  isInferiorPaused: function () {
     return (
       [constants.inferior_states.unknown, constants.inferior_states.paused].indexOf(
-        store.get("inferior_program")
+        store.data.inferior_program
       ) !== -1
     );
   },
-  click_continue_button: function (reverse = false) {
-    Actions.inferior_program_resuming();
+  requestContinue: function (reverse = false) {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command(
-      "-exec-continue" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+      "-exec-continue" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
-  click_next_button: function (reverse = false) {
-    Actions.inferior_program_resuming();
+  requestNext: function (reverse = false) {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command(
-      "-exec-next" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+      "-exec-next" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
-  click_step_button: function (reverse = false) {
-    Actions.inferior_program_resuming();
+  requestStep: function (reverse = false) {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command(
-      "-exec-step" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+      "-exec-step" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   click_return_button: function () {
@@ -200,109 +56,46 @@ const GdbApi = {
     // That means we do NOT dispatch the event `event_inferior_program_resuming`, because it's not, in fact, running.
     // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
     GdbApi.run_gdb_command("-exec-return");
-    Actions.inferior_program_paused();
+    Actions.onEventInferiorProgramStopped();
   },
-  click_next_instruction_button: function (reverse = false) {
-    Actions.inferior_program_resuming();
+  requestSendNextInstruction: function (reverse = false) {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command(
       "-exec-next-instruction" +
-        (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+        (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
-  click_step_instruction_button: function (reverse = false) {
-    Actions.inferior_program_resuming();
+  requestSendStepInstruction: function (reverse = false) {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command(
       "-exec-step-instruction" +
-        (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+        (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
-  click_send_interrupt_button: function () {
-    Actions.inferior_program_resuming();
+  requestConnectToGdbserver(user_input: string) {
+    // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
+    store.set("source_file_paths", []);
+    store.set("language", "c_family");
+    store.set("inferior_binary_path", null);
+    Actions.inferiorProgramExited();
+    GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
+  },
+  requestInterrupt: function () {
+    Actions.onEventInferiorProgramResuming();
     GdbApi.run_gdb_command("-exec-interrupt");
   },
-  send_autocomplete_command: function (command: string) {
-    Actions.inferior_program_resuming();
-    GdbApi.run_gdb_command("complete " + command);
-  },
-  click_gdb_cmd_button: function (e: {
-    currentTarget: { dataset: { [x: string]: any; cmd: undefined; cmd0: undefined } };
-  }) {
-    if (e.currentTarget.dataset.cmd !== undefined) {
-      // run single command
-      // i.e. <a data-cmd='cmd' />
-      GdbApi.run_gdb_command(e.currentTarget.dataset.cmd);
-    } else if (e.currentTarget.dataset.cmd0 !== undefined) {
-      // run multiple commands
-      // i.e. <a data-cmd0='cmd 0' data-cmd1='cmd 1' data-...>
-      const cmds = [];
-      let i = 0;
-      let cmd = e.currentTarget.dataset[`cmd${i}`];
-      // extract all commands into an array, then run them
-      // (max of 100 commands)
-      while (cmd !== undefined && i < 100) {
-        cmds.push(cmd);
-        i++;
-        cmd = e.currentTarget.dataset[`cmd${i}`];
-      }
-      GdbApi.run_gdb_command(cmds);
-    } else {
-      console.error(
-        "expected cmd or cmd0 [cmd1, cmd2, ...] data attribute(s) on element"
-      );
-    }
-  },
-  select_frame: function (framenum: any) {
+  requestSelectFrame: function (framenum: any) {
     // TODO this command is deprecated (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Stack-Manipulation.html)
     // This command in deprecated in favor of passing the ‘--frame’ option to every command.
+    store.set("selected_frame_num", framenum);
+    store.set("line_of_source_to_flash", null);
+    store.set("make_current_line_visible", true);
     GdbApi.run_command_and_refresh_state(`-stack-select-frame ${framenum}`);
   },
-  select_thread_id: function (thread_id: any) {
+  requestSelectThreadId: function (thread_id: any) {
     // TODO this command is deprecated (http://www.sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI-Thread-Commands.html)
     // This command is deprecated in favor of explicitly using the ‘--thread’ option to each command.
     GdbApi.run_command_and_refresh_state(`-thread-select ${thread_id}`);
-  },
-  /**
-   * Before sending a command, set a timeout to notify the user that something might be wrong
-   * if a response from gdb is not received
-   */
-  waiting_for_response: function () {
-    store.set("waiting_for_response", true);
-    const WAIT_TIME_SEC = 10;
-    // @ts-expect-error ts-migrate(2769) FIXME: Argument of type 'null' is not assignable to param... Remove this comment to see the full error message
-    clearTimeout(GdbApi._waiting_for_response_timeout);
-    // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'null'.
-    GdbApi._waiting_for_response_timeout = setTimeout(() => {
-      Actions.clear_program_state();
-      store.set("waiting_for_response", false);
-      if (GdbApi.getSocket().disconnected) {
-        return;
-      }
-
-      Actions.add_console_entries(
-        `No gdb response received after ${WAIT_TIME_SEC} seconds.`,
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-      Actions.add_console_entries(
-        "Possible reasons include:",
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-      Actions.add_console_entries(
-        "1) gdbgui, gdb, or the debugged process is not running.",
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-
-      Actions.add_console_entries(
-        "2) gdb or the inferior process is busy running and needs to be " +
-          "interrupted (press the pause button up top).",
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-
-      Actions.add_console_entries(
-        "3) Something is just taking a long time to finish and respond back to " +
-          "this browser window, in which case you can just keep waiting.",
-        constants.console_entry_type.GDBGUI_OUTPUT
-      );
-    }, WAIT_TIME_SEC * 1000);
   },
   /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -311,27 +104,9 @@ const GdbApi = {
    * @return nothing
    */
   run_gdb_command: function (cmd: any) {
-    if (_.trim(cmd) === "") {
-      return;
-    }
-
-    let cmds = cmd;
-    if (_.isString(cmds)) {
-      cmds = [cmds];
-    }
-
-    if (socket?.connected) {
-      socket.emit("run_gdb_command", { cmd: cmds });
-      GdbApi.waiting_for_response();
-      // add the send command to the console to show commands that are
-      // automatically run by gdb
-      if (store.get("show_all_sent_commands_in_console")) {
-        Actions.add_console_entries(cmds, constants.console_entry_type.SENT_COMMAND);
-      }
-    } else {
-      log("queuing commands");
-      const queuedGdbCommands = store.get("queuedGdbCommands").concat(cmds);
-      store.set("queuedGdbCommands", queuedGdbCommands);
+    const gdbWebsocket: Nullable<GdbWebsocket> = store.data.gdbWebsocket;
+    if (gdbWebsocket) {
+      gdbWebsocket.runGdbCommand(cmd);
     }
   },
   run_command_and_refresh_state: function (user_cmd: string | any[]) {
@@ -344,7 +119,7 @@ const GdbApi = {
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     GdbApi.run_gdb_command(cmds);
   },
-  backtrace: function () {
+  requestBacktrace: function () {
     let cmds = ["backtrace"];
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     store.set("inferior_program", constants.inferior_states.paused);
@@ -381,8 +156,8 @@ const GdbApi = {
     cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + "-stack-list-frames");
     return cmds;
   },
-  refresh_breakpoints: function () {
-    GdbApi.run_gdb_command([GdbApi.get_break_list_cmd()]);
+  requestBreakpointList: function () {
+    GdbApi.run_gdb_command(["-break-list"]);
   },
   get_inferior_binary_last_modified_unix_sec(path: any) {
     $.ajax({
@@ -394,8 +169,8 @@ const GdbApi = {
       error: GdbApi._error_getting_last_modified_unix_sec,
     });
   },
-  get_insert_break_cmd: function (fullname: any, line: any) {
-    return [`-break-insert "${fullname}:${line}"`];
+  requestAddBreakpoint: function (fullname: string, line: number) {
+    GdbApi.run_gdb_command([`-break-insert "${fullname}:${line}"`]);
   },
   get_delete_break_cmd: function (bkpt_num: any) {
     return `-break-delete ${bkpt_num}`;
@@ -410,7 +185,7 @@ const GdbApi = {
       `-file-exec-and-symbols ${binary}`, // Specify the executable file to be debugged. This file is the one from which the symbol table is also read.
     ];
     // add breakpoint if we don't already have one
-    if (store.get("auto_add_breakpoint_to_main")) {
+    if (store.data.auto_add_breakpoint_to_main) {
       cmds.push("-break-insert main");
     }
     cmds.push(GdbApi.get_break_list_cmd());
@@ -420,7 +195,7 @@ const GdbApi = {
     GdbApi.run_gdb_command(`set disassembly-flavor ${flavor}`);
   },
   _recieve_last_modified_unix_sec(data: { path: any; last_modified_unix_sec: any }) {
-    if (data.path === store.get("inferior_binary_path")) {
+    if (data.path === store.data.inferior_binary_path) {
       store.set(
         "inferior_binary_path_last_modified_unix_sec",
         data.last_modified_unix_sec
@@ -432,6 +207,4 @@ const GdbApi = {
     store.set("inferior_binary_path", null);
   },
 };
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'socket' does not exist on type '{ getSoc... Remove this comment to see the full error message
-GdbApi.socket = socket;
 export default GdbApi;

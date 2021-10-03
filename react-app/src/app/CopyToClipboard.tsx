@@ -23,7 +23,7 @@ class CopyToClipboard extends React.Component<Props> {
         onMouseLeave={ToolTip.hide_tooltip}
         onClick={() => {
           try {
-            const textarea = store.get("textarea_to_copy_to_clipboard");
+            const textarea = store.data.textarea_to_copy_to_clipboard;
             textarea.value = this.props.content;
             textarea.select();
             if (document.execCommand("copy") === true) {

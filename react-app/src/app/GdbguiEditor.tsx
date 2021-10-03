@@ -1,10 +1,10 @@
 import Editor from "@monaco-editor/react";
-import { useState } from "react";
 import { ClockLoader as Loader } from "react-spinners";
 import constants from "./constants";
 import FileOps from "./FileOps";
 import { useGlobalValue } from "./GlobalState";
 import monaco from "monaco-editor";
+
 function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
   const states = constants.source_code_states;
   switch (sourceCodeState) {
@@ -38,7 +38,7 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
       return `file not found: ${sourcePath}`;
     }
     case states.NONE_AVAILABLE: {
-      return "empty";
+      return "";
     }
     default: {
       return "developer error";
@@ -47,13 +47,11 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
 }
 
 export function GdbguiEditor() {
-  const [theme, setTheme] = useState("vs-dark");
-  const [language, setLanguage] = useState("javascript");
-  const [isEditorReady, setIsEditorReady] = useState(false);
+  // const [_, setIsEditorReady] = useState(false);
   const sourceCodeState = useGlobalValue("source_code_state");
   const sourcePath = useGlobalValue("fullname_to_render");
   function handleEditorDidMount(editor: typeof monaco.editor, monaco: any) {
-    setIsEditorReady(true);
+    // setIsEditorReady(true);
 
     editor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
       // TODO handle gutter clicks
@@ -73,7 +71,7 @@ export function GdbguiEditor() {
   return (
     <Editor
       height="calc(100% - 19px)" // By default, it fully fits with its parent
-      theme={theme}
+      theme={"vs-dark"}
       language="c"
       loading={<Loader />}
       value={getSourceCode(sourceCodeState, sourcePath)}

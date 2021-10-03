@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import constants from "./constants";
 import Actions from "./Actions";
-import Util from "./Util";
-import { initial_data } from "./InitialData";
-import _ from "lodash";
+import { Util } from "./Util";
 import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/solid";
@@ -74,7 +71,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       placeholder: "examples: 127.0.0.1:9999 | /dev/ttya",
       onClick: () => {
         addUserInputToHistory(userInput);
-        Actions.connectToGdbserver(userInput);
+        GdbApi.requestConnectToGdbserver(userInput);
       },
     },
     {
@@ -197,14 +194,7 @@ function DebugControls() {
         <PlayIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_continue_button()}
-        />
-      </button>
-      <button title="Send Interrupt signal (SIGINT) to gdb process to pause it (if it's running)">
-        <PauseIcon
-          className="h-8 w-8"
-          aria-hidden="true"
-          onClick={() => Actions.send_signal("SIGINT", gdbPid)}
+          onClick={() => GdbApi.requestContinue()}
         />
       </button>
       <button
@@ -216,7 +206,7 @@ function DebugControls() {
         <ArrowCircleRightIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_next_button()}
+          onClick={() => GdbApi.requestNext()}
         />
       </button>
       <button
@@ -228,7 +218,7 @@ function DebugControls() {
         <ArrowCircleDownIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_step_button()}
+          onClick={() => GdbApi.requestStep()}
         />
       </button>
       <button
@@ -240,7 +230,7 @@ function DebugControls() {
         <ArrowSmRightIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_next_instruction_button()}
+          onClick={() => GdbApi.requestSendNextInstruction()}
         />
       </button>
       <button
@@ -252,7 +242,14 @@ function DebugControls() {
         <ArrowSmDownIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_step_instruction_button()}
+          onClick={() => GdbApi.requestSendStepInstruction()}
+        />
+      </button>
+      <button title="Send Interrupt signal (SIGINT) to gdb process to pause it (if it's running)">
+        <PauseIcon
+          className="h-8 w-8"
+          aria-hidden="true"
+          onClick={() => Actions.send_signal("SIGINT", gdbPid)}
         />
       </button>
     </div>

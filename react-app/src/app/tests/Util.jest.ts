@@ -1,4 +1,4 @@
-import Util from "../Util";
+import { Util } from "../Util";
 
 /* eslint-env jest */
 

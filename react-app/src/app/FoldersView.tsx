@@ -82,16 +82,16 @@ class FoldersView extends React.Component<{}, State> {
 
           <button
             className={"btn btn-xs btn-default " + (can_reveal ? "" : "hidden")}
-            onClick={() => this.reveal_path(store.get("fullname_to_render"))}
+            onClick={() => this.reveal_path(store.data.fullname_to_render)}
           >
             Reveal current file
           </button>
         </div>
 
-        {store.get("source_file_paths").length ? (
+        {store.data.source_file_paths.length ? (
           <p style={{ color: "white", padding: "4px" }}>
-            {store.get("source_file_paths").length} known files used to compile the
-            inferior program
+            {store.data.source_file_paths.length} known files used to compile the inferior
+            program
           </p>
         ) : (
           ""
@@ -100,8 +100,8 @@ class FoldersView extends React.Component<{}, State> {
         {hiding_entries ? (
           <p style={{ color: "black", background: "orange", padding: "4px" }}>
             Maximum entries in tree below is {this.maxFilesystemEntries} (hiding{" "}
-            {store.get("source_file_paths").length - this.maxFilesystemEntries}). All
-            files can still be searched for in the input above.
+            {store.data.source_file_paths.length - this.maxFilesystemEntries}). All files
+            can still be searched for in the input above.
           </p>
         ) : (
           ""

@@ -4,7 +4,6 @@ import constants from "./constants";
 import Actions from "./Actions";
 import { debug } from "./InitialData";
 import _ from "lodash";
-import React, { ReactChild } from "react";
 
 let debugPrint: any;
 if (debug) {
@@ -64,7 +63,6 @@ const FileFetcher: {
       // eslint-disable-next-line camelcase
       end_line: endLine,
       path: fullname,
-      highlight: store.get("highlight_source_code"),
     };
     const response = await fetch("/read_file", {
       body: JSON.stringify(data),
@@ -78,9 +76,12 @@ const FileFetcher: {
     async function handleError() {
       try {
         const errorMessage = (await response.json()).message;
-        Actions.add_console_entries(errorMessage, constants.console_entry_type.STD_ERR);
+        Actions.addGdbGuiConsoleEntries(
+          errorMessage,
+          constants.console_entry_type.STD_ERR
+        );
       } catch (e) {
-        Actions.add_console_entries(
+        Actions.addGdbGuiConsoleEntries(
           `${response.statusText} (${response.status} error)`,
           constants.console_entry_type.STD_ERR
         );
@@ -173,7 +174,6 @@ const FileOps = {
         "paused_on_frame",
         "current_assembly_address",
         "disassembly_for_missing_file",
-        "highlight_source_code",
         "missing_files",
         "files_being_fetched",
         "gdb_version_array",
@@ -193,44 +193,38 @@ const FileOps = {
     store.set("fullname_to_render", fullname);
     store.set("line_of_source_to_flash", line);
     store.set("make_current_line_visible", true);
-    store.set("source_code_infinite_scrolling", false);
   },
   _storeChangeCallback: function () {
-    if (store.get("inferior_program") === constants.inferior_states.running) {
+    if (store.data.inferior_program === constants.inferior_states.running) {
       return;
     }
 
-    const sourceCodeSelectionState = store.get("source_code_selection_state");
+    const sourceCodeSelectionState = store.data.source_code_selection_state;
     let fullname = null;
     let isPaused = false;
     let pausedAddr = null;
-    const pausedFrame = store.get("paused_on_frame");
+    const pausedFrame = store.data.paused_on_frame;
     const pausedFrameFullname = pausedFrame ? pausedFrame.fullname : null;
     let requireCachedLineNum;
     if (
       sourceCodeSelectionState === constants.source_code_selection_states.USER_SELECTION
     ) {
-      fullname = store.get("fullname_to_render");
+      fullname = store.data.fullname_to_render;
       isPaused = false;
       pausedAddr = null;
-      requireCachedLineNum = parseInt(store.get("line_of_source_to_flash"));
+      requireCachedLineNum = parseInt(store.data.line_of_source_to_flash ?? "");
     } else if (
       sourceCodeSelectionState === constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      isPaused = store.get("inferior_program") === constants.inferior_states.paused;
-      pausedAddr = store.get("current_assembly_address");
+      isPaused = store.data.inferior_program === constants.inferior_states.paused;
+      pausedAddr = store.data.current_assembly_address;
       fullname = pausedFrameFullname;
-      requireCachedLineNum = parseInt(store.get("line_of_source_to_flash"));
+      requireCachedLineNum = parseInt(store.data.line_of_source_to_flash ?? "");
     }
 
-    const sourceCodeInfiniteScrolling = store.get("source_code_infinite_scrolling");
     const asmIsCached = FileOps.assembly_is_cached(fullname);
     const fileIsMissing = FileOps.is_missing_file(fullname);
-    const obj = FileOps.getStartAndEndLines(
-      fullname,
-      requireCachedLineNum,
-      sourceCodeInfiniteScrolling
-    );
+    const obj = FileOps.getStartAndEndLines(fullname, requireCachedLineNum);
 
     FileOps.updateSourceCodeState(
       fullname,
@@ -243,40 +237,30 @@ const FileOps = {
       pausedAddr
     );
   },
-  getStartAndEndLines(
-    fullname: string,
-    requireCachedLineNum: number | undefined,
-    sourceCodeInfiniteScrolling: boolean
-  ) {
+  getStartAndEndLines(fullname: string, requireCachedLineNum: number | undefined) {
     let startLine;
     let endLine;
-    if (sourceCodeInfiniteScrolling) {
-      startLine = store.get("source_linenum_to_display_start");
-      endLine = store.get("source_linenum_to_display_end");
-      requireCachedLineNum = startLine;
-    } else {
-      const sourceFileObj = FileOps.get_source_file_obj_from_cache(fullname);
-      if (!requireCachedLineNum) {
-        requireCachedLineNum = 1;
-      }
-
-      startLine = Math.max(
-        Math.floor(requireCachedLineNum - store.get("max_lines_of_code_to_fetch") / 2),
-        1
-      );
-      endLine = Math.ceil(startLine + store.get("max_lines_of_code_to_fetch"));
-
-      if (sourceFileObj) {
-        // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-        endLine = Math.ceil(Math.min(endLine, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
-      }
-      if (startLine > endLine) {
-        startLine = Math.floor(
-          Math.max(1, endLine - store.get("max_lines_of_code_to_fetch"))
-        );
-      }
-      requireCachedLineNum = Math.min(requireCachedLineNum, endLine);
+    const sourceFileObj = FileOps.get_source_file_obj_from_cache(fullname);
+    if (!requireCachedLineNum) {
+      requireCachedLineNum = 1;
     }
+
+    startLine = Math.max(
+      Math.floor(requireCachedLineNum - store.data.max_lines_of_code_to_fetch / 2),
+      1
+    );
+    endLine = Math.ceil(startLine + store.data.max_lines_of_code_to_fetch);
+
+    if (sourceFileObj) {
+      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+      endLine = Math.ceil(Math.min(endLine, FileOps.get_num_lines_in_file(fullname))); // don't go past the end of the line
+    }
+    if (startLine > endLine) {
+      startLine = Math.floor(
+        Math.max(1, endLine - store.data.max_lines_of_code_to_fetch)
+      );
+    }
+    requireCachedLineNum = Math.min(requireCachedLineNum, endLine);
 
     return {
       start_line: startLine,
@@ -303,10 +287,6 @@ const FileOps = {
         "source_code_state",
         assembly_is_cached ? states.ASSM_AND_SOURCE_CACHED : states.SOURCE_CACHED
       );
-      store.set("source_linenum_to_display_start", start_line);
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-      end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname));
-      store.set("source_linenum_to_display_end", end_line);
     } else if (fullname && !file_is_missing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it
       store.set("source_code_state", states.FETCHING_SOURCE);
@@ -315,9 +295,9 @@ const FileOps = {
     } else if (
       is_paused &&
       paused_addr &&
-      store
-        .get("disassembly_for_missing_file")
-        .some((obj: any) => parseInt(obj.address, 16) === parseInt(paused_addr, 16))
+      store.data.disassembly_for_missing_file.some(
+        (obj: any) => parseInt(obj.address, 16) === parseInt(paused_addr, 16)
+      )
     ) {
       store.set("source_code_state", states.ASSM_CACHED);
     } else if (is_paused && paused_addr) {
@@ -398,7 +378,7 @@ const FileOps = {
   get_source_file_obj_from_cache: function (
     fullname: Nullable<string>
   ): Nullable<SourceFile> {
-    const cached_files = store.get("cached_source_files");
+    const cached_files = store.data.cached_source_files;
     for (const sf of cached_files) {
       if (sf.fullname === fullname) {
         return sf;
@@ -425,7 +405,7 @@ const FileOps = {
         num_lines_in_file: num_lines_in_file,
         exists: true,
       };
-      const cachedSourceFiles = store.get("cached_source_files");
+      const cachedSourceFiles = store.data.cached_source_files;
 
       cachedSourceFiles.push(new_source_file);
       store.set("cached_source_files", cachedSourceFiles);
@@ -437,7 +417,7 @@ const FileOps = {
     } else {
       // mutate existing source code object by adding keys (lines) of the new source code object
       Object.assign(cached_file_obj.source_code_obj, source_code_obj);
-      store.set("cached_source_files", store.get("cached_source_files"));
+      store.set("cached_source_files", store.data.cached_source_files);
     }
   },
   /**
@@ -447,10 +427,10 @@ const FileOps = {
     fullname: any,
     src_last_modified_unix_sec: any
   ) {
-    if (store.get("inferior_binary_path")) {
+    if (store.data.inferior_binary_path) {
       if (
         src_last_modified_unix_sec >
-          store.get("inferior_binary_path_last_modified_unix_sec") &&
+          (store.data.inferior_binary_path_last_modified_unix_sec ?? 0) &&
         FileOps.warningShownForOldBinary === false
       ) {
         Actions.show_modal(
@@ -466,8 +446,8 @@ const FileOps = {
             ).format(constants.DATE_FORMAT)}`}</p>
             <p>
               {/* @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'moment'. */}
-              {`Binary: ${store.get("inferior_binary_path")}, modified ${moment(
-                store.get("inferior_binary_path_last_modified_unix_sec") * 1000
+              {`Binary: ${store.data.inferior_binary_path}, modified ${moment(
+                (store.data.inferior_binary_path_last_modified_unix_sec ?? 0) * 1000
               ).format(constants.DATE_FORMAT)}`}
               )
             </p>
@@ -478,7 +458,7 @@ const FileOps = {
     }
   },
   get_cached_assembly_for_file: function (fullname: any) {
-    for (const file of store.get("cached_source_files")) {
+    for (const file of store.data.cached_source_files) {
       if (file.fullname === fullname) {
         return file.assembly;
       }
@@ -491,62 +471,62 @@ const FileOps = {
   clear_cached_source_files: function () {
     store.set("cached_source_files", []);
   },
-  fetch_more_source_at_beginning() {
-    const fullname = store.get("fullname_to_render");
-    const center_on_line = store.get("source_linenum_to_display_start") - 1;
-    // store.set('source_code_infinite_scrolling', true)
-    store.set(
-      "source_linenum_to_display_start",
-      Math.max(
-        store.get("source_linenum_to_display_start") -
-          Math.floor(store.get("max_lines_of_code_to_fetch") / 2),
-        1
-      )
-    );
-    store.set(
-      "source_linenum_to_display_end",
-      Math.ceil(
-        store.get("source_linenum_to_display_start") +
-          store.get("max_lines_of_code_to_fetch")
-      )
-    );
-    Actions.view_file(fullname, center_on_line);
-    FileFetcher.fetch(
-      fullname,
-      store.get("source_linenum_to_display_start"),
-      store.get("source_linenum_to_display_end")
-    );
-  },
-  fetch_more_source_at_end() {
-    store.set("source_code_infinite_scrolling", true);
+  // fetch_more_source_at_beginning() {
+  //   const fullname = store.data.fullname_to_render;
+  //   const center_on_line = store.data.source_linenum_to_display_start - 1;
+  //   // store.set('source_code_infinite_scrolling', true)
+  //   store.set(
+  //     "source_linenum_to_display_start",
+  //     Math.max(
+  //       store.data.source_linenum_to_display_start -
+  //         Math.floor(store.data.max_lines_of_code_to_fetch / 2),
+  //       1
+  //     )
+  //   );
+  //   store.set(
+  //     "source_linenum_to_display_end",
+  //     Math.ceil(
+  //       store.data.source_linenum_to_display_start +
+  //         store.data.max_lines_of_code_to_fetch
+  //     )
+  //   );
+  //   Actions.viewFile(fullname, center_on_line);
+  //   FileFetcher.fetch(
+  //     fullname,
+  //     store.data.source_linenum_to_display_start,
+  //     store.data.source_linenum_to_display_end
+  //   );
+  // },
+  // fetch_more_source_at_end() {
+  //   store.set("source_code_infinite_scrolling", true);
 
-    const fullname = store.get("fullname_to_render");
-    let end_line =
-      store.get("source_linenum_to_display_end") +
-      Math.ceil(store.get("max_lines_of_code_to_fetch") / 2);
+  //   const fullname = store.data.fullname_to_render;
+  //   let end_line =
+  //     store.data.source_linenum_to_display_end +
+  //     Math.ceil(store.data.max_lines_of_code_to_fetch / 2);
 
-    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
-    if (source_file_obj) {
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-      end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
-    }
+  //   const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+  //   if (source_file_obj) {
+  //     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
+  //     end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
+  //   }
 
-    let start_line = end_line - store.get("max_lines_of_code_to_fetch");
-    start_line = Math.max(1, start_line);
-    store.set("source_linenum_to_display_end", end_line);
-    store.set("source_linenum_to_display_start", start_line);
+  //   let start_line = end_line - store.data.max_lines_of_code_to_fetch;
+  //   start_line = Math.max(1, start_line);
+  //   store.set("source_linenum_to_display_end", end_line);
+  //   store.set("source_linenum_to_display_start", start_line);
 
-    FileFetcher.fetch(
-      fullname,
-      store.get("source_linenum_to_display_start"),
-      store.get("source_linenum_to_display_end")
-    );
-  },
+  //   FileFetcher.fetch(
+  //     fullname,
+  //     store.data.source_linenum_to_display_start,
+  //     store.data.source_linenum_to_display_end
+  //   );
+  // },
   is_missing_file: function (fullname: any) {
-    return store.get("missing_files").indexOf(fullname) !== -1;
+    return store.data.missing_files.indexOf(fullname) !== -1;
   },
   add_missing_file: function (fullname: any) {
-    const missing_files = store.get("missing_files");
+    const missing_files = store.data.missing_files;
     missing_files.push(fullname);
     store.set("missing_files", missing_files);
   },
@@ -592,12 +572,12 @@ const FileOps = {
       // try to determine response format based on our guess of the gdb version being used
       // @ts-expect-error ts-migrate(2322) FIXME: Type '4' is not assignable to type 'null'.
       mi_response_format = FileOps.get_dissasembly_format_num(
-        store.get("gdb_version_array")
+        store.data.gdb_version_array
       );
     }
 
-    const fullname = store.get("fullname_to_render");
-    let line = parseInt(store.get("line_of_source_to_flash"));
+    const fullname = store.data.fullname_to_render;
+    let line = parseInt(store.data.line_of_source_to_flash ?? "");
     if (!line) {
       line = 1;
     }
@@ -618,7 +598,7 @@ const FileOps = {
     if (window.isNaN(hex_addr)) {
       return;
     }
-    Actions.add_console_entries(
+    Actions.addGdbGuiConsoleEntries(
       "Fetching assembly since file is missing",
       constants.console_entry_type.GDBGUI_OUTPUT
     );
@@ -635,7 +615,7 @@ const FileOps = {
     // @ts-expect-error ts-migrate(2538) FIXME: Type 'null' cannot be used as an index type.
     FileOps.unfetchableDisassemblyAddresses[addr_being_fetched] = true;
     FileOps.disassemblyAddrBeingFetched = null;
-    Actions.add_console_entries(
+    Actions.addGdbGuiConsoleEntries(
       "Failed to retrieve assembly for missing file",
       constants.console_entry_type.GDBGUI_OUTPUT
     );
@@ -668,7 +648,7 @@ const FileOps = {
       assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn;
     }
 
-    const cached_source_files = store.get("cached_source_files");
+    const cached_source_files = store.data.cached_source_files;
     for (const cached_file of cached_source_files) {
       if (cached_file.fullname === fullname) {
         cached_file.assembly = Object.assign(cached_file.assembly, assembly_to_save);

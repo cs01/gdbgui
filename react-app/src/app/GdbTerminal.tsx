@@ -1,17 +1,15 @@
 import React, { useLayoutEffect } from "react";
-import GdbApi from "./GdbApi";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 import { ptyFontSize } from "./constants";
 import Actions from "./Actions";
-import { initial_data } from "./InitialData";
+import { store } from "./GlobalState";
 
 function customKeyEventHandler(config: {
   pty_name: string;
   pty: Terminal;
   canPaste: boolean;
-  pidStoreKey: string;
 }) {
   return async (e: KeyboardEvent): Promise<boolean> => {
     if (!(e.type === "keydown")) {
@@ -30,9 +28,8 @@ function customKeyEventHandler(config: {
         }
         const toPaste = await navigator.clipboard.readText();
 
-        GdbApi.getSocket().emit("pty_interaction", {
-          data: { pty_name: config.pty_name, key: toPaste, action: "write" },
-        });
+        const data = { pty_name: config.pty_name, key: toPaste, action: "write" };
+        store.data.gdbWebsocket?.publishPtyData(data);
         return false;
       }
     }
@@ -59,12 +56,16 @@ export function GdbTerminal(props: {}) {
         pty_name: "user_pty",
         pty: terminal,
         canPaste: true,
-        pidStoreKey: "gdb_pid",
       })
     );
-    GdbApi.getSocket().on("user_pty_response", function (data: string) {
-      terminal.write(data);
-    });
+
+    store.data.gdbWebsocket?.addWebsocketEventHandler(
+      "user_pty_response",
+      (data: string) => {
+        terminal.write(data);
+      }
+    );
+
     terminal.onKey(
       (
         data: {
@@ -73,8 +74,10 @@ export function GdbTerminal(props: {}) {
         },
         ev
       ) => {
-        GdbApi.getSocket().emit("pty_interaction", {
-          data: { pty_name: "user_pty", key: data.key, action: "write" },
+        store.data.gdbWebsocket?.publishPtyData({
+          pty_name: "user_pty",
+          key: data.key,
+          action: "write",
         });
 
         if (data.domEvent.code === "Enter") {

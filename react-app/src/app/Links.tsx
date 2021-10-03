@@ -23,7 +23,7 @@ export class FileLink extends React.Component<Props> {
       sep = ":";
     }
     if (this.props.fullname) {
-      onclick = () => Actions.view_file(this.props.fullname, line);
+      onclick = () => Actions.viewFile(this.props.fullname, line);
       cls = "pointer";
     }
 

@@ -34,9 +34,7 @@ class HoverVar extends React.Component {
     store.reactComponentState(this, ["expressions"]);
   }
   render() {
-    const hover_objs = store
-      .get("expressions")
-      .filter((o: any) => o.expr_type === "hover");
+    const hover_objs = store.data.expressions.filter((o: any) => o.expr_type === "hover");
     let obj;
     if (Array.isArray(hover_objs) && hover_objs.length === 1) {
       obj = hover_objs[0];
@@ -78,7 +76,7 @@ class HoverVar extends React.Component {
     const WAIT_TIME_SEC = 0.5;
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
     HoverVar.enter_timeout = setTimeout(() => {
-      if (store.get("inferior_program") === constants.inferior_states.paused) {
+      if (store.data.inferior_program === constants.inferior_states.paused) {
         const ignore_errors = true;
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 3.
         GdbVariable.create_variable(varName, "hover", ignore_errors);
@@ -107,9 +105,9 @@ class HoverVar extends React.Component {
   static clear_hover_state() {
     clearTimeout(HoverVar.enter_timeout);
     clearTimeout(HoverVar.exit_timeout);
-    const exprs_objs_to_remove = store
-      .get("expressions")
-      .filter((obj: any) => obj.expr_type === "hover");
+    const exprs_objs_to_remove = store.data.expressions.filter(
+      (obj: any) => obj.expr_type === "hover"
+    );
     exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
   }
 }

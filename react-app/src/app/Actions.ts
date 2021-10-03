@@ -1,6 +1,5 @@
 import { store } from "./GlobalState";
 import GdbApi from "./GdbApi";
-import SourceCode from "./SourceCode";
 import Locals from "./Locals";
 import Memory from "./Memory";
 import constants from "./constants";
@@ -18,14 +17,14 @@ const Actions = {
     Memory.clear_cache();
     Locals.clear();
   },
-  inferior_program_starting: function () {
+  onEventInferiorProgramStarting: function () {
     store.set("inferior_program", constants.inferior_states.running);
     Actions.clear_program_state();
   },
-  inferior_program_resuming: function () {
+  onEventInferiorProgramResuming: function () {
     store.set("inferior_program", constants.inferior_states.running);
   },
-  inferior_program_paused: function (frame = {}) {
+  onEventInferiorProgramStopped: function (frame = {}) {
     store.set("inferior_program", constants.inferior_states.paused);
     store.set(
       "source_code_selection_state",
@@ -38,11 +37,10 @@ const Actions = {
     store.set("line_of_source_to_flash", parseInt(frame.line));
     // @ts-expect-error ts-migrate(2339) FIXME: Property 'addr' does not exist on type '{}'.
     store.set("current_assembly_address", frame.addr);
-    store.set("source_code_infinite_scrolling", false);
-    SourceCode.make_current_line_visible();
+    // SourceCode.make_current_line_visible();
     Actions.refresh_state_for_gdb_pause();
   },
-  inferior_program_exited: function () {
+  inferiorProgramExited: function () {
     store.set("inferior_program", constants.inferior_states.exited);
     store.set("disassembly_for_missing_file", []);
     store.set("root_gdb_tree_var", null);
@@ -57,22 +55,12 @@ const Actions = {
   refresh_state_for_gdb_pause: function () {
     GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
   },
-  execute_console_command: function (command: any) {
-    if (store.get("refresh_state_after_sending_console_command")) {
-      GdbApi.run_command_and_refresh_state(command);
-    } else {
-      GdbApi.run_gdb_command(command);
-    }
-  },
   onConsoleCommandRun: function () {
-    if (store.get("refresh_state_after_sending_console_command")) {
+    if (store.data.refresh_state_after_sending_console_command) {
       GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
     }
   },
-  clear_console: function () {
-    store.set("gdb_console_entries", []);
-  },
-  add_console_entries: function (entries: any, type: any) {
+  addGdbGuiConsoleEntries: function (entries: any, type: any) {
     if (type === constants.console_entry_type.STD_OUT) {
       // ignore
       return;
@@ -135,10 +123,10 @@ const Actions = {
     const type = error
       ? constants.console_entry_type.STD_ERR
       : constants.console_entry_type.STD_OUT;
-    Actions.add_console_entries(entries, type);
+    Actions.addGdbGuiConsoleEntries(entries, type);
   },
   toggle_modal_visibility() {
-    store.set("show_modal", !store.get("show_modal"));
+    store.set("show_modal", !store.data.show_modal);
   },
   show_modal(header: any, body: any) {
     store.set("modal_header", header);
@@ -150,24 +138,16 @@ const Actions = {
     store.set("source_file_paths", []);
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
-    Actions.inferior_program_exited();
+    Actions.inferiorProgramExited();
     const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
     GdbApi.run_gdb_command(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
-  connectToGdbserver(user_input: string) {
-    // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
-    store.set("source_file_paths", []);
-    store.set("language", "c_family");
-    store.set("inferior_binary_path", null);
-    Actions.inferior_program_exited();
-    GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
-  },
   remote_connected() {
-    Actions.inferior_program_paused();
+    Actions.onEventInferiorProgramStopped();
     const cmds = [];
-    if (store.get("auto_add_breakpoint_to_main")) {
-      Actions.add_console_entries(
+    if (store.data.auto_add_breakpoint_to_main) {
+      Actions.addGdbGuiConsoleEntries(
         "Connected to remote target! Adding breakpoint to main, then continuing target execution.",
         constants.console_entry_type.GDBGUI_OUTPUT
       );
@@ -175,7 +155,7 @@ const Actions = {
       cmds.push("-exec-continue");
       cmds.push(GdbApi.get_break_list_cmd());
     } else {
-      Actions.add_console_entries(
+      Actions.addGdbGuiConsoleEntries(
         'Connected to remote target! Add breakpoint(s), then press "continue" button (do not press "run").',
         constants.console_entry_type.GDBGUI_OUTPUT
       );
@@ -190,23 +170,21 @@ const Actions = {
     store.set("source_file_paths", []);
     GdbApi.run_gdb_command("-file-list-exec-source-files");
   },
-  view_file(fullname: any, line: any) {
+  viewFile(fullname: any, line: number) {
     store.set("fullname_to_render", fullname);
-    store.set("source_code_infinite_scrolling", false);
-    Actions.set_line_state(line);
+    Actions.setLineState(line);
   },
-  set_line_state(line: any) {
-    store.set("source_code_infinite_scrolling", false);
+  setLineState(line: number) {
     store.set(
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
     );
-    store.set("line_of_source_to_flash", parseInt(line));
+    store.set("line_of_source_to_flash", line);
     store.set("make_current_line_visible", true);
   },
-  clear_cached_assembly() {
+  clearCachedAssembly() {
     store.set("disassembly_for_missing_file", []);
-    const cached_source_files = store.get("cached_source_files");
+    const cached_source_files = store.data.cached_source_files;
     for (const file of cached_source_files) {
       file.assembly = {};
     }
@@ -226,19 +204,19 @@ const Actions = {
       type: "POST",
       data: { signal_name: signal_name, pid: pid },
       success: function (response) {
-        Actions.add_console_entries(
+        Actions.addGdbGuiConsoleEntries(
           response.message,
           constants.console_entry_type.GDBGUI_OUTPUT
         );
       },
       error: function (response) {
         if (response.responseJSON && response.responseJSON.message) {
-          Actions.add_console_entries(
+          Actions.addGdbGuiConsoleEntries(
             _.escape(response.responseJSON.message),
             constants.console_entry_type.STD_ERR
           );
         } else {
-          Actions.add_console_entries(
+          Actions.addGdbGuiConsoleEntries(
             `${response.statusText} (${response.status} error)`,
             constants.console_entry_type.STD_ERR
           );

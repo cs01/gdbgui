@@ -33,7 +33,7 @@ class Memory extends React.Component<{}, State> {
     ]);
   }
   get_memory_component_jsx_content() {
-    if (Object.keys(store.get("memory_cache")).length === 0) {
+    if (Object.keys(store.data.memory_cache).length === 0) {
       return (
         <span key="nothing" className="placeholder">
           no memory to display
@@ -47,8 +47,7 @@ class Memory extends React.Component<{}, State> {
     let i = 0;
     let hexAddrToDisplay = null;
 
-    let bytes_per_line =
-      parseInt(store.get("bytes_per_line")) || Memory.DEFAULT_BYTES_PER_LINE;
+    let bytes_per_line = store.data.bytes_per_line || Memory.DEFAULT_BYTES_PER_LINE;
     bytes_per_line = Math.max(bytes_per_line, 1);
 
     data.push([
@@ -64,7 +63,7 @@ class Memory extends React.Component<{}, State> {
       "",
     ]);
 
-    for (const hex_addr in store.get("memory_cache")) {
+    for (const hex_addr in store.data.memory_cache) {
       if (!hexAddrToDisplay) {
         hexAddrToDisplay = hex_addr;
       }
@@ -83,7 +82,7 @@ class Memory extends React.Component<{}, State> {
         hex_vals_for_this_addr = [];
         char_vals_for_this_addr = [];
       }
-      const hex_value = store.get("memory_cache")[hex_addr];
+      const hex_value = store.data.memory_cache[hex_addr];
       hex_vals_for_this_addr.push(hex_value);
       const char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, ".");
       char_vals_for_this_addr.push(
@@ -104,7 +103,7 @@ class Memory extends React.Component<{}, State> {
       ]);
     }
 
-    if (Object.keys(store.get("memory_cache")).length > 0) {
+    if (Object.keys(store.data.memory_cache).length > 0) {
       data.push([
         <span
           key="morebottom"
@@ -186,8 +185,8 @@ class Memory extends React.Component<{}, State> {
   }
 
   static getGdbCommandsFromState() {
-    const startAddr = parseInt(_.trim(store.get("start_addr")), 16);
-    let endAddr = parseInt(_.trim(store.get("end_addr")), 16);
+    const startAddr = parseInt(_.trim(store.data.start_addr), 16);
+    let endAddr = parseInt(_.trim(store.data.end_addr), 16);
 
     if (!window.isNaN(startAddr) && window.isNaN(endAddr)) {
       endAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
@@ -202,12 +201,10 @@ class Memory extends React.Component<{}, State> {
         const orig_end_addr = endAddr;
         endAddr = startAddr + Memory.MAX_ADDRESS_DELTA_BYTES;
         store.set("end_addr", "0x" + endAddr.toString(16));
-        Actions.add_console_entries(
-          `Cannot fetch ${
-            orig_end_addr - startAddr
-          } bytes. Changed end address to ${store.get(
-            "end_addr"
-          )} since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
+        Actions.addGdbGuiConsoleEntries(
+          `Cannot fetch ${orig_end_addr - startAddr} bytes. Changed end address to ${
+            store.data.end_addr
+          } since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
           constants.console_entry_type.STD_ERR
         );
       }
@@ -239,8 +236,8 @@ class Memory extends React.Component<{}, State> {
   static clickReadPrecedingMemory() {
     // update starting value, then re-fetch
     const NUM_ROWS = 3;
-    const startAddr = parseInt(_.trim(store.get("start_addr")), 16);
-    const byteOffset = store.get("bytes_per_line") * NUM_ROWS;
+    const startAddr = parseInt(_.trim(store.data.start_addr), 16);
+    const byteOffset = store.data.bytes_per_line * NUM_ROWS;
     store.set("start_addr", "0x" + (startAddr - byteOffset).toString(16));
     Memory.fetch_memory_from_state();
   }
@@ -248,8 +245,8 @@ class Memory extends React.Component<{}, State> {
   static clickReadMoreMemory() {
     // update ending value, then re-fetch
     const NUM_ROWS = 3;
-    const endAddr = parseInt(_.trim(store.get("end_addr")), 16);
-    const byteOffset = store.get("bytes_per_line") * NUM_ROWS;
+    const endAddr = parseInt(_.trim(store.data.end_addr), 16);
+    const byteOffset = store.data.bytes_per_line * NUM_ROWS;
     store.set("end_addr", "0x" + (endAddr + byteOffset).toString(16));
     Memory.fetch_memory_from_state();
   }
@@ -286,7 +283,7 @@ class Memory extends React.Component<{}, State> {
     // i.e. 0x000123 turns to
     // 0x123
     const hex_str_truncated = "0x" + parseInt(hex_str, 16).toString(16);
-    const cache = store.get("memory_cache");
+    const cache = store.data.memory_cache;
     cache[hex_str_truncated] = hex_val;
     store.set("memory_cache", cache);
   }

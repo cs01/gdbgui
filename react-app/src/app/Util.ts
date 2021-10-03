@@ -1,17 +1,4 @@
-import { store } from "./GlobalState";
-
-/**
- * Some general utility methods
- */
-const Util = {
-  persist_value_for_key: function (key: any) {
-    try {
-      const value = store.get(key);
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (err) {
-      console.error(err);
-    }
-  },
+export const Util = {
   /**
    * Escape gdb's output to be browser compatible
    * @param s: string to mutate
@@ -98,4 +85,7 @@ const Util = {
   },
 };
 
-export default Util;
+export function isObject(value: unknown) {
+  const typ = typeof value;
+  return value != null && (typ === "object" || typ === "function");
+}

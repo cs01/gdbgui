@@ -80,7 +80,7 @@ const VarCreator = {
         expression = '"' + expression + '"';
       }
       const cmds = [];
-      if (store.get("pretty_print")) {
+      if (store.data.pretty_print) {
         cmds.push("-enable-pretty-printing");
       }
 
@@ -302,7 +302,7 @@ class GdbVariable extends React.Component {
       obj._radix += 2;
     }
     GdbVariable._update_radix_values(obj);
-    store.set("expressions", store.get("expressions"));
+    store.set("expressions", store.data.expressions);
   }
   /**
    * Get ul for a variable with or without children
@@ -477,7 +477,7 @@ class GdbVariable extends React.Component {
     ChildVarFetcher.fetch_complete();
 
     // get the parent object of these children
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     const parent_obj = GdbVariable.get_obj_from_gdb_var_name(expressions, parent_name);
     if (parent_obj) {
       // prepare all the child objects we received for local storage
@@ -642,7 +642,7 @@ class GdbVariable extends React.Component {
     }
   }
   static fetch_and_show_children_for_var(gdb_var_name: any) {
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
     // mutate object by reference
     obj.show_children_in_ui = true;
@@ -656,7 +656,7 @@ class GdbVariable extends React.Component {
     }
   }
   static hide_children_in_ui(gdb_var_name: any) {
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
     if (obj) {
       obj.show_children_in_ui = false;
@@ -669,7 +669,7 @@ class GdbVariable extends React.Component {
   static _toggle_children_visibility(gdb_var_name: any) {
     // get data object, which has field that says whether its expanded or not
     const obj = GdbVariable.get_obj_from_gdb_var_name(
-      store.get("expressions"),
+      store.data.expressions,
       gdb_var_name
     );
     if (obj) {
@@ -687,7 +687,7 @@ class GdbVariable extends React.Component {
     }
   }
   static click_toggle_plot(gdb_var_name: any) {
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     // get data object, which has field that says whether its expanded or not
     const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
     if (obj) {
@@ -705,14 +705,14 @@ class GdbVariable extends React.Component {
     }
 
     let cmds: any = [];
-    for (const obj of store.get("expressions")) {
+    for (const obj of store.data.expressions) {
       cmds = cmds.concat(_get_cmds_for_obj(obj));
     }
     return cmds;
   }
   static handle_changelist(changelist_array: any) {
     for (const changelist of changelist_array) {
-      const expressions = store.get("expressions");
+      const expressions = store.data.expressions;
       const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, changelist.name);
       if (obj) {
         if (parseInt(changelist["has_more"]) === 1 && "name" in changelist) {
@@ -753,7 +753,7 @@ class GdbVariable extends React.Component {
    * since they are stored as fields in the object)
    */
   static _delete_local_gdb_var_data(gdb_var_name: any) {
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     _.remove(expressions, (v: any) => v.name === gdb_var_name);
     store.set("expressions", expressions);
   }
@@ -763,7 +763,7 @@ class GdbVariable extends React.Component {
   static save_new_expression(expression: any, expr_type: any, obj: any) {
     const new_obj = GdbVariable.prepare_gdb_obj_for_storage(obj, null);
     new_obj.expression = expression;
-    const expressions = store.get("expressions");
+    const expressions = store.data.expressions;
     expressions.push(new_obj);
     store.set("expressions", expressions);
   }
