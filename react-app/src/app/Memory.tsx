@@ -230,7 +230,7 @@ class Memory extends React.Component<{}, State> {
   static fetch_memory_from_state() {
     const cmds = Memory.getGdbCommandsFromState();
     Memory.clear_cache();
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
   }
 
   static clickReadPrecedingMemory() {

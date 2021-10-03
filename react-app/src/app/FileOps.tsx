@@ -590,7 +590,7 @@ const FileOps = {
       mi_response_format
     );
     if (cmd) {
-      GdbApi.run_gdb_command(cmd);
+      GdbApi.runGdbCommand(cmd);
     }
   },
   fetch_disassembly_for_missing_file: function (hex_addr: any) {
@@ -605,7 +605,7 @@ const FileOps = {
     const start = parseInt(hex_addr, 16);
     const end = start + 100;
     FileOps.disassemblyAddrBeingFetched = hex_addr;
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       constants.DISASSEMBLY_FOR_MISSING_FILE_STR +
         `-data-disassemble -s 0x${start.toString(16)} -e 0x${end.toString(16)} -- 0`
     );

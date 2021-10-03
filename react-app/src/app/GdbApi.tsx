@@ -15,7 +15,7 @@ import { GdbWebsocket } from "./Websocket";
 const GdbApi = {
   click_run_button: function () {
     Actions.onEventInferiorProgramStarting();
-    GdbApi.run_gdb_command("-exec-run");
+    GdbApi.runGdbCommand("-exec-run");
   },
   runInitialCommands: function () {
     const cmds = ["-list-features", "-list-target-features"];
@@ -23,7 +23,7 @@ const GdbApi = {
       const dst = initial_data.remap_sources[src];
       cmds.push(`set substitute-path "${src}" "${dst}"`);
     }
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
   },
   isInferiorPaused: function () {
     return (
@@ -34,19 +34,19 @@ const GdbApi = {
   },
   requestContinue: function (reverse = false) {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       "-exec-continue" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestNext: function (reverse = false) {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       "-exec-next" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestStep: function (reverse = false) {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       "-exec-step" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
@@ -55,19 +55,19 @@ const GdbApi = {
     // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
     // That means we do NOT dispatch the event `event_inferior_program_resuming`, because it's not, in fact, running.
     // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
-    GdbApi.run_gdb_command("-exec-return");
+    GdbApi.runGdbCommand("-exec-return");
     Actions.onEventInferiorProgramStopped();
   },
   requestSendNextInstruction: function (reverse = false) {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       "-exec-next-instruction" +
         (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestSendStepInstruction: function (reverse = false) {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command(
+    GdbApi.runGdbCommand(
       "-exec-step-instruction" +
         (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
@@ -78,11 +78,11 @@ const GdbApi = {
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
     Actions.inferiorProgramExited();
-    GdbApi.run_gdb_command([`-target-select remote ${user_input}`]);
+    GdbApi.runGdbCommand([`-target-select remote ${user_input}`]);
   },
   requestInterrupt: function () {
     Actions.onEventInferiorProgramResuming();
-    GdbApi.run_gdb_command("-exec-interrupt");
+    GdbApi.runGdbCommand("-exec-interrupt");
   },
   requestSelectFrame: function (framenum: any) {
     // TODO this command is deprecated (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Stack-Manipulation.html)
@@ -103,7 +103,7 @@ const GdbApi = {
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing
    */
-  run_gdb_command: function (cmd: any) {
+  runGdbCommand: function (cmd: any) {
     const gdbWebsocket: Nullable<GdbWebsocket> = store.data.gdbWebsocket;
     if (gdbWebsocket) {
       gdbWebsocket.runGdbCommand(cmd);
@@ -117,13 +117,13 @@ const GdbApi = {
       cmds.push(user_cmd);
     }
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
   },
   requestBacktrace: function () {
     let cmds = ["backtrace"];
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
     store.set("inferior_program", constants.inferior_states.paused);
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
   },
   /**
    * Get array of commands to send to gdb that refreshes everything in the
@@ -157,7 +157,7 @@ const GdbApi = {
     return cmds;
   },
   requestBreakpointList: function () {
-    GdbApi.run_gdb_command(["-break-list"]);
+    GdbApi.runGdbCommand(["-break-list"]);
   },
   get_inferior_binary_last_modified_unix_sec(path: any) {
     $.ajax({
@@ -170,10 +170,10 @@ const GdbApi = {
     });
   },
   requestAddBreakpoint: function (fullname: string, line: number) {
-    GdbApi.run_gdb_command([`-break-insert "${fullname}:${line}"`]);
+    GdbApi.runGdbCommand([`-break-insert "${fullname}:${line}"`]);
   },
-  get_delete_break_cmd: function (bkpt_num: any) {
-    return `-break-delete ${bkpt_num}`;
+  requestDeleteBreakpoint: function (bkpt_num: any) {
+    return GdbApi.runGdbCommand([`-break-delete ${bkpt_num}`]);
   },
   get_break_list_cmd: function () {
     return "-break-list";
@@ -192,7 +192,7 @@ const GdbApi = {
     return cmds;
   },
   set_assembly_flavor(flavor: string) {
-    GdbApi.run_gdb_command(`set disassembly-flavor ${flavor}`);
+    GdbApi.runGdbCommand(`set disassembly-flavor ${flavor}`);
   },
   _recieve_last_modified_unix_sec(data: { path: any; last_modified_unix_sec: any }) {
     if (data.path === store.data.inferior_binary_path) {

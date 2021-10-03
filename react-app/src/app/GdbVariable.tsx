@@ -32,7 +32,7 @@ const ChildVarFetcher = {
         obj.expr_of_parent;
       ChildVarFetcher._is_fetching = true;
       // @ts-expect-error ts-migrate(2532) FIXME: Object is possibly 'undefined'.
-      GdbApi.run_gdb_command(`-var-list-children --all-values "${obj.expr_of_parent}"`);
+      GdbApi.runGdbCommand(`-var-list-children --all-values "${obj.expr_of_parent}"`);
     } else {
       ChildVarFetcher.expr_gdb_parent_var_currently_fetching_children = null;
     }
@@ -89,7 +89,7 @@ const VarCreator = {
       const var_create_cmd = constants.CREATE_VAR_STR + `-var-create - * ${expression}`;
       cmds.push(var_create_cmd);
 
-      GdbApi.run_gdb_command(cmds);
+      GdbApi.runGdbCommand(cmds);
     } else {
       VarCreator._clear_state();
     }
@@ -746,7 +746,7 @@ class GdbVariable extends React.Component {
     // delete locally
     GdbVariable._delete_local_gdb_var_data(gdbvar);
     // delete in gdb too
-    GdbApi.run_gdb_command(`-var-delete ${gdbvar}`);
+    GdbApi.runGdbCommand(`-var-delete ${gdbvar}`);
   }
   /**
    * Delete local copy of gdb variable (all its children are deleted too

@@ -53,11 +53,11 @@ const Actions = {
    * Request relevant store information from gdb to refresh UI
    */
   refresh_state_for_gdb_pause: function () {
-    GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
+    GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
   },
   onConsoleCommandRun: function () {
     if (store.data.refresh_state_after_sending_console_command) {
-      GdbApi.run_gdb_command(GdbApi._get_refresh_state_for_pause_cmds());
+      GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
     }
   },
   addGdbGuiConsoleEntries: function (entries: any, type: any) {
@@ -140,7 +140,7 @@ const Actions = {
     store.set("inferior_binary_path", null);
     Actions.inferiorProgramExited();
     const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
   remote_connected() {
@@ -160,15 +160,15 @@ const Actions = {
         constants.console_entry_type.GDBGUI_OUTPUT
       );
     }
-    GdbApi.run_gdb_command(cmds);
+    GdbApi.runGdbCommand(cmds);
   },
   attachToProcess(user_input: any) {
     // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
-    GdbApi.run_gdb_command(`-target-attach ${user_input}`);
+    GdbApi.runGdbCommand(`-target-attach ${user_input}`);
   },
   fetch_source_files() {
     store.set("source_file_paths", []);
-    GdbApi.run_gdb_command("-file-list-exec-source-files");
+    GdbApi.runGdbCommand("-file-list-exec-source-files");
   },
   viewFile(fullname: any, line: number) {
     store.set("fullname_to_render", fullname);

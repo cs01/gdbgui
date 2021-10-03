@@ -13,7 +13,7 @@ import { GdbMiMessage } from "./types";
 export function GdbMiOutput() {
   const gdbMiOutput = useGlobalValue("gdb_mi_output");
   return (
-    <div className="h-96 overflow-scroll">
+    <div className="overflow-scroll">
       <h2>Gdb MI Output</h2>
       <div className="text-sm">{gdbMiOutput.length} entries (newest at top)</div>
       {gdbMiOutput.map((miMessage: GdbMiMessage, i: number) => {

@@ -5,7 +5,7 @@
 
 import React, { useLayoutEffect } from "react";
 
-import Breakpoints from "./Breakpoints";
+import { BreakpointsFn } from "./Breakpoints";
 import constants from "./constants";
 import Expressions from "./Expressions";
 import { GdbMiOutput } from "./GdbMiOutput";
@@ -29,7 +29,12 @@ const onmousemoveInParentCallback = function (e: any) {
 };
 
 export function RightSidebar(props: { signals: {}; debug: boolean }) {
-  return <GdbMiOutput />;
+  return (
+    <div>
+      <BreakpointsFn />
+      <GdbMiOutput />;
+    </div>
+  );
   // useLayoutEffect(() => {
   //   Tree.init();
   // }, []);

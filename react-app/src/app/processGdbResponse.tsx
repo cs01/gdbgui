@@ -94,15 +94,14 @@ function handleGdbMessage(r: GdbMiMessage) {
       const new_bkpt = r.payload.bkpt;
 
       // remove duplicate breakpoints
-      const cmds = store.data.breakpoints
+      store.data.breakpoints
         .filter(
           (b: any) =>
             new_bkpt.fullname === b.fullname &&
             new_bkpt.func === b.func &&
             new_bkpt.line === b.line
         )
-        .map((b: any) => GdbApi.get_delete_break_cmd(b.number));
-      GdbApi.run_gdb_command(cmds);
+        .forEach((b: any) => GdbApi.requestDeleteBreakpoint(b.number));
 
       // save this breakpoint
       const bkpt = Breakpoints.saveBreakpoint(r.payload.bkpt);

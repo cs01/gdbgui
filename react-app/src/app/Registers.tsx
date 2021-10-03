@@ -94,7 +94,7 @@ class Registers extends React.Component<{}, State> {
       // Somehow register names and values do not match. Clear cached values, then refetch both.
       Registers.clear_register_name_cache();
       Registers.clear_cached_values();
-      GdbApi.run_gdb_command(Registers.get_update_cmds());
+      GdbApi.runGdbCommand(Registers.get_update_cmds());
     } else if (num_register_names === num_register_values) {
       const columns = ["name", "value (hex)", "value (decimal)", "description"];
       const register_table_data = [];

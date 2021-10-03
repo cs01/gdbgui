@@ -229,15 +229,7 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
           <span className="monospace" style={{ paddingRight: "5px" }}>
             {infoGlyph} {func}
           </span>
-          <span
-            style={{
-              color: "#bbbbbb",
-              fontStyle: "italic",
-              paddingRight: "5px",
-            }}
-          >
-            thread groups: {b["thread-groups"]}
-          </span>
+          <span className="italic">thread groups: {b["thread-groups"]}</span>
           <span>{breakCondition}</span>
           <span
             style={{
@@ -253,18 +245,8 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
     }
 
     return (
-      <div
-        className="breakpoint"
-        onClick={() => Actions.viewFile(b.fullNameToDisplay, b.line)}
-      >
-        <table
-          style={{
-            width: "100%",
-            fontSize: "0.9em",
-            borderWidth: "0px",
-          }}
-          className="lighttext table-condensed"
-        >
+      <div onClick={() => Actions.viewFile(b.fullNameToDisplay, b.line)}>
+        <table className="text-sm">
           <tbody>
             <tr>
               <td>
@@ -293,6 +275,21 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
   } // render function
 }
 
+export function BreakpointsFn(props: {}) {
+  const breakpoints = store.data.breakpoints;
+  if (breakpoints.length === 0) {
+    return <div>No breakpoints</div>;
+  }
+  return (
+    <div className="py-10">
+      <div className="text-lg">Breakpoints</div>
+      {breakpoints.map((breakpoint, i) => {
+        return <Breakpoint bkpt={breakpoint} key={i} />;
+      })}
+    </div>
+  );
+}
+
 class Breakpoints extends React.Component {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
@@ -313,19 +310,19 @@ class Breakpoints extends React.Component {
   }
   static enableOrDisableBreakpoint(checked: boolean, breakpointNumber: number) {
     if (checked) {
-      GdbApi.run_gdb_command([
+      GdbApi.runGdbCommand([
         `-break-disable ${breakpointNumber}`,
         GdbApi.get_break_list_cmd(),
       ]);
     } else {
-      GdbApi.run_gdb_command([
+      GdbApi.runGdbCommand([
         `-break-enable ${breakpointNumber}`,
         GdbApi.get_break_list_cmd(),
       ]);
     }
   }
   static setBreakpointCondition(condition: string, breakpointNumber: number) {
-    GdbApi.run_gdb_command([
+    GdbApi.runGdbCommand([
       `-break-condition ${breakpointNumber} ${condition}`,
       GdbApi.get_break_list_cmd(),
     ]);
@@ -333,8 +330,8 @@ class Breakpoints extends React.Component {
   static removeBreakpointIfPresent(fullname: string, line: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
       const number = Breakpoints.getBreakpointNumber(fullname, line);
-      const cmd = [GdbApi.get_delete_break_cmd(number), GdbApi.get_break_list_cmd()];
-      GdbApi.run_gdb_command(cmd);
+      const cmd = [GdbApi.requestDeleteBreakpoint(number), GdbApi.get_break_list_cmd()];
+      GdbApi.runGdbCommand(cmd);
     }
   }
   static toggleBreakpoint(fullname: string, line: number) {
@@ -366,8 +363,8 @@ class Breakpoints extends React.Component {
     console.error(`could not find breakpoint for ${fullname}:${line}`);
   }
   static deleteBreakpoint(breakpointNumber: number) {
-    GdbApi.run_gdb_command([
-      GdbApi.get_delete_break_cmd(breakpointNumber),
+    GdbApi.runGdbCommand([
+      GdbApi.requestDeleteBreakpoint(breakpointNumber),
       GdbApi.get_break_list_cmd(),
     ]);
   }
