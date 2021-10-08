@@ -239,12 +239,18 @@ function valueHasChanged(a: any, b: any) {
 export const store = new Store(10, debug ? [logChangesMiddleware] : []);
 
 // React hook
-export const useGlobalState = (key: StoreKey) => {
-  const [reactValue, setReactValue] = useState(store.data[key]);
+export const useGlobalState = <T,>(
+  key: StoreKey
+): [T, React.Dispatch<React.SetStateAction<T>>] => {
+  const [reactValue, setReactValue] = useState<T>(store.data[key]);
 
   store.subscribe((changedKeys: Array<StoreKey>): void => {
     if (changedKeys.indexOf(key) !== -1) {
-      setReactValue(store.data[key]);
+      try {
+        setReactValue(store.data[key]);
+      } catch (e) {
+        console.error(e);
+      }
     }
   });
 
@@ -257,8 +263,8 @@ export const useGlobalState = (key: StoreKey) => {
 };
 
 // React hook
-export const useGlobalValue = (key: StoreKey) => {
-  const [reactValue, setReactValue] = useState(store.data[key]);
+export const useGlobalValue = <T,>(key: StoreKey) => {
+  const [reactValue, setReactValue] = useState<T>(store.data[key]);
 
   store.subscribe(function (changedKeys: Array<StoreKey>): void {
     if (changedKeys.indexOf(key) !== -1) {

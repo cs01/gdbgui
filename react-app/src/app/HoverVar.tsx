@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import constants from "./constants";
 import GdbVariable from "./GdbVariable";
 import $ from "jquery";
@@ -76,7 +76,7 @@ class HoverVar extends React.Component {
     const WAIT_TIME_SEC = 0.5;
     // @ts-expect-error ts-migrate(2322) FIXME: Type 'Timeout' is not assignable to type 'undefine... Remove this comment to see the full error message
     HoverVar.enter_timeout = setTimeout(() => {
-      if (store.data.inferior_program === constants.inferior_states.paused) {
+      if (store.data.gdbguiState === "stopped") {
         const ignore_errors = true;
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 3.
         GdbVariable.create_variable(varName, "hover", ignore_errors);

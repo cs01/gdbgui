@@ -1,7 +1,7 @@
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import constants from "./constants";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import { debug } from "./InitialData";
 import _ from "lodash";
 
@@ -76,14 +76,11 @@ const FileFetcher: {
     async function handleError() {
       try {
         const errorMessage = (await response.json()).message;
-        Actions.addGdbGuiConsoleEntries(
-          errorMessage,
-          constants.console_entry_type.STD_ERR
-        );
+        Handlers.addGdbGuiConsoleEntries(errorMessage, "STD_ERR");
       } catch (e) {
-        Actions.addGdbGuiConsoleEntries(
+        Handlers.addGdbGuiConsoleEntries(
           `${response.statusText} (${response.status} error)`,
-          constants.console_entry_type.STD_ERR
+          "STD_ERR"
         );
       }
       FileOps.add_missing_file(fullname);
@@ -169,7 +166,7 @@ const FileOps = {
   init: function () {
     store.subscribeToKeys(
       [
-        "inferior_program",
+        "gdbguiState",
         "source_code_selection_state",
         "paused_on_frame",
         "current_assembly_address",
@@ -195,7 +192,7 @@ const FileOps = {
     store.set("make_current_line_visible", true);
   },
   _storeChangeCallback: function () {
-    if (store.data.inferior_program === constants.inferior_states.running) {
+    if (store.data.gdbguiState === "running") {
       return;
     }
 
@@ -216,7 +213,7 @@ const FileOps = {
     } else if (
       sourceCodeSelectionState === constants.source_code_selection_states.PAUSED_FRAME
     ) {
-      isPaused = store.data.inferior_program === constants.inferior_states.paused;
+      isPaused = store.data.gdbguiState === "stopped";
       pausedAddr = store.data.current_assembly_address;
       fullname = pausedFrameFullname;
       requireCachedLineNum = parseInt(store.data.line_of_source_to_flash ?? "");
@@ -433,7 +430,7 @@ const FileOps = {
           (store.data.inferior_binary_path_last_modified_unix_sec ?? 0) &&
         FileOps.warningShownForOldBinary === false
       ) {
-        Actions.show_modal(
+        Handlers.show_modal(
           "Warning",
           <div>
             This source file was modified <span className="bold">after</span> the binary
@@ -598,9 +595,9 @@ const FileOps = {
     if (window.isNaN(hex_addr)) {
       return;
     }
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       "Fetching assembly since file is missing",
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
     const start = parseInt(hex_addr, 16);
     const end = start + 100;
@@ -615,9 +612,9 @@ const FileOps = {
     // @ts-expect-error ts-migrate(2538) FIXME: Type 'null' cannot be used as an index type.
     FileOps.unfetchableDisassemblyAddresses[addr_being_fetched] = true;
     FileOps.disassemblyAddrBeingFetched = null;
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       "Failed to retrieve assembly for missing file",
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
   },
   /**
@@ -626,7 +623,7 @@ const FileOps = {
    * @param mi_token (int): corresponds to either null (when src file is known and exists),
    *  constants.DISASSEMBLY_FOR_MISSING_FILE_INT when source file is undefined or does not exist on filesystem
    */
-  save_new_assembly: function (mi_assembly: any, mi_token: any) {
+  saveNewAssembly: function (mi_assembly: any, mi_token: any) {
     FileOps.disassemblyAddrBeingFetched = null;
 
     if (!Array.isArray(mi_assembly) || mi_assembly.length === 0) {
@@ -634,8 +631,7 @@ const FileOps = {
     }
 
     const fullname = mi_assembly[0].fullname;
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'DISASSEMBLY_FOR_MISSING_FILE_INT' does n... Remove this comment to see the full error message
-    if (mi_token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
+    if (mi_token === constants.DISASSEMBLY_FOR_MISSING_FILE_STR) {
       store.set("disassembly_for_missing_file", mi_assembly);
       return;
     }

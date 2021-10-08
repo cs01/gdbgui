@@ -1,4 +1,4 @@
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import * as React from "react";
 import CopyToClipboard from "./CopyToClipboard";
 import MemoryLink from "./MemoryLink";
@@ -23,7 +23,7 @@ export class FileLink extends React.Component<Props> {
       sep = ":";
     }
     if (this.props.fullname) {
-      onclick = () => Actions.viewFile(this.props.fullname, line);
+      onclick = () => Handlers.viewFile(this.props.fullname, line);
       cls = "pointer";
     }
 

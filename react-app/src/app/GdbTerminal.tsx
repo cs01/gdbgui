@@ -3,8 +3,8 @@ import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import "xterm/css/xterm.css";
 import { ptyFontSize } from "./constants";
-import Actions from "./Actions";
-import { store } from "./GlobalState";
+import Handlers from "./EventHandlers";
+import { store } from "./Store";
 
 function customKeyEventHandler(config: {
   pty_name: string;
@@ -81,7 +81,7 @@ export function GdbTerminal(props: {}) {
         });
 
         if (data.domEvent.code === "Enter") {
-          Actions.onConsoleCommandRun();
+          Handlers.onConsoleCommandRun();
         }
       }
     );

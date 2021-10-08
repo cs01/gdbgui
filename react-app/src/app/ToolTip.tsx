@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 
 class ToolTip extends React.Component {
   timeout: any;

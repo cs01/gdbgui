@@ -39,7 +39,7 @@ const initialGlobalState: GlobalState = {
   refresh_state_after_sending_console_command: true, // If true, send commands to refresh GUI store after each command is sent from console
   show_all_sent_commands_in_console: debug, // show all sent commands if in debug mode
 
-  inferior_program: constants.inferior_states.unknown,
+  gdbguiState: "ready",
   inferior_pid: null,
 
   paused_on_frame: null,
@@ -94,6 +94,11 @@ const initialGlobalState: GlobalState = {
   queuedGdbCommands: [],
 
   show_filesystem: false,
+
+  gdbguiPty: null,
+  revealLine: (lineNumber: number) => {},
+  stoppedDetails: null,
+  features: null,
 };
 
 function get_stored(key: any, default_val: any) {

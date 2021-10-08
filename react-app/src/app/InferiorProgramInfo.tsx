@@ -1,7 +1,7 @@
 import React from "react";
 
-import Actions from "./Actions";
-import { store } from "./GlobalState";
+import Handlers from "./EventHandlers";
+import { store } from "./Store";
 
 type State = any;
 
@@ -78,7 +78,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
         type="button"
         title={`Send signal to gdb`}
         onClick={() =>
-          Actions.send_signal(this.state.selected_signal, this.state.gdb_pid)
+          Handlers.send_signal(this.state.selected_signal, this.state.gdb_pid)
         }
       >
         {`gdb (pid ${this.state.gdb_pid})`}
@@ -93,7 +93,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
           type="button"
           title={`Send signal to program being debugged`}
           onClick={() =>
-            Actions.send_signal(this.state.selected_signal, this.state.inferior_pid)
+            Handlers.send_signal(this.state.selected_signal, this.state.inferior_pid)
           }
         >
           {`debug program (pid ${this.state.inferior_pid})`}
@@ -108,7 +108,7 @@ class InferiorProgramInfo extends React.Component<{}, State> {
         type="button"
         title={`Send signal to custom PID. Enter PID to enable this button.`}
         onClick={() =>
-          Actions.send_signal(this.state.selected_signal, this.state.other_pid)
+          Handlers.send_signal(this.state.selected_signal, this.state.other_pid)
         }
       >
         {`other pid ${this.state.other_pid}`}

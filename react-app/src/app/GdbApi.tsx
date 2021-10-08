@@ -2,10 +2,10 @@
  * An object to manage the websocket connection to the python server that manages gdb,
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import Registers from "./Registers";
 import Memory from "./Memory";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import constants from "./constants";
 import { initial_data } from "./InitialData";
 import _ from "lodash";
@@ -14,7 +14,7 @@ import { GdbWebsocket } from "./Websocket";
 
 const GdbApi = {
   click_run_button: function () {
-    Actions.onEventInferiorProgramStarting();
+    Handlers.onEventInferiorProgramStarting();
     GdbApi.runGdbCommand("-exec-run");
   },
   runInitialCommands: function () {
@@ -25,27 +25,20 @@ const GdbApi = {
     }
     GdbApi.runGdbCommand(cmds);
   },
-  isInferiorPaused: function () {
-    return (
-      [constants.inferior_states.unknown, constants.inferior_states.paused].indexOf(
-        store.data.inferior_program
-      ) !== -1
-    );
-  },
   requestContinue: function (reverse = false) {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand(
       "-exec-continue" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestNext: function (reverse = false) {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand(
       "-exec-next" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestStep: function (reverse = false) {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand(
       "-exec-step" + (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
@@ -56,17 +49,17 @@ const GdbApi = {
     // That means we do NOT dispatch the event `event_inferior_program_resuming`, because it's not, in fact, running.
     // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
     GdbApi.runGdbCommand("-exec-return");
-    Actions.onEventInferiorProgramStopped();
+    Handlers.refreshGdbguiState();
   },
   requestSendNextInstruction: function (reverse = false) {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand(
       "-exec-next-instruction" +
         (store.data.debug_in_reverse || reverse ? " --reverse" : "")
     );
   },
   requestSendStepInstruction: function (reverse = false) {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand(
       "-exec-step-instruction" +
         (store.data.debug_in_reverse || reverse ? " --reverse" : "")
@@ -77,11 +70,11 @@ const GdbApi = {
     store.set("source_file_paths", []);
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
-    Actions.inferiorProgramExited();
+    Handlers.inferiorProgramExited();
     GdbApi.runGdbCommand([`-target-select remote ${user_input}`]);
   },
   requestInterrupt: function () {
-    Actions.onEventInferiorProgramResuming();
+    Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand("-exec-interrupt");
   },
   requestSelectFrame: function (framenum: any) {
@@ -122,7 +115,7 @@ const GdbApi = {
   requestBacktrace: function () {
     let cmds = ["backtrace"];
     cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
-    store.set("inferior_program", constants.inferior_states.paused);
+    store.set("gdbguiState", "stopped");
     GdbApi.runGdbCommand(cmds);
   },
   /**

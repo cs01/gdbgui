@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import { Util } from "./Util";
 import { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
@@ -15,7 +15,7 @@ import {
   ArrowSmDownIcon,
 } from "@heroicons/react/outline";
 import GdbApi from "./GdbApi";
-import { useGlobalValue } from "./GlobalState";
+import { useGlobalValue } from "./Store";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
@@ -62,7 +62,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       onClick: () => {
         addUserInputToHistory(userInput);
         const { binary, args } = userInputToGdbInput(userInput);
-        Actions.setGdbBinaryAndArguments(binary, args);
+        Handlers.setGdbBinaryAndArguments(binary, args);
       },
     },
     {
@@ -84,7 +84,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       placeholder: "pid | gid | file",
       onClick: () => {
         addUserInputToHistory(userInput);
-        Actions.attachToProcess(userInput);
+        Handlers.attachToProcess(userInput);
       },
     },
   ];
@@ -249,7 +249,7 @@ function DebugControls() {
         <PauseIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => Actions.send_signal("SIGINT", gdbPid)}
+          onClick={() => Handlers.send_signal("SIGINT", gdbPid)}
         />
       </button>
     </div>

@@ -2,7 +2,7 @@ import React, { useLayoutEffect } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { ptyFontSize } from "./constants";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 
 const terminal = new Terminal({
   cursorBlink: true,

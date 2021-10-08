@@ -1,5 +1,5 @@
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbVariable from "./GdbVariable";
 import constants from "./constants";
 import _ from "lodash";

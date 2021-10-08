@@ -1,5 +1,5 @@
-import { store } from "./GlobalState";
-import Actions from "./Actions";
+import { store } from "./Store";
+import Handlers from "./EventHandlers";
 import ToolTip from "./ToolTip";
 import React from "react";
 
@@ -65,7 +65,7 @@ class Settings extends React.Component {
             ref={(n) => (this.save_button = n)}
             onClick={() => {
               const newValue = parseInt(this.max_source_file_lines_input.value);
-              Actions.update_max_lines_of_code_to_fetch(newValue);
+              Handlers.update_max_lines_of_code_to_fetch(newValue);
               // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '1' is not assignable to paramete... Remove this comment to see the full error message
               ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
             }}

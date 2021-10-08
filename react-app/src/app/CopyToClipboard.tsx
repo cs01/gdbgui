@@ -1,6 +1,6 @@
 import * as React from "react";
 import ToolTip from "./ToolTip";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 
 type Props = {
   content: string | null;

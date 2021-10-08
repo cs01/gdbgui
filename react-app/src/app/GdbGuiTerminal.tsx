@@ -2,6 +2,7 @@ import React, { useLayoutEffect } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { ptyFontSize } from "./constants";
+import { store } from "./Store";
 
 // TODO set this in a global store
 const terminal = new Terminal({
@@ -10,8 +11,8 @@ const terminal = new Terminal({
   scrollback: 9999,
   fontSize: ptyFontSize,
 });
-// @ts-ignore  TODO use a proper global store or recoil
-window.gdbguiPty = terminal;
+
+store.set("gdbguiPty", terminal);
 const fitAddon = new FitAddon();
 
 const terminalRef = React.createRef<any>();

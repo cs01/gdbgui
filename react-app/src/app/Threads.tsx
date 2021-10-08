@@ -1,6 +1,6 @@
 import React from "react";
 import ReactTable from "./ReactTable";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { FileLink } from "./Links";

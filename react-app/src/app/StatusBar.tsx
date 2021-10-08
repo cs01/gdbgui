@@ -1,6 +1,6 @@
 import React from "react";
 import { Util } from "./Util";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 
 type State = any;
 

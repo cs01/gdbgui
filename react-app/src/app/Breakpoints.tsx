@@ -1,7 +1,7 @@
 import React from "react";
-import { store } from "./GlobalState";
+import { store, useGlobalValue } from "./Store";
 import GdbApi from "./GdbApi";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import { Util } from "./Util";
 import FileOps from "./FileOps";
 import { FileLink } from "./Links";
@@ -245,7 +245,7 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
     }
 
     return (
-      <div onClick={() => Actions.viewFile(b.fullNameToDisplay, b.line)}>
+      <div onClick={() => Handlers.viewFile(b.fullNameToDisplay, b.line)}>
         <table className="text-sm">
           <tbody>
             <tr>
@@ -276,7 +276,7 @@ class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointS
 }
 
 export function BreakpointsFn(props: {}) {
-  const breakpoints = store.data.breakpoints;
+  const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
   if (breakpoints.length === 0) {
     return <div>No breakpoints</div>;
   }

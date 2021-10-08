@@ -7,10 +7,10 @@
 import React from "react";
 import Memory from "./Memory";
 import constants from "./constants";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import _ from "lodash";
 
 /**
@@ -137,7 +137,7 @@ const VarCreator = {
     if (VarCreator.expr_type === "hover") {
       // do nothing
     } else {
-      Actions.add_gdb_response_to_console(r);
+      Handlers.add_gdb_response_to_console(r);
     }
     VarCreator._fetch_complete();
   },

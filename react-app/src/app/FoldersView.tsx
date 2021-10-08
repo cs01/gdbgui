@@ -1,10 +1,10 @@
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import FileOps from "./FileOps";
 import constants from "./constants";
 import SourceFileAutocomplete from "./SourceFileAutocomplete";
 import FileSystem from "./FileSystem";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import { initial_data } from "./InitialData";
 
 const defaultRootnode = {
@@ -62,7 +62,7 @@ class FoldersView extends React.Component<{}, State> {
       <div>
         <button
           className="btn btn-xs btn-primary"
-          onClick={Actions.fetch_source_files}
+          onClick={Handlers.fetch_source_files}
           style={{ marginLeft: "5px", marginTop: "5px" }}
         >
           Fetch source files

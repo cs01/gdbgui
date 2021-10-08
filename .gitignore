@@ -17,3 +17,4 @@ gdbgui/static/js/*
 __pycache__
 .coverage*
 built-react-app
+TODO.txt

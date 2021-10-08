@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import { saveNewMiOutput } from "./GdbMiOutput";
 import Breakpoints from "./Breakpoints";
 import constants from "./constants";
@@ -16,8 +16,7 @@ import GdbApi from "./GdbApi";
 import Locals from "./Locals";
 import GdbVariable from "./GdbVariable";
 import Modal from "./GdbguiModal";
-import Actions from "./Actions";
-import { processFeatures } from "./processFeatures";
+import Handlers from "./EventHandlers";
 import _ from "lodash";
 import { GdbMiMessage } from "./types";
 /**
@@ -30,14 +29,11 @@ const isError = (response: any) => {
 };
 const ignoreError = (response: any) => {
   return (
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'IGNOREERRORS_TOKEN_INT' does not exist o... Remove this comment to see the full error message
-    response.token === constants.IGNOREERRORS_TOKEN_INT ||
-    // @ts-expect-error ts-migrate(2551) FIXME: Property 'CREATE_VAR_INT' does not exist on type '... Remove this comment to see the full error message
+    response.token === constants.IGNORE_ERRORS_TOKEN_INT ||
     response.token === constants.CREATE_VAR_INT
   );
 };
 const isCreatingVar = (response: any) => {
-  // @ts-expect-error ts-migrate(2551) FIXME: Property 'CREATE_VAR_INT' does not exist on type '... Remove this comment to see the full error message
   return response.token === constants.CREATE_VAR_INT;
 };
 
@@ -51,11 +47,9 @@ function handleGdbMessage(r: GdbMiMessage) {
       return;
     } else if (ignoreError(r)) {
       return;
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'DISASSEMBLY_FOR_MISSING_FILE_INT' does n... Remove this comment to see the full error message
     } else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
       FileOps.fetch_disassembly_for_missing_file_failed();
     } else if (
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'INLINE_DISASSEMBLY_INT' does not exist o... Remove this comment to see the full error message
       r.token === constants.INLINE_DISASSEMBLY_INT &&
       r.payload &&
       // @ts-expect-error
@@ -72,8 +66,8 @@ function handleGdbMessage(r: GdbMiMessage) {
       r.payload.msg &&
       r.payload.msg.startsWith("Unable to find Mach task port")
     ) {
-      Actions.add_gdb_response_to_console(r);
-      Actions.addGdbGuiConsoleEntries(
+      Handlers.add_gdb_response_to_console(r);
+      Handlers.addGdbGuiConsoleEntries(
         <React.Fragment>
           <span>Follow </span>
           <a href="https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648">
@@ -81,7 +75,7 @@ function handleGdbMessage(r: GdbMiMessage) {
           </a>
           <span> to fix this error</span>
         </React.Fragment>,
-        constants.console_entry_type.GDBGUI_OUTPUT_RAW
+        "GDBGUI_OUTPUT_RAW"
       );
       return;
     }
@@ -112,7 +106,7 @@ function handleGdbMessage(r: GdbMiMessage) {
       // trying to render the file of the newly created breakpoint.
       if (_.isString(bkpt.fullNameToDisplay)) {
         // a normal breakpoint or child breakpoint
-        Actions.viewFile(bkpt.fullNameToDisplay, bkpt.line);
+        Handlers.viewFile(bkpt.fullNameToDisplay, bkpt.line);
       }
       GdbApi.requestBreakpointList();
     }
@@ -139,7 +133,7 @@ function handleGdbMessage(r: GdbMiMessage) {
       store.set("current_register_values", r.payload["register-values"]);
     }
     if ("asm_insns" in r.payload) {
-      FileOps.save_new_assembly(r.payload.asm_insns, r.token);
+      FileOps.saveNewAssembly(r.payload.asm_insns, r.token);
     }
     if ("files" in r.payload) {
       if (r.payload.files.length > 0) {
@@ -158,7 +152,7 @@ function handleGdbMessage(r: GdbMiMessage) {
           //     `Warning: Due to a bug in gdb version ${store.get(
           //       "gdb_version"
           //     )}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`,
-          //     constants.console_entry_type.STD_ERR
+          //     "STD_ERR"
           //   );
           //   store.set("can_fetch_register_values", false);
           // }
@@ -212,7 +206,10 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     // features list
     if ("features" in r.payload) {
-      processFeatures(r.payload.features);
+      store.set("features", r.payload.features);
+      if (r.payload.features.indexOf("reverse") !== -1) {
+        store.set("reverse_supported", true);
+      }
     }
     // features list
     if ("target_features" in r.payload) {
@@ -221,7 +218,7 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
   } else if (r.type === "result" && r.message === "error") {
     // render it in the status bar, and don't render the last response in the array as it does by default
-    Actions.add_gdb_response_to_console(r);
+    Handlers.add_gdb_response_to_console(r);
 
     // we tried to load a binary, but gdb couldn't find it
     if (
@@ -229,14 +226,12 @@ function handleGdbMessage(r: GdbMiMessage) {
       !Array.isArray(r.payload) &&
       r.payload.msg === `${store.data.inferior_binary_path}: No such file or directory.`
     ) {
-      Actions.inferiorProgramExited();
+      Handlers.inferiorProgramExited();
     }
   } else if (r.type === "console") {
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       r.payload,
-      r.stream === "stderr"
-        ? constants.console_entry_type.STD_ERR
-        : constants.console_entry_type.STD_OUT
+      r.stream === "stderr" ? "STD_ERR" : "STD_OUT"
     );
     if (store.data.gdb_version === undefined) {
       // parse gdb version from string such as
@@ -252,11 +247,9 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
   } else if (r.type === "output" || r.type === "target" || r.type === "log") {
     // output of program
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       r.payload,
-      r.stream === "stderr"
-        ? constants.console_entry_type.STD_ERR
-        : constants.console_entry_type.STD_OUT
+      r.stream === "stderr" ? "STD_ERR" : "STD_OUT"
     );
   } else if (r.type === "notify") {
     if (r.message === "thread-group-started") {
@@ -265,10 +258,10 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
   }
 
-  if (r.message && r.message === "stopped") {
+  if (r.message && r.message === "stopped" && r.type === "notify") {
     if (r.payload && !Array.isArray(r.payload) && r.payload.reason) {
       if (r.payload.reason.includes("exited")) {
-        Actions.inferiorProgramExited();
+        Handlers.inferiorProgramExited();
       } else if (
         r.payload.reason.includes("breakpoint-hit") ||
         r.payload.reason.includes("end-stepping-range")
@@ -277,20 +270,29 @@ function handleGdbMessage(r: GdbMiMessage) {
           // @ts-expect-error ts-migrate(2339) FIXME: Property 'set_thread_id' does not exist on type 't... Remove this comment to see the full error message
           Threads.set_thread_id(r.payload["new-thread-id"]);
         }
-        Actions.onEventInferiorProgramStopped(r.payload.frame);
+        Handlers.onProgramStopped({
+          reason: r.payload.reason,
+          threadId: r.payload["thread-id"],
+          allThreadsStopped: r.payload["stopped-threads"] === "all",
+        });
       } else if (r.payload.reason === "signal-received") {
-        Actions.onEventInferiorProgramStopped(r.payload.frame);
+        Handlers.onProgramStopped({
+          reason: r.payload.reason,
+
+          threadId: r.payload["thread-id"],
+          allThreadsStopped: r.payload["stopped-threads"] === "all",
+        });
 
         if (r.payload["signal-name"] !== "SIGINT") {
-          Actions.addGdbGuiConsoleEntries(
+          Handlers.addGdbGuiConsoleEntries(
             `Signal received: (${r.payload["signal-meaning"]}, ${r.payload["signal-name"]}).`,
-            constants.console_entry_type.GDBGUI_OUTPUT
+            "GDBGUI_OUTPUT"
           );
-          Actions.addGdbGuiConsoleEntries(
+          Handlers.addGdbGuiConsoleEntries(
             "If the program exited due to a fault, you can attempt to re-enter " +
               "the state of the program when the fault occurred by running the " +
               "command 'backtrace' in the gdb terminal.",
-            constants.console_entry_type.GDBGUI_OUTPUT
+            "GDBGUI_OUTPUT"
           );
         }
       } else {
@@ -299,11 +301,11 @@ function handleGdbMessage(r: GdbMiMessage) {
       }
     } else {
       if (r.payload && !Array.isArray(r.payload)) {
-        Actions.onEventInferiorProgramStopped(r.payload.frame);
+        Handlers.onProgramStopped(r.payload.frame);
       }
     }
   } else if (r.message && r.message === "connected") {
-    Actions.remote_connected();
+    Handlers.onRemoteConnected();
   }
 }
 

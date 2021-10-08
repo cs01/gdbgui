@@ -1,6 +1,6 @@
 import React from "react";
 import constants from "./constants";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import { FileLink } from "./Links";
 import FileOps from "./FileOps";
 

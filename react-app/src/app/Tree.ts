@@ -2,7 +2,7 @@
 // utilizes the amazing http://visjs.org library
 
 /* global vis */
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbVariable from "./GdbVariable";
 import constants from "./constants";
 

@@ -32,6 +32,8 @@ export function RightSidebar(props: { signals: {}; debug: boolean }) {
   return (
     <div>
       <BreakpointsFn />
+      <Threads />
+      <Memory />
       <GdbMiOutput />;
     </div>
   );

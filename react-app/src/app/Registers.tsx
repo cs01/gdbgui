@@ -3,7 +3,7 @@
  */
 
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import constants from "./constants";
 import ReactTable from "./ReactTable";
 import Memory from "./Memory";
@@ -22,7 +22,7 @@ class Registers extends React.Component<{}, State> {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
     store.reactComponentState(this, [
-      "inferior_program",
+      "gdbguiState",
       "previous_register_values",
       "current_register_values",
       "register_names",
@@ -32,11 +32,7 @@ class Registers extends React.Component<{}, State> {
   static get_update_cmds(): Array<string> {
     register_name_fetch_count++;
     const cmds: string[] = [];
-    if (
-      [constants.inferior_states.paused, constants.inferior_states.running].indexOf(
-        store.get("inferior_program")
-      ) == -1
-    ) {
+    if (store.data.gdbguiState === "stopped" || store.data.gdbguiState === "running") {
       return cmds;
     }
     if (store.data.can_fetch_register_values === true) {
@@ -80,7 +76,7 @@ class Registers extends React.Component<{}, State> {
     const num_register_names = store.data.register_names.length;
     const num_register_values = Object.keys(store.data.current_register_values).length;
 
-    if (this.state.inferior_program !== constants.inferior_states.paused) {
+    if (this.state.gdbguiState !== "stopped") {
       return <span className="placeholder">no data to display</span>;
     }
 

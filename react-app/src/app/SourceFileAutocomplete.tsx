@@ -1,6 +1,6 @@
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import constants from "./constants";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import { Util } from "./Util";
 import FileOps from "./FileOps";
 import React from "react";
@@ -69,14 +69,14 @@ class SourceFileAutocomplete extends React.Component {
       FileOps.userSelectFileToView(fullname, line);
     } else if (store.data.source_file_paths.length === 0) {
       // source file list has not been fetched yet, so fetch it
-      Actions.fetch_source_files();
+      Handlers.fetch_source_files();
     }
   }
   onclick_dropdown() {
     if (store.data.source_file_paths.length === 0) {
       // we have not asked gdb to get the list of source paths yet, or it just doesn't have any.
       // request that gdb populate this list.
-      Actions.fetch_source_files();
+      Handlers.fetch_source_files();
       return;
     }
 

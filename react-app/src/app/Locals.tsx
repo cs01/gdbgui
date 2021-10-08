@@ -5,7 +5,7 @@
 
 import _ from "lodash";
 import React from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbVariable from "./GdbVariable";
 
 class Locals extends React.Component {

@@ -7,7 +7,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import FileOps from "./FileOps";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";

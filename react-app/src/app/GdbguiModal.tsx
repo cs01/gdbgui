@@ -1,6 +1,6 @@
 import React from "react";
-import Actions from "./Actions";
-import { store } from "./GlobalState";
+import Handlers from "./EventHandlers";
+import { store } from "./Store";
 
 type State = any;
 
@@ -42,7 +42,7 @@ class Modal extends React.Component<{}, State> {
             <button
               type="button"
               className="btn btn-purple"
-              onClick={Actions.toggle_modal_visibility}
+              onClick={Handlers.toggle_modal_visibility}
             >
               Close
             </button>

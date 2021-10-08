@@ -6,12 +6,11 @@
  * a command that failed but didn't have a useful failure
  * message in gdbgui.
  */
-import _ from "lodash";
-import { store, useGlobalValue } from "./GlobalState";
+import { store, useGlobalValue } from "./Store";
 import { GdbMiMessage } from "./types";
 
 export function GdbMiOutput() {
-  const gdbMiOutput = useGlobalValue("gdb_mi_output");
+  const gdbMiOutput = useGlobalValue<typeof store.data["gdb_mi_output"]>("gdb_mi_output");
   return (
     <div className="overflow-scroll">
       <h2>Gdb MI Output</h2>

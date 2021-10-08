@@ -5,13 +5,13 @@
  * address. It also has methods to manage the global store of memory data.
  */
 
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import constants from "./constants";
 import ReactTable from "./ReactTable";
 // @ts-expect-error ts-migrate(2691) FIXME: An import path cannot end with a '.tsx' extension.... Remove this comment to see the full error message
 import MemoryLink from "./MemoryLink.tsx";
-import Actions from "./Actions";
+import Handlers from "./EventHandlers";
 import React from "react";
 import _ from "lodash";
 
@@ -201,11 +201,11 @@ class Memory extends React.Component<{}, State> {
         const orig_end_addr = endAddr;
         endAddr = startAddr + Memory.MAX_ADDRESS_DELTA_BYTES;
         store.set("end_addr", "0x" + endAddr.toString(16));
-        Actions.addGdbGuiConsoleEntries(
+        Handlers.addGdbGuiConsoleEntries(
           `Cannot fetch ${orig_end_addr - startAddr} bytes. Changed end address to ${
             store.data.end_addr
           } since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
-          constants.console_entry_type.STD_ERR
+          "STD_ERR"
         );
       }
 

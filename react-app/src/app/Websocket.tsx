@@ -1,7 +1,6 @@
-import Actions from "./Actions";
-import constants from "./constants";
+import Handlers from "./EventHandlers";
 import GdbApi from "./GdbApi";
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import { debug } from "./InitialData";
 import { handleGdbResponseArray } from "./processGdbResponse";
 import io from "socket.io-client";
@@ -33,10 +32,7 @@ export class GdbWebsocket {
       // add the send command to the console to show commands that are
       // automatically run by gdb
       if (store.data.show_all_sent_commands_in_console) {
-        Actions.addGdbGuiConsoleEntries(
-          commandArray,
-          constants.console_entry_type.SENT_COMMAND
-        );
+        Handlers.addGdbGuiConsoleEntries(commandArray, "SENT_COMMAND");
       }
       this.socket.emit("run_gdb_command", { cmd: commandArray });
       this.startResponseTimer();
@@ -66,35 +62,32 @@ export class GdbWebsocket {
     }
   }
   private responseTimedOut() {
-    Actions.clear_program_state();
+    Handlers.clearProgramState();
     store.set("waiting_for_response", false);
     if (this.socket.disconnected) {
       return;
     }
 
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       `No gdb response received after ${this.reponseTimeoutSec} seconds.`,
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
-    Actions.addGdbGuiConsoleEntries(
-      "Possible reasons include:",
-      constants.console_entry_type.GDBGUI_OUTPUT
-    );
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries("Possible reasons include:", "GDBGUI_OUTPUT");
+    Handlers.addGdbGuiConsoleEntries(
       "1) gdbgui, gdb, or the debugged process is not running.",
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
 
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       "2) gdb or the inferior process is busy running and needs to be " +
         "interrupted (press the pause button up top).",
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
 
-    Actions.addGdbGuiConsoleEntries(
+    Handlers.addGdbGuiConsoleEntries(
       "3) Something is just taking a long time to finish and respond back to " +
         "this browser window, in which case you can just keep waiting.",
-      constants.console_entry_type.GDBGUI_OUTPUT
+      "GDBGUI_OUTPUT"
     );
   }
   constructor(gdbCommand: string, gdbPid: Nullable<number>) {
@@ -127,25 +120,19 @@ export class GdbWebsocket {
       handleGdbResponseArray(responseArray);
     });
     this.socket.on("fatal_server_error", (data: { message: null | string }) => {
-      Actions.addGdbGuiConsoleEntries(
-        `Message from server: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
+      Handlers.addGdbGuiConsoleEntries(`Message from server: ${data.message}`, "STD_ERR");
       this.socket?.close();
     });
     this.socket.on("error_running_gdb_command", (data: { message: any }) => {
-      Actions.addGdbGuiConsoleEntries(
+      Handlers.addGdbGuiConsoleEntries(
         `Error occurred on server when running gdb command: ${data.message}`,
-        constants.console_entry_type.STD_ERR
+        "STD_ERR"
       );
       this.socket?.close();
     });
 
     this.socket.on("server_error", function (data: { message: any }) {
-      Actions.addGdbGuiConsoleEntries(
-        `Server message: ${data.message}`,
-        constants.console_entry_type.STD_ERR
-      );
+      Handlers.addGdbGuiConsoleEntries(`Server message: ${data.message}`, "STD_ERR");
     });
 
     this.socket.on(
@@ -162,12 +149,7 @@ export class GdbWebsocket {
         const newGdbProcessStarted = connectionResponse.started_new_gdb_process;
 
         if (message) {
-          Actions.addGdbGuiConsoleEntries(
-            message,
-            error
-              ? constants.console_entry_type.STD_ERR
-              : constants.console_entry_type.GDBGUI_OUTPUT
-          );
+          Handlers.addGdbGuiConsoleEntries(message, error ? "STD_ERR" : "GDBGUI_OUTPUT");
         }
         if (error) {
           this.socket?.close();
@@ -178,7 +160,7 @@ export class GdbWebsocket {
         if (newGdbProcessStarted) {
           GdbApi.runInitialCommands();
         } else {
-          Actions.refresh_state_for_gdb_pause();
+          Handlers.refreshGdbguiState();
         }
       }
     );
@@ -188,7 +170,7 @@ export class GdbWebsocket {
       // on the server is already gone
       window.onbeforeunload = () => null;
 
-      Actions.show_modal(
+      Handlers.show_modal(
         "",
         <>
           <p>
@@ -201,9 +183,9 @@ export class GdbWebsocket {
           </p>
         </>
       );
-      Actions.addGdbGuiConsoleEntries(
+      Handlers.addGdbGuiConsoleEntries(
         `The connection to the gdb session has been closed. To start a new session, go to ${window.location.origin}/dashboard`,
-        constants.console_entry_type.STD_ERR
+        "STD_ERR"
       );
 
       // if (debug) {

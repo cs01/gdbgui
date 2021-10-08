@@ -1,13 +1,14 @@
-import { store } from "./GlobalState";
+import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import Locals from "./Locals";
 import Memory from "./Memory";
-import constants from "./constants";
+import constants, { colorTypeMap } from "./constants";
 import _ from "lodash";
 import $ from "jquery";
+import { GdbGuiConsoleEntry, StoppedDetails } from "./types";
 
-const Actions = {
-  clear_program_state: function () {
+const Handlers = {
+  clearProgramState: function () {
     store.set("line_of_source_to_flash", undefined);
     store.set("paused_on_frame", undefined);
     store.set("selected_frame_num", 0);
@@ -18,41 +19,43 @@ const Actions = {
     Locals.clear();
   },
   onEventInferiorProgramStarting: function () {
-    store.set("inferior_program", constants.inferior_states.running);
-    Actions.clear_program_state();
+    store.set("gdbguiState", "running");
+    Handlers.clearProgramState();
   },
   onEventInferiorProgramResuming: function () {
-    store.set("inferior_program", constants.inferior_states.running);
+    store.set("gdbguiState", "running");
   },
-  onEventInferiorProgramStopped: function (frame = {}) {
-    store.set("inferior_program", constants.inferior_states.paused);
-    store.set(
-      "source_code_selection_state",
-      constants.source_code_selection_states.PAUSED_FRAME
-    );
-    store.set("paused_on_frame", frame);
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type '{}'.
-    store.set("fullname_to_render", frame.fullname);
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'line' does not exist on type '{}'.
-    store.set("line_of_source_to_flash", parseInt(frame.line));
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'addr' does not exist on type '{}'.
-    store.set("current_assembly_address", frame.addr);
+  onProgramStopped: function (stoppedDetails: StoppedDetails) {
+    store.set("gdbguiState", "stopped");
+    store.set("stoppedDetails", stoppedDetails);
+    // store.set(
+    //   "source_code_selection_state",
+    //   constants.source_code_selection_states.PAUSED_FRAME
+    // );
+    // store.set("paused_on_frame", frame);
+    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type '{}'.
+    // store.set("fullname_to_render", frame.fullname);
+    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'line' does not exist on type '{}'.
+    // store.set("line_of_source_to_flash", parseInt(frame.line));
+    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'addr' does not exist on type '{}'.
+    // store.set("current_assembly_address", frame.addr);
     // SourceCode.make_current_line_visible();
-    Actions.refresh_state_for_gdb_pause();
+    Handlers.refreshGdbguiState();
   },
   inferiorProgramExited: function () {
-    store.set("inferior_program", constants.inferior_states.exited);
+    store.set("gdbguiState", "exited");
     store.set("disassembly_for_missing_file", []);
     store.set("root_gdb_tree_var", null);
     store.set("previous_register_values", {});
     store.set("current_register_values", {});
     store.set("inferior_pid", null);
-    Actions.clear_program_state();
+    Handlers.clearProgramState();
   },
   /**
    * Request relevant store information from gdb to refresh UI
    */
-  refresh_state_for_gdb_pause: function () {
+  refreshGdbguiState: function () {
+    store.data.revealLine(30);
     GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
   },
   onConsoleCommandRun: function () {
@@ -60,8 +63,8 @@ const Actions = {
       GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
     }
   },
-  addGdbGuiConsoleEntries: function (entries: any, type: any) {
-    if (type === constants.console_entry_type.STD_OUT) {
+  addGdbGuiConsoleEntries: function (entries: any, entryType: GdbGuiConsoleEntry) {
+    if (entryType === "STD_OUT") {
       // ignore
       return;
     }
@@ -69,8 +72,7 @@ const Actions = {
       entries = [entries];
     }
 
-    // @ts-ignore
-    const pty = window.gdbguiPty;
+    const pty = store.data.gdbguiPty;
     if (pty) {
       entries.forEach((data: string) => {
         const entriesToIgnore = [
@@ -81,8 +83,7 @@ const Actions = {
         if (entriesToIgnore.indexOf(data) > -1) {
           return;
         }
-        // @ts-expect-error ts-migrate(2339) FIXME: Property 'colorTypeMap' does not exist on type 'Re... Remove this comment to see the full error message
-        pty.write(constants.colorTypeMap[type] ?? constants.xtermColors["reset"]);
+        pty.write(colorTypeMap[entryType] ?? constants.xtermColors["reset"]);
         pty.writeln(data);
         pty.write(constants.xtermColors["reset"]);
       });
@@ -120,10 +121,8 @@ const Actions = {
         }
       }
     }
-    const type = error
-      ? constants.console_entry_type.STD_ERR
-      : constants.console_entry_type.STD_OUT;
-    Actions.addGdbGuiConsoleEntries(entries, type);
+    const consoleType = error ? "STD_ERR" : "STD_OUT";
+    Handlers.addGdbGuiConsoleEntries(entries, consoleType);
   },
   toggle_modal_visibility() {
     store.set("show_modal", !store.data.show_modal);
@@ -138,26 +137,26 @@ const Actions = {
     store.set("source_file_paths", []);
     store.set("language", "c_family");
     store.set("inferior_binary_path", null);
-    Actions.inferiorProgramExited();
+    Handlers.inferiorProgramExited();
     const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
     GdbApi.runGdbCommand(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
-  remote_connected() {
-    Actions.onEventInferiorProgramStopped();
+  onRemoteConnected() {
+    // Handlers.onProgramStopped();
     const cmds = [];
     if (store.data.auto_add_breakpoint_to_main) {
-      Actions.addGdbGuiConsoleEntries(
+      Handlers.addGdbGuiConsoleEntries(
         "Connected to remote target! Adding breakpoint to main, then continuing target execution.",
-        constants.console_entry_type.GDBGUI_OUTPUT
+        "GDBGUI_OUTPUT"
       );
       cmds.push("-break-insert main");
       cmds.push("-exec-continue");
       cmds.push(GdbApi.get_break_list_cmd());
     } else {
-      Actions.addGdbGuiConsoleEntries(
+      Handlers.addGdbGuiConsoleEntries(
         'Connected to remote target! Add breakpoint(s), then press "continue" button (do not press "run").',
-        constants.console_entry_type.GDBGUI_OUTPUT
+        "GDBGUI_OUTPUT"
       );
     }
     GdbApi.runGdbCommand(cmds);
@@ -172,7 +171,7 @@ const Actions = {
   },
   viewFile(fullname: any, line: number) {
     store.set("fullname_to_render", fullname);
-    Actions.setLineState(line);
+    Handlers.setLineState(line);
   },
   setLineState(line: number) {
     store.set(
@@ -204,21 +203,18 @@ const Actions = {
       type: "POST",
       data: { signal_name: signal_name, pid: pid },
       success: function (response) {
-        Actions.addGdbGuiConsoleEntries(
-          response.message,
-          constants.console_entry_type.GDBGUI_OUTPUT
-        );
+        Handlers.addGdbGuiConsoleEntries(response.message, "GDBGUI_OUTPUT");
       },
       error: function (response) {
         if (response.responseJSON && response.responseJSON.message) {
-          Actions.addGdbGuiConsoleEntries(
+          Handlers.addGdbGuiConsoleEntries(
             _.escape(response.responseJSON.message),
-            constants.console_entry_type.STD_ERR
+            "STD_ERR"
           );
         } else {
-          Actions.addGdbGuiConsoleEntries(
+          Handlers.addGdbGuiConsoleEntries(
             `${response.statusText} (${response.status} error)`,
-            constants.console_entry_type.STD_ERR
+            "STD_ERR"
           );
         }
         console.error(response);
@@ -228,4 +224,4 @@ const Actions = {
   },
 };
 
-export default Actions;
+export default Handlers;
