@@ -3,7 +3,7 @@
  * in the source code
  */
 
-import React, { useLayoutEffect } from "react";
+import React, { ReactNode, useLayoutEffect, useState } from "react";
 
 import { BreakpointsFn } from "./Breakpoints";
 import constants from "./constants";
@@ -15,6 +15,7 @@ import Memory from "./Memory";
 import Registers from "./Registers";
 import Tree from "./Tree";
 import Threads from "./Threads";
+import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/outline";
 
 const onmouseupInParentCallbacks: Array<() => void> = [];
 const onmousemoveInParentCallbacks: Array<(event: any) => void> = [];
@@ -28,13 +29,38 @@ const onmousemoveInParentCallback = function (e: any) {
   });
 };
 
+function CollapsableContainer(props: { content: ReactNode; title: string }) {
+  const [collapsed, setCollapsed] = useState(false);
+  return (
+    <div className="w-full">
+      <div
+        className="w-full cursor-pointer"
+        onClick={() => {
+          setCollapsed(!collapsed);
+        }}
+      >
+        <span className="w-full">
+          {collapsed ? (
+            <ChevronRightIcon className="icon inline" />
+          ) : (
+            <ChevronDownIcon className="icon inline" />
+          )}
+          <button className="text-xs font-bold uppercase">{props.title}</button>
+        </span>
+      </div>
+      {collapsed ? null : <div>{props.content}</div>}
+      <hr className="w-full my-1 border-purple-900" />
+    </div>
+  );
+}
+
 export function RightSidebar(props: { signals: {}; debug: boolean }) {
   return (
     <div>
-      <BreakpointsFn />
-      <Threads />
-      <Memory />
-      <GdbMiOutput />;
+      <CollapsableContainer title={"breakpoints"} content={<BreakpointsFn />} />
+      <CollapsableContainer title={"threads"} content={<Threads />} />
+      <CollapsableContainer title={"memory"} content={<Memory />} />
+      <CollapsableContainer title={"gdb mi output"} content={<GdbMiOutput />} />
     </div>
   );
   // useLayoutEffect(() => {

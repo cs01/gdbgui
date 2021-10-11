@@ -42,3 +42,7 @@ code {
 .btn-white {
   @apply bg-white text-black;
 }
+
+.icon {
+  @apply h-4 w-4;
+}

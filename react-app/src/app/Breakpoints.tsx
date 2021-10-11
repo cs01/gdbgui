@@ -281,8 +281,7 @@ export function BreakpointsFn(props: {}) {
     return <div>No breakpoints</div>;
   }
   return (
-    <div className="py-10">
-      <div className="text-lg">Breakpoints</div>
+    <div>
       {breakpoints.map((breakpoint, i) => {
         return <Breakpoint bkpt={breakpoint} key={i} />;
       })}
