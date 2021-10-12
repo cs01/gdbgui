@@ -11,16 +11,15 @@ type Props = OwnProps & typeof MemoryLink.defaultProps;
 class MemoryLink extends React.Component<Props> {
   render() {
     // turn 0x00000000000000 into 0x0
-    const address_no_leading_zeros = "0x" + parseInt(this.props.addr, 16).toString(16);
+    const addressNoLeadingZeros = "0x" + parseInt(this.props.addr, 16).toString(16);
     return (
-      <span
-        className="pointer memadr_react"
-        onClick={() => Memory.set_inputs_from_address(address_no_leading_zeros)}
-        title={`click to explore memory at ${address_no_leading_zeros}`}
-        style={this.props.style}
+      <button
+        className="hover:bg-purple-900 font-mono"
+        onClick={() => Memory.setInputsFromAddress(addressNoLeadingZeros)}
+        title={`click to explore memory at ${addressNoLeadingZeros}`}
       >
-        {address_no_leading_zeros}
-      </span>
+        {addressNoLeadingZeros}
+      </button>
     );
   }
   static defaultProps = { style: { fontFamily: "monospace" } };

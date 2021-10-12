@@ -12,7 +12,7 @@ const terminal = new Terminal({
   fontSize: ptyFontSize,
 });
 
-store.set("gdbguiPty", terminal);
+store.set<typeof store.data.gdbguiPty>("gdbguiPty", terminal);
 const fitAddon = new FitAddon();
 
 const terminalRef = React.createRef<any>();

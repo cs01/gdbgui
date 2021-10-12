@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { store, useGlobalValue } from "./Store";
 import GdbApi from "./GdbApi";
 import Handlers from "./EventHandlers";
@@ -7,6 +7,14 @@ import FileOps from "./FileOps";
 import { FileLink } from "./Links";
 import constants from "./constants";
 import _ from "lodash";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ViewListIcon,
+  PencilAltIcon,
+  XIcon,
+} from "@heroicons/react/solid";
+import MemoryLink from "./MemoryLink";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -33,10 +41,6 @@ const BreakpointSourceLineCache = {
   },
 };
 
-type BreakpointState = {
-  breakpointCondition: string;
-  editingBreakpointCondition: boolean;
-};
 type GdbBreakpoint = {
   addr: string; //"0x0000555555555228";
   disp: string; // "keep";
@@ -70,220 +74,208 @@ type GdbGuiBreakpoint = {
   parentBreakpointNumber: Nullable<number>;
   fullNameToDisplay: Nullable<string>;
 };
-class Breakpoint extends React.Component<{ bkpt: GdbGuiBreakpoint }, BreakpointState> {
-  constructor(props: { bkpt: GdbGuiBreakpoint }) {
-    super(props);
-    this.state = {
-      breakpointCondition: "",
-      editingBreakpointCondition: false,
-    };
-  }
-  getSourceLine(fullname: any, linenum: any) {
-    // if we have the source file cached, we can display the line of text
-    const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40;
-    let line = null;
-    if (BreakpointSourceLineCache.getLine(fullname, linenum)) {
-      line = BreakpointSourceLineCache.getLine(fullname, linenum);
-    } else if (FileOps.lineIsCached(fullname, linenum)) {
-      const syntaxHighlightedLine = FileOps.get_line_from_file(fullname, linenum);
-      line = _.trim(Util.get_text_from_html(syntaxHighlightedLine));
+function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
+  const [breakpointCondition, setBreakpointCondition] = useState("");
+  const [editingBreakpointCondition, setEditingBreakpointCondition] = useState(false);
 
-      if (line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE) {
-        line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + "...";
-      }
-      BreakpointSourceLineCache.addLine(fullname, linenum, line);
-    }
+  // const getSourceLine = (fullname: any, linenum: any) => {
+  //   // if we have the source file cached, we can display the line of text
+  //   const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40;
+  //   let line = null;
+  //   if (BreakpointSourceLineCache.getLine(fullname, linenum)) {
+  //     line = BreakpointSourceLineCache.getLine(fullname, linenum);
+  //   } else if (FileOps.lineIsCached(fullname, linenum)) {
+  //     const syntaxHighlightedLine = FileOps.get_line_from_file(fullname, linenum);
+  //     line = _.trim(Util.get_text_from_html(syntaxHighlightedLine));
 
-    if (line) {
-      return (
-        <span className="monospace" style={{ whiteSpace: "nowrap", fontSize: "0.9em" }}>
-          {line || <br />}
-        </span>
-      );
-    }
-    return "(file not cached)";
-  }
-  getDeleteJsx(bkptNumToDelete: any) {
-    return (
-      <div
-        style={{ width: "10px", display: "inline" }}
-        className="pointer breakpoint_trashcan"
-        onClick={(e) => {
-          e.stopPropagation();
-          Breakpoints.deleteBreakpoint(bkptNumToDelete);
-        }}
-        title={`Delete breakpoint ${bkptNumToDelete}`}
-      >
-        <span className="glyphicon glyphicon-trash"> </span>
-      </div>
-    );
-  }
-  getNumTimesHit(bkpt: any) {
+  //     if (line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE) {
+  //       line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + "...";
+  //     }
+  //     BreakpointSourceLineCache.addLine(fullname, linenum, line);
+  //   }
+
+  //   if (line) {
+  //     return (
+  //       <span className="monospace" style={{ whiteSpace: "nowrap", fontSize: "0.9em" }}>
+  //         {line || <br />}
+  //       </span>
+  //     );
+  //   }
+  //   return "(file not cached)";
+
+  const getNumTimesHit = () => {
     if (
-      bkpt.times === undefined || // E.g. 'bkpt' is a child breakpoint
-      bkpt.times === 0
+      props.breakpoint.times === undefined || // E.g. 'bkpt' is a child breakpoint
+      props.breakpoint.times === 0
     ) {
       return "";
-    } else if (bkpt.times === 1) {
+    } else if (props.breakpoint.times === 1) {
       return "1 hit";
     } else {
-      return `${bkpt.times} hits`;
+      return `${props.breakpoint.times} hits`;
     }
-  }
-  onChangeBkptCond(e: any) {
-    this.setState({
-      breakpointCondition: e.target.value,
-      editingBreakpointCondition: true,
-    });
-  }
-  onKeyUpBreakpointCondition(number: any, e: any) {
+  };
+  const onChangeBkptCond = (e: any) => {
+    setBreakpointCondition(e.target.value);
+    setEditingBreakpointCondition(true);
+  };
+  const onKeyUpBreakpointCondition = (e: any) => {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      this.setState({ editingBreakpointCondition: false });
-      Breakpoints.setBreakpointCondition(e.target.value, number);
+      setEditingBreakpointCondition(false);
+      Breakpoints.setBreakpointCondition(e.target.value, props.breakpoint.number);
     }
-  }
-  onClickBreakpointCondition(e: any) {
-    this.setState({
-      editingBreakpointCondition: true,
-    });
-  }
-  render() {
-    const b = this.props.bkpt;
-    const checked = b.enabled === "y";
-    const sourceLine = this.getSourceLine(b.fullNameToDisplay, b.line);
+  };
+  const onClickBreakpointCondition = (e: any) => {
+    setEditingBreakpointCondition(true);
+  };
 
-    let infoGlyph;
-    let functionJsx;
-    let breakpointNumberToDelete;
-    if (b.isChildBreakpoint) {
-      breakpointNumberToDelete = b.parentBreakpointNumber;
-      infoGlyph = (
-        <span
-          className="glyphicon glyphicon-th-list"
-          title="Child breakpoint automatically created from parent. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
-        />
-      );
-    } else if (b.isParentBreakpoint) {
-      infoGlyph = (
-        <span
-          className="glyphicon glyphicon-th-list"
-          title="Parent breakpoint with one or more child breakpoints. If parent or any child of this tree is deleted, all related breakpoints will be deleted."
-        />
-      );
-      breakpointNumberToDelete = b.number;
-    } else {
-      breakpointNumberToDelete = b.number;
-      infoGlyph = "";
-    }
+  const breakpoint = props.breakpoint;
+  const checked = breakpoint.enabled === "y";
+  // const sourceLine = getSourceLine(breakpoint.fullNameToDisplay, breakpoint.line);
 
-    const deleteJsx = this.getDeleteJsx(breakpointNumberToDelete);
-    const locationJsx = (
-      <FileLink fullname={b.fullNameToDisplay} file={b.fullNameToDisplay} line={b.line} />
+  let functionJsx;
+  let breakpointNumberToDelete;
+  if (breakpoint.isChildBreakpoint) {
+    breakpointNumberToDelete = breakpoint.parentBreakpointNumber;
+  } else if (breakpoint.isParentBreakpoint) {
+    breakpointNumberToDelete = breakpoint.number;
+  } else {
+    breakpointNumberToDelete = breakpoint.number;
+  }
+
+  const locationJsx = (
+    <FileLink
+      fullname={breakpoint.fullNameToDisplay}
+      file={breakpoint.fullNameToDisplay}
+      line={breakpoint.line}
+    />
+  );
+
+  if (breakpoint.isParentBreakpoint) {
+    functionJsx = (
+      <span className="placeholder">
+        <ViewListIcon className="icon" /> parent breakpoint on inline, template, or
+        ambiguous location
+      </span>
     );
+  } else {
+    const func = breakpoint.func === undefined ? "(unknown function)" : breakpoint.func;
 
-    if (b.isParentBreakpoint) {
-      functionJsx = (
-        <span className="placeholder">
-          {infoGlyph} parent breakpoint on inline, template, or ambiguous location
+    const breakCondition = editingBreakpointCondition ? (
+      <input
+        type="text"
+        style={{
+          display: "inline",
+          width: "110px",
+          padding: "10px 10px",
+          height: "25px",
+          fontSize: "1em",
+        }}
+        placeholder="Break condition"
+        className="form-control"
+        onKeyUp={onKeyUpBreakpointCondition}
+        onChange={onChangeBkptCond}
+        value={breakpointCondition}
+      />
+    ) : (
+      <div
+        onClick={onClickBreakpointCondition}
+        className="inline"
+        title={`${breakpointCondition ? "Modify or remove" : "Add"} breakpoint condition`}
+      >
+        <button>
+          <PencilAltIcon className="icon" />
+        </button>
+        <span className={`font-italic ${breakpointCondition ? "font-bold" : ""}`}>
+          condition
         </span>
-      );
-    } else {
-      const func = b.func === undefined ? "(unknown function)" : b.func;
-      let breakCondition = (
-        <div
-          onClick={this.onClickBreakpointCondition.bind(this)}
-          className="inline"
-          title={`${
-            this.state.breakpointCondition ? "Modify or remove" : "Add"
-          } breakpoint condition`}
-        >
-          <span className="glyphicon glyphicon-edit"></span>
-          <span className={`italic ${this.state.breakpointCondition ? "bold" : ""}`}>
-            condition
-          </span>
-        </div>
-      );
-      if (this.state.editingBreakpointCondition) {
-        breakCondition = (
-          <input
-            type="text"
-            style={{
-              display: "inline",
-              width: "110px",
-              padding: "10px 10px",
-              height: "25px",
-              fontSize: "1em",
-            }}
-            placeholder="Break condition"
-            className="form-control"
-            onKeyUp={this.onKeyUpBreakpointCondition.bind(this, b.number)}
-            onChange={this.onChangeBkptCond.bind(this)}
-            value={this.state.breakpointCondition}
-          />
-        );
-      }
-
-      const timesHit = this.getNumTimesHit(b);
-      functionJsx = (
-        <div style={{ display: "inline" }}>
-          <span className="monospace" style={{ paddingRight: "5px" }}>
-            {infoGlyph} {func}
-          </span>
-          <span className="italic">thread groups: {b["thread-groups"]}</span>
-          <span>{breakCondition}</span>
-          <span
-            style={{
-              color: "#bbbbbb",
-              fontStyle: "italic",
-              paddingLeft: "5px",
-            }}
-          >
-            {timesHit}
-          </span>
-        </div>
-      );
-    }
-
-    return (
-      <div onClick={() => Handlers.viewFile(b.fullNameToDisplay, b.line)}>
-        <table className="text-sm">
-          <tbody>
-            <tr>
-              <td>
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() =>
-                    Breakpoints.enableOrDisableBreakpoint(checked, b.number)
-                  }
-                />
-                {functionJsx} {deleteJsx}
-              </td>
-            </tr>
-
-            <tr>
-              <td>{locationJsx}</td>
-            </tr>
-
-            <tr>
-              <td>{sourceLine}</td>
-            </tr>
-          </tbody>
-        </table>
       </div>
     );
-  } // render function
+
+    functionJsx = (
+      <div className="flex hover:bg-red-500">
+        <span className="">
+          {/* {func} */}
+          {breakpoint.file}
+        </span>
+        {/* <span className="italic">thread groups: {breakpoint["thread-groups"]}</span> */}
+        {/* <span>{breakCondition}</span> */}
+        <span className="font-italic">{getNumTimesHit()}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="my-1 hover:bg-purple-900"
+      onClick={() => Handlers.viewFile(breakpoint.fullNameToDisplay, breakpoint.line)}
+    >
+      <div className="flex justify-between text-sm">
+        <div>
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={() =>
+              Breakpoints.toggleEnableBreakpoint(checked, breakpoint.number)
+            }
+          />
+          {breakpoint.file ? (
+            <button
+              title={`${breakpoint.func}()\n${breakpoint.fullname}:${breakpoint.line}\n${breakpoint.addr}\nHit ${breakpoint.times} time(s)`}
+              onClick={() => Handlers.viewFile(breakpoint.fullname, breakpoint.line)}
+            >
+              {breakpoint.file}
+            </button>
+          ) : (
+            <MemoryLink addr={breakpoint.addr} />
+          )}
+        </div>
+        <div className="mr-1 flex align-middle">
+          <button
+            title="Remove Breakpoint"
+            className="hover:bg-gray-800 "
+            onClick={() => {
+              Breakpoints.deleteBreakpoint(
+                breakpoint.isChildBreakpoint && breakpoint.parentBreakpointNumber
+                  ? breakpoint.parentBreakpointNumber
+                  : breakpoint.number
+              );
+
+              //   <div
+              //   style={{ width: "10px", display: "inline" }}
+              //   className="pointer"
+              //   onClick={(e) => {
+              //     e.stopPropagation();
+              //     Breakpoints.deleteBreakpoint(bkptNumToDelete);
+              //   }}
+              //   title={`Delete breakpoint ${bkptNumToDelete}`}
+              // >
+              //   <span className="glyphicon glyphicon-trash"> </span>
+              // </div>
+            }}
+          >
+            <XIcon className="icon" />
+          </button>
+          <span className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
+            {breakpoint.line}
+          </span>
+        </div>
+      </div>
+      {/* <div>{locationJsx}</div> */}
+      {/* <div>{sourceLine}</div> */}
+    </div>
+  );
 }
 
 export function BreakpointsFn(props: {}) {
   const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
   if (breakpoints.length === 0) {
-    return <div>No breakpoints</div>;
+    return null;
   }
   return (
     <div>
       {breakpoints.map((breakpoint, i) => {
-        return <Breakpoint bkpt={breakpoint} key={i} />;
+        return <Breakpoint breakpoint={breakpoint} key={i} />;
       })}
     </div>
   );
@@ -298,7 +290,7 @@ class Breakpoints extends React.Component {
   render() {
     const breakpointsJsx = [];
     for (const b of store.data.breakpoints) {
-      breakpointsJsx.push(<Breakpoint bkpt={b} key={b.number} />);
+      breakpointsJsx.push(<Breakpoint breakpoint={b} key={b.number} />);
     }
 
     if (breakpointsJsx.length) {
@@ -307,7 +299,7 @@ class Breakpoints extends React.Component {
       return <span className="placeholder">no breakpoints</span>;
     }
   }
-  static enableOrDisableBreakpoint(checked: boolean, breakpointNumber: number) {
+  static toggleEnableBreakpoint(checked: boolean, breakpointNumber: number) {
     if (checked) {
       GdbApi.runGdbCommand([
         `-break-disable ${breakpointNumber}`,
@@ -328,9 +320,8 @@ class Breakpoints extends React.Component {
   }
   static removeBreakpointIfPresent(fullname: string, line: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
-      const number = Breakpoints.getBreakpointNumber(fullname, line);
-      const cmd = [GdbApi.requestDeleteBreakpoint(number), GdbApi.get_break_list_cmd()];
-      GdbApi.runGdbCommand(cmd);
+      const beakpointNumber = Breakpoints.getBreakpointNumber(fullname, line);
+      GdbApi.requestDeleteBreakpoint(beakpointNumber);
     }
   }
   static toggleBreakpoint(fullname: string, line: number) {
@@ -362,10 +353,10 @@ class Breakpoints extends React.Component {
     console.error(`could not find breakpoint for ${fullname}:${line}`);
   }
   static deleteBreakpoint(breakpointNumber: number) {
-    GdbApi.runGdbCommand([
-      GdbApi.requestDeleteBreakpoint(breakpointNumber),
-      GdbApi.get_break_list_cmd(),
-    ]);
+    // GdbApi.runGdbCommand([
+    GdbApi.requestDeleteBreakpoint(breakpointNumber);
+    // GdbApi.get_break_list_cmd(),
+    // ]);
   }
   static getBreakpointLinesForFile(fullname: any) {
     return store.data.breakpoints

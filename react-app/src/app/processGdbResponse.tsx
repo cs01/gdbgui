@@ -50,17 +50,6 @@ function handleGdbMessage(r: GdbMiMessage) {
     } else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
       FileOps.fetch_disassembly_for_missing_file_failed();
     } else if (
-      r.token === constants.INLINE_DISASSEMBLY_INT &&
-      r.payload &&
-      // @ts-expect-error
-      r.payload.msg.indexOf("Mode argument must be 0, 1, 2, or 3.") !== -1
-    ) {
-      // we tried to fetch disassembly for a newer version of gdb, but it didn't work
-      // try again with mode 3, for older gdb api's
-      store.set("gdb_version", ["7", "6", "0"]);
-      // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '3' is not assignable to paramete... Remove this comment to see the full error message
-      FileOps.fetch_assembly_cur_line(3);
-    } else if (
       r.payload &&
       !Array.isArray(r.payload) &&
       r.payload.msg &&
@@ -117,8 +106,10 @@ function handleGdbMessage(r: GdbMiMessage) {
       Threads.update_stack(r.payload.stack);
     }
     if ("threads" in r.payload) {
-      store.set("threads", r.payload.threads);
-      store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
+      store.set<typeof store.data.threads>("threads", {
+        currentThreadId: r.payload["current-thread-id"],
+        threads: r.payload.threads,
+      });
     }
     if ("register-names" in r.payload) {
       const names = r.payload["register-names"];
@@ -129,8 +120,14 @@ function handleGdbMessage(r: GdbMiMessage) {
       );
     }
     if ("register-values" in r.payload) {
-      store.set("previous_register_values", store.data.current_register_values);
-      store.set("current_register_values", r.payload["register-values"]);
+      store.set<typeof store.data.previous_register_values>(
+        "previous_register_values",
+        store.data.current_register_values
+      );
+      store.set<typeof store.data.current_register_values>(
+        "current_register_values",
+        r.payload["register-values"]
+      );
     }
     if ("asm_insns" in r.payload) {
       FileOps.saveNewAssembly(r.payload.asm_insns, r.token);
@@ -140,7 +137,10 @@ function handleGdbMessage(r: GdbMiMessage) {
         const sourceFilePaths = _.uniq(
           r.payload.files.map((f: any) => f.fullname)
         ).sort();
-        store.set("source_file_paths", sourceFilePaths);
+        store.set<typeof store.data.source_file_paths>(
+          "source_file_paths",
+          sourceFilePaths
+        );
 
         let language = "c_family";
         if (sourceFilePaths.some((p: any) => p.endsWith(".rs"))) {
@@ -154,14 +154,14 @@ function handleGdbMessage(r: GdbMiMessage) {
           //     )}, gdbgui cannot show register values with rust executables. See https://github.com/cs01/gdbgui/issues/64 for details.`,
           //     "STD_ERR"
           //   );
-          //   store.set("can_fetch_register_values", false);
+          //   store.set<typeof store.data.can_fetch_register_values>("can_fetch_register_values", false);
           // }
         } else if (sourceFilePaths.some((p: any) => p.endsWith(".go"))) {
           language = "go";
         }
-        store.set("language", language);
+        store.set<typeof store.data.language>("language", language);
       } else {
-        store.set("source_file_paths", [
+        store.set<typeof store.data.source_file_paths>("source_file_paths", [
           "Either no executable is loaded or the executable was compiled without debug symbols.",
         ]);
 
@@ -184,7 +184,18 @@ function handleGdbMessage(r: GdbMiMessage) {
       }
     }
     if ("memory" in r.payload) {
-      Memory.add_value_to_cache(r.payload.memory[0].begin, r.payload.memory[0].contents);
+      // example
+      // {
+      //   "type": "result",
+      //   "message": "done",
+      //   "payload": {
+      //     "memory": [
+      //       {
+      //         "begin": "0x0000555555555244",
+      //         "offset": "0x0000000000000000",
+      //         "end": "0x0000555555555245",
+      //         "contents": "00"
+      Memory.addValueToCache(r.payload.memory[0].begin, r.payload.memory[0].contents);
     }
     // gdb returns local variables as "variables" which is confusing, because you can also create variables
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
@@ -206,9 +217,9 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     // features list
     if ("features" in r.payload) {
-      store.set("features", r.payload.features);
+      store.set<typeof store.data.features>("features", r.payload.features);
       if (r.payload.features.indexOf("reverse") !== -1) {
-        store.set("reverse_supported", true);
+        store.set<typeof store.data.reverse_supported>("reverse_supported", true);
       }
     }
     // features list
@@ -226,25 +237,13 @@ function handleGdbMessage(r: GdbMiMessage) {
       !Array.isArray(r.payload) &&
       r.payload.msg === `${store.data.inferior_binary_path}: No such file or directory.`
     ) {
-      Handlers.inferiorProgramExited();
+      Handlers.onDebugeeExited();
     }
   } else if (r.type === "console") {
     Handlers.addGdbGuiConsoleEntries(
       r.payload,
       r.stream === "stderr" ? "STD_ERR" : "STD_OUT"
     );
-    if (store.data.gdb_version === undefined) {
-      // parse gdb version from string such as
-      // GNU gdb (Ubuntu 7.7.1-0ubuntu5~14.04.2) 7.7.1
-      const m = /GNU gdb \(.*\)\s+([0-9|.]*)\\n/g;
-      if (_.isString(r.payload)) {
-        const a = m.exec(r.payload);
-        if (Array.isArray(a) && a.length === 2) {
-          store.set("gdb_version", a[1]);
-          store.set("gdb_version_array", a[1].split("."));
-        }
-      }
-    }
   } else if (r.type === "output" || r.type === "target" || r.type === "log") {
     // output of program
     Handlers.addGdbGuiConsoleEntries(
@@ -254,36 +253,32 @@ function handleGdbMessage(r: GdbMiMessage) {
   } else if (r.type === "notify") {
     if (r.message === "thread-group-started") {
       if (r.payload && !Array.isArray(r.payload))
-        store.set("inferior_pid", parseInt(r.payload.pid));
+        store.set<typeof store.data.inferior_pid>(
+          "inferior_pid",
+          parseInt(r.payload.pid)
+        );
     }
   }
 
   if (r.message && r.message === "stopped" && r.type === "notify") {
     if (r.payload && !Array.isArray(r.payload) && r.payload.reason) {
       if (r.payload.reason.includes("exited")) {
-        Handlers.inferiorProgramExited();
-      } else if (
-        r.payload.reason.includes("breakpoint-hit") ||
-        r.payload.reason.includes("end-stepping-range")
-      ) {
-        if (r.payload["new-thread-id"]) {
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'set_thread_id' does not exist on type 't... Remove this comment to see the full error message
-          Threads.set_thread_id(r.payload["new-thread-id"]);
-        }
+        Handlers.onDebugeeExited();
+      } else {
         Handlers.onProgramStopped({
-          reason: r.payload.reason,
-          threadId: r.payload["thread-id"],
-          allThreadsStopped: r.payload["stopped-threads"] === "all",
+          seq: 0,
+          event: "program stopped",
+          type: "event",
+          body: {
+            reason: r.payload.reason,
+            threadId: r.payload["thread-id"],
+            allThreadsStopped: r.payload["stopped-threads"] === "all",
+          },
         });
-      } else if (r.payload.reason === "signal-received") {
-        Handlers.onProgramStopped({
-          reason: r.payload.reason,
-
-          threadId: r.payload["thread-id"],
-          allThreadsStopped: r.payload["stopped-threads"] === "all",
-        });
-
-        if (r.payload["signal-name"] !== "SIGINT") {
+        if (
+          r.payload.reason === "signal-received" &&
+          r.payload["signal-name"] !== "SIGINT"
+        ) {
           Handlers.addGdbGuiConsoleEntries(
             `Signal received: (${r.payload["signal-meaning"]}, ${r.payload["signal-name"]}).`,
             "GDBGUI_OUTPUT"
@@ -295,13 +290,6 @@ function handleGdbMessage(r: GdbMiMessage) {
             "GDBGUI_OUTPUT"
           );
         }
-      } else {
-        console.warn("TODO handle new reason for stopping. Notify developer of this.");
-        console.warn(r);
-      }
-    } else {
-      if (r.payload && !Array.isArray(r.payload)) {
-        Handlers.onProgramStopped(r.payload.frame);
       }
     }
   } else if (r.message && r.message === "connected") {

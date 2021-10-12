@@ -109,7 +109,7 @@ class Store {
     this.callbacks.push({ id: id, callback });
     return unsubscribe;
   }
-  public set(key: StoreKey, value: unknown): void {
+  public set<T>(key: StoreKey, value: T): void {
     const oldval = this.data[key];
     if (valueHasChanged(oldval, value)) {
       const updateStore = this.runMiddleware(key, oldval, value);

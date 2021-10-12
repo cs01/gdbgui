@@ -67,10 +67,10 @@ const GdbApi = {
   },
   requestConnectToGdbserver(user_input: string) {
     // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Target-Manipulation.html#GDB_002fMI-Target-Manipulation
-    store.set("source_file_paths", []);
-    store.set("language", "c_family");
-    store.set("inferior_binary_path", null);
-    Handlers.inferiorProgramExited();
+    store.set<typeof store.data.source_file_paths>("source_file_paths", []);
+    store.set<typeof store.data.language>("language", "c_family");
+    store.set<typeof store.data.inferior_binary_path>("inferior_binary_path", null);
+    Handlers.onDebugeeExited();
     GdbApi.runGdbCommand([`-target-select remote ${user_input}`]);
   },
   requestInterrupt: function () {
@@ -80,15 +80,18 @@ const GdbApi = {
   requestSelectFrame: function (framenum: any) {
     // TODO this command is deprecated (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Stack-Manipulation.html)
     // This command in deprecated in favor of passing the ‘--frame’ option to every command.
-    store.set("selected_frame_num", framenum);
-    store.set("line_of_source_to_flash", null);
-    store.set("make_current_line_visible", true);
-    GdbApi.run_command_and_refresh_state(`-stack-select-frame ${framenum}`);
+    store.set<typeof store.data.selected_frame_num>("selected_frame_num", framenum);
+    store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", null);
+    store.set<typeof store.data.make_current_line_visible>(
+      "make_current_line_visible",
+      true
+    );
+    GdbApi.runCommandAndRefreshState(`-stack-select-frame ${framenum}`);
   },
   requestSelectThreadId: function (thread_id: any) {
     // TODO this command is deprecated (http://www.sourceware.org/gdb/current/onlinedocs/gdb/GDB_002fMI-Thread-Commands.html)
     // This command is deprecated in favor of explicitly using the ‘--thread’ option to each command.
-    GdbApi.run_command_and_refresh_state(`-thread-select ${thread_id}`);
+    GdbApi.runCommandAndRefreshState(`-thread-select ${thread_id}`);
   },
   /**
    * runs a gdb cmd (or commands) directly in gdb on the backend
@@ -96,38 +99,41 @@ const GdbApi = {
    * @param cmd: a string or array of strings, that are directly evaluated by gdb
    * @return nothing
    */
-  runGdbCommand: function (cmd: any) {
+  runGdbCommand: function (gdbCommand: Array<string> | string): void {
     const gdbWebsocket: Nullable<GdbWebsocket> = store.data.gdbWebsocket;
     if (gdbWebsocket) {
-      gdbWebsocket.runGdbCommand(cmd);
+      gdbWebsocket.runGdbCommand(Array.isArray(gdbCommand) ? gdbCommand : [gdbCommand]);
     }
   },
-  run_command_and_refresh_state: function (user_cmd: string | any[]) {
+  runCommandAndRefreshState: function (user_cmd: string | any[]) {
     let cmds: any[] = [];
     if (Array.isArray(user_cmd)) {
       cmds = cmds.concat(user_cmd);
     } else if (_.isString(user_cmd) && user_cmd.length > 0) {
       cmds.push(user_cmd);
     }
-    cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
+    cmds = cmds.concat(GdbApi._getRefreshStateOnStopGdbCommands());
     GdbApi.runGdbCommand(cmds);
   },
   requestBacktrace: function () {
     let cmds = ["backtrace"];
-    cmds = cmds.concat(GdbApi._get_refresh_state_for_pause_cmds());
-    store.set("gdbguiState", "stopped");
+    cmds = cmds.concat(GdbApi._getRefreshStateOnStopGdbCommands());
+    store.set<typeof store.data.gdbguiState>("gdbguiState", "stopped");
     GdbApi.runGdbCommand(cmds);
   },
   /**
    * Get array of commands to send to gdb that refreshes everything in the
    * frontend
    */
-  _get_refresh_state_for_pause_cmds: function () {
+  _getRefreshStateOnStopGdbCommands: function () {
     let cmds = [
-      // get info on current thread
-      // TODO run -thread-list-ids to store list of thread id's and know
-      // which thread is the current thread
+      // Reports information about either a specific thread,
+      // if the thread-id parameter is present, or about all threads.
+      // thread-id is the thread’s global thread ID.
+      // When printing information about all threads, also reports the global
+      // ID of the current thread.
       constants.IGNORE_ERRORS_TOKEN_STR + "-thread-info",
+
       // print the name, type and value for simple data types,
       // and the name and type for arrays, structures and unions.
       constants.IGNORE_ERRORS_TOKEN_STR + "-stack-list-variables --simple-values",
@@ -162,11 +168,13 @@ const GdbApi = {
       error: GdbApi._error_getting_last_modified_unix_sec,
     });
   },
-  requestAddBreakpoint: function (fullname: string, line: number) {
+  requestAddBreakpoint: function (fullname: string, line: number): void {
     GdbApi.runGdbCommand([`-break-insert "${fullname}:${line}"`]);
+    GdbApi.requestBreakpointList();
   },
-  requestDeleteBreakpoint: function (bkpt_num: any) {
-    return GdbApi.runGdbCommand([`-break-delete ${bkpt_num}`]);
+  requestDeleteBreakpoint: function (breakpointNumber: number): void {
+    GdbApi.runGdbCommand([`-break-delete ${breakpointNumber}`]);
+    GdbApi.requestBreakpointList();
   },
   get_break_list_cmd: function () {
     return "-break-list";
@@ -197,7 +205,7 @@ const GdbApi = {
   },
   _error_getting_last_modified_unix_sec(data: any) {
     void data;
-    store.set("inferior_binary_path", null);
+    store.set<typeof store.data.inferior_binary_path>("inferior_binary_path", null);
   },
 };
 export default GdbApi;

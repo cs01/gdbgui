@@ -28,6 +28,9 @@ export class GdbWebsocket {
   private reponseTimeoutSec = 3;
   public runGdbCommand(cmd: Array<string>) {
     const commandArray = Array.isArray(cmd) ? cmd : [cmd];
+    if (debug && commandArray.some((command) => command === undefined)) {
+      throw new Error("Developer error: Attempting to send invalid, empty command");
+    }
     if (this.socket.connected) {
       // add the send command to the console to show commands that are
       // automatically run by gdb
@@ -39,7 +42,10 @@ export class GdbWebsocket {
     } else {
       log("queuing commands");
       const queuedGdbCommands = store.data.queuedGdbCommands.concat(commandArray);
-      store.set("queuedGdbCommands", queuedGdbCommands);
+      store.set<typeof store.data.queuedGdbCommands>(
+        "queuedGdbCommands",
+        queuedGdbCommands
+      );
     }
   }
   public publishPtyData(data: { pty_name: string; key: string; action: string }) {
@@ -63,7 +69,7 @@ export class GdbWebsocket {
   }
   private responseTimedOut() {
     Handlers.clearProgramState();
-    store.set("waiting_for_response", false);
+    store.set<typeof store.data.waiting_for_response>("waiting_for_response", false);
     if (this.socket.disconnected) {
       return;
     }
@@ -110,13 +116,13 @@ export class GdbWebsocket {
       const queuedGdbCommands = store.data.queuedGdbCommands;
       if (queuedGdbCommands) {
         this.runGdbCommand(queuedGdbCommands);
-        store.set("queuedGdbCommands", []);
+        store.set<typeof store.data.queuedGdbCommands>("queuedGdbCommands", []);
       }
     });
 
     this.socket.on("gdb_response", (responseArray: Array<GdbMiMessage>) => {
       this.clearResponseTimeout();
-      store.set("waiting_for_response", false);
+      store.set<typeof store.data.waiting_for_response>("waiting_for_response", false);
       handleGdbResponseArray(responseArray);
     });
     this.socket.on("fatal_server_error", (data: { message: null | string }) => {
@@ -155,7 +161,7 @@ export class GdbWebsocket {
           this.socket?.close();
           return;
         }
-        store.set("gdb_pid", gdbPid);
+        store.set<typeof store.data.gdb_pid>("gdb_pid", gdbPid);
 
         if (newGdbProcessStarted) {
           GdbApi.runInitialCommands();

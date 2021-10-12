@@ -23,7 +23,7 @@ class Modal extends React.Component<{}, State> {
         ref={(el) => (this.fullscreen_node = el)}
         onClick={(e) => {
           if (e.target === this.fullscreen_node) {
-            store.set("show_modal", false);
+            store.set<typeof store.data.show_modal>("show_modal", false);
           }
         }}
       >

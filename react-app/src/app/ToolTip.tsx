@@ -11,7 +11,7 @@ class ToolTip extends React.Component {
     this.timeout = null;
   }
   static hide_tooltip() {
-    store.set("tooltip", {
+    store.set<typeof store.data.tooltip>("tooltip", {
       hidden: true,
       show_for_n_sec: null,
       node: null,
@@ -19,7 +19,7 @@ class ToolTip extends React.Component {
     });
   }
   static show_tooltip_on_node(content: any, node: any, show_for_n_sec = null) {
-    store.set("tooltip", {
+    store.set<typeof store.data.tooltip>("tooltip", {
       hidden: false,
       show_for_n_sec: show_for_n_sec,
       node: node,

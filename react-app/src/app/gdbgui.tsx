@@ -33,7 +33,7 @@ export function Gdbgui() {
     async function initialize() {
       const initialData: InitialData = await (await fetch("/initial_data")).json();
       const gdbWebsocket = new GdbWebsocket(initialData.gdb_command, initialData.gdbpid);
-      store.set("gdbWebsocket", gdbWebsocket);
+      store.set<typeof store.data.gdbWebsocket>("gdbWebsocket", gdbWebsocket);
       GlobalEvents.init();
       FileOps.init();
       setInitialData(initialData);
@@ -59,7 +59,10 @@ export function Gdbgui() {
           left: "-1000px",
         }}
         ref={(node) => {
-          store.set("textarea_to_copy_to_clipboard", node);
+          store.set<typeof store.data.textarea_to_copy_to_clipboard>(
+            "textarea_to_copy_to_clipboard",
+            node
+          );
         }}
       />
       <ReflexContainer orientation="horizontal">
@@ -183,7 +186,7 @@ export function Gdbgui() {
 //     left: "-1000px",
 //   }}
 //   ref={(node) => {
-//     store.set("textarea_to_copy_to_clipboard", node);
+//     store.set<typeof store.data.textarea_to_copy_to_clipboard>("textarea_to_copy_to_clipboard", node);
 //   }}
 // />
 //       </div>
@@ -209,7 +212,7 @@ export function Gdbgui() {
 //     sizes: [70, 30],
 //   });
 
-//   store.set("middle_panes_split_obj", middle_panes_split_obj);
+//   store.set<typeof store.data.middle_panes_split_obj>("middle_panes_split_obj", middle_panes_split_obj);
 
 // // Fetch the latest version only if using in normal mode. If debugging, we tend to
 // // refresh quite a bit, which might make too many requests to github and cause them
@@ -221,11 +224,11 @@ export function Gdbgui() {
 //     cache: false,
 //     method: "GET",
 //     success: (data) => {
-//       store.set("latest_gdbgui_version", _.trim(data));
+//       store.set<typeof store.data.latest_gdbgui_version>("latest_gdbgui_version", _.trim(data));
 //     },
 //     error: (data) => {
 //       void data;
-//       store.set("latest_gdbgui_version", "(could not contact server)");
+//       store.set<typeof store.data.latest_gdbgui_version>("latest_gdbgui_version", "(could not contact server)");
 //     },
 //   });
 // }

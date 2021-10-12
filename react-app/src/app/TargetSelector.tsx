@@ -39,7 +39,7 @@ function addUserInputToHistory(binaryAndArgs: string) {
 }
 
 function getInitialUserInput(): string {
-  return "/home/csmith/git/gdbgui/examples/c/hello_c.a";
+  return "/home/csmith/git/gdbgui/examples/c/threads.a";
   // try {
   //   const prevInput: Array<string> = JSON.parse(
   //     localStorage.getItem(userInputLocalStorageKey) ?? "[]"
@@ -156,11 +156,11 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         }}
         value={userInput}
       />
-      <datalist id={pastBinariesId}>
+      {/* <datalist id={pastBinariesId}>
         {["/home/csmith/git/gdbgui/examples/c/hello_c.a"].map((userInput) => (
           <option key={userInput}>{userInput}</option>
         ))}
-      </datalist>
+      </datalist> */}
       <button
         className="btn btn-purple mr-2 text-sm"
         onClick={chosenOption.onClick}

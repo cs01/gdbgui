@@ -11656,6 +11656,19 @@ vm-browserify@^1.0.1:
   resolved "https://registry.yarnpkg.com/vm-browserify/-/vm-browserify-1.1.2.tgz#78641c488b8e6ca91a75f511e7a3b32a86e5dda0"
   integrity sha512-2ham8XPWTONajOR0ohOKOHXkm3+gaBmGut3SRuu75xLd/RRaY6vqgh8NBYYk7+RW3u5AtzPQZG8F10LHkl0lAQ==
 
+vscode-debugadapter@^1.49.0:
+  version "1.49.0"
+  resolved "https://registry.yarnpkg.com/vscode-debugadapter/-/vscode-debugadapter-1.49.0.tgz#d82777adf31d2b5b651b23fecda9a8797fae98cc"
+  integrity sha512-nhes9zaLanFcHuchytOXGsLTGpU5qkz10mC9gVchiwNuX2Bljmc6+wsNbCyE5dOxu6F0pn3f+LEJQGMU1kcnvQ==
+  dependencies:
+    mkdirp "^1.0.4"
+    vscode-debugprotocol "1.49.0"
+
+vscode-debugprotocol@1.49.0:
+  version "1.49.0"
+  resolved "https://registry.yarnpkg.com/vscode-debugprotocol/-/vscode-debugprotocol-1.49.0.tgz#1ed0b7d9f2806df24ca9f18bb3485de060f85166"
+  integrity sha512-3VkK3BmaqN+BGIq4lavWp9a2IC6VYgkWkkMQm6Sa5ACkhBF6ThJDrkP+/3rFE4G7F8+mM3f4bhhJhhMax2IPfg==
+
 w3c-hr-time@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/w3c-hr-time/-/w3c-hr-time-1.0.2.tgz#0a89cdf5cc15822df9c360543676963e0cc308cd"

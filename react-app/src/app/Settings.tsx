@@ -15,7 +15,6 @@ class Settings extends React.Component {
     super();
     store.reactComponentState(this, [
       "debug",
-      "gdb_version",
       "gdb_pid",
       "show_settings",
       "auto_add_breakpoint_to_main",

@@ -61,7 +61,7 @@ export function saveNewMiOutput(gdbMiMessage: GdbMiMessage) {
   }
   gdbMiMessages.push(gdbMiMessage);
 
-  store.set("gdb_mi_output", [...gdbMiMessages]);
+  store.set<typeof store.data.gdb_mi_output>("gdb_mi_output", [...gdbMiMessages]);
 }
 
 // class GdbMiOutput_OLD extends React.Component<{}, State> {
@@ -86,7 +86,7 @@ export function saveNewMiOutput(gdbMiMessage: GdbMiMessage) {
 //         <button
 //           title="clear all mi output"
 //           className="pointer btn btn-default btn-xs"
-//           onClick={() => store.set("gdb_mi_output", [])}
+//           onClick={() => store.set<typeof store.data.gdb_mi_output>("gdb_mi_output", [])}
 //         >
 //           clear output
 //           <span className="glyphicon glyphicon-ban-circle pointer" />
@@ -119,6 +119,6 @@ export function saveNewMiOutput(gdbMiMessage: GdbMiMessage) {
 //     }
 //     gdbMiOutput.push(newStr);
 
-//     store.set("gdb_mi_output", gdbMiOutput);
+//     store.set<typeof store.data.gdb_mi_output>("gdb_mi_output", gdbMiOutput);
 //   }
 // }

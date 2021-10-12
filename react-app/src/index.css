@@ -46,3 +46,7 @@ code {
 .icon {
   @apply h-4 w-4;
 }
+
+.input {
+  @apply bg-gray-800 flex-grow p-2 mr-1 rounded-sm focus:outline-none focus:ring-0 text-sm;
+}

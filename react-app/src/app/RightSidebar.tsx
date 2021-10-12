@@ -14,7 +14,7 @@ import Locals from "./Locals";
 import Memory from "./Memory";
 import Registers from "./Registers";
 import Tree from "./Tree";
-import Threads from "./Threads";
+import { Threads } from "./Threads";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/outline";
 
 const onmouseupInParentCallbacks: Array<() => void> = [];
@@ -34,7 +34,7 @@ function CollapsableContainer(props: { content: ReactNode; title: string }) {
   return (
     <div className="w-full">
       <div
-        className="w-full cursor-pointer"
+        className="w-full cursor-pointer bg-black-900 items-center"
         onClick={() => {
           setCollapsed(!collapsed);
         }}
@@ -45,7 +45,7 @@ function CollapsableContainer(props: { content: ReactNode; title: string }) {
           ) : (
             <ChevronDownIcon className="icon inline" />
           )}
-          <button className="text-xs font-bold uppercase">{props.title}</button>
+          <button className="ml-1 text-xs font-bold uppercase">{props.title}</button>
         </span>
       </div>
       {collapsed ? null : <div>{props.content}</div>}
@@ -58,7 +58,8 @@ export function RightSidebar(props: { signals: {}; debug: boolean }) {
   return (
     <div>
       <CollapsableContainer title={"breakpoints"} content={<BreakpointsFn />} />
-      <CollapsableContainer title={"threads"} content={<Threads />} />
+      <CollapsableContainer title={"variables"} content={<Locals />} />
+      <CollapsableContainer title={"stack and threads"} content={<Threads />} />
       <CollapsableContainer title={"memory"} content={<Memory />} />
       <CollapsableContainer title={"gdb mi output"} content={<GdbMiOutput />} />
     </div>

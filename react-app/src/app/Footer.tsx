@@ -9,7 +9,7 @@ export function Footer() {
   return (
     <div className={`w-full ${background} fixed px-2 left-0 bottom-0  text-sm`}>
       Status: {programState}{" "}
-      {programState === "stopped" ? `(${stoppedDetails?.reason})` : ""}
+      {programState === "stopped" ? `(${stoppedDetails?.body.reason})` : ""}
     </div>
   );
 }

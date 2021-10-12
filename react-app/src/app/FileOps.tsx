@@ -173,7 +173,6 @@ const FileOps = {
         "disassembly_for_missing_file",
         "missing_files",
         "files_being_fetched",
-        "gdb_version_array",
         "fullname_to_render",
         "line_of_source_to_flash",
         "cached_source_files",
@@ -187,9 +186,15 @@ const FileOps = {
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
     );
-    store.set("fullname_to_render", fullname);
-    store.set("line_of_source_to_flash", line);
-    store.set("make_current_line_visible", true);
+    store.set<typeof store.data.fullname_to_render>("fullname_to_render", fullname);
+    store.set<typeof store.data.line_of_source_to_flash>(
+      "line_of_source_to_flash",
+      `${line}`
+    );
+    store.set<typeof store.data.make_current_line_visible>(
+      "make_current_line_visible",
+      true
+    );
   },
   _storeChangeCallback: function () {
     if (store.data.gdbguiState === "running") {
@@ -286,7 +291,10 @@ const FileOps = {
       );
     } else if (fullname && !file_is_missing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it
-      store.set("source_code_state", states.FETCHING_SOURCE);
+      store.set<typeof store.data.source_code_state>(
+        "source_code_state",
+        states.FETCHING_SOURCE
+      );
 
       FileFetcher.fetch(fullname, start_line, end_line);
     } else if (
@@ -296,19 +304,34 @@ const FileOps = {
         (obj: any) => parseInt(obj.address, 16) === parseInt(paused_addr, 16)
       )
     ) {
-      store.set("source_code_state", states.ASSM_CACHED);
+      store.set<typeof store.data.source_code_state>(
+        "source_code_state",
+        states.ASSM_CACHED
+      );
     } else if (is_paused && paused_addr) {
       if (paused_addr in FileOps.unfetchableDisassemblyAddresses) {
-        store.set("source_code_state", states.ASSM_UNAVAILABLE);
+        store.set<typeof store.data.source_code_state>(
+          "source_code_state",
+          states.ASSM_UNAVAILABLE
+        );
       } else {
         // get disassembly
-        store.set("source_code_state", states.FETCHING_ASSM);
+        store.set<typeof store.data.source_code_state>(
+          "source_code_state",
+          states.FETCHING_ASSM
+        );
         FileOps.fetch_disassembly_for_missing_file(paused_addr);
       }
     } else if (file_is_missing) {
-      store.set("source_code_state", states.FILE_MISSING);
+      store.set<typeof store.data.source_code_state>(
+        "source_code_state",
+        states.FILE_MISSING
+      );
     } else {
-      store.set("source_code_state", states.NONE_AVAILABLE);
+      store.set<typeof store.data.source_code_state>(
+        "source_code_state",
+        states.NONE_AVAILABLE
+      );
     }
   },
   get_num_lines_in_file: function (fullname: any, source_file_obj: any) {
@@ -405,7 +428,10 @@ const FileOps = {
       const cachedSourceFiles = store.data.cached_source_files;
 
       cachedSourceFiles.push(new_source_file);
-      store.set("cached_source_files", cachedSourceFiles);
+      store.set<typeof store.data.cached_source_files>(
+        "cached_source_files",
+        cachedSourceFiles
+      );
       FileOps.warningShownForOldBinary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
@@ -414,7 +440,10 @@ const FileOps = {
     } else {
       // mutate existing source code object by adding keys (lines) of the new source code object
       Object.assign(cached_file_obj.source_code_obj, source_code_obj);
-      store.set("cached_source_files", store.data.cached_source_files);
+      store.set<typeof store.data.cached_source_files>(
+        "cached_source_files",
+        store.data.cached_source_files
+      );
     }
   },
   /**
@@ -466,7 +495,7 @@ const FileOps = {
     FileOps.clear_cached_source_files();
   },
   clear_cached_source_files: function () {
-    store.set("cached_source_files", []);
+    store.set<typeof store.data.cached_source_files>("cached_source_files", []);
   },
   // fetch_more_source_at_beginning() {
   //   const fullname = store.data.fullname_to_render;
@@ -495,7 +524,7 @@ const FileOps = {
   //   );
   // },
   // fetch_more_source_at_end() {
-  //   store.set("source_code_infinite_scrolling", true);
+  //   store.set<typeof store.data.source_code_infinite_scrolling>("source_code_infinite_scrolling", true);
 
   //   const fullname = store.data.fullname_to_render;
   //   let end_line =
@@ -510,8 +539,8 @@ const FileOps = {
 
   //   let start_line = end_line - store.data.max_lines_of_code_to_fetch;
   //   start_line = Math.max(1, start_line);
-  //   store.set("source_linenum_to_display_end", end_line);
-  //   store.set("source_linenum_to_display_start", start_line);
+  //   store.set<typeof store.data.source_linenum_to_display_end>("source_linenum_to_display_end", end_line);
+  //   store.set<typeof store.data.source_linenum_to_display_start>("source_linenum_to_display_start", start_line);
 
   //   FileFetcher.fetch(
   //     fullname,
@@ -525,7 +554,7 @@ const FileOps = {
   add_missing_file: function (fullname: any) {
     const missing_files = store.data.missing_files;
     missing_files.push(fullname);
-    store.set("missing_files", missing_files);
+    store.set<typeof store.data.missing_files>("missing_files", missing_files);
   },
   /**
    * gdb changed its api for the data-disassemble command
@@ -547,8 +576,8 @@ const FileOps = {
       return 4;
     }
   },
-  get_fetch_disassembly_command: function (
-    fullname: any,
+  getFetchDisassemblyCommand: function (
+    fullname: string,
     start_line: any,
     mi_response_format: any
   ) {
@@ -565,23 +594,22 @@ const FileOps = {
    * Fetch disassembly for current file/line.
    */
   fetch_assembly_cur_line: function (mi_response_format = null) {
-    if (mi_response_format === null || !_.isNumber(mi_response_format)) {
-      // try to determine response format based on our guess of the gdb version being used
-      // @ts-expect-error ts-migrate(2322) FIXME: Type '4' is not assignable to type 'null'.
-      mi_response_format = FileOps.get_dissasembly_format_num(
-        store.data.gdb_version_array
-      );
-    }
-
     const fullname = store.data.fullname_to_render;
+    if (!fullname) {
+      return;
+    }
     let line = parseInt(store.data.line_of_source_to_flash ?? "");
     if (!line) {
       line = 1;
     }
-    FileOps.fetch_disassembly(fullname, line, mi_response_format);
+    FileOps.requestDisassembly(fullname, line, "4");
   },
-  fetch_disassembly: function (fullname: any, start_line: any, mi_response_format: any) {
-    const cmd = FileOps.get_fetch_disassembly_command(
+  requestDisassembly: function (
+    fullname: string,
+    start_line: any,
+    mi_response_format: any
+  ) {
+    const cmd = FileOps.getFetchDisassemblyCommand(
       fullname,
       start_line,
       mi_response_format
@@ -632,7 +660,10 @@ const FileOps = {
 
     const fullname = mi_assembly[0].fullname;
     if (mi_token === constants.DISASSEMBLY_FOR_MISSING_FILE_STR) {
-      store.set("disassembly_for_missing_file", mi_assembly);
+      store.set<typeof store.data.disassembly_for_missing_file>(
+        "disassembly_for_missing_file",
+        mi_assembly
+      );
       return;
     }
 
@@ -661,7 +692,10 @@ const FileOps = {
             }
           }
         }
-        store.set("cached_source_files", cached_source_files);
+        store.set<typeof store.data.cached_source_files>(
+          "cached_source_files",
+          cached_source_files
+        );
         break;
       }
     }

@@ -47,11 +47,7 @@ class Locals extends React.Component {
     }
 
     if (content.length === 0) {
-      return (
-        <span key="empty" className="placeholder">
-          no locals in this context
-        </span>
-      );
+      return null;
     } else {
       return content;
     }
@@ -71,7 +67,7 @@ class Locals extends React.Component {
     exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
   }
   static clear() {
-    store.set("locals", []);
+    store.set<typeof store.data.locals>("locals", []);
     Locals.clear_autocreated_exprs();
   }
   static save_locals(locals: any) {
@@ -80,7 +76,7 @@ class Locals extends React.Component {
       local.can_be_expanded = Locals.can_local_be_expanded(local) ? true : false;
       return local;
     });
-    store.set("locals", locals_with_meta);
+    store.set<typeof store.data.locals>("locals", locals_with_meta);
   }
   static can_local_be_expanded(local: any) {
     // gdb returns list of locals. We may want to turn that local into a GdbVariable

@@ -63,7 +63,7 @@ const Tree = {
       // user graphed, then hit continue, and the variable was erased by gdb. This is expected.
       // "GdbVariable" that users enter persist between stepping through the program though,
       // so it's not expected that this line will be executed for an expression
-      store.set("root_gdb_tree_var", "");
+      store.set<typeof store.data.root_gdb_tree_var>("root_gdb_tree_var", "");
       return;
     }
 

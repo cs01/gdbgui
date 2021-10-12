@@ -302,7 +302,7 @@ class GdbVariable extends React.Component {
       obj._radix += 2;
     }
     GdbVariable._update_radix_values(obj);
-    store.set("expressions", store.data.expressions);
+    store.set<typeof store.data.expressions>("expressions", store.data.expressions);
   }
   /**
    * Get ul for a variable with or without children
@@ -487,7 +487,7 @@ class GdbVariable extends React.Component {
       // save these children as a field to their parent
       parent_obj.children = children;
       parent_obj.numchild = children.length;
-      store.set("expressions", expressions);
+      store.set<typeof store.data.expressions>("expressions", expressions);
 
       // if this field is an anonymous struct, the user will want to
       // see this expanded by default
@@ -647,7 +647,7 @@ class GdbVariable extends React.Component {
     // mutate object by reference
     obj.show_children_in_ui = true;
     // update store
-    store.set("expressions", expressions);
+    store.set<typeof store.data.expressions>("expressions", expressions);
     if (obj.numchild && obj.children.length === 0) {
       // need to fetch child data
       ChildVarFetcher.fetch_children(gdb_var_name, obj.expr_type);
@@ -660,7 +660,7 @@ class GdbVariable extends React.Component {
     const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
     if (obj) {
       obj.show_children_in_ui = false;
-      store.set("expressions", expressions);
+      store.set<typeof store.data.expressions>("expressions", expressions);
     }
   }
   static click_toggle_children_visibility(gdb_variable_name: any) {
@@ -692,7 +692,7 @@ class GdbVariable extends React.Component {
     const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
     if (obj) {
       obj.show_plot = !obj.show_plot;
-      store.set("expressions", expressions);
+      store.set<typeof store.data.expressions>("expressions", expressions);
     }
   }
   static get_update_cmds() {
@@ -733,14 +733,14 @@ class GdbVariable extends React.Component {
         if (changedObj.can_plot) {
           changedObj.values.push(changedObj._float_value);
         }
-        store.set("expressions", expressions);
+        store.set<typeof store.data.expressions>("expressions", expressions);
       } else {
         // error
       }
     }
   }
   static click_draw_tree_gdb_variable(gdb_variable: any) {
-    store.set("root_gdb_tree_var", gdb_variable);
+    store.set<typeof store.data.root_gdb_tree_var>("root_gdb_tree_var", gdb_variable);
   }
   static delete_gdb_variable(gdbvar: any) {
     // delete locally
@@ -755,7 +755,7 @@ class GdbVariable extends React.Component {
   static _delete_local_gdb_var_data(gdb_var_name: any) {
     const expressions = store.data.expressions;
     _.remove(expressions, (v: any) => v.name === gdb_var_name);
-    store.set("expressions", expressions);
+    store.set<typeof store.data.expressions>("expressions", expressions);
   }
   /**
    * Locally save the variable to our cached variables
@@ -765,7 +765,7 @@ class GdbVariable extends React.Component {
     new_obj.expression = expression;
     const expressions = store.data.expressions;
     expressions.push(new_obj);
-    store.set("expressions", expressions);
+    store.set<typeof store.data.expressions>("expressions", expressions);
   }
   /**
    * Get child variable with a particular name

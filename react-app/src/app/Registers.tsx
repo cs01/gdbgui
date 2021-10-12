@@ -63,11 +63,11 @@ class Registers extends React.Component<{}, State> {
     );
   }
   static clear_register_name_cache() {
-    store.set("register_names", []);
+    store.set<typeof store.data.register_names>("register_names", []);
   }
   static clear_cached_values() {
-    store.set("previous_register_values", {});
-    store.set("current_register_values", {});
+    store.set<typeof store.data.previous_register_values>("previous_register_values", {});
+    store.set<typeof store.data.current_register_values>("current_register_values", {});
   }
   static inferior_program_exited() {
     Registers.clear_cached_values();

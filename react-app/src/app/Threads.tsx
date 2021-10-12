@@ -1,10 +1,12 @@
 import React from "react";
 import ReactTable from "./ReactTable";
-import { store } from "./Store";
+import { store, useGlobalValue } from "./Store";
 import GdbApi from "./GdbApi";
 import Memory from "./Memory";
 import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink";
+import { GdbStackFrame } from "./types";
+import Handlers from "./EventHandlers";
 
 class FrameArguments extends React.Component {
   render_frame_arg(frame_arg: any) {
@@ -28,64 +30,143 @@ class FrameArguments extends React.Component {
   }
 }
 
-type ThreadsState = any;
+type ThreadsState = {
+  threads: typeof store.data.threads;
+  stack: typeof store.data.stack;
+  selected_frame_num: typeof store.data.selected_frame_num;
+};
 
-class Threads extends React.Component<{}, ThreadsState> {
+function Frame(props: { frame: GdbStackFrame; isCurrentThread: boolean }) {
+  const frame = props.frame;
+  return (
+    <div className="flex flex-wrap justify-between font-mono hover:bg-purple-900">
+      <div className="whitespace-nowrap">
+        <span className="pr-2" title="Frame level">
+          {frame.level}
+        </span>{" "}
+        <span
+          className={frame.fullname ? "cursor-pointer" : ""}
+          title={`${frame.func}()\n\n${frame.fullname}`}
+          onClick={() => {
+            if (frame.fullname) {
+              Handlers.viewFile(frame.fullname, parseInt(frame.line));
+            }
+          }}
+        >
+          {frame.file ? `${frame.file}:${frame.line}` : null}
+        </span>
+      </div>
+      <div>
+        <MemoryLink addr={frame.addr} />
+      </div>
+    </div>
+  );
+}
+
+export function Threads(props: {}) {
+  const threads = useGlobalValue<typeof store.data.threads>("threads");
+  const stackCurrentThread = useGlobalValue<typeof store.data.stack>("stack");
+  if (threads === null) {
+    return null;
+  }
+  return (
+    <div className="px-1 space-y-3">
+      {threads.threads.map((thread, i) => {
+        const isCurrentThread = threads?.currentThreadId === thread.id;
+        const frames = isCurrentThread ? stackCurrentThread ?? [] : [thread.frame];
+        return (
+          <div key={i} className="hover:bg-gray-900 text-gray-100">
+            <div
+              className={
+                "flex justify-between items-center " +
+                (isCurrentThread ? "" : "cursor-pointer")
+              }
+              title={
+                isCurrentThread
+                  ? `Current thread (id ${thread.id})`
+                  : `Select this thread (id ${thread.id})`
+              }
+              onClick={() => {
+                if (!isCurrentThread) {
+                  GdbApi.requestSelectThreadId(thread.id);
+                }
+              }}
+            >
+              <div className={isCurrentThread ? "font-bold" : ""}>
+                <span>{thread.name}</span>
+              </div>
+              <div className="text-xs text-gray-500">
+                {thread.state} | core {thread.core} | thread id{" "}
+                <span className="bg-gray-700 rounded-xl p-1 text-gray-200">
+                  {thread.id}
+                </span>
+              </div>
+            </div>
+            <div className="text-gray-400 text-sm">
+              {frames.map((frame) => (
+                <Frame frame={frame} isCurrentThread={isCurrentThread} />
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+class DEPRECATED_Threads extends React.Component<{}, ThreadsState> {
   constructor() {
     // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
     super();
-    store.reactComponentState(this, [
-      "threads",
-      "current_thread_id",
-      "stack",
-      "selected_frame_num",
-    ]);
+    store.reactComponentState(this, ["threads", "stack", "selected_frame_num"]);
   }
 
   render() {
-    if (this.state.threads.length <= 0) {
-      return <span className="placeholder" />;
-    }
+    return <div>deprecated</div>;
 
-    const content = [];
+    // if (this.state.threads?.threads.length) {
+    //   return <span className="placeholder" />;
+    // }
 
-    for (const thread of this.state.threads) {
-      const isCurrentThreadBeingRendered =
-        parseInt(thread.id) === this.state.current_thread_id;
-      const stack = Threads.get_stack_for_thread(
-        thread.frame,
-        this.state.stack,
-        isCurrentThreadBeingRendered
-      );
-      let row_data;
-      try {
-        row_data = Threads.get_row_data_for_stack(
-          stack,
-          this.state.selected_frame_num,
-          thread.id,
-          isCurrentThreadBeingRendered
-        );
-      } catch (err) {
-        row_data = ["unknown", "unknown", "unknown"];
-        console.log(err);
-      }
-      content.push(Threads.get_thread_header(thread, isCurrentThreadBeingRendered));
-      content.push(
-        // @ts-expect-error ts-migrate(2769) FIXME: Type 'string' is not assignable to type 'never'.
-        <ReactTable
-          data={row_data}
-          style={{ fontSize: "0.9em", marginBottom: 0 }}
-          key={thread.id}
-          header={["func", "file", "addr", "args"]}
-          classes={["table-bordered", "table-striped"]}
-        />
-      );
-      content.push(<br key={thread.id + "br"} />);
-    }
-    return <div>{content}</div>;
+    // const content = [];
+
+    // for (const thread of this.state.threads?.threads ?? []) {
+    //   const isCurrentThreadBeingRendered =
+    //     thread.id === this.state.threads?.currentThreadId;
+    //   const stack = Threads.getStackForThread(
+    //     thread.frame,
+    //     this.state.stack,
+    //     isCurrentThreadBeingRendered
+    //   );
+    //   let row_data;
+    //   try {
+    //     row_data = Threads.get_row_data_for_stack(
+    //       stack,
+    //       this.state.selected_frame_num,
+    //       thread.id,
+    //       isCurrentThreadBeingRendered
+    //     );
+    //   } catch (err) {
+    //     row_data = ["unknown", "unknown", "unknown"];
+    //     console.log(err);
+    //   }
+    //   content.push(Threads.getThreadHeader(thread, isCurrentThreadBeingRendered));
+    //   content.push(
+    //     // @ts-expect-error ts-migrate(2769) FIXME: Type 'string' is not assignable to type 'never'.
+    //     <ReactTable
+    //       data={row_data}
+    //       style={{ fontSize: "0.9em", marginBottom: 0 }}
+    //       key={thread.id}
+    //       header={["func", "file", "addr", "args"]}
+    //       classes={["table-bordered", "table-striped"]}
+    //     />
+    //   );
+    //   content.push(<br key={thread.id + "br"} />);
+    // }
+    // return <div>{content}</div>;
   }
 
-  static get_stack_for_thread(
+  static getStackForThread(
     cur_frame: any,
     stack_data: any,
     is_current_thread_being_rendered: any
@@ -103,7 +184,7 @@ class Threads extends React.Component<{}, ThreadsState> {
     return [cur_frame];
   }
 
-  static get_thread_header(thread: any, is_current_thread_being_rendered: any) {
+  static getThreadHeader(thread: any, is_current_thread_being_rendered: any) {
     let selected;
     let cls = "";
     if (is_current_thread_being_rendered) {
@@ -199,7 +280,7 @@ class Threads extends React.Component<{}, ThreadsState> {
       const is_selected_frame =
         selected_frame_num === frame_num && is_current_thread_being_rendered;
       row_data.push(
-        Threads.get_frame_row(
+        DEPRECATED_Threads.get_frame_row(
           frame || {},
           is_selected_frame,
           thread_id,
@@ -216,19 +297,28 @@ class Threads extends React.Component<{}, ThreadsState> {
     return row_data;
   }
   static update_stack(stack: any) {
-    store.set("stack", stack);
-    store.set("paused_on_frame", stack[store.data.selected_frame_num || 0]);
+    store.set<typeof store.data.stack>("stack", stack);
+    store.set<typeof store.data.paused_on_frame>(
+      "paused_on_frame",
+      stack[store.data.selected_frame_num || 0]
+    );
     store.set(
       "fullname_to_render",
       store.data.paused_on_frame ? store.data.paused_on_frame.fullname : {}
     );
-    store.set("line_of_source_to_flash", parseInt(store.data.paused_on_frame.line));
-    store.set("current_assembly_address", store.data.paused_on_frame.addr);
-    store.set("make_current_line_visible", true);
-  }
-  set_thread_id(id: any) {
-    store.set("current_thread_id", parseInt(id));
+    store.set<typeof store.data.line_of_source_to_flash>(
+      "line_of_source_to_flash",
+      `${store.data.paused_on_frame.line}`
+    );
+    store.set<typeof store.data.current_assembly_address>(
+      "current_assembly_address",
+      store.data.paused_on_frame.addr
+    );
+    store.set<typeof store.data.make_current_line_visible>(
+      "make_current_line_visible",
+      true
+    );
   }
 }
 
-export default Threads;
+export default DEPRECATED_Threads;

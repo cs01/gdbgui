@@ -1,5 +1,6 @@
 import { Terminal } from "xterm";
 import { GdbWebsocket } from "./Websocket";
+import { DebugProtocol } from "vscode-debugprotocol";
 
 export type GdbFeature =
   | "thread-info"
@@ -18,78 +19,34 @@ export type GdbFeature =
   | "breakpoint-notification";
 
 export type UserVisibleState = "ready" | "stopped" | "running" | "exited";
-export type StoppedDetails = {
-  /**
-   * The reason for the event.
-   * For backward compatibility this string is shown in the UI if the
-   * 'description' attribute is missing (but it must not be translated).
-   * Values: 'step', 'breakpoint', 'exception', 'pause', 'entry', 'goto',
-   * 'function breakpoint', 'data breakpoint', 'instruction breakpoint', etc.
-   */
-  reason:
-    | "step"
-    | "breakpoint"
-    | "exception"
-    | "pause"
-    | "entry"
-    | "goto"
-    | "function breakpoint"
-    | "data breakpoint"
-    | "instruction breakpoint"
-    | string;
 
-  /**
-   * The full reason for the event, e.g. 'Paused on exception'. This string is
-   * shown in the UI as is and must be translated.
-   */
-  description?: string;
-
-  /**
-   * The thread which was stopped.
-   */
-  threadId?: number;
-
-  /**
-   * A value of true hints to the frontend that this event should not change
-   * the focus.
-   */
-  preserveFocusHint?: boolean;
-
-  /**
-   * Additional information. E.g. if reason is 'exception', text contains the
-   * exception name. This string is shown in the UI.
-   */
-  text?: string;
-
-  /**
-   * If 'allThreadsStopped' is true, a debug adapter can announce that all
-   * threads have stopped.
-   * - The client should use this information to enable that all threads can
-   * be expanded to access their stacktraces.
-   * - If the attribute is missing or false, only the thread with the given
-   * threadId can be expanded.
-   */
-  allThreadsStopped?: boolean;
-
-  /**
-   * Ids of the breakpoints that triggered the event. In most cases there will
-   * be only a single breakpoint but here are some examples for multiple
-   * breakpoints:
-   * - Different types of breakpoints map to the same location.
-   * - Multiple source breakpoints get collapsed to the same instruction by
-   * the compiler/runtime.
-   * - Multiple function breakpoints with different function names map to the
-   * same location.
-   */
-  hitBreakpointIds?: number[];
+// example stack
+// {
+//   "level": "0",
+//   "addr": "0x0000555555555228",
+//   "func": "main",
+//   "file": "threads.c",
+//   "fullname": "/home/csmith/git/gdbgui/examples/c/threads.c",
+//   "line": "18",
+//   "arch": "i386:x86-64"
+// }
+export type GdbStackFrame = {
+  level: string;
+  addr: string;
+  func: string;
+  args: Array<string>;
+  file: string;
+  fullname: string;
+  line: string;
+  arch: string;
 };
 
+type HexAddrWithLeading0x = string;
+type HexValueNoLeadingZero = string;
 export type GlobalState = {
   debug: boolean;
   gdbgui_version: string;
   latest_gdbgui_version: string;
-  gdb_version: string;
-  gdb_version_array: string[];
   gdb_pid: Nullable<number>;
   gdb_command: string;
   can_fetch_register_values: boolean;
@@ -113,10 +70,19 @@ export type GlobalState = {
 
   paused_on_frame: Nullable<any>;
   selected_frame_num: number;
-  current_thread_id: Nullable<number>;
-  stack: Array<any>;
+  stack: Nullable<Array<GdbStackFrame>>;
   locals: Array<any>;
-  threads: Array<any>;
+  threads: Nullable<{
+    currentThreadId: string;
+    threads: Array<{
+      id: string;
+      "target-id": string;
+      name: string;
+      frame: GdbStackFrame;
+      state: string;
+      core: string;
+    }>;
+  }>;
 
   // source files
   source_file_paths: any[];
@@ -142,7 +108,7 @@ export type GlobalState = {
   current_register_values: any;
 
   // memory
-  memory_cache: any;
+  memory_cache: { [key: HexAddrWithLeading0x]: HexValueNoLeadingZero };
   start_addr: string;
   end_addr: string;
   bytes_per_line: number;
@@ -166,7 +132,7 @@ export type GlobalState = {
   gdbguiPty: Nullable<Terminal>;
   revealLine: (lineNum: number) => void;
 
-  stoppedDetails: Nullable<StoppedDetails>;
+  stoppedDetails: Nullable<DebugProtocol.StoppedEvent>;
   gdbguiState: UserVisibleState;
   features: Nullable<Array<GdbFeature>>;
 };

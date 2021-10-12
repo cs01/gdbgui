@@ -13,8 +13,6 @@ const initialGlobalState: GlobalState = {
   debug, // if gdbgui is run in debug mode
   gdbgui_version: initial_data.gdbgui_version,
   latest_gdbgui_version: "(not fetched)",
-  gdb_version: "unknown", // this is parsed from gdb's output
-  gdb_version_array: [], // this is parsed from gdb's output
   gdb_pid: null,
   gdb_command: initial_data.gdb_command,
   can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
@@ -44,10 +42,9 @@ const initialGlobalState: GlobalState = {
 
   paused_on_frame: null,
   selected_frame_num: 0,
-  current_thread_id: null,
-  stack: [],
+  stack: null,
   locals: [],
-  threads: [],
+  threads: null,
 
   // source files
   source_file_paths: [], // all the paths gdb says were used to compile the target binary

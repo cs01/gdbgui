@@ -5,62 +5,64 @@ import Memory from "./Memory";
 import constants, { colorTypeMap } from "./constants";
 import _ from "lodash";
 import $ from "jquery";
-import { GdbGuiConsoleEntry, StoppedDetails } from "./types";
+import { GdbGuiConsoleEntry } from "./types";
+import { DebugProtocol } from "vscode-debugprotocol";
 
 const Handlers = {
   clearProgramState: function () {
-    store.set("line_of_source_to_flash", undefined);
-    store.set("paused_on_frame", undefined);
-    store.set("selected_frame_num", 0);
-    store.set("current_thread_id", undefined);
-    store.set("stack", []);
-    store.set("threads", []);
+    store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", null);
+    store.set<typeof store.data.paused_on_frame>("paused_on_frame", undefined);
+    store.set<typeof store.data.selected_frame_num>("selected_frame_num", 0);
+    store.set<typeof store.data.stack>("stack", null);
+    store.set<typeof store.data.threads>("threads", null);
     Memory.clear_cache();
     Locals.clear();
   },
   onEventInferiorProgramStarting: function () {
-    store.set("gdbguiState", "running");
+    store.set<typeof store.data.gdbguiState>("gdbguiState", "running");
     Handlers.clearProgramState();
   },
   onEventInferiorProgramResuming: function () {
-    store.set("gdbguiState", "running");
+    store.set<typeof store.data.gdbguiState>("gdbguiState", "running");
   },
-  onProgramStopped: function (stoppedDetails: StoppedDetails) {
-    store.set("gdbguiState", "stopped");
-    store.set("stoppedDetails", stoppedDetails);
+  onProgramStopped: function (stoppedDetails: DebugProtocol.StoppedEvent) {
+    store.set<typeof store.data.gdbguiState>("gdbguiState", "stopped");
+    store.set<typeof store.data.stoppedDetails>("stoppedDetails", stoppedDetails);
     // store.set(
     //   "source_code_selection_state",
     //   constants.source_code_selection_states.PAUSED_FRAME
     // );
-    // store.set("paused_on_frame", frame);
+    // store.set<typeof store.data.paused_on_frame>("paused_on_frame", frame);
     // // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type '{}'.
-    // store.set("fullname_to_render", frame.fullname);
+    // store.set<typeof store.data.fullname_to_render>("fullname_to_render", frame.fullname);
     // // @ts-expect-error ts-migrate(2339) FIXME: Property 'line' does not exist on type '{}'.
-    // store.set("line_of_source_to_flash", parseInt(frame.line));
+    // store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", parseInt(frame.line));
     // // @ts-expect-error ts-migrate(2339) FIXME: Property 'addr' does not exist on type '{}'.
-    // store.set("current_assembly_address", frame.addr);
+    // store.set<typeof store.data.current_assembly_address>("current_assembly_address", frame.addr);
     // SourceCode.make_current_line_visible();
     Handlers.refreshGdbguiState();
   },
-  inferiorProgramExited: function () {
-    store.set("gdbguiState", "exited");
-    store.set("disassembly_for_missing_file", []);
-    store.set("root_gdb_tree_var", null);
-    store.set("previous_register_values", {});
-    store.set("current_register_values", {});
-    store.set("inferior_pid", null);
+  onDebugeeExited: function () {
+    store.set<typeof store.data.gdbguiState>("gdbguiState", "exited");
+    store.set<typeof store.data.disassembly_for_missing_file>(
+      "disassembly_for_missing_file",
+      []
+    );
+    store.set<typeof store.data.root_gdb_tree_var>("root_gdb_tree_var", null);
+    store.set<typeof store.data.previous_register_values>("previous_register_values", {});
+    store.set<typeof store.data.current_register_values>("current_register_values", {});
+    store.set<typeof store.data.inferior_pid>("inferior_pid", null);
     Handlers.clearProgramState();
   },
   /**
    * Request relevant store information from gdb to refresh UI
    */
   refreshGdbguiState: function () {
-    store.data.revealLine(30);
-    GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
+    GdbApi.runGdbCommand(GdbApi._getRefreshStateOnStopGdbCommands());
   },
   onConsoleCommandRun: function () {
     if (store.data.refresh_state_after_sending_console_command) {
-      GdbApi.runGdbCommand(GdbApi._get_refresh_state_for_pause_cmds());
+      GdbApi.runGdbCommand(GdbApi._getRefreshStateOnStopGdbCommands());
     }
   },
   addGdbGuiConsoleEntries: function (entries: any, entryType: GdbGuiConsoleEntry) {
@@ -75,6 +77,9 @@ const Handlers = {
     const pty = store.data.gdbguiPty;
     if (pty) {
       entries.forEach((data: string) => {
+        if (data === undefined) {
+          return;
+        }
         const entriesToIgnore = [
           // No registers. appears when refresh commands are run when program hasn't started.
           // TODO The real fix for this is to not refresh commands when the program is not running.
@@ -125,23 +130,24 @@ const Handlers = {
     Handlers.addGdbGuiConsoleEntries(entries, consoleType);
   },
   toggle_modal_visibility() {
-    store.set("show_modal", !store.data.show_modal);
+    store.set<typeof store.data.show_modal>("show_modal", !store.data.show_modal);
   },
   show_modal(header: any, body: any) {
-    store.set("modal_header", header);
-    store.set("modal_body", body);
-    store.set("show_modal", true);
+    store.set<typeof store.data.modal_header>("modal_header", header);
+    store.set<typeof store.data.modal_body>("modal_body", body);
+    store.set<typeof store.data.show_modal>("show_modal", true);
   },
   setGdbBinaryAndArguments(binary: string, args: string) {
     // remove list of source files associated with the loaded binary since we're loading a new one
-    store.set("source_file_paths", []);
-    store.set("language", "c_family");
-    store.set("inferior_binary_path", null);
-    Handlers.inferiorProgramExited();
+    store.set<typeof store.data.source_file_paths>("source_file_paths", []);
+    store.set<typeof store.data.language>("language", "c_family");
+    store.set<typeof store.data.inferior_binary_path>("inferior_binary_path", null);
+    Handlers.onDebugeeExited();
     const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
     GdbApi.runGdbCommand(cmds);
     GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
   },
+  onStackTraceResponse(response: DebugProtocol.StackTraceResponse) {},
   onRemoteConnected() {
     // Handlers.onProgramStopped();
     const cmds = [];
@@ -166,11 +172,14 @@ const Handlers = {
     GdbApi.runGdbCommand(`-target-attach ${user_input}`);
   },
   fetch_source_files() {
-    store.set("source_file_paths", []);
+    store.set<typeof store.data.source_file_paths>("source_file_paths", []);
     GdbApi.runGdbCommand("-file-list-exec-source-files");
   },
-  viewFile(fullname: any, line: number) {
-    store.set("fullname_to_render", fullname);
+  viewFile(fullname: Nullable<string>, line: number): void {
+    if (!fullname) {
+      return;
+    }
+    store.set<typeof store.data.fullname_to_render>("fullname_to_render", fullname);
     Handlers.setLineState(line);
   },
   setLineState(line: number) {
@@ -178,22 +187,37 @@ const Handlers = {
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
     );
-    store.set("line_of_source_to_flash", line);
-    store.set("make_current_line_visible", true);
+    store.set<typeof store.data.line_of_source_to_flash>(
+      "line_of_source_to_flash",
+      `${line}`
+    );
+    store.set<typeof store.data.make_current_line_visible>(
+      "make_current_line_visible",
+      true
+    );
   },
   clearCachedAssembly() {
-    store.set("disassembly_for_missing_file", []);
+    store.set<typeof store.data.disassembly_for_missing_file>(
+      "disassembly_for_missing_file",
+      []
+    );
     const cached_source_files = store.data.cached_source_files;
     for (const file of cached_source_files) {
       file.assembly = {};
     }
-    store.set("cached_source_files", cached_source_files);
+    store.set<typeof store.data.cached_source_files>(
+      "cached_source_files",
+      cached_source_files
+    );
   },
   update_max_lines_of_code_to_fetch(new_value: any) {
     if (new_value <= 0) {
       new_value = constants.default_max_lines_of_code_to_fetch;
     }
-    store.set("max_lines_of_code_to_fetch", new_value);
+    store.set<typeof store.data.max_lines_of_code_to_fetch>(
+      "max_lines_of_code_to_fetch",
+      new_value
+    );
     localStorage.setItem("max_lines_of_code_to_fetch", JSON.stringify(new_value));
   },
   send_signal(signal_name: any, pid: any) {
