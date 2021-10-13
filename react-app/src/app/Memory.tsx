@@ -13,12 +13,20 @@ import MemoryLink from "./MemoryLink.tsx";
 import Handlers from "./EventHandlers";
 import React from "react";
 import _ from "lodash";
+import { GdbMiMemoryResponse } from "./types";
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  DotsHorizontalIcon,
+  DotsVerticalIcon,
+  DotsCircleHorizontalIcon,
+} from "@heroicons/react/solid";
 
 type State = any;
 
 class Memory extends React.Component<{}, State> {
   static MAX_ADDRESS_DELTA_BYTES = 1000;
-  static DEFAULT_ADDRESS_DELTA_BYTES = 31;
+  static DEFAULT_ADDRESS_DELTA_BYTES = 32;
   static DEFAULT_BYTES_PER_LINE = 8;
 
   constructor() {
@@ -32,30 +40,71 @@ class Memory extends React.Component<{}, State> {
     ]);
   }
   getMemoryTable(bytesPerLine: number) {
-    const getRowForAddressRange = (startAddress: string, endAddress: string) => {
-      // const addresses = [startAddress];
-      // let curAddress = startAddress;
-      const value = store.data.memory_cache[startAddress];
-      const startAddrInt = parseInt(startAddress, 16);
-      return (
-        <div className="flex space-x-4 font-mono">
-          <div>{Memory.make_addrs_into_links_react(startAddress)}</div>
-          <div className="hover:bg-purple-900">{value}</div>
-          <div>{String.fromCharCode(parseInt(value, 16)).replace(/\W/g, ".")}</div>
-        </div>
-      );
+    const byteStringToByteArray = (byteString: string): Array<string> => {
+      const bytes = [];
+      for (let i = 0; i < byteString.length; i = i + 2) {
+        bytes.push(byteString.substring(i, i + 2));
+      }
+      return bytes;
     };
 
-    const allAddresses = Object.keys(store.data.memory_cache);
-    const addressesRowStart = allAddresses.filter((address, i) => {
-      return i % bytesPerLine === 0;
-    });
+    return (
+      <div>
+        {store.data.memory_cache.map((entry, i) => {
+          const bytes = byteStringToByteArray(entry.contents);
+
+          return (
+            <div className="space-x-4 flex ">
+              <span>{<MemoryLink addr={entry.begin} />}</span>{" "}
+              <span className="font-mono ">
+                {" "}
+                {bytes.map((byte, i) => {
+                  return (
+                    <span key={i} className="pr-1 hover:bg-purple-900">
+                      {byte}
+                    </span>
+                  );
+                })}
+              </span>
+              <span className="font-mono ">
+                {bytes.map((byte, i) => {
+                  return (
+                    <span key={i} className="hover:bg-purple-900">
+                      {String.fromCharCode(parseInt(byte, 16)).replace(/\W/g, ".")}
+                    </span>
+                  );
+                })}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+    // const getRowForAddressRange = (startAddress: string, endAddress: string) => {
+    // const addresses = [startAddress];
+    // let curAddress = startAddress;
+    // return store.data.memory_cache;
+
+    // const startAddrInt = parseInt(startAddress, 16);
+    // return (
+    //   <div className="flex space-x-4 font-mono">
+    //     <div>{Memory.make_addrs_into_links_react(startAddress)}</div>
+    //     <div className="hover:bg-purple-900">{value}</div>
+    //     <div>{String.fromCharCode(parseInt(value, 16)).replace(/\W/g, ".")}</div>
+    //   </div>
+    // );
+    // };
+
+    // const allAddresses = Object.keys(store.data.memory_cache);
+    // const addressesRowStart = allAddresses.filter((address, i) => {
+    //   return i % bytesPerLine === 0;
+    // });
     // const addressesRowContinue = allAddresses.filter((address, i) => {
     //   return i % bytesPerLine !== 0;
     // });
-    return addressesRowStart.map((address, i) => (
-      <div key={i}>{getRowForAddressRange(address, address + bytesPerLine)}</div>
-    ));
+    // return addressesRowStart.map((address, i) => (
+    //   <div key={i}>{getRowForAddressRange(address, address + bytesPerLine)}</div>
+    // ));
     // for (const address in store.data.memory_cache) {
     //   if (!hexAddrToDisplay) {
     //     hexAddrToDisplay = address;
@@ -119,15 +168,15 @@ class Memory extends React.Component<{}, State> {
   }
   render() {
     const bytesPerLine = Math.max(
-      store.data.bytes_per_line ?? Memory.DEFAULT_BYTES_PER_LINE,
+      parseInt(store.data.bytes_per_line) ?? Memory.DEFAULT_BYTES_PER_LINE,
       1
     );
     return (
-      <div>
-        <div className="flex flex-wrap items-center space-x-1 space-y-1 text-sm font-mono ">
+      <div className="space-y-1">
+        <div className="flex flex-wrap items-center space-x-1 space-y-1 text-sm ">
           <span className="mr-1">from</span>{" "}
           <input
-            className="input"
+            className="input text-center"
             placeholder="start address (hex)"
             value={this.state.start_addr}
             onKeyUp={Memory.keypress_on_input}
@@ -138,7 +187,7 @@ class Memory extends React.Component<{}, State> {
           <span>to</span>{" "}
           <input
             id="memory_end_address"
-            className="input"
+            className="input text-center"
             placeholder="end address (hex)"
             value={this.state.end_addr}
             onKeyUp={Memory.keypress_on_input}
@@ -146,9 +195,11 @@ class Memory extends React.Component<{}, State> {
               store.set<typeof store.data.end_addr>("end_addr", e.target.value);
             }}
           />
+        </div>
+        <div>
           <span>with</span>{" "}
           <input
-            className="input w-10 flex-shrink"
+            className="input w-10 flex-shrink mr-auto text-center"
             placeholder="bytes per line (base 10)"
             title="bytes per line (base 10)"
             value={this.state.bytes_per_line}
@@ -156,7 +207,7 @@ class Memory extends React.Component<{}, State> {
             onChange={(e) => {
               store.set<typeof store.data.bytes_per_line>(
                 "bytes_per_line",
-                parseInt(e.target.value)
+                e.target.value
               );
             }}
           />
@@ -166,18 +217,20 @@ class Memory extends React.Component<{}, State> {
           <div>
             <button
               key="moretop"
-              className="font-bold text-sm"
+              className="w-full hover:bg-gray-800 my-1"
               onClick={Memory.clickReadPrecedingMemory}
+              title="Read more memory"
             >
-              more
+              <DotsHorizontalIcon className="icon m-auto" />
             </button>
             {this.getMemoryTable(bytesPerLine)}
             <button
               key="morebottom"
-              className="font-bold text-sm"
+              className="w-full hover:bg-gray-800 my-1"
               onClick={Memory.clickReadMoreMemory}
+              title="Read more memory"
             >
-              more
+              <DotsHorizontalIcon className="icon m-auto" />
             </button>
           </div>
         )}
@@ -186,96 +239,110 @@ class Memory extends React.Component<{}, State> {
   }
   static keypress_on_input(e: any) {
     if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      Memory.fetch_memory_from_state();
+      Memory.requestReadMemory();
     }
   }
-  static setInputsFromAddress(addr: any) {
+  static setInputsFromAddress(address: string) {
     // set inputs in DOM
     store.set<typeof store.data.start_addr>(
       "start_addr",
-      "0x" + parseInt(addr, 16).toString(16)
+      "0x" + parseInt(address, 16).toString(16)
     );
     store.set(
       "end_addr",
-      "0x" + (parseInt(addr, 16) + Memory.DEFAULT_ADDRESS_DELTA_BYTES).toString(16)
+      "0x" + (parseInt(address, 16) + Memory.DEFAULT_ADDRESS_DELTA_BYTES).toString(16)
     );
-    Memory.fetch_memory_from_state();
+    Memory.requestReadMemory();
   }
 
-  static getGdbCommandsFromState() {
-    const startAddr = parseInt(_.trim(store.data.start_addr), 16);
-    let endAddr = parseInt(_.trim(store.data.end_addr), 16);
-
-    if (!window.isNaN(startAddr) && window.isNaN(endAddr)) {
-      endAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
+  static getStartAddress(): number {
+    return parseInt(_.trim(store.data.start_addr), 16);
+  }
+  static getEndAddress(startAddr: number): number {
+    const defaultEndAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
+    const userEndAddr = parseInt(_.trim(store.data.end_addr), 16);
+    if (isNaN(userEndAddr)) {
+      store.set<typeof store.data.end_addr>("end_addr", `0x${defaultEndAddr}`);
+      return defaultEndAddr;
     }
 
-    const cmds = [];
-    if (_.isInteger(startAddr) && endAddr) {
-      if (startAddr > endAddr) {
-        endAddr = startAddr + Memory.DEFAULT_ADDRESS_DELTA_BYTES;
-        store.set<typeof store.data.end_addr>("end_addr", "0x" + endAddr.toString(16));
-      } else if (endAddr - startAddr > Memory.MAX_ADDRESS_DELTA_BYTES) {
-        const orig_end_addr = endAddr;
-        endAddr = startAddr + Memory.MAX_ADDRESS_DELTA_BYTES;
-        store.set<typeof store.data.end_addr>("end_addr", "0x" + endAddr.toString(16));
-        Handlers.addGdbGuiConsoleEntries(
-          `Cannot fetch ${orig_end_addr - startAddr} bytes. Changed end address to ${
-            store.data.end_addr
-          } since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
-          "STD_ERR"
-        );
-      }
-
-      let cur_addr = startAddr;
-      while (cur_addr <= endAddr) {
-        // TODO read more than 1 byte at a time?
-        cmds.push(`-data-read-memory-bytes ${"0x" + cur_addr.toString(16)} 1`);
-        cur_addr = cur_addr + 1;
-      }
-    }
-
-    if (!window.isNaN(startAddr)) {
-      store.set<typeof store.data.start_addr>(
-        "start_addr",
-        "0x" + startAddr.toString(16)
+    if (startAddr > userEndAddr) {
+      // start address can't be larger than end address,
+      // replace end address with default value
+      store.set<typeof store.data.end_addr>("end_addr", `0x${defaultEndAddr}`);
+      return defaultEndAddr;
+    } else if (userEndAddr - startAddr > Memory.MAX_ADDRESS_DELTA_BYTES) {
+      // requesting too much memory, truncate for performance reasons
+      Handlers.addGdbGuiConsoleEntries(
+        `Cannot fetch ${userEndAddr - startAddr} bytes. Changed end address to ${
+          store.data.end_addr
+        } since maximum bytes gdbgui allows is ${Memory.MAX_ADDRESS_DELTA_BYTES}.`,
+        "STD_ERR"
       );
+      store.set<typeof store.data.end_addr>("end_addr", `0x${defaultEndAddr}`);
+      return defaultEndAddr;
     }
-    if (!window.isNaN(endAddr)) {
-      store.set<typeof store.data.end_addr>("end_addr", "0x" + endAddr.toString(16));
+    return userEndAddr;
+  }
+  static getRequestReadMemoryCommmands() {
+    const startAddr = Memory.getStartAddress();
+    const endAddr = Memory.getEndAddress(startAddr);
+
+    // return [
+    //   `-data-read-memory-bytes -o 0 ${"0x" + startAddr.toString(16)} ${
+    //     endAddr - startAddr
+    //   }`,
+    // ];
+
+    let i = 0;
+    let currentAddress = startAddr;
+    const bytesPerRow =
+      parseInt(store.data.bytes_per_line) ?? Memory.DEFAULT_BYTES_PER_LINE;
+    const cmds = [];
+    while (currentAddress <= endAddr) {
+      const offset = i * bytesPerRow;
+      cmds.push(
+        `-data-read-memory-bytes -o 0x${parseInt(`${offset}`, 16)} ${
+          "0x" + currentAddress.toString(16)
+        } ${bytesPerRow}`
+      );
+      currentAddress = currentAddress + bytesPerRow;
+      i++;
     }
 
     return cmds;
   }
 
-  static fetch_memory_from_state() {
-    const cmds = Memory.getGdbCommandsFromState();
-    Memory.clear_cache();
-    GdbApi.runGdbCommand(cmds);
+  static requestReadMemory() {
+    Memory.clearMemoryCache();
+    const requestMemoryCommands = Memory.getRequestReadMemoryCommmands();
+    GdbApi.runGdbCommand(requestMemoryCommands);
   }
-
+  static getBytesPerLine() {
+    return parseInt(store.data.bytes_per_line) ?? Memory.DEFAULT_BYTES_PER_LINE;
+  }
   static clickReadPrecedingMemory() {
     // update starting value, then re-fetch
     const NUM_ROWS = 3;
     const startAddr = parseInt(_.trim(store.data.start_addr), 16);
-    const byteOffset = store.data.bytes_per_line * NUM_ROWS;
+    const byteOffset = Memory.getBytesPerLine() * NUM_ROWS;
     store.set<typeof store.data.start_addr>(
       "start_addr",
       "0x" + (startAddr - byteOffset).toString(16)
     );
-    Memory.fetch_memory_from_state();
+    Memory.requestReadMemory();
   }
 
   static clickReadMoreMemory() {
     // update ending value, then re-fetch
-    const NUM_ROWS = 3;
+    const NUM_ROWS = 5;
     const endAddr = parseInt(_.trim(store.data.end_addr), 16);
-    const byteOffset = store.data.bytes_per_line * NUM_ROWS;
+    const byteOffset = Memory.getBytesPerLine() * NUM_ROWS;
     store.set<typeof store.data.end_addr>(
       "end_addr",
       "0x" + (endAddr + byteOffset).toString(16)
     );
-    Memory.fetch_memory_from_state();
+    Memory.requestReadMemory();
   }
 
   /**
@@ -305,18 +372,15 @@ class Memory extends React.Component<{}, State> {
     }
   }
 
-  static addValueToCache(hex_str: string, hex_val: string) {
-    // strip leading zeros off address provided by gdb
-    // i.e. 0x000123 turns to
-    // 0x123
-    const hex_str_truncated = "0x" + parseInt(hex_str, 16).toString(16);
-    const cache = store.data.memory_cache;
-    cache[hex_str_truncated] = hex_val;
-    store.set<typeof store.data.memory_cache>("memory_cache", cache);
+  static addValueToCache(gdbMemoryResponse: GdbMiMemoryResponse) {
+    store.set<typeof store.data.memory_cache>("memory_cache", [
+      ...store.data.memory_cache,
+      ...gdbMemoryResponse,
+    ]);
   }
 
-  static clear_cache() {
-    store.set<typeof store.data.memory_cache>("memory_cache", {});
+  static clearMemoryCache() {
+    store.set<typeof store.data.memory_cache>("memory_cache", []);
   }
 }
 

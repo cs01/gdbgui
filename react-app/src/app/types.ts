@@ -41,8 +41,8 @@ export type GdbStackFrame = {
   arch: string;
 };
 
-type HexAddrWithLeading0x = string;
-type HexValueNoLeadingZero = string;
+export type GdbMiMemoryResponse = Array<{ begin: string; end: string; contents: string }>;
+
 export type GlobalState = {
   debug: boolean;
   gdbgui_version: string;
@@ -108,10 +108,10 @@ export type GlobalState = {
   current_register_values: any;
 
   // memory
-  memory_cache: { [key: HexAddrWithLeading0x]: HexValueNoLeadingZero };
+  memory_cache: GdbMiMemoryResponse;
   start_addr: string;
   end_addr: string;
-  bytes_per_line: number;
+  bytes_per_line: string;
 
   // breakpoints
   breakpoints: any[];

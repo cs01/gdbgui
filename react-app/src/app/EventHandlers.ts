@@ -15,7 +15,7 @@ const Handlers = {
     store.set<typeof store.data.selected_frame_num>("selected_frame_num", 0);
     store.set<typeof store.data.stack>("stack", null);
     store.set<typeof store.data.threads>("threads", null);
-    Memory.clear_cache();
+    Memory.clearMemoryCache();
     Locals.clear();
   },
   onEventInferiorProgramStarting: function () {

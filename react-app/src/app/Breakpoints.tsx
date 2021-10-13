@@ -213,6 +213,7 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
       <div className="flex justify-between text-sm">
         <div>
           <input
+            className="mx-1"
             type="checkbox"
             checked={checked}
             onChange={() =>
@@ -353,10 +354,7 @@ class Breakpoints extends React.Component {
     console.error(`could not find breakpoint for ${fullname}:${line}`);
   }
   static deleteBreakpoint(breakpointNumber: number) {
-    // GdbApi.runGdbCommand([
     GdbApi.requestDeleteBreakpoint(breakpointNumber);
-    // GdbApi.get_break_list_cmd(),
-    // ]);
   }
   static getBreakpointLinesForFile(fullname: any) {
     return store.data.breakpoints

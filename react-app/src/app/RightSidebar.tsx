@@ -48,7 +48,7 @@ function CollapsableContainer(props: { content: ReactNode; title: string }) {
           <button className="ml-1 text-xs font-bold uppercase">{props.title}</button>
         </span>
       </div>
-      {collapsed ? null : <div>{props.content}</div>}
+      {collapsed ? null : <div className="mx-1">{props.content}</div>}
       <hr className="w-full my-1 border-purple-900" />
     </div>
   );

@@ -103,8 +103,8 @@ export function Threads(props: {}) {
               </div>
             </div>
             <div className="text-gray-400 text-sm">
-              {frames.map((frame) => (
-                <Frame frame={frame} isCurrentThread={isCurrentThread} />
+              {frames.map((frame, i) => (
+                <Frame key={i} frame={frame} isCurrentThread={isCurrentThread} />
               ))}
             </div>
           </div>

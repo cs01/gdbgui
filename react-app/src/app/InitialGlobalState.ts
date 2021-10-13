@@ -71,10 +71,10 @@ const initialGlobalState: GlobalState = {
   current_register_values: {},
 
   // memory
-  memory_cache: {},
+  memory_cache: [],
   start_addr: "",
   end_addr: "",
-  bytes_per_line: 8,
+  bytes_per_line: "8",
 
   // breakpoints
   breakpoints: [],

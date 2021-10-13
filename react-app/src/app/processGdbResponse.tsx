@@ -195,7 +195,8 @@ function handleGdbMessage(r: GdbMiMessage) {
       //         "offset": "0x0000000000000000",
       //         "end": "0x0000555555555245",
       //         "contents": "00"
-      Memory.addValueToCache(r.payload.memory[0].begin, r.payload.memory[0].contents);
+      type GdbMiMemoryResponse = { begin: string; end: string; contents: string };
+      Memory.addValueToCache(r.payload.memory);
     }
     // gdb returns local variables as "variables" which is confusing, because you can also create variables
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and

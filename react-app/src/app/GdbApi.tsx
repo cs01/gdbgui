@@ -145,7 +145,7 @@ const GdbApi = {
     cmds = cmds.concat(Registers.get_update_cmds());
 
     // re-fetch memory over desired range as specified by DOM inputs
-    cmds = cmds.concat(Memory.getGdbCommandsFromState());
+    cmds = cmds.concat(Memory.getRequestReadMemoryCommmands());
 
     // refresh breakpoints
     cmds.push(GdbApi.get_break_list_cmd());
