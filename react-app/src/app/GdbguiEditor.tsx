@@ -5,6 +5,7 @@ import FileOps from "./FileOps";
 import { store, useGlobalState, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
+import Breakpoints from "./Breakpoints";
 
 function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
   const states = constants.source_code_states;
@@ -101,11 +102,34 @@ function highlightLine(
     {
       range: r,
       options: {
-        inlineClassName: "bg-gray-700",
+        className: "bg-gray-700",
         isWholeLine: true,
       },
     },
   ]);
+}
+
+function addBreakpointGlyphs(
+  editor: monaco.editor.IStandaloneCodeEditor,
+  breakpoints: typeof store.data.breakpoints,
+  lastBreakpoint: React.MutableRefObject<Nullable<string[]>>
+): void {
+  const oldBreakpointGlyphs = lastBreakpoint.current ?? [];
+  const newBreakpointGlyphs = breakpoints.map((breakpoint) => {
+    return {
+      range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
+      options: {
+        isWholeLine: true,
+        glyphMarginClassName:
+          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
+      },
+    };
+  });
+
+  lastBreakpoint.current = editor.deltaDecorations(
+    oldBreakpointGlyphs,
+    newBreakpointGlyphs
+  );
 }
 
 export function GdbguiEditor() {
@@ -121,13 +145,20 @@ export function GdbguiEditor() {
   const flashLine = useGlobalValue<typeof store.data["line_of_source_to_flash"]>(
     "line_of_source_to_flash"
   );
+  const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
   const [revealLine, setRevealLine] =
     useGlobalState<(lineNum: number) => void>("revealLine");
 
   const lastHighlight = useRef<Nullable<string[]>>(null);
+  const breakpointDecorations = useRef<Nullable<string[]>>(null);
 
   if (monacoObjects.current?.editor) {
     highlightLine(monacoObjects.current?.editor, flashLine, lastHighlight);
+    addBreakpointGlyphs(
+      monacoObjects.current?.editor,
+      breakpoints,
+      breakpointDecorations
+    );
   }
   function handleEditorDidMount(
     editor: monaco.editor.IStandaloneCodeEditor,
@@ -142,19 +173,24 @@ export function GdbguiEditor() {
         editor.revealLine(lineNum);
       }
     });
-
     editor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
       // TODO handle gutter clicks
       //     https://microsoft.github.io/monaco-editor/playground.html#interacting-with-the-editor-listening-to-mouse-events shows mouseDown, mouseMove events over the glyph margin.
       // In Visual Studio Code source, you can see the editor.onMouseDown event tests for clicks on the gutter:
       // const data = e.target.detail as monaco.editor.IMarginData;
-      // if (
-      //   e.target.type !== monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN ||
-      //   data.isAfterLines ||
-      //   !editor.marginFreeFromNonDebugDecorations(e.target.position.lineNumber)
-      // ) {
-      //   return;
-      // }
+      if (
+        e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN
+        // ? ||
+        // data.isAfterLines ||
+        // !editor.marginFreeFromNonDebugDecorations(e.target.position.lineNumber)
+      ) {
+        if (store.data.fullname_to_render && e.target.position?.lineNumber) {
+          Breakpoints.toggleBreakpoint(
+            store.data.fullname_to_render,
+            e.target.position?.lineNumber
+          );
+        }
+      }
     });
   }
 
@@ -166,6 +202,7 @@ export function GdbguiEditor() {
       loading={<Loader />}
       value={getSourceCode(sourceCodeState, sourcePath)}
       onMount={handleEditorDidMount}
+      options={{ glyphMargin: true }}
     />
   );
 }

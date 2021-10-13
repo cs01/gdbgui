@@ -15,6 +15,7 @@ import {
   XIcon,
 } from "@heroicons/react/solid";
 import MemoryLink from "./MemoryLink";
+import { GdbBreakpoint as GdbMiBreakpoint, GdbGuiBreakpoint } from "./types";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -41,39 +42,6 @@ const BreakpointSourceLineCache = {
   },
 };
 
-type GdbBreakpoint = {
-  addr: string; //"0x0000555555555228";
-  disp: string; // "keep";
-  enabled: "y" | "n"; // "y";
-  file: string; //"hello.c";
-  fullname: string; //"/home/csmith/git/gdbgui/examples/c/hello.c";
-  func: string; // "main";
-  line: string; // "51";
-  number: string; //"4";
-  "original-location": string; // "/home/csmith/git/gdbgui/examples/c/hello.c:51";
-  "thread-groups": Array<string>; // ["i1"];
-  times: string; // "0";
-  type: string; // "breakpoint";
-};
-type GdbGuiBreakpoint = {
-  addr: string;
-  disp: string;
-  enabled: "y" | "n";
-  file: string;
-  fullname: string;
-  func: string;
-  line: number;
-  number: number;
-  "original-location": string;
-  "thread-groups": Array<string>;
-  times: number;
-  type: string;
-  isChildBreakpoint: boolean;
-  isNormalBreakpoint: boolean;
-  isParentBreakpoint: boolean;
-  parentBreakpointNumber: Nullable<number>;
-  fullNameToDisplay: Nullable<string>;
-};
 function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
   const [breakpointCondition, setBreakpointCondition] = useState("");
   const [editingBreakpointCondition, setEditingBreakpointCondition] = useState(false);
@@ -321,11 +289,13 @@ class Breakpoints extends React.Component {
   }
   static removeBreakpointIfPresent(fullname: string, line: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
-      const beakpointNumber = Breakpoints.getBreakpointNumber(fullname, line);
-      GdbApi.requestDeleteBreakpoint(beakpointNumber);
+      const breakpointNumber = Breakpoints.getBreakpointNumber(fullname, line);
+      if (breakpointNumber) {
+        GdbApi.requestDeleteBreakpoint(breakpointNumber);
+      }
     }
   }
-  static toggleBreakpoint(fullname: string, line: number) {
+  static toggleBreakpoint(fullname: string, linpoe: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
       Breakpoints.removeBreakpointIfPresent(fullname, line);
     } else {
@@ -344,7 +314,7 @@ class Breakpoints extends React.Component {
     }
     return false;
   }
-  static getBreakpointNumber(fullname: string, line: number) {
+  static getBreakpointNumber(fullname: string, line: number): Nullable<number> {
     const bkpts = store.data.breakpoints;
     for (const b of bkpts) {
       if (b.fullname === fullname && b.line === line) {
@@ -352,6 +322,7 @@ class Breakpoints extends React.Component {
       }
     }
     console.error(`could not find breakpoint for ${fullname}:${line}`);
+    return null;
   }
   static deleteBreakpoint(breakpointNumber: number) {
     GdbApi.requestDeleteBreakpoint(breakpointNumber);
@@ -379,7 +350,7 @@ class Breakpoints extends React.Component {
       }
     }
   }
-  static saveBreakpoint(bkpt: GdbBreakpoint): GdbGuiBreakpoint {
+  static saveBreakpoint(bkpt: GdbMiBreakpoint): GdbGuiBreakpoint {
     // parent breakpoints have numbers like "5.6", whereas normal
     // breakpoints and parent breakpoints have numbers like "5"
     const isParentBreakpoint = bkpt.addr === "(MULTIPLE)";
@@ -402,7 +373,7 @@ class Breakpoints extends React.Component {
       fullNameToDisplay = null;
     }
 
-    const gdbguiBreakpoint = {
+    const gdbguiBreakpoint: GdbGuiBreakpoint = {
       ...bkpt,
       number: parseInt(bkpt.number),
       times: parseInt(bkpt.times),
@@ -415,7 +386,7 @@ class Breakpoints extends React.Component {
     };
     // add the breakpoint if it's not stored already
     const bkpts = store.data.breakpoints;
-    if (bkpts.indexOf(gdbguiBreakpoint) === -1) {
+    if (!bkpts.includes(gdbguiBreakpoint)) {
       bkpts.push(gdbguiBreakpoint);
       store.set("breakpoints", bkpts);
     }

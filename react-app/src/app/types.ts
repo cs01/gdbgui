@@ -2,6 +2,41 @@ import { Terminal } from "xterm";
 import { GdbWebsocket } from "./Websocket";
 import { DebugProtocol } from "vscode-debugprotocol";
 
+export type GdbBreakpoint = {
+  addr: string; //"0x0000555555555228";
+  disp: string; // "keep";
+  enabled: "y" | "n"; // "y";
+  file: string; //"hello.c";
+  fullname: string; //"/home/csmith/git/gdbgui/examples/c/hello.c";
+  func: string; // "main";
+  line: string; // "51";
+  number: string; //"4";
+  "original-location": string; // "/home/csmith/git/gdbgui/examples/c/hello.c:51";
+  "thread-groups": Array<string>; // ["i1"];
+  times: string; // "0";
+  type: string; // "breakpoint";
+};
+
+export type GdbGuiBreakpoint = {
+  addr: string;
+  disp: string;
+  enabled: "y" | "n";
+  file: string;
+  fullname: string;
+  func: string;
+  line: number;
+  number: number;
+  "original-location": string;
+  "thread-groups": Array<string>;
+  times: number;
+  type: string;
+  isChildBreakpoint: boolean;
+  isNormalBreakpoint: boolean;
+  isParentBreakpoint: boolean;
+  parentBreakpointNumber: Nullable<number>;
+  fullNameToDisplay: Nullable<string>;
+};
+
 export type GdbFeature =
   | "thread-info"
   | "reverse"
@@ -114,7 +149,7 @@ export type GlobalState = {
   bytes_per_line: string;
 
   // breakpoints
-  breakpoints: any[];
+  breakpoints: GdbGuiBreakpoint[];
 
   // expressions
   expressions: Array<{ [expression: string]: any }>;

@@ -175,42 +175,46 @@ class Memory extends React.Component<{}, State> {
       <div className="space-y-1">
         <div className="flex flex-wrap items-center space-x-1 space-y-1 text-sm ">
           <span className="mr-1">from</span>{" "}
-          <input
-            className="input text-center"
-            placeholder="start address (hex)"
-            value={this.state.start_addr}
-            onKeyUp={Memory.keypress_on_input}
-            onChange={(e) => {
-              store.set<typeof store.data.start_addr>("start_addr", e.target.value);
-            }}
-          />
+          <div>
+            <input
+              className="input text-center"
+              placeholder="start address (hex)"
+              value={this.state.start_addr}
+              onKeyUp={Memory.keypress_on_input}
+              onChange={(e) => {
+                store.set<typeof store.data.start_addr>("start_addr", e.target.value);
+              }}
+            />
+          </div>
           <span>to</span>{" "}
-          <input
-            id="memory_end_address"
-            className="input text-center"
-            placeholder="end address (hex)"
-            value={this.state.end_addr}
-            onKeyUp={Memory.keypress_on_input}
-            onChange={(e) => {
-              store.set<typeof store.data.end_addr>("end_addr", e.target.value);
-            }}
-          />
-        </div>
-        <div>
+          <div>
+            <input
+              id="memory_end_address"
+              className="input text-center"
+              placeholder="end address (hex)"
+              value={this.state.end_addr}
+              onKeyUp={Memory.keypress_on_input}
+              onChange={(e) => {
+                store.set<typeof store.data.end_addr>("end_addr", e.target.value);
+              }}
+            />
+          </div>
           <span>with</span>{" "}
-          <input
-            className="input w-10 flex-shrink mr-auto text-center"
-            placeholder="bytes per line (base 10)"
-            title="bytes per line (base 10)"
-            value={this.state.bytes_per_line}
-            onKeyUp={Memory.keypress_on_input}
-            onChange={(e) => {
-              store.set<typeof store.data.bytes_per_line>(
-                "bytes_per_line",
-                e.target.value
-              );
-            }}
-          />
+          <div>
+            <input
+              className="input w-10 flex-shrink mr-auto text-center"
+              placeholder="bytes per line (base 10)"
+              title="bytes per line (base 10)"
+              value={this.state.bytes_per_line}
+              onKeyUp={Memory.keypress_on_input}
+              onChange={(e) => {
+                store.set<typeof store.data.bytes_per_line>(
+                  "bytes_per_line",
+                  e.target.value
+                );
+              }}
+            />
+          </div>
           <span className="flex-grow">bytes per line</span>{" "}
         </div>
         {Object.keys(store.data.memory_cache).length === 0 ? null : (
