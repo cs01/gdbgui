@@ -3,7 +3,7 @@
 
 /* global vis */
 import { store } from "./Store";
-import GdbVariable from "./GdbVariable";
+import Expression from "./Expression";
 import constants from "./constants";
 
 const Tree = {
@@ -53,7 +53,7 @@ const Tree = {
     const gdb_root_var_to_update = Tree.gdb_var_being_updated
       ? Tree.gdb_var_being_updated
       : gdbvar;
-    const gdb_var_obj = GdbVariable.get_obj_from_gdb_var_name(
+    const gdb_var_obj = Expression.getObjectFromGdbVarName(
       expressions,
       gdb_root_var_to_update
     );
@@ -265,7 +265,7 @@ const Tree = {
         return;
       }
       if (gdb_var_name) {
-        GdbVariable._toggle_children_visibility(gdb_var_name);
+        Expression._toggle_children_visibility(gdb_var_name);
       }
     });
   },

@@ -14,7 +14,7 @@ import FileOps from "./FileOps";
 import Memory from "./Memory";
 import GdbApi from "./GdbApi";
 import Locals from "./Locals";
-import GdbVariable from "./GdbVariable";
+import Expression from "./Expression";
 import Modal from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
@@ -43,7 +43,7 @@ function handleGdbMessage(r: GdbMiMessage) {
 
   if (isError(r)) {
     if (isCreatingVar(r)) {
-      GdbVariable.gdb_variable_fetch_failed(r);
+      Expression.gdb_variable_fetch_failed(r);
       return;
     } else if (ignoreError(r)) {
       return;
@@ -195,26 +195,25 @@ function handleGdbMessage(r: GdbMiMessage) {
       //         "offset": "0x0000000000000000",
       //         "end": "0x0000555555555245",
       //         "contents": "00"
-      type GdbMiMemoryResponse = { begin: string; end: string; contents: string };
       Memory.addValueToCache(r.payload.memory);
     }
     // gdb returns local variables as "variables" which is confusing, because you can also create variables
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
     // are returned by gdbgui as "changelist", or have the keys "has_more", "numchild", "children", or "name".
     if ("variables" in r.payload) {
-      Locals.save_locals(r.payload.variables);
+      Locals.saveLocals(r.payload.variables);
     }
     // gdbgui expression (aka a gdb variable was changed)
     if ("changelist" in r.payload) {
-      GdbVariable.handle_changelist(r.payload.changelist);
+      Expression.handle_changelist(r.payload.changelist);
     }
     // gdbgui expression was evaluated for the first time for a child variable
     if ("has_more" in r.payload && "numchild" in r.payload && "children" in r.payload) {
-      GdbVariable.gdb_created_children_variables(r);
+      Expression.gdb_created_children_variables(r);
     }
     // gdbgui expression was evaluated for the first time for a root variable
     if ("name" in r.payload) {
-      GdbVariable.gdb_created_root_variable(r);
+      Expression.createdRootExpression(r);
     }
     // features list
     if ("features" in r.payload) {

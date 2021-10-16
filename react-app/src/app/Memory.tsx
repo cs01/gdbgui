@@ -60,7 +60,7 @@ class Memory extends React.Component<{}, State> {
                 {" "}
                 {bytes.map((byte, i) => {
                   return (
-                    <span key={i} className="pr-1 hover:bg-purple-900">
+                    <span key={i} className="mr-1 hover:bg-purple-900">
                       {byte}
                     </span>
                   );
@@ -289,14 +289,13 @@ class Memory extends React.Component<{}, State> {
     return userEndAddr;
   }
   static getRequestReadMemoryCommmands() {
-    const startAddr = Memory.getStartAddress();
-    const endAddr = Memory.getEndAddress(startAddr);
+    Memory.clearMemoryCache();
 
-    // return [
-    //   `-data-read-memory-bytes -o 0 ${"0x" + startAddr.toString(16)} ${
-    //     endAddr - startAddr
-    //   }`,
-    // ];
+    const startAddr = Memory.getStartAddress();
+    if (isNaN(startAddr)) {
+      return [];
+    }
+    const endAddr = Memory.getEndAddress(startAddr);
 
     let i = 0;
     let currentAddress = startAddr;
@@ -320,6 +319,9 @@ class Memory extends React.Component<{}, State> {
   static requestReadMemory() {
     Memory.clearMemoryCache();
     const requestMemoryCommands = Memory.getRequestReadMemoryCommmands();
+    if (requestMemoryCommands.length === 0) {
+      return;
+    }
     GdbApi.runGdbCommand(requestMemoryCommands);
   }
   static getBytesPerLine() {

@@ -295,7 +295,7 @@ class Breakpoints extends React.Component {
       }
     }
   }
-  static toggleBreakpoint(fullname: string, linpoe: number) {
+  static toggleBreakpoint(fullname: string, line: number) {
     if (Breakpoints.hasBreakpoint(fullname, line)) {
       Breakpoints.removeBreakpointIfPresent(fullname, line);
     } else {

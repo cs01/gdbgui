@@ -12,6 +12,7 @@ import GdbApi from "./GdbApi";
 import CopyToClipboard from "./CopyToClipboard";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
+import { GdbguiLocalVariable } from "./types";
 
 /**
  * Simple object to manage fetching of child variables. Maintains a queue of parent expressions
@@ -56,7 +57,7 @@ const ChildVarFetcher = {
 const VarCreator = {
   _queue: [], // list of objs with keys expr_being_created, expr_type
   _is_fetching: false,
-  expr_being_created: null,
+  expressionBeingCreated: null,
   expr_type: null,
 
   _fetch_next_in_queue: function () {
@@ -72,7 +73,7 @@ const VarCreator = {
 
       VarCreator._is_fetching = true;
 
-      VarCreator.expr_being_created = expression;
+      VarCreator.expressionBeingCreated = expression;
       VarCreator.expr_type = expr_type;
 
       // surround in quotes if we found a quote
@@ -106,12 +107,12 @@ const VarCreator = {
   /**
    * After a variable is created, we need to link the gdb
    * variable name (which is automatically created by gdb),
-   * and the expression the user wanted to evailuate. The
+   * and the expression the user wanted to evaluate. The
    * new variable is saved locally. The variable UI element is then re-rendered
    * @param r (object): gdb mi object
    */
-  created_variable(r: any) {
-    const expr = VarCreator.expr_being_created;
+  onExpressionCreated(r: any) {
+    const expr = VarCreator.expressionBeingCreated;
     if (expr) {
       // example payload:
       // "payload": {
@@ -122,10 +123,10 @@ const VarCreator = {
       //      "type": "int",
       //      "value": "0"
       //  },
-      GdbVariable.save_new_expression(expr, VarCreator.expr_type, r.payload);
-      VarCreator.expr_being_created = null;
+      Expression.saveNewExpression(expr, VarCreator.expr_type, r.payload);
+      VarCreator.expressionBeingCreated = null;
       // automatically fetch first level of children for root variables
-      GdbVariable.fetch_and_show_children_for_var(r.payload.name);
+      Expression.fetchAndShowChildrenForVar(r.payload.name);
     } else {
       // gdbgui did not expect a new variable to be created here
       // it's likely this tab is viewing an instance of gdb that multiple users
@@ -151,67 +152,33 @@ const VarCreator = {
   },
 };
 
-class GdbVariable extends React.Component {
+type GdbExpressionProps = {
+  obj: GdbguiLocalVariable;
+  expression: string;
+  expr_type: "expr" | "hover";
+};
+class Expression extends React.Component<GdbExpressionProps> {
   render() {
     const is_root = true;
 
-    // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
-    if (this.props.expr_type === "local") {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
-      return this.get_ul_for_local(this.props.obj);
+    // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
+    if (this.props.obj.numchild > 0) {
+      return this.get_ul_for_var_with_children(
+        this.props.expression,
+        this.props.obj,
+        this.props.expr_type,
+        is_root
+      );
     } else {
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
-      if (this.props.obj.numchild > 0) {
-        return this.get_ul_for_var_with_children(
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'expression' does not exist on type 'Read... Remove this comment to see the full error message
-          this.props.expression,
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
-          this.props.obj,
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
-          this.props.expr_type,
-          is_root
-        );
-      } else {
-        return this.get_ul_for_var_without_children(
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'expression' does not exist on type 'Read... Remove this comment to see the full error message
-          this.props.expression,
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'obj' does not exist on type 'Readonly<{}... Remove this comment to see the full error message
-          this.props.obj,
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'expr_type' does not exist on type 'Reado... Remove this comment to see the full error message
-          this.props.expr_type,
-          is_root
-        );
-      }
+      return this.get_ul_for_var_without_children(
+        this.props.expression,
+        this.props.obj,
+        this.props.expr_type,
+        is_root
+      );
     }
   }
-  /**
-   * get unordered list for a "local" returned by gdb
-   * these are special snowflakes; gdb returns a small subset of information for
-   * locals. The list is useful to browse, but oftentimes needs to be expanded.
-   * If the user clicks on a local that can be expanded, gdbgui will ask gdb
-   * to create a full-fledged variable for the user to explore. gdbgui will then
-   * render that instead of the "local".
-   */
-  get_ul_for_local(local: any) {
-    const can_be_expanded = local.can_be_expanded;
-    const value = _.isString(local.value)
-      ? Memory.make_addrs_into_links_react(local.value)
-      : local.value;
-    const onclick = can_be_expanded
-      ? () => GdbVariable.create_variable(local.name, "local")
-      : () => {};
 
-    return (
-      <div>
-        <span onClick={onclick} className={can_be_expanded ? "pointer" : ""}>
-          {can_be_expanded ? "+" : ""} {local.name}&nbsp;
-        </span>
-        {value}
-
-        <span className="var_type">{_.trim(local.type)}</span>
-      </div>
-    );
-  }
   /**
    * get unordered list for a variable that has children
    * @return unordered list, expanded or collapsed based on the key "show_children_in_ui"
@@ -278,7 +245,7 @@ class GdbVariable extends React.Component {
             <button
               className="btn btn-default btn-xs btn-radix"
               onClick={() => {
-                GdbVariable.change_radix(obj);
+                Expression.change_radix(obj);
               }}
               title="click to change radix"
               style={{ fontSize: "60%" }}
@@ -301,7 +268,7 @@ class GdbVariable extends React.Component {
     } else {
       obj._radix += 2;
     }
-    GdbVariable._update_radix_values(obj);
+    Expression._update_radix_values(obj);
     store.set<typeof store.data.expressions>("expressions", store.data.expressions);
   }
   /**
@@ -322,7 +289,7 @@ class GdbVariable extends React.Component {
         <span
           style={glyph_style}
           className="glyphicon glyphicon-trash pointer"
-          onClick={() => GdbVariable.delete_gdb_variable(mi_obj.name)}
+          onClick={() => Expression.delete_gdb_variable(mi_obj.name)}
         />
       ) : (
         ""
@@ -333,7 +300,7 @@ class GdbVariable extends React.Component {
       <span
         style={glyph_style}
         className="glyphicon glyphicon-tree-deciduous pointer"
-        onClick={() => GdbVariable.click_draw_tree_gdb_variable(mi_obj.name)}
+        onClick={() => Expression.click_draw_tree_gdb_variable(mi_obj.name)}
       />
     ) : (
       ""
@@ -342,7 +309,7 @@ class GdbVariable extends React.Component {
     let plot_content = "";
     let plot_button = "";
     const plusminusClickCallback = has_children
-      ? () => GdbVariable.click_toggle_children_visibility(mi_obj.name)
+      ? () => Expression.click_toggle_children_visibility(mi_obj.name)
       : () => {};
     if (mi_obj.can_plot && mi_obj.show_plot) {
       // dots are not allowed in the dom as id's. replace with '-'.
@@ -352,7 +319,7 @@ class GdbVariable extends React.Component {
         <span
           style={glyph_style}
           className="pointer glyphicon glyphicon-ban-circle"
-          onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
+          onClick={() => Expression.click_toggle_plot(mi_obj.name)}
           title="remove x/y plot"
         />
       );
@@ -364,7 +331,7 @@ class GdbVariable extends React.Component {
         <span
           style={glyph_style}
           className="glyphicon glyphicon glyphicon-equalizer pointer"
-          onClick={() => GdbVariable.click_toggle_plot(mi_obj.name)}
+          onClick={() => Expression.click_toggle_plot(mi_obj.name)}
           title="show x/y plot"
         />
       );
@@ -377,12 +344,12 @@ class GdbVariable extends React.Component {
             {plus_or_minus} {expression}&nbsp;
           </span>
 
-          {GdbVariable._get_value_jsx(mi_obj)}
+          {Expression._get_value_jsx(mi_obj)}
 
           <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
 
           <div className="right_help_icon_show_on_hover">
-            <CopyToClipboard content={GdbVariable._get_full_path(mi_obj)} />:{tree}
+            <CopyToClipboard content={Expression._get_full_path(mi_obj)} />:{tree}
             {plot_button}
             {delete_button}
           </div>
@@ -432,8 +399,8 @@ class GdbVariable extends React.Component {
   static create_variable(expression: any, expr_type: any) {
     VarCreator.create_variable(expression, expr_type);
   }
-  static gdb_created_root_variable(r: any) {
-    VarCreator.created_variable(r);
+  static createdRootExpression(r: any) {
+    VarCreator.onExpressionCreated(r);
   }
   static gdb_variable_fetch_failed(r: any) {
     VarCreator.fetch_failed(r);
@@ -478,11 +445,11 @@ class GdbVariable extends React.Component {
 
     // get the parent object of these children
     const expressions = store.data.expressions;
-    const parent_obj = GdbVariable.get_obj_from_gdb_var_name(expressions, parent_name);
+    const parent_obj = Expression.getObjectFromGdbVarName(expressions, parent_name);
     if (parent_obj) {
       // prepare all the child objects we received for local storage
       const children = r.payload.children.map((child_obj: any) =>
-        GdbVariable.prepare_gdb_obj_for_storage(child_obj, parent_obj)
+        Expression.prepare_gdb_obj_for_storage(child_obj, parent_obj)
       );
       // save these children as a field to their parent
       parent_obj.children = children;
@@ -493,7 +460,7 @@ class GdbVariable extends React.Component {
       // see this expanded by default
       for (const child of parent_obj.children) {
         if (child.exp.includes("<anonymous")) {
-          GdbVariable.fetch_and_show_children_for_var(child.name);
+          Expression.fetchAndShowChildrenForVar(child.name);
         }
       }
     } else {
@@ -526,7 +493,7 @@ class GdbVariable extends React.Component {
     new_obj.in_scope = "true";
     new_obj.expr_type = VarCreator.expr_type;
 
-    GdbVariable._update_numeric_properties(new_obj);
+    Expression._update_numeric_properties(new_obj);
 
     new_obj.dom_id_for_plot = new_obj.name
       .replace(/\./g, "-") // replace '.' with '-'
@@ -550,7 +517,7 @@ class GdbVariable extends React.Component {
       new_obj.values = [];
       new_obj._radix = 0;
     }
-    GdbVariable._update_radix_values(new_obj); // mutates new_obj
+    Expression._update_radix_values(new_obj); // mutates new_obj
     return new_obj;
   }
   static _update_numeric_properties(obj: any) {
@@ -635,15 +602,15 @@ class GdbVariable extends React.Component {
    */
   static plot_var_and_children(obj: any) {
     if (obj.show_plot) {
-      GdbVariable._make_plot(obj);
+      Expression._make_plot(obj);
     }
     for (const child of obj.children) {
-      GdbVariable.plot_var_and_children(child);
+      Expression.plot_var_and_children(child);
     }
   }
-  static fetch_and_show_children_for_var(gdb_var_name: any) {
+  static fetchAndShowChildrenForVar(gdb_var_name: any) {
     const expressions = store.data.expressions;
-    const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
+    const obj = Expression.getObjectFromGdbVarName(expressions, gdb_var_name);
     // mutate object by reference
     obj.show_children_in_ui = true;
     // update store
@@ -657,30 +624,27 @@ class GdbVariable extends React.Component {
   }
   static hide_children_in_ui(gdb_var_name: any) {
     const expressions = store.data.expressions;
-    const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
+    const obj = Expression.getObjectFromGdbVarName(expressions, gdb_var_name);
     if (obj) {
       obj.show_children_in_ui = false;
       store.set<typeof store.data.expressions>("expressions", expressions);
     }
   }
   static click_toggle_children_visibility(gdb_variable_name: any) {
-    GdbVariable._toggle_children_visibility(gdb_variable_name);
+    Expression._toggle_children_visibility(gdb_variable_name);
   }
   static _toggle_children_visibility(gdb_var_name: any) {
     // get data object, which has field that says whether its expanded or not
-    const obj = GdbVariable.get_obj_from_gdb_var_name(
-      store.data.expressions,
-      gdb_var_name
-    );
+    const obj = Expression.getObjectFromGdbVarName(store.data.expressions, gdb_var_name);
     if (obj) {
       const showing_children_in_ui = obj.show_children_in_ui;
 
       if (showing_children_in_ui) {
         // collapse
-        GdbVariable.hide_children_in_ui(gdb_var_name);
+        Expression.hide_children_in_ui(gdb_var_name);
       } else {
         // expand
-        GdbVariable.fetch_and_show_children_for_var(gdb_var_name);
+        Expression.fetchAndShowChildrenForVar(gdb_var_name);
       }
     } else {
       console.error("developer error - expected to find gdb variable object");
@@ -689,7 +653,7 @@ class GdbVariable extends React.Component {
   static click_toggle_plot(gdb_var_name: any) {
     const expressions = store.data.expressions;
     // get data object, which has field that says whether its expanded or not
-    const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, gdb_var_name);
+    const obj = Expression.getObjectFromGdbVarName(expressions, gdb_var_name);
     if (obj) {
       obj.show_plot = !obj.show_plot;
       store.set<typeof store.data.expressions>("expressions", expressions);
@@ -713,7 +677,7 @@ class GdbVariable extends React.Component {
   static handle_changelist(changelist_array: any) {
     for (const changelist of changelist_array) {
       const expressions = store.data.expressions;
-      const obj = GdbVariable.get_obj_from_gdb_var_name(expressions, changelist.name);
+      const obj = Expression.getObjectFromGdbVarName(expressions, changelist.name);
       if (obj) {
         if (parseInt(changelist["has_more"]) === 1 && "name" in changelist) {
           // already retrieved children of obj, but more fields were added.
@@ -722,14 +686,14 @@ class GdbVariable extends React.Component {
         }
         if ("new_children" in changelist) {
           const new_children = changelist.new_children.map((child_obj: any) =>
-            GdbVariable.prepare_gdb_obj_for_storage(child_obj, obj)
+            Expression.prepare_gdb_obj_for_storage(child_obj, obj)
           );
           obj.children = obj.children.concat(new_children);
         }
         // overwrite fields of obj with fields from changelist
         const changedObj = Object.assign(obj, changelist);
-        GdbVariable._update_numeric_properties(changedObj);
-        GdbVariable._update_radix_values(changedObj);
+        Expression._update_numeric_properties(changedObj);
+        Expression._update_radix_values(changedObj);
         if (changedObj.can_plot) {
           changedObj.values.push(changedObj._float_value);
         }
@@ -744,7 +708,7 @@ class GdbVariable extends React.Component {
   }
   static delete_gdb_variable(gdbvar: any) {
     // delete locally
-    GdbVariable._delete_local_gdb_var_data(gdbvar);
+    Expression._delete_local_gdb_var_data(gdbvar);
     // delete in gdb too
     GdbApi.runGdbCommand(`-var-delete ${gdbvar}`);
   }
@@ -760,8 +724,8 @@ class GdbVariable extends React.Component {
   /**
    * Locally save the variable to our cached variables
    */
-  static save_new_expression(expression: any, expr_type: any, obj: any) {
-    const new_obj = GdbVariable.prepare_gdb_obj_for_storage(obj, null);
+  static saveNewExpression(expression: any, expr_type: any, obj: any) {
+    const new_obj = Expression.prepare_gdb_obj_for_storage(obj, null);
     new_obj.expression = expression;
     const expressions = store.data.expressions;
     expressions.push(new_obj);
@@ -799,11 +763,11 @@ class GdbVariable extends React.Component {
    * @param gdb_var_name: gdb variable name to find corresponding cached object. Can have dot notation
    * @return: object if found, or undefined if not found
    */
-  static get_obj_from_gdb_var_name(expressions: any, gdb_var_name: any) {
+  static getObjectFromGdbVarName(expressions: any, gdb_var_name: any) {
     // gdb provides names in dot notation
     // let gdb_var_names = gdb_var_name.split('.'),
-    const topLevelVarName = GdbVariable.get_root_name_from_gdbvar_name(gdb_var_name);
-    const childrenNames = GdbVariable.get_child_names_from_gdbvar_name(gdb_var_name);
+    const topLevelVarName = Expression.get_root_name_from_gdbvar_name(gdb_var_name);
+    const childrenNames = Expression.get_child_names_from_gdbvar_name(gdb_var_name);
 
     const objs = expressions.filter((v: any) => v.name === topLevelVarName);
 
@@ -815,7 +779,7 @@ class GdbVariable extends React.Component {
         // append the '.' and field name to find as a child of the object we're looking at
         nameToFind += `.${childrenNames[i]}`;
 
-        const child_obj = GdbVariable.get_child_with_name(obj.children, nameToFind);
+        const child_obj = Expression.get_child_with_name(obj.children, nameToFind);
 
         if (child_obj) {
           // our new object to search is this child
@@ -837,4 +801,4 @@ class GdbVariable extends React.Component {
   }
 }
 
-export default GdbVariable;
+export default Expression;

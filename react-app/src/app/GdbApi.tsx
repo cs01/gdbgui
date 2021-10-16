@@ -77,10 +77,13 @@ const GdbApi = {
     Handlers.onEventInferiorProgramResuming();
     GdbApi.runGdbCommand("-exec-interrupt");
   },
-  requestSelectFrame: function (framenum: any) {
+  requestSelectFrame: function (framenum: string) {
     // TODO this command is deprecated (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Stack-Manipulation.html)
     // This command in deprecated in favor of passing the ‘--frame’ option to every command.
-    store.set<typeof store.data.selected_frame_num>("selected_frame_num", framenum);
+    store.set<typeof store.data.selected_frame_num>(
+      "selected_frame_num",
+      parseInt(framenum)
+    );
     store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", null);
     store.set<typeof store.data.make_current_line_visible>(
       "make_current_line_visible",

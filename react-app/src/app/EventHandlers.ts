@@ -58,6 +58,7 @@ const Handlers = {
    * Request relevant store information from gdb to refresh UI
    */
   refreshGdbguiState: function () {
+    Memory.clearMemoryCache();
     GdbApi.runGdbCommand(GdbApi._getRefreshStateOnStopGdbCommands());
   },
   onConsoleCommandRun: function () {

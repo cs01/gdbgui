@@ -6,6 +6,8 @@ import { store, useGlobalState, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 import Breakpoints from "./Breakpoints";
+import { GdbGuiBreakpoint } from "./types";
+import _ from "lodash";
 
 function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
   const states = constants.source_code_states;
@@ -112,21 +114,62 @@ function highlightLine(
 function addBreakpointGlyphs(
   editor: monaco.editor.IStandaloneCodeEditor,
   breakpoints: typeof store.data.breakpoints,
-  lastBreakpoint: React.MutableRefObject<Nullable<string[]>>
+  lastBreakpointGlyphs: React.MutableRefObject<Nullable<string[]>>
 ): void {
-  const oldBreakpointGlyphs = lastBreakpoint.current ?? [];
-  const newBreakpointGlyphs = breakpoints.map((breakpoint) => {
-    return {
-      range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
-      options: {
-        isWholeLine: true,
-        glyphMarginClassName:
-          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
-      },
-    };
-  });
+  const oldBreakpointGlyphs = lastBreakpointGlyphs.current ?? [];
+  const breakpointLines: { [key: number]: Nullable<GdbGuiBreakpoint> } = {};
+  for (const breakpoint of breakpoints) {
+    breakpointLines[breakpoint.line] = breakpoint;
+  }
+  // @ts-ignore
+  const lineCount = editor?.getModel().getLineCount();
+  console.error("got lines", lineCount);
+  // if (!_.isNumber(lineCount)) {
+  //   return;
+  // }
+  const newBreakpointGlyphs: monaco.editor.IModelDeltaDecoration[] = [];
+  // for (let lineNum = 1; lineNum++; lineNum <= 5) {
+  //   console.log(lineNum);
+  // }
+  //   const breakpoint = breakpointLines[lineNum];
+  //   if (breakpoint) {
+  //     newBreakpointGlyphs.push({
+  //       range: new monaco.Range(lineNum, 1, lineNum, 1),
+  //       options: {
+  //         isWholeLine: true,
+  //         glyphMarginClassName:
+  //           (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
+  //       },
+  //     });
+  //   } else {
+  //     newBreakpointGlyphs.push({
+  //       range: new monaco.Range(lineNum, 1, lineNum, 1),
+  //       options: {
+  //         isWholeLine: true,
+  //         glyphMarginClassName: "hover:bg-red-100 rounded ",
+  //       },
+  //     });
+  //   }
+  // }
+  // const linesWithBreakpoints = breakpoints.reduce(
+  //   (prev: { [key: number]: null }, breakpoint: GdbGuiBreakpoint) => {
+  //     pr;
+  //   },
+  //   {}
+  // );
 
-  lastBreakpoint.current = editor.deltaDecorations(
+  // const newBreakpointGlyphs = breakpoints.map((breakpoint) => {
+  //   return {
+  //     range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
+  //     options: {
+  //       isWholeLine: true,
+  //       glyphMarginClassName:
+  //         (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
+  //     },
+  //   };
+  // });
+
+  lastBreakpointGlyphs.current = editor.deltaDecorations(
     oldBreakpointGlyphs,
     newBreakpointGlyphs
   );

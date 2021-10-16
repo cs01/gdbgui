@@ -39,16 +39,15 @@ function addUserInputToHistory(binaryAndArgs: string) {
 }
 
 function getInitialUserInput(): string {
-  return "/home/csmith/git/gdbgui/examples/c/threads.a";
-  // try {
-  //   const prevInput: Array<string> = JSON.parse(
-  //     localStorage.getItem(userInputLocalStorageKey) ?? "[]"
-  //   );
-  //   return prevInput[0];
-  // } catch (e) {
-  //   localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
-  //   return "";
-  // }
+  try {
+    const prevInput: Array<string> = JSON.parse(
+      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
+    );
+    return prevInput[0];
+  } catch (e) {
+    localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
+    return "";
+  }
 }
 
 export function TargetSelector(props: { initial_user_input: string[] }) {
@@ -59,7 +58,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       title:
         "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes.",
       placeholder: "/path/to/executable --myflag",
-      onClick: () => {
+      onClick: (userInput: string) => {
         addUserInputToHistory(userInput);
         const { binary, args } = userInputToGdbInput(userInput);
         Handlers.setGdbBinaryAndArguments(binary, args);
@@ -69,7 +68,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       name: "gdb server",
       title: "Connect GDB to the remote target",
       placeholder: "examples: 127.0.0.1:9999 | /dev/ttya",
-      onClick: () => {
+      onClick: (userInput: string) => {
         addUserInputToHistory(userInput);
         GdbApi.requestConnectToGdbserver(userInput);
       },
@@ -82,7 +81,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         "‘-list-thread-groups --available’ must be used. " +
         "Note: to do this, you usually need to run gdbgui as sudo.",
       placeholder: "pid | gid | file",
-      onClick: () => {
+      onClick: (userInput: string) => {
         addUserInputToHistory(userInput);
         Handlers.attachToProcess(userInput);
       },
@@ -151,7 +150,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         }}
         onKeyUp={(e) => {
           if (e.code?.toLocaleLowerCase() === "enter") {
-            chosenOption.onClick();
+            chosenOption.onClick(userInput);
           }
         }}
         value={userInput}
@@ -163,7 +162,9 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       </datalist> */}
       <button
         className="btn btn-purple mr-2 text-sm"
-        onClick={chosenOption.onClick}
+        onClick={() => {
+          chosenOption.onClick(userInput);
+        }}
         title="Load configured target and input"
       >
         Load

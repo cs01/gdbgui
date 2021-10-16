@@ -77,6 +77,32 @@ export type GdbStackFrame = {
 };
 
 export type GdbMiMemoryResponse = Array<{ begin: string; end: string; contents: string }>;
+export type GdbLocalVariable = { name: string; type: string; value: string };
+export type GdbguiLocalVariable = GdbLocalVariable & { can_be_expanded: boolean };
+
+export type ExpressionVar = {
+  can_plot: boolean;
+  children: Array<unknown>;
+  dom_id_for_plot: string;
+  expr_type: "local" | "expr" | "hover";
+  expression: string;
+  has_more: "0" | "1";
+  in_scope: "true" | "false" | "invalid";
+  is_int: boolean;
+  is_numeric: boolean;
+  name: string;
+  numchild: number;
+  parent: null;
+  show_children_in_ui: true;
+  show_plot: boolean;
+  "thread-id": string;
+  type: string;
+  value: string;
+  values: Array<{
+    _float_value: number;
+    _radix: number;
+  }>;
+};
 
 export type GlobalState = {
   debug: boolean;
@@ -106,7 +132,7 @@ export type GlobalState = {
   paused_on_frame: Nullable<any>;
   selected_frame_num: number;
   stack: Nullable<Array<GdbStackFrame>>;
-  locals: Array<any>;
+  locals: Array<GdbguiLocalVariable>;
   threads: Nullable<{
     currentThreadId: string;
     threads: Array<{
@@ -148,11 +174,9 @@ export type GlobalState = {
   end_addr: string;
   bytes_per_line: string;
 
-  // breakpoints
   breakpoints: GdbGuiBreakpoint[];
 
-  // expressions
-  expressions: Array<{ [expression: string]: any }>;
+  expressions: Array<ExpressionVar>;
   root_gdb_tree_var: Nullable<any>;
 
   waiting_for_response: boolean;

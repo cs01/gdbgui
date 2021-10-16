@@ -36,25 +36,39 @@ type ThreadsState = {
   selected_frame_num: typeof store.data.selected_frame_num;
 };
 
-function Frame(props: { frame: GdbStackFrame; isCurrentThread: boolean }) {
+function Frame(props: {
+  frame: GdbStackFrame;
+  isCurrentThread: boolean;
+  isCurrentFrame: boolean;
+}) {
   const frame = props.frame;
   return (
-    <div className="flex flex-wrap justify-between font-mono hover:bg-purple-900">
+    <div
+      className={`flex flex-wrap justify-between  ${
+        props.isCurrentFrame && props.isCurrentThread
+          ? "bg-gray-900 border-2 border-purple-900"
+          : " "
+      }`}
+    >
       <div className="whitespace-nowrap">
-        <span className="pr-2" title="Frame level">
+        <button
+          className="pr-2"
+          title="Frame level"
+          onClick={() => {
+            GdbApi.requestSelectFrame(frame.level);
+          }}
+        >
           {frame.level}
-        </span>{" "}
-        <span
+        </button>{" "}
+        <button
           className={frame.fullname ? "cursor-pointer" : ""}
           title={`${frame.func}()\n\n${frame.fullname}`}
           onClick={() => {
-            if (frame.fullname) {
-              Handlers.viewFile(frame.fullname, parseInt(frame.line));
-            }
+            GdbApi.requestSelectFrame(frame.level);
           }}
         >
           {frame.file ? `${frame.file}:${frame.line}` : null}
-        </span>
+        </button>
       </div>
       <div>
         <MemoryLink addr={frame.addr} />
@@ -69,13 +83,14 @@ export function Threads(props: {}) {
   if (threads === null) {
     return null;
   }
+  const numThreads = threads.threads.length;
   return (
     <div className="px-1 space-y-3">
       {threads.threads.map((thread, i) => {
         const isCurrentThread = threads?.currentThreadId === thread.id;
         const frames = isCurrentThread ? stackCurrentThread ?? [] : [thread.frame];
         return (
-          <div key={i} className="hover:bg-gray-900 text-gray-100">
+          <div key={i} className="text-gray-100">
             <div
               className={
                 "flex justify-between items-center " +
@@ -92,8 +107,11 @@ export function Threads(props: {}) {
                 }
               }}
             >
-              <div className={isCurrentThread ? "font-bold" : ""}>
-                <span>{thread.name}</span>
+              <div
+                className={isCurrentThread && numThreads > 1 ? "font-bold" : ""}
+                title="Thread name"
+              >
+                {thread.name}
               </div>
               <div className="text-xs text-gray-500">
                 {thread.state} | core {thread.core} | thread id{" "}
@@ -104,7 +122,12 @@ export function Threads(props: {}) {
             </div>
             <div className="text-gray-400 text-sm">
               {frames.map((frame, i) => (
-                <Frame key={i} frame={frame} isCurrentThread={isCurrentThread} />
+                <Frame
+                  key={i}
+                  frame={frame}
+                  isCurrentFrame={thread.frame.level === frame.level}
+                  isCurrentThread={isCurrentThread}
+                />
               ))}
             </div>
           </div>

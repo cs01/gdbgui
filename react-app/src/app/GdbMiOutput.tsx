@@ -22,26 +22,45 @@ export function GdbMiOutput() {
       {gdbMiOutput
         .map((miMessage: GdbMiMessage, i: number) => {
           return (
-            <div
-              onClick={() => {
-                const newCollapsed = { ...collapsed };
-                newCollapsed[i] = !collapsed[i];
-                setCollapsed(newCollapsed);
-                console.log("hi");
-              }}
-            >
+            <div>
               <div
-                className={`whitespace-pre text-xs hover:bg-gray-700 ${
-                  i % 2 === 0 ? "bg-black" : "bg-gray-800"
+                className={`whitespace-pre text-xs  ${
+                  i % 2 === 0 ? "bg-black" : "bg-gray-900"
                 }`}
               >
                 {collapsed[i] === true ? (
-                  <span>
-                    <ChevronRightIcon className="mr-1 inline  h-5 w-5" />
-                    {JSON.stringify(miMessage).length} characters collapsed
-                  </span>
+                  <div
+                    className="w-full space-x-3 py-2 flex items-center cursor-pointer hover:bg-purple-900"
+                    onClick={() => {
+                      const newCollapsed = { ...collapsed };
+                      newCollapsed[i] = !collapsed[i];
+                      setCollapsed(newCollapsed);
+                    }}
+                  >
+                    <button className="">
+                      <ChevronRightIcon className="mr-1 inline  h-5 w-5" />
+                    </button>
+                    <div>Entry {i}</div>
+                    <div>{JSON.stringify(miMessage).length} characters collapsed</div>
+                  </div>
                 ) : (
-                  <pre key={i}>{JSON.stringify(miMessage, null, 2)}</pre>
+                  <div className="w-full">
+                    <div
+                      className="flex items-center cursor-pointer"
+                      onClick={() => {
+                        const newCollapsed = { ...collapsed };
+                        newCollapsed[i] = !collapsed[i];
+                        setCollapsed(newCollapsed);
+                        console.log("hi");
+                      }}
+                    >
+                      <button className=" text-left py-2">
+                        <ChevronDownIcon className="mr-1 inline  h-5 w-5" />
+                      </button>
+                      <div>Entry {i}</div>
+                    </div>
+                    <pre key={i}>{JSON.stringify(miMessage, null, 2)}</pre>
+                  </div>
                 )}
               </div>
             </div>

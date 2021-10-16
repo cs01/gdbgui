@@ -3,10 +3,50 @@
  * assist in their creation and deletion.
  */
 
-import _ from "lodash";
 import React from "react";
 import { store } from "./Store";
-import GdbVariable from "./GdbVariable";
+import Expression from "./Expression";
+import { GdbguiLocalVariable, GdbLocalVariable } from "./types";
+import Memory from "./Memory";
+import _ from "lodash";
+import { ChevronRightIcon } from "@heroicons/react/solid";
+
+/**
+ * get unordered list for a "local" returned by gdb
+ * these are special snowflakes; gdb returns a small subset of information for
+ * locals. The list is useful to browse, but oftentimes needs to be expanded.
+ * If the user clicks on a local that can be expanded, gdbgui will ask gdb
+ * to create a full-fledged expression for the user to explore. gdbgui will then
+ * render that instead of the "local".
+ */
+function LocalFn(props: { local: GdbguiLocalVariable }) {
+  const local = props.local;
+  const can_be_expanded = local.can_be_expanded;
+
+  const value = _.isString(local.value)
+    ? Memory.make_addrs_into_links_react(local.value)
+    : local.value;
+
+  return (
+    <div className="flex w-full overflow-x-hidden items-center text-xs font-mono ">
+      <div className="w-4">
+        {can_be_expanded ? (
+          <button
+            onClick={() => {
+              Expression.create_variable(local.name, "local");
+            }}
+          >
+            <ChevronRightIcon className="icon" />
+          </button>
+        ) : null}
+      </div>
+      <div className="text-purple-400 mr-2">{local.name}:</div>
+      <div className="mr-2">{value === "" ? "{...}" : value}</div>
+      <div className="flex-grow" />
+      <div className="text-gray-400 italic">{local.type.trim()}</div>
+    </div>
+  );
+}
 
 class Locals extends React.Component {
   constructor() {
@@ -15,70 +55,55 @@ class Locals extends React.Component {
     store.reactComponentState(this, ["expressions", "locals"]);
   }
   render() {
-    const content = [];
-    const sorted_local_objs = _.sortBy(
-      store.data.locals,
-      (unsorted_obj: any) => unsorted_obj.name
+    const sortedLocals = store.data.locals.sort(
+      (a: GdbguiLocalVariable, b: GdbguiLocalVariable) => {
+        return a.name.localeCompare(b.name);
+      }
     );
 
-    for (const local of sorted_local_objs) {
-      const obj = this.get_autocreated_obj_from_expr(local.name);
-      if (obj) {
-        content.push(
-          <GdbVariable
-            // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
-            obj={obj}
-            key={obj.expression}
-            expression={obj.expression}
-            expr_type="expr"
-          />
-        );
-      } else {
-        content.push(
-          <GdbVariable
-            // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
-            obj={local}
-            key={local.name}
-            expression={local.name}
-            expr_type="local"
-          />
-        );
-      }
-    }
-
-    if (content.length === 0) {
-      return null;
-    } else {
-      return content;
-    }
+    return sortedLocals.map((local) => {
+      const expressionObject = this.getAutoCreatedObjFromExpr(local.name);
+      return expressionObject == null ? (
+        <LocalFn local={local} key={local.name} />
+      ) : (
+        <Expression
+          // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
+          obj={expressionObject}
+          key={expressionObject.expression}
+          expression={expressionObject.expression}
+          expr_type="expr"
+        />
+      );
+    });
   }
-  get_autocreated_obj_from_expr(expr: any) {
+  getAutoCreatedObjFromExpr(localName: string) {
     for (const obj of store.data.expressions) {
-      if (obj.expression === expr && obj.expr_type === "local") {
+      if (obj.expression === localName && obj.expr_type === "local") {
         return obj;
       }
     }
     return null;
   }
-  static clear_autocreated_exprs() {
+  static clearAutocreatedExprs() {
     const exprs_objs_to_remove = store.data.expressions.filter(
       (obj: any) => obj.expr_type === "local"
     );
-    exprs_objs_to_remove.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
+    exprs_objs_to_remove.map((obj: any) => Expression.delete_gdb_variable(obj.name));
   }
   static clear() {
     store.set<typeof store.data.locals>("locals", []);
-    Locals.clear_autocreated_exprs();
+    Locals.clearAutocreatedExprs();
   }
-  static save_locals(locals: any) {
-    const locals_with_meta = locals.map((local: any) => {
-      // add field to local
-      local.can_be_expanded = Locals.can_local_be_expanded(local) ? true : false;
-      return local;
-    });
-    store.set<typeof store.data.locals>("locals", locals_with_meta);
+  static saveLocals(locals: Array<GdbLocalVariable>) {
+    store.set<typeof store.data.locals>(
+      "locals",
+      locals.map((local) => ({
+        ...local,
+        can_be_expanded: Locals.canLocalBeExpanded(local),
+      }))
+    );
   }
-  static can_local_be_expanded(local: any) {
+  static canLocalBeExpanded(local: GdbLocalVariable): boolean {
     // gdb returns list of locals. We may want to turn that local into a GdbVariable
     // to explore its children
     if ("value" in local) {

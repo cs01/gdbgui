@@ -1,6 +1,6 @@
 import React from "react";
 import { store } from "./Store";
-import GdbVariable from "./GdbVariable";
+import Expression from "./Expression";
 import constants from "./constants";
 import _ from "lodash";
 
@@ -27,11 +27,10 @@ class Expressions extends React.Component {
     );
 
     // delete invalid objects
-    this.objsToDelete.map((obj: any) => GdbVariable.delete_gdb_variable(obj.name));
+    this.objsToDelete.map((obj: any) => Expression.delete_gdb_variable(obj.name));
 
     const content = this.objsToRender.map((obj: any) => (
-      <GdbVariable
-        // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
+      <Expression
         obj={obj}
         key={obj.expression}
         expression={obj.expression}
@@ -73,7 +72,7 @@ class Expressions extends React.Component {
   }
   componentDidUpdate() {
     for (const obj of this.objsToRender) {
-      GdbVariable.plot_var_and_children(obj);
+      Expression.plot_var_and_children(obj);
     }
   }
 
@@ -83,7 +82,7 @@ class Expressions extends React.Component {
       const trimmedExpr = _.trim(expr);
 
       if (trimmedExpr !== "") {
-        GdbVariable.create_variable(trimmedExpr, "expr");
+        Expression.create_variable(trimmedExpr, "expr");
       }
     }
   }
