@@ -29,9 +29,7 @@ class Modal extends React.Component<{}, State> {
       >
         <div
           className={
-            this.state.show_modal
-              ? "p-10 border-2 border-purple-800 bg-gray-800 rounded-lg max-w-2xl "
-              : "  hidden"
+            this.state.show_modal ? "p-10  bg-gray-800 rounded-lg max-w-2xl " : "  hidden"
           }
         >
           <h4>{this.state.modal_header}</h4>

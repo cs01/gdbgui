@@ -125,7 +125,7 @@ class Registers extends React.Component<{}, State> {
           // if hex value is a valid value, convert it to a link
           // and display decimal format too
           if (obj["value"].indexOf("0x") === 0) {
-            disp_hex_val = Memory.make_addrs_into_links_react(hex_val_raw);
+            disp_hex_val = Memory.textToLinks(hex_val_raw);
             disp_dec_val = parseInt(obj["value"], 16).toString(10);
           }
 

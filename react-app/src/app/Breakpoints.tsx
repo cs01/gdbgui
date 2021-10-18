@@ -175,7 +175,7 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
 
   return (
     <div
-      className="my-1 hover:bg-purple-900"
+      className="my-1 "
       onClick={() => Handlers.viewFile(breakpoint.fullNameToDisplay, breakpoint.line)}
     >
       <div className="flex justify-between text-sm">
@@ -200,9 +200,14 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
           )}
         </div>
         <div className="mr-1 flex align-middle">
+          {breakpoint.line ? (
+            <span title="line number" className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
+              {breakpoint.line}
+            </span>
+          ) : null}
           <button
             title="Remove Breakpoint"
-            className="hover:bg-gray-800 "
+            className=" "
             onClick={() => {
               Breakpoints.deleteBreakpoint(
                 breakpoint.isChildBreakpoint && breakpoint.parentBreakpointNumber
@@ -225,9 +230,6 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
           >
             <XIcon className="icon" />
           </button>
-          <span className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
-            {breakpoint.line}
-          </span>
         </div>
       </div>
       {/* <div>{locationJsx}</div> */}

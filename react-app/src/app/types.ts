@@ -78,22 +78,52 @@ export type GdbStackFrame = {
 
 export type GdbMiMemoryResponse = Array<{ begin: string; end: string; contents: string }>;
 export type GdbLocalVariable = { name: string; type: string; value: string };
-export type GdbguiLocalVariable = GdbLocalVariable & { can_be_expanded: boolean };
+export type GdbChildExpression = {
+  name: string;
+  exp: string | "<anonymous struct>";
+  numchild: string; //"1"
+  has_more: string;
+  value: string; // "{...}"
+  type: string; // "struct {...}"
+  "thread-id": string; //"1"
+  dynamic?: "1";
+  displayhint?: string;
+};
+// export type GdbguiChildExpression = {
+//   name: string;
+//   exp: string | "<anonymous struct>";
+//   numchild: number; //"1"
+//   value: string; // "{...}"
+//   type: string; // "struct {...}"
+//   "thread-id": string; //"1"
+//   parent: string;
+//   has_more: number;
+//   show_children_in_ui: boolean;
+//   in_scope: boolean;
+// };
 
-export type ExpressionVar = {
-  can_plot: boolean;
-  children: Array<unknown>;
-  dom_id_for_plot: string;
-  expr_type: "local" | "expr" | "hover";
-  expression: string;
+export type GdbMiChildrenVarResponse = {
   has_more: "0" | "1";
-  in_scope: "true" | "false" | "invalid";
+  numchild: string; // "2"
+  children: Array<GdbChildExpression>;
+};
+
+export type GdbguiExpressionType = "local" | "expr" | "hover";
+export type GdbguiLocalVariable = GdbLocalVariable & { can_be_expanded: boolean };
+export type GdbguiExpressionVar = {
+  can_plot: boolean;
+  children: Array<GdbguiExpressionVar>;
+  expr_type: GdbguiExpressionType;
+  exp: string;
+  // expression: string;
+  in_scope: true | false | "invalid";
   is_int: boolean;
   is_numeric: boolean;
   name: string;
   numchild: number;
-  parent: null;
-  show_children_in_ui: true;
+  parent: Nullable<GdbguiExpressionVar>;
+  has_more: number;
+  show_children_in_ui: boolean;
   show_plot: boolean;
   "thread-id": string;
   type: string;
@@ -176,7 +206,7 @@ export type GlobalState = {
 
   breakpoints: GdbGuiBreakpoint[];
 
-  expressions: Array<ExpressionVar>;
+  expressions: Array<GdbguiExpressionVar>;
   root_gdb_tree_var: Nullable<any>;
 
   waiting_for_response: boolean;

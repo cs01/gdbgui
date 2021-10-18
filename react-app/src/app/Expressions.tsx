@@ -1,6 +1,6 @@
 import React from "react";
 import { store } from "./Store";
-import Expression from "./Expression";
+import { ExpressionClass, Expression } from "./Expression";
 import constants from "./constants";
 import _ from "lodash";
 
@@ -27,15 +27,10 @@ class Expressions extends React.Component {
     );
 
     // delete invalid objects
-    this.objsToDelete.map((obj: any) => Expression.delete_gdb_variable(obj.name));
+    this.objsToDelete.map((obj: any) => ExpressionClass.deleteGdbVariable(obj.name));
 
     const content = this.objsToRender.map((obj: any) => (
-      <Expression
-        obj={obj}
-        key={obj.expression}
-        expression={obj.expression}
-        expr_type="expr"
-      />
+      <Expression obj={obj} key={obj.name} expr_type="expr" />
     ));
     if (content.length === 0) {
       content.push(
@@ -72,7 +67,7 @@ class Expressions extends React.Component {
   }
   componentDidUpdate() {
     for (const obj of this.objsToRender) {
-      Expression.plot_var_and_children(obj);
+      ExpressionClass.plot_var_and_children(obj);
     }
   }
 
@@ -82,7 +77,7 @@ class Expressions extends React.Component {
       const trimmedExpr = _.trim(expr);
 
       if (trimmedExpr !== "") {
-        Expression.create_variable(trimmedExpr, "expr");
+        ExpressionClass.createExpression(trimmedExpr, "expr");
       }
     }
   }

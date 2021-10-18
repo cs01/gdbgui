@@ -10,7 +10,7 @@ import constants from "./constants";
 import Expressions from "./Expressions";
 import { GdbMiOutput } from "./GdbMiOutput";
 import InferiorProgramInfo from "./InferiorProgramInfo";
-import Locals from "./Locals";
+import { Locals } from "./Locals";
 import Memory from "./Memory";
 import Registers from "./Registers";
 import Tree from "./Tree";

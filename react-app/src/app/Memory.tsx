@@ -54,7 +54,7 @@ class Memory extends React.Component<{}, State> {
           const bytes = byteStringToByteArray(entry.contents);
 
           return (
-            <div className="space-x-4 flex ">
+            <div className="space-x-4 flex " key={i}>
               <span>{<MemoryLink addr={entry.begin} />}</span>{" "}
               <span className="font-mono ">
                 {" "}
@@ -355,7 +355,7 @@ class Memory extends React.Component<{}, State> {
    * @param text: string to convert address-like text into clickable components
    * return react component
    */
-  static make_addrs_into_links_react(text: any) {
+  static textToLinks(text: any) {
     const matches = text.match(/(0x[\d\w]+)/g);
     if (text && matches && matches.length) {
       const addr = matches[0];
@@ -364,7 +364,7 @@ class Memory extends React.Component<{}, State> {
       let suffix_component = trailing_text;
       if (trailing_text) {
         // recursive call to turn additional addressed after the first
-        suffix_component = Memory.make_addrs_into_links_react(trailing_text);
+        suffix_component = Memory.textToLinks(trailing_text);
       }
       return (
         <React.Fragment>

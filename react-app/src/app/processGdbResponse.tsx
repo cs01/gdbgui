@@ -13,12 +13,12 @@ import Threads from "./Threads";
 import FileOps from "./FileOps";
 import Memory from "./Memory";
 import GdbApi from "./GdbApi";
-import Locals from "./Locals";
-import Expression from "./Expression";
+import { LocalsClass } from "./Locals";
+import { ExpressionClass } from "./Expression";
 import Modal from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
-import { GdbMiMessage } from "./types";
+import { GdbMiChildrenVarResponse, GdbMiMessage } from "./types";
 /**
  * Determines if response is an error and client does not want to be notified of errors for this particular response.
  * @param response: gdb mi response object
@@ -43,30 +43,34 @@ function handleGdbMessage(r: GdbMiMessage) {
 
   if (isError(r)) {
     if (isCreatingVar(r)) {
-      Expression.gdb_variable_fetch_failed(r);
+      ExpressionClass.gdb_variable_fetch_failed(r);
       return;
     } else if (ignoreError(r)) {
       return;
     } else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
       FileOps.fetch_disassembly_for_missing_file_failed();
-    } else if (
-      r.payload &&
-      !Array.isArray(r.payload) &&
-      r.payload.msg &&
-      r.payload.msg.startsWith("Unable to find Mach task port")
-    ) {
-      Handlers.add_gdb_response_to_console(r);
-      Handlers.addGdbGuiConsoleEntries(
-        <React.Fragment>
-          <span>Follow </span>
-          <a href="https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648">
-            these instructions
-          </a>
-          <span> to fix this error</span>
-        </React.Fragment>,
-        "GDBGUI_OUTPUT_RAW"
-      );
-      return;
+    } else if (r.payload && !Array.isArray(r.payload) && r.payload.msg) {
+      if (r.payload.msg.startsWith("Unable to find Mach task port")) {
+        Handlers.add_gdb_response_to_console(r);
+        Handlers.addGdbGuiConsoleEntries(
+          <React.Fragment>
+            <span>Follow </span>
+            <a href="https://github.com/cs01/gdbgui/issues/55#issuecomment-288209648">
+              these instructions
+            </a>
+            <span> to fix this error</span>
+          </React.Fragment>,
+          "GDBGUI_OUTPUT_RAW"
+        );
+        return;
+      } else if (r.payload.msg === "The program is not being run.") {
+        store.set<typeof store.data.gdbguiState>("gdbguiState", "ready");
+      } else if (
+        r.payload &&
+        (r.payload.msg as string).includes("No executable file specified")
+      ) {
+        store.set<typeof store.data.gdbguiState>("gdbguiState", "ready");
+      }
     }
   }
 
@@ -197,23 +201,25 @@ function handleGdbMessage(r: GdbMiMessage) {
       //         "contents": "00"
       Memory.addValueToCache(r.payload.memory);
     }
-    // gdb returns local variables as "variables" which is confusing, because you can also create variables
+    // gdb returns local variables as "variables" which is confusing, because you can also create expressions
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
     // are returned by gdbgui as "changelist", or have the keys "has_more", "numchild", "children", or "name".
     if ("variables" in r.payload) {
-      Locals.saveLocals(r.payload.variables);
+      LocalsClass.saveLocals(r.payload.variables);
     }
     // gdbgui expression (aka a gdb variable was changed)
     if ("changelist" in r.payload) {
-      Expression.handle_changelist(r.payload.changelist);
+      ExpressionClass.handle_changelist(r.payload.changelist);
     }
     // gdbgui expression was evaluated for the first time for a child variable
     if ("has_more" in r.payload && "numchild" in r.payload && "children" in r.payload) {
-      Expression.gdb_created_children_variables(r);
+      ExpressionClass.gdb_created_children_variables(
+        r.payload as GdbMiChildrenVarResponse
+      );
     }
     // gdbgui expression was evaluated for the first time for a root variable
     if ("name" in r.payload) {
-      Expression.createdRootExpression(r);
+      ExpressionClass.createdRootExpression(r);
     }
     // features list
     if ("features" in r.payload) {

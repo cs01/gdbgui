@@ -46,7 +46,7 @@ function Frame(props: {
     <div
       className={`flex flex-wrap justify-between  ${
         props.isCurrentFrame && props.isCurrentThread
-          ? "bg-gray-900 border-2 border-purple-900"
+          ? "bg-blue-900 border-2 border-blue-600"
           : " "
       }`}
     >
@@ -114,7 +114,7 @@ export function Threads(props: {}) {
                 {thread.name}
               </div>
               <div className="text-xs text-gray-500">
-                {thread.state} | core {thread.core} | thread id{" "}
+                {thread.state} | core {thread.core} | Thread ID{" "}
                 <span className="bg-gray-700 rounded-xl p-1 text-gray-200">
                   {thread.id}
                 </span>
@@ -233,8 +233,8 @@ class DEPRECATED_Threads extends React.Component<{}, ThreadsState> {
         </button>
       );
     }
-    const details = Memory.make_addrs_into_links_react(thread["target-id"]);
-    const core = thread.core ? `, core ${thread.core}` : "";
+    const details = Memory.textToLinks(thread["target-id"]);
+    const core = thread.core ? `, Core ${thread.core}` : "";
     const state = ", " + thread.state;
     const id = ", id " + thread.id;
     const name = thread.name ? `, ${thread.name}` : "";

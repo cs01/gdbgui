@@ -5,9 +5,14 @@ export function Footer() {
   const stoppedDetails =
     useGlobalValue<typeof store.data.stoppedDetails>("stoppedDetails");
 
-  const background = "bg-blue-500";
+  const background =
+    programState === "stopped" || programState === "running"
+      ? "bg-yellow-600"
+      : "bg-blue-500";
   return (
-    <div className={`w-full ${background} fixed px-2 left-0 bottom-0  text-sm`}>
+    <div
+      className={`w-full ${background} fixed px-2 left-0 bottom-0 text-sm text-gray-300`}
+    >
       Status: {programState}{" "}
       {programState === "stopped" ? `(${stoppedDetails?.body.reason})` : ""}
     </div>

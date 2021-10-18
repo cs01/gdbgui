@@ -6,7 +6,7 @@
 import React from "react";
 import { store } from "./Store";
 import constants from "./constants";
-import Expression from "./Expression";
+import { ExpressionClass, Expression } from "./Expression";
 import $ from "jquery";
 class HoverVar extends React.Component {
   static enter_timeout = undefined; // debounce fetching the expression
@@ -50,13 +50,7 @@ class HoverVar extends React.Component {
       return (
         // @ts-expect-error ts-migrate(2322) FIXME: Type 'string' is not assignable to type '"absolute... Remove this comment to see the full error message
         <div style={style} id="hovervar">
-          <Expression
-            // @ts-expect-error
-            obj={obj}
-            key={obj.expression}
-            expression={obj.expression}
-            expr_type="hover"
-          />
+          <Expression obj={obj} key={obj.name} expr_type="hover" />
         </div>
       );
     } else {
@@ -79,7 +73,7 @@ class HoverVar extends React.Component {
       if (store.data.gdbguiState === "stopped") {
         const ignore_errors = true;
         // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 3.
-        Expression.create_variable(varName, "hover", ignore_errors);
+        ExpressionClass.createExpression(varName, "hover", ignore_errors);
       }
     }, WAIT_TIME_SEC * 1000);
   }
@@ -108,7 +102,7 @@ class HoverVar extends React.Component {
     const exprs_objs_to_remove = store.data.expressions.filter(
       (obj: any) => obj.expr_type === "hover"
     );
-    exprs_objs_to_remove.map((obj: any) => Expression.delete_gdb_variable(obj.name));
+    exprs_objs_to_remove.map((obj: any) => ExpressionClass.deleteGdbVariable(obj.name));
   }
 }
 

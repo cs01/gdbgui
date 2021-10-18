@@ -1,12 +1,13 @@
 import { store } from "./Store";
 import GdbApi from "./GdbApi";
-import Locals from "./Locals";
+import { LocalsClass } from "./Locals";
 import Memory from "./Memory";
 import constants, { colorTypeMap } from "./constants";
 import _ from "lodash";
 import $ from "jquery";
 import { GdbGuiConsoleEntry } from "./types";
 import { DebugProtocol } from "vscode-debugprotocol";
+import { ExpressionClass } from "./Expression";
 
 const Handlers = {
   clearProgramState: function () {
@@ -16,7 +17,7 @@ const Handlers = {
     store.set<typeof store.data.stack>("stack", null);
     store.set<typeof store.data.threads>("threads", null);
     Memory.clearMemoryCache();
-    Locals.clear();
+    LocalsClass.clear();
   },
   onEventInferiorProgramStarting: function () {
     store.set<typeof store.data.gdbguiState>("gdbguiState", "running");

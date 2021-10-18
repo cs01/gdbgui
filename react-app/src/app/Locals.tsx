@@ -4,8 +4,8 @@
  */
 
 import React from "react";
-import { store } from "./Store";
-import Expression from "./Expression";
+import { store, useGlobalValue } from "./Store";
+import { ExpressionClass, Expression } from "./Expression";
 import { GdbguiLocalVariable, GdbLocalVariable } from "./types";
 import Memory from "./Memory";
 import _ from "lodash";
@@ -19,23 +19,26 @@ import { ChevronRightIcon } from "@heroicons/react/solid";
  * to create a full-fledged expression for the user to explore. gdbgui will then
  * render that instead of the "local".
  */
-function LocalFn(props: { local: GdbguiLocalVariable }) {
+function LocalVariable(props: { local: GdbguiLocalVariable }) {
   const local = props.local;
   const can_be_expanded = local.can_be_expanded;
 
-  const value = _.isString(local.value)
-    ? Memory.make_addrs_into_links_react(local.value)
-    : local.value;
+  const value = _.isString(local.value) ? Memory.textToLinks(local.value) : local.value;
 
   return (
-    <div className="flex w-full overflow-x-hidden items-center text-xs font-mono ">
+    <div
+      className={`flex w-full whitespace-nowrap overflow-x-hidden items-center text-xs font-mono ${
+        can_be_expanded ? "cursor-pointer" : ""
+      } `}
+      onClick={() => {
+        if (can_be_expanded) {
+          ExpressionClass.createExpression(local.name, "local");
+        }
+      }}
+    >
       <div className="w-4">
         {can_be_expanded ? (
-          <button
-            onClick={() => {
-              Expression.create_variable(local.name, "local");
-            }}
-          >
+          <button>
             <ChevronRightIcon className="icon" />
           </button>
         ) : null}
@@ -48,58 +51,62 @@ function LocalFn(props: { local: GdbguiLocalVariable }) {
   );
 }
 
-class Locals extends React.Component {
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
-    store.reactComponentState(this, ["expressions", "locals"]);
-  }
-  render() {
-    const sortedLocals = store.data.locals.sort(
-      (a: GdbguiLocalVariable, b: GdbguiLocalVariable) => {
-        return a.name.localeCompare(b.name);
-      }
-    );
+export function Locals() {
+  const expressions = useGlobalValue<typeof store.data.expressions>("expressions");
+  const locals = useGlobalValue<typeof store.data.locals>("locals");
+  const sortedLocals = locals.sort((a: GdbguiLocalVariable, b: GdbguiLocalVariable) => {
+    return a.name.localeCompare(b.name);
+  });
 
-    return sortedLocals.map((local) => {
-      const expressionObject = this.getAutoCreatedObjFromExpr(local.name);
-      return expressionObject == null ? (
-        <LocalFn local={local} key={local.name} />
-      ) : (
-        <Expression
-          // @ts-expect-error ts-migrate(2769) FIXME: Property 'obj' does not exist on type 'IntrinsicAt... Remove this comment to see the full error message
-          obj={expressionObject}
-          key={expressionObject.expression}
-          expression={expressionObject.expression}
-          expr_type="expr"
-        />
-      );
-    });
-  }
-  getAutoCreatedObjFromExpr(localName: string) {
-    for (const obj of store.data.expressions) {
-      if (obj.expression === localName && obj.expr_type === "local") {
+  return (
+    <div>
+      {sortedLocals.map((local) => {
+        const expressionObject = LocalsClass.getAutoCreatedObjFromExpr(
+          expressions,
+          local.name
+        );
+        return expressionObject == null ? (
+          <LocalVariable local={local} key={local.name} />
+        ) : (
+          <Expression
+            obj={expressionObject}
+            key={expressionObject.name}
+            expr_type="local"
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+export class LocalsClass extends React.Component {
+  static getAutoCreatedObjFromExpr(
+    expressions: typeof store.data.expressions,
+    localName: string
+  ) {
+    for (const obj of expressions) {
+      if (obj.exp === localName && obj.expr_type === "local") {
         return obj;
       }
     }
     return null;
   }
-  static clearAutocreatedExprs() {
-    const exprs_objs_to_remove = store.data.expressions.filter(
-      (obj: any) => obj.expr_type === "local"
-    );
-    exprs_objs_to_remove.map((obj: any) => Expression.delete_gdb_variable(obj.name));
+  static clearAutocreatedExpressions() {
+    store.data.expressions
+      .filter((expression) => expression.expr_type === "local")
+      .forEach((expression) => ExpressionClass.deleteGdbVariable(expression.name));
   }
   static clear() {
     store.set<typeof store.data.locals>("locals", []);
-    Locals.clearAutocreatedExprs();
+    LocalsClass.clearAutocreatedExpressions();
   }
   static saveLocals(locals: Array<GdbLocalVariable>) {
     store.set<typeof store.data.locals>(
       "locals",
       locals.map((local) => ({
         ...local,
-        can_be_expanded: Locals.canLocalBeExpanded(local),
+        value: local.value ?? "{...}",
+        can_be_expanded: LocalsClass.canLocalBeExpanded(local),
       }))
     );
   }
@@ -122,5 +129,3 @@ class Locals extends React.Component {
     }
   }
 }
-
-export default Locals;
