@@ -15,7 +15,6 @@ const initialGlobalState: GlobalState = {
   latest_gdbgui_version: "(not fetched)",
   gdb_pid: null,
   gdb_command: initial_data.gdb_command,
-  can_fetch_register_values: true, // set to false if using Rust and gdb v7.12.x (see https://github.com/cs01/gdbgui/issues/64)
   show_settings: false,
 
   gdbWebsocket: null,
@@ -69,7 +68,6 @@ const initialGlobalState: GlobalState = {
   register_names: [],
   previous_register_values: {},
   current_register_values: {},
-
   // memory
   memory_cache: [],
   start_addr: "",

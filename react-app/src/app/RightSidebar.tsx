@@ -12,7 +12,7 @@ import { GdbMiOutput } from "./GdbMiOutput";
 import InferiorProgramInfo from "./InferiorProgramInfo";
 import { Locals } from "./Locals";
 import Memory from "./Memory";
-import Registers from "./Registers";
+import {Registers} from "./Registers";
 import Tree from "./Tree";
 import { Threads } from "./Threads";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/outline";
@@ -61,6 +61,7 @@ export function RightSidebar(props: { signals: {}; debug: boolean }) {
       <CollapsableContainer title={"variables"} content={<Locals />} />
       <CollapsableContainer title={"stack and threads"} content={<Threads />} />
       <CollapsableContainer title={"memory"} content={<Memory />} />
+      <CollapsableContainer title={"registers"} content={<Registers />} />
       <CollapsableContainer title={"gdb mi output"} content={<GdbMiOutput />} />
     </div>
   );

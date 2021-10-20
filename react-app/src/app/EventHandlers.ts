@@ -145,9 +145,12 @@ const Handlers = {
     store.set<typeof store.data.language>("language", "c_family");
     store.set<typeof store.data.inferior_binary_path>("inferior_binary_path", null);
     Handlers.onDebugeeExited();
-    const cmds = GdbApi.get_load_binary_and_arguments_cmds(binary, args);
-    GdbApi.runGdbCommand(cmds);
-    GdbApi.get_inferior_binary_last_modified_unix_sec(binary);
+    const cmds = GdbApi.getLoadBinaryAndArgumentsCmds(binary, args);
+    GdbApi.runGdbCommand([
+      ...cmds,
+      `${constants.IGNORE_ERRORS_TOKEN_STR}-data-list-register-names`,
+    ]);
+    GdbApi.requestInferiorBinaryLastModifiedUnixSec(binary);
   },
   onStackTraceResponse(response: DebugProtocol.StackTraceResponse) {},
   onRemoteConnected() {

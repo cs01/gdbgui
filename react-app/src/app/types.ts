@@ -134,13 +134,16 @@ export type GdbguiExpressionVar = {
   }>;
 };
 
+export type GdbMiRegisterValue = { value: string; number: string };
+export type GdbguiRegisterValues = {
+  [registerNumber: string]: { gdbValue: string; decimalValue: Nullable<number> };
+};
 export type GlobalState = {
   debug: boolean;
   gdbgui_version: string;
   latest_gdbgui_version: string;
   gdb_pid: Nullable<number>;
   gdb_command: string;
-  can_fetch_register_values: boolean;
   show_settings: boolean;
   gdbWebsocket: Nullable<GdbWebsocket>;
   debug_in_reverse: boolean;
@@ -194,9 +197,9 @@ export type GlobalState = {
   inferior_binary_path_last_modified_unix_sec: Nullable<number>;
 
   // registers
-  register_names: any[];
-  previous_register_values: any;
-  current_register_values: any;
+  register_names: string[];
+  previous_register_values: { [registerNumber: string]: string };
+  current_register_values: GdbguiRegisterValues;
 
   // memory
   memory_cache: GdbMiMemoryResponse;

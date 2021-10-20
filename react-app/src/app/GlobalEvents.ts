@@ -39,7 +39,7 @@ const GlobalEvents = {
       } else if (e.keyCode === constants.UP_BUTTON_NUM || char === "u") {
         GdbApi.click_return_button();
       } else if (char === "r") {
-        GdbApi.click_run_button();
+        GdbApi.clickRunButton();
       } else if (char === "m") {
         GdbApi.requestSendNextInstruction(e.shiftKey);
       } else if (e.keyCode === constants.COMMA_BUTTON_NUM) {

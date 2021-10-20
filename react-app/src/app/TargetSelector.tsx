@@ -183,7 +183,7 @@ function DebugControls() {
         <RefreshIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => GdbApi.click_run_button()}
+          onClick={() => GdbApi.clickRunButton()}
         />
       </button>
       <button

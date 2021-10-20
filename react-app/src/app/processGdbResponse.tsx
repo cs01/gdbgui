@@ -18,7 +18,8 @@ import { ExpressionClass } from "./Expression";
 import Modal from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
-import { GdbMiChildrenVarResponse, GdbMiMessage } from "./types";
+import { GdbMiChildrenVarResponse, GdbMiMessage, GdbMiRegisterValue } from "./types";
+import { RegisterClass } from "./Registers";
 /**
  * Determines if response is an error and client does not want to be notified of errors for this particular response.
  * @param response: gdb mi response object
@@ -116,21 +117,11 @@ function handleGdbMessage(r: GdbMiMessage) {
       });
     }
     if ("register-names" in r.payload) {
-      const names = r.payload["register-names"];
-      // filter out empty names
-      store.set(
-        "register_names",
-        names.filter((name: any) => name !== "")
-      );
+      RegisterClass.saveRegisterNames(r.payload["register-names"] as string[]);
     }
     if ("register-values" in r.payload) {
-      store.set<typeof store.data.previous_register_values>(
-        "previous_register_values",
-        store.data.current_register_values
-      );
-      store.set<typeof store.data.current_register_values>(
-        "current_register_values",
-        r.payload["register-values"]
+      RegisterClass.saveRegisterValues(
+        r.payload["register-values"] as GdbMiRegisterValue[]
       );
     }
     if ("asm_insns" in r.payload) {

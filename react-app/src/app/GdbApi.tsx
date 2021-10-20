@@ -3,7 +3,7 @@
  * to send various commands to gdb, to and to dispatch gdb responses to gdbgui.
  */
 import { store } from "./Store";
-import Registers from "./Registers";
+import { RegisterClass } from "./Registers";
 import Memory from "./Memory";
 import Handlers from "./EventHandlers";
 import constants from "./constants";
@@ -13,7 +13,7 @@ import $ from "jquery";
 import { GdbWebsocket } from "./Websocket";
 
 const GdbApi = {
-  click_run_button: function () {
+  clickRunButton: function () {
     Handlers.onEventInferiorProgramStarting();
     GdbApi.runGdbCommand("-exec-run");
   },
@@ -145,7 +145,7 @@ const GdbApi = {
     cmds.push(constants.IGNORE_ERRORS_TOKEN_STR + "-var-update --all-values *");
 
     // update registers
-    cmds = cmds.concat(Registers.get_update_cmds());
+    cmds = cmds.concat(RegisterClass.get_update_cmds());
 
     // re-fetch memory over desired range as specified by DOM inputs
     cmds = cmds.concat(Memory.getRequestReadMemoryCommmands());
@@ -161,7 +161,7 @@ const GdbApi = {
   requestBreakpointList: function () {
     GdbApi.runGdbCommand(["-break-list"]);
   },
-  get_inferior_binary_last_modified_unix_sec(path: any) {
+  requestInferiorBinaryLastModifiedUnixSec(path: any) {
     $.ajax({
       url: "/get_last_modified_unix_sec",
       cache: false,
@@ -182,7 +182,7 @@ const GdbApi = {
   get_break_list_cmd: function () {
     return "-break-list";
   },
-  get_load_binary_and_arguments_cmds(binary: string, args: string) {
+  getLoadBinaryAndArgumentsCmds(binary: string, args: string) {
     // tell gdb which arguments to use when calling the binary, before loading the binary
     const cmds = [
       `-exec-arguments ${args}`, // Set the inferior program arguments, to be used in the next `-exec-run`
