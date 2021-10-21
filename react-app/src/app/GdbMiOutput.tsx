@@ -22,7 +22,7 @@ export function GdbMiOutput() {
       {gdbMiOutput
         .map((miMessage: GdbMiMessage, i: number) => {
           return (
-            <div>
+            <div key={i}>
               <div
                 className={`whitespace-pre text-xs  ${
                   i % 2 === 0 ? "bg-black" : "bg-gray-900"

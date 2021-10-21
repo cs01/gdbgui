@@ -9,13 +9,15 @@ import { BreakpointsFn } from "./Breakpoints";
 import constants from "./constants";
 import Expressions from "./Expressions";
 import { GdbMiOutput } from "./GdbMiOutput";
+import { Watch } from "./Watch";
 import InferiorProgramInfo from "./InferiorProgramInfo";
 import { Locals } from "./Locals";
 import Memory from "./Memory";
-import {Registers} from "./Registers";
+import { Registers } from "./Registers";
 import Tree from "./Tree";
 import { Threads } from "./Threads";
 import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/outline";
+import { Filesystem } from "./FileSystem";
 
 const onmouseupInParentCallbacks: Array<() => void> = [];
 const onmousemoveInParentCallbacks: Array<(event: any) => void> = [];
@@ -48,18 +50,23 @@ function CollapsableContainer(props: { content: ReactNode; title: string }) {
           <button className="ml-1 text-xs font-bold uppercase">{props.title}</button>
         </span>
       </div>
-      {collapsed ? null : <div className="mx-1">{props.content}</div>}
-      <hr className="w-full my-1 border-purple-900" />
+      {<div className={`mx-1 ${collapsed ? "hidden" : ""} `}>{props.content}</div>}
+      <hr className="w-full my-2 border-purple-900" />
     </div>
   );
 }
 
-export function RightSidebar(props: { signals: {}; debug: boolean }) {
+export function RightSidebar(props: { signals: {}; debug: boolean; initialDir: string }) {
   return (
     <div>
+      <CollapsableContainer
+        title={"filesystem"}
+        content={<Filesystem initialDir={props.initialDir} />}
+      />
       <CollapsableContainer title={"breakpoints"} content={<BreakpointsFn />} />
       <CollapsableContainer title={"variables"} content={<Locals />} />
-      <CollapsableContainer title={"stack and threads"} content={<Threads />} />
+      <CollapsableContainer title={"watch"} content={<Watch />} />
+      <CollapsableContainer title={"threads"} content={<Threads />} />
       <CollapsableContainer title={"memory"} content={<Memory />} />
       <CollapsableContainer title={"registers"} content={<Registers />} />
       <CollapsableContainer title={"gdb mi output"} content={<GdbMiOutput />} />

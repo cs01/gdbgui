@@ -181,7 +181,7 @@ const FileOps = {
       FileOps._storeChangeCallback
     );
   },
-  userSelectFileToView: function (fullname: string, line: number) {
+  userSelectFileToView: function (fullname: string, line: Nullable<number>) {
     store.set(
       "source_code_selection_state",
       constants.source_code_selection_states.USER_SELECTION
@@ -271,8 +271,8 @@ const FileOps = {
     };
   },
   updateSourceCodeState(
-    fullname: any,
-    start_line: any,
+    fullname: string,
+    start_line: number,
     require_cached_line_num: any,
     end_line: any,
     assembly_is_cached: any,

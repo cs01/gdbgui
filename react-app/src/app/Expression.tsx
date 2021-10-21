@@ -17,8 +17,16 @@ import {
   GdbChildExpression,
   GdbMiChildrenVarResponse,
   GdbguiExpressionType,
+  GdbguiLocalVariable,
 } from "./types";
-import { ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/solid";
+import {
+  ChevronDownIcon,
+  ChevronRightIcon,
+  EyeIcon,
+  PlusSmIcon,
+  RefreshIcon,
+  XIcon,
+} from "@heroicons/react/solid";
 
 /**
  * Simple class to manage fetching of child variables. Maintains a queue of parent expressions
@@ -165,16 +173,23 @@ const VarCreator = {
 };
 
 export function Expression(props: {
-  obj: GdbguiExpressionVar;
+  obj: GdbguiExpressionVar | GdbguiLocalVariable;
   expr_type: GdbguiExpressionType;
   depth?: number;
 }) {
   const { obj } = props;
-  const isRoot = obj.parent === null;
+  const isRoot = obj.expr_type === "simplelocal" ? true : obj.parent === null;
   const [expanded, setExpanded] = useState(
-    props.expr_type === "local" && isRoot ? true : false
+    obj.expr_type === "local" && isRoot ? true : false
   );
+
+  const hasChildren =
+    obj.expr_type === "simplelocal" ? obj.can_be_expanded : obj.numchild;
+  const [editing, setEditing] = useState(false);
+  const [editedValue, setEditedValue] = useState(obj.value);
   const depth = props?.depth ?? 0;
+  const indentStyle = { marginLeft: depth * 10 + "px" };
+  const childIndentStyle = { marginLeft: (depth + 1) * 10 + "px" };
   const getChevron = () => {
     return expanded ? (
       <button>
@@ -186,46 +201,129 @@ export function Expression(props: {
       </button>
     );
   };
+  console.log("name is ", obj.name);
+
+  const getChildrenNodes = () => {
+    if (obj.expr_type === "simplelocal") {
+      return null;
+    } else if (expanded) {
+      if (obj.numchild > 0) {
+        if (obj.children.length === 0) {
+          return (
+            <div className="text-xs" style={childIndentStyle}>
+              <RefreshIcon className="icon animate-spin-slow" />
+            </div>
+          );
+        } else {
+          return obj.children.map((child) => (
+            <Expression
+              key={child.name}
+              depth={depth + 1}
+              obj={child}
+              expr_type={props.expr_type}
+            />
+          ));
+        }
+      }
+    }
+    return null;
+  };
   return (
-    <div style={{ marginLeft: depth * 10 + "px" }}>
+    <div style={indentStyle}>
       <div
         className={`flex w-full whitespace-nowrap overflow-x-hidden items-center text-xs font-mono hover:bg-gray-900 ${
-          obj.numchild ? "cursor-pointer" : ""
+          hasChildren ? "cursor-pointer" : ""
         }`}
         onClick={() => {
           setExpanded(!expanded);
-          const childrenNeedToBeFetched = obj.numchild > 0 && obj.children.length === 0;
-          if (childrenNeedToBeFetched) {
-            ExpressionClass.fetchAndShowChildrenForVar(obj.name);
+          if (obj.expr_type === "simplelocal") {
+            if (obj.can_be_expanded) {
+              ExpressionClass.createExpression(obj.name, "local");
+            }
+          } else {
+            const childrenNeedToBeFetched = obj.numchild > 0 && obj.children.length === 0;
+            if (childrenNeedToBeFetched) {
+              ExpressionClass.fetchAndShowChildrenForVar(obj.name);
+            }
+          }
+        }}
+        onDoubleClick={(e) => {
+          //double click === 2
+          if (e.detail === 2) {
+            setEditing(true);
           }
         }}
       >
         <div className="w-4 items-center">
-          {obj.numchild ? getChevron() : <div className="h-5" />}
+          {hasChildren ? getChevron() : <div className="h-5" />}
         </div>
-        <div className="text-purple-400 mr-2">{obj.exp}:</div>
-        <div className="mr-2">{Memory.textToLinks(obj.value)}</div>
+        <div className="text-purple-400 mr-2">
+          {obj.expr_type === "simplelocal" ? obj.name : obj.exp}:
+        </div>
+        <div className="mr-2">
+          {editing ? (
+            <input
+              className="input h-4 w-full grow"
+              value={editedValue}
+              autoFocus={true}
+              placeholder="New value"
+              onChange={(e) => {
+                setEditedValue(e.target.value);
+              }}
+              onKeyUp={(e) => {
+                if (e.code?.toLocaleLowerCase() === "enter") {
+                  if (obj.expr_type === "simplelocal") {
+                    GdbApi.runCommandAndRefreshState(
+                      `-gdb-set ${obj.name}=${editedValue}`
+                    );
+                  } else {
+                    GdbApi.runCommandAndRefreshState([
+                      `-gdb-set ${fullyResolvedPath(obj)}=${editedValue}`,
+                      `-var-update ${getRootParentGdbName(obj)}`,
+                    ]);
+                  }
+                  setEditing(false);
+                } else if (e.code?.toLocaleLowerCase() === "escape") {
+                  setEditing(false);
+                }
+              }}
+            />
+          ) : (
+            <div>{Memory.textToLinks(obj.value)}</div>
+          )}
+        </div>
         <div className="flex-grow" />
         <div className="invisible hover:visible text-gray-400 italic">
           {obj.type.trim()}
         </div>
+        {depth === 0 && props.expr_type === "expr" ? (
+          <div
+            className="text-gray-200"
+            onClick={() => {
+              ExpressionClass.deleteGdbVariable(obj.name);
+            }}
+          >
+            <XIcon className="icon" />
+          </div>
+        ) : null}
       </div>
-      {expanded
-        ? obj.children.map((child) => {
-            return (
-              <Expression
-                key={obj.name}
-                depth={depth + 1}
-                obj={child}
-                expr_type={props.expr_type}
-              />
-            );
-          })
-        : null}
+      {getChildrenNodes()}
     </div>
   );
 }
+function getRootParentGdbName(expression: GdbguiExpressionVar): string {
+  if (expression.parent) {
+    return getRootParentGdbName(expression.parent);
+  }
+  return expression.name;
+}
 
+function fullyResolvedPath(expression: GdbguiExpressionVar): string {
+  if (expression.parent) {
+    return `(${fullyResolvedPath(expression.parent)}).${expression.exp}`;
+  }
+  return expression.exp;
+}
 export class ExpressionClass {
   /**
    * get unordered list for a variable that has children
@@ -757,7 +855,7 @@ export class ExpressionClass {
   static click_draw_tree_gdb_variable(gdb_variable: any) {
     store.set<typeof store.data.root_gdb_tree_var>("root_gdb_tree_var", gdb_variable);
   }
-  static deleteGdbVariable(gdbvar: any) {
+  static deleteGdbVariable(gdbvar: string) {
     // delete locally
     ExpressionClass._delete_local_gdb_var_data(gdbvar);
     // delete in gdb too
@@ -767,7 +865,7 @@ export class ExpressionClass {
    * Delete local copy of gdb variable (all its children are deleted too
    * since they are stored as fields in the object)
    */
-  static _delete_local_gdb_var_data(gdb_var_name: any) {
+  static _delete_local_gdb_var_data(gdb_var_name: string) {
     const expressions = store.data.expressions;
     _.remove(expressions, (v: any) => v.name === gdb_var_name);
     store.set<typeof store.data.expressions>("expressions", [...expressions]);

@@ -14,6 +14,7 @@ export type InitialData = {
   remap_sources: { [file: string]: string };
   signals: Object;
   using_windows: boolean;
+  working_directory: string;
 };
 const defaultInitialData: InitialData = {
   gdbgui_version: "test",
@@ -24,6 +25,7 @@ const defaultInitialData: InitialData = {
   remap_sources: {},
   signals: {},
   using_windows: false,
+  working_directory: "/home",
 };
 // @ts-ignore
 export const initial_data: InitialData = window.initial_data ?? defaultInitialData;

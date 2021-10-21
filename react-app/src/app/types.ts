@@ -109,11 +109,14 @@ export type GdbMiChildrenVarResponse = {
 };
 
 export type GdbguiExpressionType = "local" | "expr" | "hover";
-export type GdbguiLocalVariable = GdbLocalVariable & { can_be_expanded: boolean };
+export type GdbguiLocalVariable = GdbLocalVariable & {
+  can_be_expanded: boolean;
+  expr_type: "simplelocal";
+};
 export type GdbguiExpressionVar = {
   can_plot: boolean;
   children: Array<GdbguiExpressionVar>;
-  expr_type: GdbguiExpressionType;
+  expr_type: "expr" | "hover" | "local";
   exp: string;
   // expression: string;
   in_scope: true | false | "invalid";
@@ -135,7 +138,7 @@ export type GdbguiExpressionVar = {
 };
 
 export type GdbMiRegisterValue = { value: string; number: string };
-export type GdbguiRegisterValues = {
+export type GdbguiRegisterValue = {
   [registerNumber: string]: { gdbValue: string; decimalValue: Nullable<number> };
 };
 export type GlobalState = {
@@ -199,7 +202,7 @@ export type GlobalState = {
   // registers
   register_names: string[];
   previous_register_values: { [registerNumber: string]: string };
-  current_register_values: GdbguiRegisterValues;
+  current_register_values: GdbguiRegisterValue;
 
   // memory
   memory_cache: GdbMiMemoryResponse;

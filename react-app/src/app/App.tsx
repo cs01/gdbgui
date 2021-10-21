@@ -1,11 +1,3 @@
-/**
- * This is the entrypoint to the frontend applicaiton.
- *
- * store (global state) is managed in a single location, and each time the store
- * changes, components are notified and update accordingly.
- *
- */
-
 import React, { useEffect, useState } from "react";
 import { store } from "./Store";
 import FileOps from "./FileOps";
@@ -42,8 +34,13 @@ export function Gdbgui() {
   }, []);
 
   if (!initialData) {
-    return <div className="h-full w-full">Loading...</div>;
+    return (
+      <div className="flex-col h-screen w-screen bg-gray-900  text-gray-800 text-9xl text-center">
+        <div className="w-full  ">Loading...</div>
+      </div>
+    );
   }
+
   return (
     <div className="h-screen text-gray-300 bg-black">
       <Settings />
@@ -84,7 +81,11 @@ export function Gdbgui() {
 
             <ReflexElement minSize={100}>
               <div className="pane-content">
-                <RightSidebar signals={initialData.signals} debug={debug} />
+                <RightSidebar
+                  signals={initialData.signals}
+                  debug={debug}
+                  initialDir={initialData.working_directory}
+                />
               </div>
             </ReflexElement>
           </ReflexContainer>

@@ -48,5 +48,5 @@ code {
 }
 
 .input {
-  @apply bg-gray-800 flex-grow p-1 mr-1 rounded-sm focus:outline-none focus:ring-0 text-sm;
+  @apply bg-gray-800 p-1 mr-1 rounded-sm focus:outline-none focus:ring-0 text-sm;
 }

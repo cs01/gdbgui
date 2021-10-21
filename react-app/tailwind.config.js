@@ -6,6 +6,9 @@ module.exports = {
       screens: {
         'xs': '100px',
       },
+      animation: {
+        'spin-slow': 'spin 3s linear infinite',
+       }
     },
   },
   variants: {

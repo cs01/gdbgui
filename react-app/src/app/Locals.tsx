@@ -6,7 +6,7 @@
 import React from "react";
 import { store, useGlobalValue } from "./Store";
 import { ExpressionClass, Expression } from "./Expression";
-import { GdbguiLocalVariable, GdbLocalVariable } from "./types";
+import { GdbguiExpressionVar, GdbguiLocalVariable, GdbLocalVariable } from "./types";
 import Memory from "./Memory";
 import _ from "lodash";
 import { ChevronRightIcon } from "@heroicons/react/solid";
@@ -66,7 +66,7 @@ export function Locals() {
           local.name
         );
         return expressionObject == null ? (
-          <LocalVariable local={local} key={local.name} />
+          <Expression obj={local} key={local.name} expr_type="local" />
         ) : (
           <Expression
             obj={expressionObject}
@@ -107,6 +107,7 @@ export class LocalsClass extends React.Component {
         ...local,
         value: local.value ?? "{...}",
         can_be_expanded: LocalsClass.canLocalBeExpanded(local),
+        expr_type: "simplelocal",
       }))
     );
   }

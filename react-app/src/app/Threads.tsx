@@ -7,6 +7,7 @@ import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink";
 import { GdbStackFrame } from "./types";
 import Handlers from "./EventHandlers";
+import { ArrowSmRightIcon } from "@heroicons/react/solid";
 
 class FrameArguments extends React.Component {
   render_frame_arg(frame_arg: any) {
@@ -43,14 +44,13 @@ function Frame(props: {
 }) {
   const frame = props.frame;
   return (
-    <div
-      className={`flex flex-wrap justify-between  ${
-        props.isCurrentFrame && props.isCurrentThread
-          ? "bg-blue-900 border-2 border-blue-600"
-          : " "
-      }`}
-    >
-      <div className="whitespace-nowrap">
+    <div className={`flex flex-wrap justify-between items-center `}>
+      <div className="whitespace-nowrap flex items-center">
+        <div className="w-5">
+          {props.isCurrentFrame && props.isCurrentThread ? (
+            <ArrowSmRightIcon className="icon text-blue-300" />
+          ) : null}
+        </div>
         <button
           className="pr-2"
           title="Frame level"
