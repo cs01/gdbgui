@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Expression, ExpressionClass } from "./Expression";
 import { useGlobalValue } from "./Store";
 import { store } from "./Store";
+
 export function Watch(props: {}) {
   const expressions = useGlobalValue<typeof store.data.expressions>("expressions");
   const [userInput, setUserInput] = useState("");
@@ -53,8 +54,8 @@ export function Watch(props: {}) {
         {showInput ? (
           newWatchInput
         ) : (
-          <div className="w-full text-right">
-            <button onClick={() => setShowInput(true)}>
+          <div className="w-full text-left">
+            <button className="w=full" onClick={() => setShowInput(true)}>
               <PlusSmIcon className="icon" />
             </button>
           </div>

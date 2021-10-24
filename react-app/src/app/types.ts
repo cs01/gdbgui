@@ -76,7 +76,8 @@ export type GdbStackFrame = {
   arch: string;
 };
 
-export type GdbMiMemoryResponse = Array<{ begin: string; end: string; contents: string }>;
+export type GdbMiMemoryEntry = { begin: string; end: string; contents: string };
+export type GdbMiMemoryResponse = Array<GdbMiMemoryEntry>;
 export type GdbLocalVariable = { name: string; type: string; value: string };
 export type GdbChildExpression = {
   name: string;
@@ -155,7 +156,7 @@ export type GlobalState = {
   modal_header: any;
   modal_body: any;
   tooltip: any;
-  textarea_to_copy_to_clipboard: any;
+  textarea_to_copy_to_clipboard: Nullable<HTMLTextAreaElement>;
   max_lines_of_code_to_fetch: number;
   auto_add_breakpoint_to_main: boolean;
   pretty_print: boolean;
@@ -230,6 +231,8 @@ export type GlobalState = {
   stoppedDetails: Nullable<DebugProtocol.StoppedEvent>;
   gdbguiState: UserVisibleState;
   features: Nullable<Array<GdbFeature>>;
+
+  userTargetInput: string;
 };
 
 export type GdbMiMessage = {

@@ -3,11 +3,11 @@ import { Fragment } from "react";
 import { Disclosure } from "@headlessui/react";
 import { CogIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
 
-const navigation = [
-  { name: "Debug", href: "#", current: true },
-  { name: "Dashboard", href: "#", current: false },
-  { name: "Donate", href: "#", current: false },
-];
+const navigation: any = [];
+// [
+//   { name: "Debug", href: "#", current: true },
+//   { name: "Dashboard", href: "#", current: false },
+// ];
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
@@ -51,7 +51,7 @@ export function Nav() {
                   /> */}
                 </div>
                 <div className="hidden sm:block sm:ml-6">
-                  <div className="flex space-x-4">
+                  {/* <div className="flex space-x-4">
                     {navigation.map((item) => (
                       <a
                         key={item.name}
@@ -67,7 +67,7 @@ export function Nav() {
                         {item.name}
                       </a>
                     ))}
-                  </div>
+                  </div> */}
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
@@ -148,7 +148,7 @@ export function Nav() {
           </div>
 
           <Disclosure.Panel className="sm:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1">
+            {/* <div className="px-2 pt-2 pb-3 space-y-1">
               {navigation.map((item) => (
                 <a
                   key={item.name}
@@ -164,7 +164,7 @@ export function Nav() {
                   {item.name}
                 </a>
               ))}
-            </div>
+            </div> */}
           </Disclosure.Panel>
         </>
       )}

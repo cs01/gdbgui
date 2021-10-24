@@ -15,13 +15,13 @@ import {
   ArrowSmDownIcon,
 } from "@heroicons/react/outline";
 import GdbApi from "./GdbApi";
-import { useGlobalValue } from "./Store";
+import { store, useGlobalState, useGlobalValue } from "./Store";
 
 function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
-function userInputToGdbInput(userInput: string): { binary: string; args: string } {
+function convertUserInputToGdbInput(userInput: string): { binary: string; args: string } {
   const paramList = Util.stringToArraySafeQuotes(userInput);
   return { binary: paramList[0], args: paramList.slice(1).join(" ") };
 }
@@ -38,20 +38,9 @@ function addUserInputToHistory(binaryAndArgs: string) {
   );
 }
 
-function getInitialUserInput(): string {
-  try {
-    const prevInput: Array<string> = JSON.parse(
-      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
-    );
-    return prevInput[0];
-  } catch (e) {
-    localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
-    return "";
-  }
-}
-
 export function TargetSelector(props: { initial_user_input: string[] }) {
-  const [userInput, setUserInput] = useState(getInitialUserInput());
+  const [userInput, setUserInput] =
+    useGlobalState<typeof store.data.userTargetInput>("userTargetInput");
   const targetTypes = [
     {
       name: "Binary Executable",
@@ -60,7 +49,7 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
       placeholder: "/path/to/executable --myflag",
       onClick: (userInput: string) => {
         addUserInputToHistory(userInput);
-        const { binary, args } = userInputToGdbInput(userInput);
+        const { binary, args } = convertUserInputToGdbInput(userInput);
         Handlers.setGdbBinaryAndArguments(binary, args);
       },
     },
@@ -250,7 +239,10 @@ function DebugControls() {
         <PauseIcon
           className="h-8 w-8"
           aria-hidden="true"
-          onClick={() => Handlers.send_signal("SIGINT", gdbPid)}
+          onClick={
+            // () => Handlers.send_signal("SIGINT", gdbPid)
+            () => GdbApi.runGdbCommand("-exec-interrupt --all")
+          }
         />
       </button>
     </div>

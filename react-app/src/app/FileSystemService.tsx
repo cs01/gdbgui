@@ -7,17 +7,19 @@ export type SourceFile = {
   linesInFile: number;
 };
 
-export type FsDir = {
+type DirEntry = { name: string; type: "dir" };
+type FileEntry = { name: string; type: "file"; is_executable: boolean };
+export type FsDirEntry = {
   path: string;
-  children: Array<{ name: string; type: "file" | "dir" }>;
+  children: Array<DirEntry | FileEntry>;
 };
 
 export class FileSystemService {
   missing: Map<string, true> = new Map();
   cachedFiles: Map<string, SourceFile> = new Map();
-  cachedDirs: Map<string, FsDir> = new Map();
+  cachedDirs: Map<string, FsDirEntry> = new Map();
 
-  async readDir(path: string): Promise<Nullable<FsDir>> {
+  async readDir(path: string): Promise<Nullable<FsDirEntry>> {
     const data = { path };
     const response = await fetch("/read_dir", {
       body: JSON.stringify(data),
@@ -27,10 +29,20 @@ export class FileSystemService {
         "Content-Type": "application/json",
       },
     });
+    const sortFs = (a: FileEntry | DirEntry, b: FileEntry | DirEntry) => {
+      return a.name.localeCompare(b.name);
+    };
     if (response.ok) {
-      const fsDir = (await response.json()) as FsDir;
-      this.cachedDirs.set(path, fsDir);
-      return fsDir;
+      const fsDir = (await response.json()) as FsDirEntry;
+      const processedFsDir = {
+        path: fsDir.path,
+        children: [
+          ...fsDir.children.filter((child) => child.type === "dir").sort(sortFs),
+          ...fsDir.children.filter((child) => child.type === "file").sort(sortFs),
+        ],
+      };
+      this.cachedDirs.set(path, processedFsDir);
+      return processedFsDir;
     }
     this.missing.set(path, true);
     return null;

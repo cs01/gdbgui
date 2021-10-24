@@ -7,7 +7,7 @@ import React from "react";
 import { store, useGlobalValue } from "./Store";
 import { ExpressionClass, Expression } from "./Expression";
 import { GdbguiExpressionVar, GdbguiLocalVariable, GdbLocalVariable } from "./types";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import _ from "lodash";
 import { ChevronRightIcon } from "@heroicons/react/solid";
 
@@ -23,7 +23,9 @@ function LocalVariable(props: { local: GdbguiLocalVariable }) {
   const local = props.local;
   const can_be_expanded = local.can_be_expanded;
 
-  const value = _.isString(local.value) ? Memory.textToLinks(local.value) : local.value;
+  const value = _.isString(local.value)
+    ? MemoryClass.textToLinks(local.value)
+    : local.value;
 
   return (
     <div

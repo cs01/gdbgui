@@ -1,7 +1,7 @@
 import { store } from "./Store";
 import GdbApi from "./GdbApi";
 import { LocalsClass } from "./Locals";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import constants, { colorTypeMap } from "./constants";
 import _ from "lodash";
 import $ from "jquery";
@@ -16,7 +16,7 @@ const Handlers = {
     store.set<typeof store.data.selected_frame_num>("selected_frame_num", 0);
     store.set<typeof store.data.stack>("stack", null);
     store.set<typeof store.data.threads>("threads", null);
-    Memory.clearMemoryCache();
+    MemoryClass.clearMemoryCache();
     LocalsClass.clear();
   },
   onEventInferiorProgramStarting: function () {
@@ -59,7 +59,7 @@ const Handlers = {
    * Request relevant store information from gdb to refresh UI
    */
   refreshGdbguiState: function () {
-    Memory.clearMemoryCache();
+    MemoryClass.clearMemoryCache();
     GdbApi.runGdbCommand(GdbApi._getRefreshStateOnStopGdbCommands());
   },
   onConsoleCommandRun: function () {

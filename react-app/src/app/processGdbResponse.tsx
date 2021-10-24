@@ -11,7 +11,7 @@ import Breakpoints from "./Breakpoints";
 import constants from "./constants";
 import Threads from "./Threads";
 import FileOps from "./FileOps";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import GdbApi from "./GdbApi";
 import { LocalsClass } from "./Locals";
 import { ExpressionClass } from "./Expression";
@@ -190,7 +190,7 @@ function handleGdbMessage(r: GdbMiMessage) {
       //         "offset": "0x0000000000000000",
       //         "end": "0x0000555555555245",
       //         "contents": "00"
-      Memory.addValueToCache(r.payload.memory);
+      MemoryClass.addValueToCache(r.payload.memory);
     }
     // gdb returns local variables as "variables" which is confusing, because you can also create expressions
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and

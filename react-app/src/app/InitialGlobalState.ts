@@ -1,6 +1,7 @@
 import _ from "lodash";
 import constants from "./constants";
 import { initial_data, debug } from "./InitialData";
+import { userInputLocalStorageKey } from "./localStorageKeys";
 import { GlobalState } from "./types";
 
 /**
@@ -26,7 +27,7 @@ const initialGlobalState: GlobalState = {
   modal_body: null,
 
   tooltip: { hidden: false, content: "placeholder", node: null, show_for_n_sec: null },
-  textarea_to_copy_to_clipboard: {}, // will be replaced with textarea dom node
+  textarea_to_copy_to_clipboard: null, // will be replaced with textarea dom node
 
   // preferences
   max_lines_of_code_to_fetch: constants.default_max_lines_of_code_to_fetch,
@@ -94,7 +95,21 @@ const initialGlobalState: GlobalState = {
   revealLine: (lineNumber: number) => {},
   stoppedDetails: null,
   features: null,
+
+  userTargetInput: getInitialUserTargetInput(),
 };
+
+function getInitialUserTargetInput(): string {
+  try {
+    const prevInput: Array<string> = JSON.parse(
+      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
+    );
+    return prevInput[0];
+  } catch (e) {
+    localStorage.setItem(userInputLocalStorageKey, JSON.stringify([]));
+    return "";
+  }
+}
 
 function get_stored(key: any, default_val: any) {
   try {

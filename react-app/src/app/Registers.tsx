@@ -1,6 +1,6 @@
 import { constants } from "./constants";
 import React from "react";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import registerDescriptions from "./register_descriptions";
 import { store, useGlobalValue } from "./Store";
 import { GdbguiRegisterValue, GdbMiRegisterValue } from "./types";
@@ -34,7 +34,9 @@ export function Registers(props: {}) {
               title={registerDescriptions[name]}
             >
               <td>{name ?? null}</td>
-              <td>{registerValue ? Memory.textToLinks(registerValue.gdbValue) : null}</td>
+              <td>
+                {registerValue ? MemoryClass.textToLinks(registerValue.gdbValue) : null}
+              </td>
               <td>{registerValue ? registerValue.decimalValue : null}</td>
             </tr>
           );

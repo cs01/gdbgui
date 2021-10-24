@@ -5,7 +5,7 @@
  * remove them, etc.
  */
 import React, { useState } from "react";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import constants from "./constants";
 import { store } from "./Store";
 import GdbApi from "./GdbApi";
@@ -201,7 +201,6 @@ export function Expression(props: {
       </button>
     );
   };
-  console.log("name is ", obj.name);
 
   const getChildrenNodes = () => {
     if (obj.expr_type === "simplelocal") {
@@ -289,7 +288,7 @@ export function Expression(props: {
               }}
             />
           ) : (
-            <div>{Memory.textToLinks(obj.value)}</div>
+            <div>{MemoryClass.textToLinks(obj.value)}</div>
           )}
         </div>
         <div className="flex-grow" />
@@ -387,7 +386,7 @@ export class ExpressionClass {
       val = (
         <div className="inline">
           <span className="gdbVarValue">
-            {Memory.textToLinks(obj._int_value_to_str_in_radix)}
+            {MemoryClass.textToLinks(obj._int_value_to_str_in_radix)}
             <button
               className="btn btn-default btn-xs btn-radix"
               onClick={() => {
@@ -402,7 +401,7 @@ export class ExpressionClass {
         </div>
       );
     } else {
-      val = _.isString(obj.value) ? Memory.textToLinks(obj.value) : obj.value;
+      val = _.isString(obj.value) ? MemoryClass.textToLinks(obj.value) : obj.value;
     }
     return val;
   }

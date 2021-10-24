@@ -12,7 +12,7 @@ import { GdbMiOutput } from "./GdbMiOutput";
 import { Watch } from "./Watch";
 import InferiorProgramInfo from "./InferiorProgramInfo";
 import { Locals } from "./Locals";
-import Memory from "./Memory";
+import { Memory } from "./Memory";
 import { Registers } from "./Registers";
 import Tree from "./Tree";
 import { Threads } from "./Threads";

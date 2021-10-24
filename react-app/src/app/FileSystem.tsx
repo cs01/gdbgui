@@ -1,14 +1,54 @@
-import { DocumentIcon, FolderIcon, FolderOpenIcon } from "@heroicons/react/solid";
+import {
+  BeakerIcon,
+  DocumentIcon,
+  FolderIcon,
+  FolderOpenIcon,
+} from "@heroicons/react/solid";
 import path from "path/posix";
 import React, { useEffect, useState } from "react";
 import FileOps from "./FileOps";
-import { fileSystemService, FsDir } from "./FileSystemService";
+import { fileSystemService, FsDirEntry } from "./FileSystemService";
+import { store } from "./Store";
+
+function File(props: { fullPath: string; fileName: string; isExecutable: boolean }) {
+  const isHidden = props.fileName.startsWith(".");
+  return (
+    <div className="flex items-center content-">
+      <div
+        onClick={() => {
+          FileOps.userSelectFileToView(props.fullPath, null);
+        }}
+        className="flex flex-grow hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden"
+      >
+        <DocumentIcon className="icon " />
+        <div className={`${isHidden ? "text-gray-600" : "text-gray-200"}`}>
+          {props.fileName}
+        </div>
+      </div>
+      <div>
+        {props.isExecutable ? (
+          <button
+            title={`Debug this file ${props.fullPath}`}
+            onClick={() => {
+              store.set("userTargetInput", props.fullPath);
+            }}
+          >
+            <BeakerIcon className="mr-3 icon hover:text-red-600" />
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 function Folder(props: { path: string; name: string; depth?: number; expand?: boolean }) {
   const [expanded, setExpanded] = useState(props.expand ?? false);
-  const [fsDir, setFsDir] = useState<Nullable<FsDir>>(null);
+  const [fsDir, setFsDir] = useState<Nullable<FsDirEntry>>(
+    fileSystemService.cachedDirs.get(props.path) ?? null
+  );
   const depth = props.depth ?? 0;
-  if (expanded === false && fsDir === null) {
+
+  if (expanded === true && fsDir === null) {
     fileSystemService.readDir(props.path).then((fsDir) => {
       setFsDir(fsDir);
     });
@@ -19,25 +59,24 @@ function Folder(props: { path: string; name: string; depth?: number; expand?: bo
     }
     if (fsDir) {
       return fsDir.children.map((child) => {
+        const childPath = props.path + "/" + child.name;
         if (child.type === "dir") {
           return (
             <Folder
+              key={childPath}
               name={child.name}
-              path={props.path + "/" + child.name}
+              path={childPath}
               depth={depth + 1}
             />
           );
         } else {
           return (
-            <div
-              onClick={() => {
-                FileOps.userSelectFileToView(props.path + "/" + child.name, null);
-              }}
-              className="flex hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden"
-            >
-              <DocumentIcon className="icon " />
-              <div>{child.name}</div>
-            </div>
+            <File
+              key={childPath}
+              fullPath={childPath}
+              fileName={child.name}
+              isExecutable={child.is_executable}
+            />
           );
         }
       });
@@ -62,28 +101,31 @@ function Folder(props: { path: string; name: string; depth?: number; expand?: bo
         </div>
         <div>{props.name}</div>
       </div>
-      <div></div>
-      <div style={{ marginLeft: `${(depth + 1) * 12}px` }}>{getChildren()}</div>
+      <div>{/* indentation whitespace to grow */}</div>
+      <div style={{ marginLeft: `${14}px` }}>{getChildren()}</div>
     </div>
   );
 }
 
 export function Filesystem(props: { initialDir: string }) {
-  // const [fsDir, setFsDir] = useState<Nullable<FsDir>>(null);
-  // useEffect(() => {
-  //   const getFolderData = async () => {
-  //     const fsDir = await fileSystemService.readDir(props.initialDir);
-  //     setFsDir(fsDir);
-  //   };
-  //   getFolderData();
-  // }, [props.initialDir]);
-  // if (!fsDir) {
-  //   return null;
-  // }
-
+  const [startDir, setStartDir] = useState(props.initialDir);
+  const shouldShowMoreButton = startDir !== "/";
+  const showMoreButton = (
+    <div
+      className="w-full cursor-pointer"
+      onClick={() => {
+        const folders = startDir.split("/");
+        const parentOfRoot = folders.slice(0, folders.length - 1).join("/");
+        setStartDir(parentOfRoot === "" ? "/" : parentOfRoot);
+      }}
+    >
+      ..
+    </div>
+  );
   return (
     <div className="max-h-96 overflow-y-scroll">
-      <Folder expand={true} name={props.initialDir} path={props.initialDir} />
+      {shouldShowMoreButton ? showMoreButton : null}
+      <Folder key={startDir} name={startDir} path={startDir} />
     </div>
   );
 }

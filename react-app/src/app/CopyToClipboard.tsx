@@ -24,6 +24,9 @@ class CopyToClipboard extends React.Component<Props> {
         onClick={() => {
           try {
             const textarea = store.data.textarea_to_copy_to_clipboard;
+            if (!textarea || !this.props.content) {
+              return;
+            }
             textarea.value = this.props.content;
             textarea.select();
             if (document.execCommand("copy") === true) {

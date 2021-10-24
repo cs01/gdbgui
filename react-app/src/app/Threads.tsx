@@ -2,7 +2,7 @@ import React from "react";
 import ReactTable from "./ReactTable";
 import { store, useGlobalValue } from "./Store";
 import GdbApi from "./GdbApi";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink";
 import { GdbStackFrame } from "./types";
@@ -233,7 +233,7 @@ class DEPRECATED_Threads extends React.Component<{}, ThreadsState> {
         </button>
       );
     }
-    const details = Memory.textToLinks(thread["target-id"]);
+    const details = MemoryClass.textToLinks(thread["target-id"]);
     const core = thread.core ? `, Core ${thread.core}` : "";
     const state = ", " + thread.state;
     const id = ", id " + thread.id;
@@ -331,11 +331,11 @@ class DEPRECATED_Threads extends React.Component<{}, ThreadsState> {
     );
     store.set<typeof store.data.line_of_source_to_flash>(
       "line_of_source_to_flash",
-      `${store.data.paused_on_frame.line}`
+      `${store.data.paused_on_frame?.line}`
     );
     store.set<typeof store.data.current_assembly_address>(
       "current_assembly_address",
-      store.data.paused_on_frame.addr
+      store.data.paused_on_frame?.addr
     );
     store.set<typeof store.data.make_current_line_visible>(
       "make_current_line_visible",

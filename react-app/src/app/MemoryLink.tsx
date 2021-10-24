@@ -1,5 +1,5 @@
 import * as React from "react";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 
 type OwnProps = {
   addr: string;
@@ -15,7 +15,7 @@ class MemoryLink extends React.Component<Props> {
     return (
       <button
         className="hover:bg-purple-900 font-mono"
-        onClick={() => Memory.setInputsFromAddress(addressNoLeadingZeros)}
+        onClick={() => MemoryClass.setInputsFromAddress(addressNoLeadingZeros)}
         title={`click to explore memory at ${addressNoLeadingZeros}`}
       >
         {addressNoLeadingZeros}

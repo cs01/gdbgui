@@ -4,7 +4,7 @@
  */
 import { store } from "./Store";
 import { RegisterClass } from "./Registers";
-import Memory from "./Memory";
+import MemoryClass from "./Memory";
 import Handlers from "./EventHandlers";
 import constants from "./constants";
 import { initial_data } from "./InitialData";
@@ -148,7 +148,7 @@ const GdbApi = {
     cmds = cmds.concat(RegisterClass.get_update_cmds());
 
     // re-fetch memory over desired range as specified by DOM inputs
-    cmds = cmds.concat(Memory.getRequestReadMemoryCommmands());
+    cmds = cmds.concat(MemoryClass.getRequestReadMemoryCommmands());
 
     // refresh breakpoints
     cmds.push(GdbApi.get_break_list_cmd());
