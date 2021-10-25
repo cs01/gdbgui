@@ -10,6 +10,9 @@ import FileOps from "./FileOps";
 import { fileSystemService, FsDirEntry } from "./FileSystemService";
 import { store } from "./Store";
 
+const hiddenColor = "text-gray-600";
+const normalColor = "text-gray-200";
+
 function File(props: { fullPath: string; fileName: string; isExecutable: boolean }) {
   const isHidden = props.fileName.startsWith(".");
   return (
@@ -21,9 +24,7 @@ function File(props: { fullPath: string; fileName: string; isExecutable: boolean
         className="flex flex-grow hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden"
       >
         <DocumentIcon className="icon " />
-        <div className={`${isHidden ? "text-gray-600" : "text-gray-200"}`}>
-          {props.fileName}
-        </div>
+        <div className={`${isHidden ? hiddenColor : normalColor}`}>{props.fileName}</div>
       </div>
       <div>
         {props.isExecutable ? (
@@ -84,6 +85,7 @@ function Folder(props: { path: string; name: string; depth?: number; expand?: bo
       return null;
     }
   };
+  const isHidden = props.name.startsWith(".");
   return (
     <div>
       <div
@@ -99,7 +101,7 @@ function Folder(props: { path: string; name: string; depth?: number; expand?: bo
             <FolderIcon className="icon" />
           )}
         </div>
-        <div>{props.name}</div>
+        <div className={`${isHidden ? hiddenColor : normalColor}`}>{props.name}</div>
       </div>
       <div>{/* indentation whitespace to grow */}</div>
       <div style={{ marginLeft: `${14}px` }}>{getChildren()}</div>

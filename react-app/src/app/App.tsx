@@ -21,9 +21,14 @@ import "react-reflex/styles.css";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
+  const [error, setError] = useState<Nullable<Response>>(null);
   useEffect(() => {
     async function initialize() {
-      const initialData: InitialData = await (await fetch("/initial_data")).json();
+      const response = await fetch("/initial_data");
+      if (!response.ok) {
+        setError(response);
+      }
+      const initialData: InitialData = await response.json();
       const gdbWebsocket = new GdbWebsocket(initialData.gdb_command, initialData.gdbpid);
       store.set<typeof store.data.gdbWebsocket>("gdbWebsocket", gdbWebsocket);
       GlobalEvents.init();
@@ -32,7 +37,22 @@ export function Gdbgui() {
     }
     initialize();
   }, []);
-
+  if (error) {
+    return (
+      <div className=" h-screen w-screen bg-gray-900  text-red-800 text-2xl text-center">
+        <div className="w-full  ">
+          <div className="py-10">
+            gdbgui failed to connect to the server. Is it still running?
+          </div>
+          <div className="pt-10">
+            <pre>{error.statusText}</pre>
+            <pre>{error.url}</pre>
+            <pre>Error code: {error.status}</pre>
+          </div>
+        </div>
+      </div>
+    );
+  }
   if (!initialData) {
     return (
       <div className="flex-col h-screen w-screen bg-gray-900  text-gray-800 text-9xl text-center">

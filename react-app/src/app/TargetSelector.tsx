@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Handlers from "./EventHandlers";
 import { Util } from "./Util";
 import { Fragment } from "react";
@@ -26,21 +26,31 @@ function convertUserInputToGdbInput(userInput: string): { binary: string; args: 
   return { binary: paramList[0], args: paramList.slice(1).join(" ") };
 }
 
-function addUserInputToHistory(binaryAndArgs: string) {
-  const prevInput: Array<string> = JSON.parse(
-    localStorage.getItem(userInputLocalStorageKey) ?? "[]"
-  );
-  const prevInputFiltered = prevInput.filter((i) => i === binaryAndArgs);
+function getInputHistory(): Array<string> {
+  try {
+    const entries = JSON.parse(
+      localStorage.getItem(userInputLocalStorageKey) ?? "[]"
+    ) as Array<string>;
+    const deduplicatedEntries = Array.from(new Set(entries));
+    return deduplicatedEntries;
+  } catch (e) {
+    localStorage.removeItem(userInputLocalStorageKey);
+    console.error("failed to read past inputs");
+  }
+  return [];
+}
 
-  localStorage.setItem(
-    userInputLocalStorageKey,
-    JSON.stringify([binaryAndArgs, ...prevInputFiltered])
-  );
+function addUserInputToHistory(binaryAndArgs: string) {
+  const prevInput = getInputHistory();
+  const newValues = Array.from(new Set([binaryAndArgs, ...prevInput]));
+
+  localStorage.setItem(userInputLocalStorageKey, JSON.stringify(newValues));
 }
 
 export function TargetSelector(props: { initial_user_input: string[] }) {
   const [userInput, setUserInput] =
     useGlobalState<typeof store.data.userTargetInput>("userTargetInput");
+
   const targetTypes = [
     {
       name: "Binary Executable",
@@ -52,6 +62,17 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         const { binary, args } = convertUserInputToGdbInput(userInput);
         Handlers.setGdbBinaryAndArguments(binary, args);
       },
+      executeButton: (
+        <button
+          className="btn btn-purple mr-2 text-sm"
+          onClick={() => {
+            chosenOption.onClick(userInput);
+          }}
+          title="Load configured target and input"
+        >
+          Load
+        </button>
+      ),
     },
     {
       name: "gdb server",
@@ -61,6 +82,17 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         addUserInputToHistory(userInput);
         GdbApi.requestConnectToGdbserver(userInput);
       },
+      executeButton: (
+        <button
+          className="btn btn-purple mr-2 text-sm whitespace-nowrap"
+          onClick={() => {
+            chosenOption.onClick(userInput);
+          }}
+          title="Load configured target and input"
+        >
+          Connect to server
+        </button>
+      ),
     },
     {
       name: "Attach to process",
@@ -74,6 +106,17 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         addUserInputToHistory(userInput);
         Handlers.attachToProcess(userInput);
       },
+      executeButton: (
+        <button
+          className="btn btn-purple mr-2 text-sm whitespace-nowrap"
+          onClick={() => {
+            chosenOption.onClick(userInput);
+          }}
+          title="Load configured target and input"
+        >
+          Attach
+        </button>
+      ),
     },
   ];
   const pastBinariesId = "past-binaries";
@@ -142,22 +185,14 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
             chosenOption.onClick(userInput);
           }
         }}
-        value={userInput}
+        defaultValue={userInput}
       />
-      {/* <datalist id={pastBinariesId}>
-        {["/home/csmith/git/gdbgui/examples/c/hello_c.a"].map((userInput) => (
+      <datalist id={pastBinariesId}>
+        {getInputHistory().map((userInput) => (
           <option key={userInput}>{userInput}</option>
         ))}
-      </datalist> */}
-      <button
-        className="btn btn-purple mr-2 text-sm"
-        onClick={() => {
-          chosenOption.onClick(userInput);
-        }}
-        title="Load configured target and input"
-      >
-        Load
-      </button>
+      </datalist>
+      {chosenOption.executeButton}
       <DebugControls />
     </div>
   );
@@ -241,7 +276,7 @@ function DebugControls() {
           aria-hidden="true"
           onClick={
             // () => Handlers.send_signal("SIGINT", gdbPid)
-            () => GdbApi.runGdbCommand("-exec-interrupt --all")
+            () => GdbApi.runCommandAndRefreshState("-exec-interrupt --all")
           }
         />
       </button>

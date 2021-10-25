@@ -164,7 +164,7 @@ class MemoryClass {
       "0x" +
         (parseInt(address, 16) + MemoryClass.DEFAULT_ADDRESS_DELTA_BYTES).toString(16)
     );
-    MemoryClass.requestReadMemory();
+    MemoryClass.requestReadMemory(true);
   }
 
   static getStartAddress(): number {
@@ -196,8 +196,10 @@ class MemoryClass {
     }
     return userEndAddr;
   }
-  static getRequestReadMemoryCommmands() {
-    MemoryClass.clearMemoryCache();
+  static getRequestReadMemoryCommmands(clearCache: boolean) {
+    if (clearCache) {
+      MemoryClass.clearMemoryCache();
+    }
 
     const startAddr = MemoryClass.getStartAddress();
     if (isNaN(startAddr)) {
@@ -223,9 +225,11 @@ class MemoryClass {
     return cmds;
   }
 
-  static requestReadMemory() {
-    MemoryClass.clearMemoryCache();
-    const requestMemoryCommands = MemoryClass.getRequestReadMemoryCommmands();
+  static requestReadMemory(clearCache: boolean) {
+    if (clearCache) {
+      MemoryClass.clearMemoryCache();
+    }
+    const requestMemoryCommands = MemoryClass.getRequestReadMemoryCommmands(clearCache);
     if (requestMemoryCommands.length === 0) {
       return;
     }
@@ -240,7 +244,7 @@ class MemoryClass {
       "start_addr",
       "0x" + (startAddr - byteOffset).toString(16)
     );
-    MemoryClass.requestReadMemory();
+    MemoryClass.requestReadMemory(false);
   }
 
   static clickReadMoreMemory() {
@@ -252,7 +256,7 @@ class MemoryClass {
       "end_addr",
       "0x" + (endAddr + byteOffset).toString(16)
     );
-    MemoryClass.requestReadMemory();
+    MemoryClass.requestReadMemory(false);
   }
 
   /**
