@@ -10,7 +10,7 @@ import GdbApi from "./GdbApi";
 import MemoryLink from "./MemoryLink";
 import Handlers from "./EventHandlers";
 import React, { useState } from "react";
-import _ from "lodash";
+import _, { add, isNumber } from "lodash";
 import { GdbMiMemoryEntry, GdbMiMemoryResponse } from "./types";
 import { DotsHorizontalIcon } from "@heroicons/react/solid";
 
@@ -123,7 +123,7 @@ function MoreButton(props: { direction: "preceding" | "following" }) {
   );
 }
 
-export function Memory(props: {}) {
+function MemoryContent(props: {}) {
   const memoryCache = useGlobalValue<typeof store.data.memory_cache>("memory_cache");
   if (memoryCache.length === 0) {
     return null;
@@ -148,8 +148,53 @@ export function Memory(props: {}) {
   );
 }
 
+export function Memory(props: {}) {
+  const startAddr = useGlobalValue<typeof store.data.start_addr>("start_addr");
+  const endAddr = useGlobalValue<typeof store.data.end_addr>("end_addr");
+  const deltaBytes = parseInt(endAddr, 16) - parseInt(startAddr, 16);
+  const deltaBytesStr =
+    _.isNumber(deltaBytes) && !isNaN(deltaBytes) ? `(${deltaBytes} bytes)` : "";
+
+  return (
+    <div className="text-sm">
+      <div className="flex flex-wrap space-y-2 w-full items-center">
+        <input
+          className="input text-center"
+          placeholder="start address (hex)"
+          value={startAddr}
+          onKeyUp={(e) => {
+            if (e.key.toLowerCase() === "enter") {
+              MemoryClass.requestReadMemory(true);
+            }
+          }}
+          onChange={(e) => {
+            store.set<typeof store.data.start_addr>("start_addr", e.target.value);
+          }}
+        />
+        <span className="px-1">to</span>
+        <input
+          className="input text-center"
+          placeholder="end address (hex)"
+          value={endAddr}
+          onKeyUp={(e) => {
+            if (e.key.toLowerCase() === "enter") {
+              MemoryClass.requestReadMemory(true);
+            }
+          }}
+          onChange={(e) => {
+            store.set<typeof store.data.end_addr>("end_addr", e.target.value);
+          }}
+        />
+        <span className={`${deltaBytes < 0 ? "text-red-600" : ""}`}>{deltaBytesStr}</span>
+      </div>
+
+      <MemoryContent />
+    </div>
+  );
+}
+
 class MemoryClass {
-  static MAX_ADDRESS_DELTA_BYTES = 1000;
+  static MAX_ADDRESS_DELTA_BYTES = 5000;
   static DEFAULT_ADDRESS_DELTA_BYTES = 112;
   static BYTES_PER_LINE = 16;
 
@@ -196,7 +241,7 @@ class MemoryClass {
     }
     return userEndAddr;
   }
-  static getRequestReadMemoryCommmands(clearCache: boolean) {
+  static readMemoryFromInputsCommmands(clearCache: boolean) {
     if (clearCache) {
       MemoryClass.clearMemoryCache();
     }
@@ -207,10 +252,17 @@ class MemoryClass {
     }
     const endAddr = MemoryClass.getEndAddress(startAddr);
 
-    let i = 0;
+    return MemoryClass.readMemoryRangeCommands(startAddr, endAddr);
+  }
+
+  static readMemoryRangeCommands(startAddr: number, endAddr: number): Array<string> {
+    if (startAddr > endAddr) {
+      return [];
+    }
     let currentAddress = startAddr;
     const bytesPerRow = 16;
     const cmds = [];
+    let i = 0;
     while (currentAddress <= endAddr) {
       const offset = i * bytesPerRow;
       cmds.push(
@@ -221,7 +273,6 @@ class MemoryClass {
       currentAddress = currentAddress + bytesPerRow;
       i++;
     }
-
     return cmds;
   }
 
@@ -229,7 +280,7 @@ class MemoryClass {
     if (clearCache) {
       MemoryClass.clearMemoryCache();
     }
-    const requestMemoryCommands = MemoryClass.getRequestReadMemoryCommmands(clearCache);
+    const requestMemoryCommands = MemoryClass.readMemoryFromInputsCommmands(clearCache);
     if (requestMemoryCommands.length === 0) {
       return;
     }
@@ -237,26 +288,28 @@ class MemoryClass {
   }
   static clickReadPrecedingMemory() {
     // update starting value, then re-fetch
-    const NUM_ROWS = 3;
-    const startAddr = parseInt(_.trim(store.data.start_addr), 16);
-    const byteOffset = MemoryClass.BYTES_PER_LINE * NUM_ROWS;
-    store.set<typeof store.data.start_addr>(
-      "start_addr",
-      "0x" + (startAddr - byteOffset).toString(16)
-    );
-    MemoryClass.requestReadMemory(false);
+    const endAddr = parseInt(store.data.start_addr.trim(), 16) - 16;
+    const NUM_ROWS = 5;
+    const bytesToRead = MemoryClass.BYTES_PER_LINE * NUM_ROWS;
+    const startAddr = endAddr - bytesToRead;
+
+    store.set<typeof store.data.start_addr>("start_addr", "0x" + startAddr.toString(16));
+
+    const commands = MemoryClass.readMemoryRangeCommands(startAddr, endAddr);
+    GdbApi.runGdbCommand(commands);
   }
 
   static clickReadMoreMemory() {
     // update ending value, then re-fetch
+    const startAddr = parseInt(_.trim(store.data.end_addr), 16) + 16;
     const NUM_ROWS = 5;
-    const endAddr = parseInt(_.trim(store.data.end_addr), 16);
-    const byteOffset = MemoryClass.BYTES_PER_LINE * NUM_ROWS;
-    store.set<typeof store.data.end_addr>(
-      "end_addr",
-      "0x" + (endAddr + byteOffset).toString(16)
-    );
-    MemoryClass.requestReadMemory(false);
+    const bytesToRead = MemoryClass.BYTES_PER_LINE * NUM_ROWS;
+    const endAddr = startAddr + bytesToRead;
+
+    store.set<typeof store.data.end_addr>("end_addr", "0x" + endAddr.toString(16));
+
+    const commands = MemoryClass.readMemoryRangeCommands(startAddr, endAddr);
+    GdbApi.runGdbCommand(commands);
   }
 
   /**
@@ -287,10 +340,22 @@ class MemoryClass {
   }
 
   static addValueToCache(gdbMemoryResponse: GdbMiMemoryResponse) {
-    store.set<typeof store.data.memory_cache>("memory_cache", [
-      ...store.data.memory_cache,
-      ...gdbMemoryResponse,
-    ]);
+    const allEntriesUnprocessed = [...store.data.memory_cache, ...gdbMemoryResponse];
+    const addresses = new Set(
+      [...store.data.memory_cache, ...gdbMemoryResponse]
+        .sort((a, b) => {
+          return parseInt(a.begin, 16) - parseInt(b.begin, 16);
+        })
+        .map((entry) => entry.begin)
+    );
+    const sortedDeduped: GdbMiMemoryEntry[] = [];
+    addresses.forEach((address) => {
+      const entry = allEntriesUnprocessed.find((entry) => entry.begin === address);
+      if (entry != null) {
+        sortedDeduped.push(entry);
+      }
+    });
+    store.set<typeof store.data.memory_cache>("memory_cache", sortedDeduped);
   }
 
   static clearMemoryCache() {
