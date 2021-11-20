@@ -231,7 +231,12 @@ def send_signal_to_pid():
     signal_value = int(SIGNAL_NAME_TO_OBJ[signal_name])
 
     try:
-        os.kill(pid_int, signal_value)
+        # send the signal to all processes
+        if pid_int == -1:
+            manager = current_app.config.get("_manager")
+            manager.send_signal_to_all_debug_sessions_processes(signal_value)
+        else:
+            os.kill(pid_int, signal_value)
     except Exception:
         return (
             jsonify(

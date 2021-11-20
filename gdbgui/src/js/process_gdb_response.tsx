@@ -133,6 +133,7 @@ const process_gdb_response = function(response_array: any) {
       if ("threads" in r.payload) {
         store.set("threads", r.payload.threads);
         store.set("current_thread_id", parseInt(r.payload["current-thread-id"]));
+        Actions.set_cookies_breakpoints();
       }
       if ("register-names" in r.payload) {
         let names = r.payload["register-names"];
