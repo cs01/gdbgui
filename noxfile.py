@@ -22,7 +22,7 @@ prettier_command = [
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = [
-    "black==20.8b1",
+    "black==21.12b0",
     "vulture",
     "flake8",
     "mypy==0.782",
