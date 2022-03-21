@@ -76,7 +76,7 @@ class Pty:
         if data_to_read:
             try:
                 response = os.read(self.stdout, self.max_read_bytes).decode()
-            except OSError:
+            except (OSError, UnicodeDecodeError):
                 return None
             return response
         return None
