@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## 0.15.1.0
+
+- Compatibility with Werkzeug 2.1. Use the eventlet server instead of
+  the Werkzeug development server.
+
 ## 0.15.0.1
 
 This release has no changes to features or usability. The only change is to include a file used by other package maintainers.
