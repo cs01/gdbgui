@@ -60,7 +60,7 @@ setup(
     },
     zip_safe=False,
     install_requires=distutils.text_file.TextFile(
-        filename="./requirements.in"
+        filename="./requirements.txt"
     ).readlines(),
     classifiers=[
         "Intended Audience :: Developers",

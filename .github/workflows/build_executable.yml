@@ -1,4 +1,4 @@
-name: Build native gdbgui executables
+name: Build native gdbgui executables with pyinstaller and pex
 
 on:
   pull_request:
@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: [3.9]
+        python-version: ["3.10"]
         include:
           - os: ubuntu-latest
             buildname: linux
@@ -33,7 +33,7 @@ jobs:
           python -m pip install nox
       - name: Compile ${{ matrix.buildname }} gdbgui executable
         run: |
-          nox --non-interactive --session build_executable_${{ matrix.buildname }}
+          nox --non-interactive --session build_executables_${{ matrix.buildname }}
       - name: Upload ${{ matrix.buildname }} executable
         # if: github.ref == 'refs/heads/master'
         uses: actions/upload-artifact@v2
