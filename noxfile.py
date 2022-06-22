@@ -8,7 +8,7 @@ import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.9"]
+python = ["3.10"]
 
 prettier_command = [
     "npx",
@@ -22,7 +22,7 @@ prettier_command = [
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = [
-    "black==21.12b0",
+    "black==22.3.0",
     "vulture",
     "flake8",
     "mypy==0.782",
@@ -129,6 +129,7 @@ def serve(session):
 
 @nox.session(reuse_venv=True)
 def build(session):
+    """Build python distribution (sdist and wheels)"""
     session.install(*publish_deps)
     session.run("rm", "-rf", "dist", "build", external=True)
     session.run("yarn", external=True)
@@ -136,6 +137,7 @@ def build(session):
     session.run("python", "setup.py", "--quiet", "sdist", "bdist_wheel")
     session.run("twine", "check", "dist/*")
     for built_package in glob.glob("dist/*"):
+        # ensure we can install the built distributions
         session.run("pip", "install", "--force-reinstall", built_package)
 
 
@@ -160,49 +162,51 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(reuse_venv=True)
-def build_executable_current_platform(session):
+@nox.session(reuse_venv=True, python="3.10")
+def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller>=4.5, <4.6")
+    session.install(".", "PyInstaller==5.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
 
 @nox.session(reuse_venv=True)
-def build_executable_mac(session):
+def build_executables_mac(session):
     if not platform.startswith("darwin"):
         raise Exception(f"Unexpected platform {platform}")
-    session.notify("build_executable_current_platform")
+    session.notify("build_executables_current_platform")
 
 
 @nox.session(reuse_venv=True)
-def build_executable_linux(session):
+def build_executables_linux(session):
     if not platform.startswith("linux"):
         raise Exception(f"Unexpected platform {platform}")
-    session.notify("build_executable_current_platform")
+    session.notify("build_executables_current_platform")
 
 
 @nox.session(reuse_venv=True)
 def build_executable_windows(session):
     if not platform.startswith("win32"):
         raise Exception(f"Unexpected platform {platform}")
-    session.notify("build_executable_current_platform")
+    session.notify("build_executables_current_platform")
 
 
-@nox.session(python=python)
+@nox.session
 def build_pex(session):
     """Builds a pex of gdbgui"""
     # NOTE: frontend must be built before running this
-    session.install("pex==2.1.45")
+    session.install("pex==2.1.93")
     pex_path = Path("build/executable/gdbgui.pex")
     session.run(
         "pex",
         ".",
-        "-c",
+        "--console-script",
         "gdbgui",
-        "-o",
+        "--output-file",
         str(pex_path),
+        "--sh-boot",
+        "--validate-entry-point",
         external=True,
     )
     checksum = hashlib.md5(pex_path.read_bytes()).hexdigest()

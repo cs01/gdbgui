@@ -4,6 +4,7 @@
 
 - Compatibility with Werkzeug 2.1. Use the eventlet server instead of
   the Werkzeug development server.
+- Use pinned requirements instead of abstract requirements to ensure reproducability of pip installs
 
 ## 0.15.0.1
 

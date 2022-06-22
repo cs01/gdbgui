@@ -95,9 +95,8 @@ def main():
             spec_path,
             "--distpath",
             distpath,
-            "--key",
-            "a5s1fe65aw41f54sa64v6b4ds98fhea98rhg4etj4et78ku4yu87mn",
-        ]
+        ],
+        check=True,
     )
     verify(binary_path, __version__)
     generate_md5(binary_path, distpath / f"{binary_name}.md5")
