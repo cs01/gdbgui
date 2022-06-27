@@ -188,7 +188,7 @@ def read_and_forward_gdb_and_pty_output():
     of gdb responses"""
 
     while True:
-        socketio.sleep(0.05)
+        socketio.sleep(0.08)
         debug_sessions_to_remove = []
         for debug_session, client_ids in manager.debug_session_to_client_ids.items():
             try:

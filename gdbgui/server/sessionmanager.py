@@ -167,7 +167,10 @@ class SessionManager(object):
 
     def disconnect_client(self, client_id: str):
         for debug_session, client_ids in self.debug_session_to_client_ids.items():
-            if client_id in client_ids:
-                client_ids.remove(client_id)
-                debug_session.remove_client(client_id)
-        self.remove_debug_sessions_with_no_clients()
+            # TODO remove
+            pass
+        #     if client_id in client_ids:
+        #         client_ids.remove(client_id)
+        #         debug_session.remove_client(client_id)
+
+        # self.remove_debug_sessions_with_no_clients()

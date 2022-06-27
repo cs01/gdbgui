@@ -245,7 +245,7 @@ export const useGlobalState = <T,>(
   const [reactValue, setReactValue] = useState<T>(store.data[key]);
 
   store.subscribe((changedKeys: Array<StoreKey>): void => {
-    if (changedKeys.indexOf(key) !== -1) {
+    if (changedKeys.includes(key)) {
       try {
         setReactValue(store.data[key]);
       } catch (e) {

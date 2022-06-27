@@ -22,6 +22,7 @@ flask==3.0.0
     #   flask-socketio
 flask-compress==1.10.1
     # via -r requirements.in
+<<<<<<< HEAD
 flask-socketio==5.3.6
     # via -r requirements.in
 greenlet==3.0.0
@@ -52,3 +53,27 @@ werkzeug==3.0.0
     # via flask
 wsproto==1.2.0
     # via simple-websocket
+=======
+flask-socketio==5.1.2
+    # via -r requirements.in
+importlib-metadata==4.12.0
+    # via flask
+itsdangerous==2.1.2
+    # via flask
+jinja2==3.1.2
+    # via flask
+markupsafe==2.1.1
+    # via jinja2
+pygdbmi==0.10.0.2
+    # via -r requirements.in
+pygments==2.12.0
+    # via -r requirements.in
+python-engineio==4.3.2
+    # via python-socketio
+python-socketio==5.6.0
+    # via flask-socketio
+werkzeug==2.1.2
+    # via flask
+zipp==3.8.0
+    # via importlib-metadata
+>>>>>>> f5edab6 (handle binary files, improve sytax highlighting)

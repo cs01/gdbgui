@@ -114,7 +114,7 @@ def docs(session):
 @nox.session(reuse_venv=True)
 def develop(session):
     session.install("-e", ".")
-    session.run("yarn", "--cwd", "./react-app" "install", external=True)
+    session.run("yarn", "--cwd", "./react-app", "install", external=True)
     print("Watching JavaScript file and Python files for changes")
     with subprocess.Popen(
         [

@@ -1,5 +1,7 @@
 ROOT:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 
+all: hello input debug_segfault threads sleeper
+
 hello: hello.c
 	gcc hello.c -o hello_c.a -std=c99 -g
 	@echo Run with gdbgui: gdbgui --args $(ROOT)/hello_c.a

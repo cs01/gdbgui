@@ -239,13 +239,14 @@ export function GdbguiEditor() {
 
   return (
     <MonacoEditor
-      height="calc(100% - 19px)" // By default, it fully fits with its parent
+      // height="calc(100% - 19px)" // By default, it fully fits with its parent
       theme={"vs-dark"}
-      language="c"
-      loading={<Loader />}
+      // language="c"
+      // loading={<Loader />}
+      path={sourcePath || ""}
       value={getSourceCode(sourceCodeState, sourcePath)}
       onMount={handleEditorDidMount}
-      options={{ glyphMargin: true }}
+      options={{ glyphMargin: true, wordWrap: "on" }}
     />
   );
 }

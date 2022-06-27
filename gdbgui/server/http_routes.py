@@ -1,6 +1,10 @@
 import json
 import logging
 import os
+from pathlib import Path
+import stat
+
+import chardet
 
 from flask import (
     Blueprint,
@@ -44,8 +48,12 @@ def read_file():
     if path and os.path.isfile(path):
         try:
             last_modified = os.path.getmtime(path)
-            with open(path, "r") as f:
-                raw_source_code_list = f.read().split("\n")
+            encoding = chardet.detect(open(path, "rb").read())["encoding"]
+            with open(path, "r", encoding=encoding, errors="replace") as f:
+                try:
+                    raw_source_code_list = f.read().split("\n")
+                except Exception as e:
+                    raw_source_code_list = [f"failed to read file: {e}"]
                 num_lines_in_file = len(raw_source_code_list)
                 end_line = min(
                     num_lines_in_file, end_line
@@ -73,10 +81,41 @@ def read_file():
             )
 
         except Exception as e:
-            return client_error({"message": "%s" % e})
+            return client_error({"message": "%s" % e.with_traceback()})
 
     else:
         return client_error({"message": "File not found: %s" % path})
+
+
+@blueprint.route("/read_dir", methods=["GET", "POST"])
+def read_dir():
+    """Read a file and return its contents as an array"""
+    data = request.get_json()
+    try:
+        path = data["path"]
+        p = Path(path)
+        if p.is_dir():
+            children = []
+            for x in p.iterdir():
+                if x.is_dir():
+                    children.append({"name": x.name, "type": "dir"})
+                else:
+                    try:
+                        is_executable = x.stat().st_mode & stat.S_IEXEC
+                    except Exception as e:
+                        # maybe symlink pointing to non-existen file
+                        is_executable = False
+                    children.append(
+                        {
+                            "name": x.name,
+                            "type": "file",
+                            "is_executable": is_executable,
+                        }
+                    )
+            return jsonify({"path": path, "children": children})
+        return client_error({"message": "Not a directory"})
+    except Exception as e:
+        return client_error({"message": "Failed to get directory contents"})
 
 
 @blueprint.route("/get_last_modified_unix_sec", methods=["GET"])
@@ -133,6 +172,7 @@ def get_initial_data():
             "remap_sources": current_app.config["remap_sources"],
             "signals": SIGNAL_NAME_TO_OBJ,
             "using_windows": USING_WINDOWS,
+            "working_directory": os.getcwd(),
         }
     )
     # return send_from_directory(STATIC_DIR, "index.html")
