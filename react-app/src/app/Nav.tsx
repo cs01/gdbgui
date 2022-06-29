@@ -34,9 +34,6 @@ export function Nav() {
               <div className="flex-1 flex items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex items-center">
                   <div className=" text-white text-xl">gdbgui</div>
-                  <div className="ml-2 h-7 align-top p-1 font-bold bg-purple-900 rounded">
-                    pro
-                  </div>
                   {/* shown on mobile, hidden on large? */}
                   {/* <img
                     className="block lg:hidden h-8 w-auto"

@@ -16,27 +16,33 @@ const normalColor = "text-gray-200";
 function File(props: { fullPath: string; fileName: string; isExecutable: boolean }) {
   const isHidden = props.fileName.startsWith(".");
   return (
-    <div className="flex items-center content-">
-      <div className="flex flex-grow hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden">
+    <div className="flex items-center text-sm align-middle">
+      <div className="flex flex-grow  hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden">
         <DocumentIcon
           className="icon "
           onClick={() => {
             FileOps.userSelectFileToView(props.fullPath, null);
           }}
         />
-        <div>
-          {props.isExecutable ? (
-            <button
-              title={`Debug this file ${props.fullPath}`}
-              onClick={() => {
-                store.set("userTargetInput", props.fullPath);
-              }}
-            >
-              <BeakerIcon className="icon text-red-600" />
-            </button>
-          ) : null}
+        {props.isExecutable ? (
+          <button
+            title={`Debug this file ${props.fullPath}`}
+            onClick={() => {
+              store.set("userTargetInput", props.fullPath);
+            }}
+            className="bg-purple-900 hover:bg-purple-600 rounded-md mr-2"
+          >
+            debug this file
+          </button>
+        ) : null}
+        <div
+          className={`${isHidden ? hiddenColor : normalColor} w-full`}
+          onClick={() => {
+            FileOps.userSelectFileToView(props.fullPath, null);
+          }}
+        >
+          {props.fileName}
         </div>
-        <div className={`${isHidden ? hiddenColor : normalColor}`}>{props.fileName}</div>
       </div>
     </div>
   );
@@ -125,7 +131,7 @@ export function Filesystem(props: { initialDir: string }) {
     </div>
   );
   return (
-    <div className="max-h-96 overflow-y-scroll">
+    <div className="max-h-96 overflow-y-scroll text-sm">
       {shouldShowMoreButton ? showMoreButton : null}
       <Folder key={startDir} name={startDir} path={startDir} />
     </div>
