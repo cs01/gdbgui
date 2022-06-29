@@ -50,35 +50,62 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
   }
 }
 
-monaco.languages.register({ id: "gdbguiVariableHover" });
+// const hoverProviderName = "gdbguiVariableHover";
+// monaco.languages.register({ id: hoverProviderName });
 
-const hoverProvider = {
-  provideHover: function (model: monaco.editor.ITextModel, position: monaco.Position) {
-    // return () => {
-    //   console.log(model);
-    //   console.log(position);
-    const value = model.getValue();
-    const word = model.getWordAtPosition(position);
-    console.log(value);
-    return {
-      range: new monaco.Range(
-        1,
-        word?.startColumn ?? 0,
-        model.getLineCount(),
-        word?.endColumn ?? 0
-      ),
-      contents: [
-        { value: "**SOURCE**" },
-        { value: "**SOURCE**" },
-        { value: "**SOURCE**" },
-      ],
-    };
-    // };
+// const hoverProvider = {
+//   provideHover: function (model: monaco.editor.ITextModel, position: monaco.Position) {
+//     // return () => {
+//     //   console.log(model);
+//     //   console.log(position);
+//     const value = model.getValue();
+//     const word = model.getWordAtPosition(position);
+//     console.log(value);
+//     return {
+//       range: new monaco.Range(
+//         1,
+//         word?.startColumn ?? 0,
+//         model.getLineCount(),
+//         word?.endColumn ?? 0
+//       ),
+//       contents: [
+//         { value: "**SOURCE**" },
+//         { value: "**SOURCE**" },
+//         { value: "**SOURCE**" },
+//       ],
+//     };
+//     // };
+//   },
+// };
+
+// monaco.languages.registerHoverProvider(hoverProviderName, hoverProvider);
+
+// monaco.languages.registerHoverProvider("mySpecialLanguage", {
+//   provideHover: function (model, position) {
+//     // Log the current word in the console, you probably want to do something else here.
+//     console.log(model.getWordAtPosition(position));
+//   },
+// });
+
+monaco.languages.register({ id: "myspecial" });
+monaco.languages.registerHoverProvider("myspecial", {
+  provideHover: function (model, position) {
+    alert(model.getWordAtPosition(position));
+    return null;
+    // // return fetch("../playground.html").then(function (res) {
+    // console.log("provider");
+    // return Promise.resolve({
+    //   range: new monaco.Range(
+    //     1,
+    //     1,
+    //     model.getLineCount(),
+    //     model.getLineMaxColumn(model.getLineCount())
+    //   ),
+    //   contents: [{ value: "**SOURCE**" }, { value: "```htmlasdfs\n```" }],
+    // });
+    // });
   },
-};
-
-monaco.languages.registerHoverProvider("gdbguiVariableHover", hoverProvider);
-
+});
 function highlightLine(
   editor: monaco.editor.IStandaloneCodeEditor,
   lineNumber: Nullable<string>,
@@ -117,57 +144,16 @@ function addBreakpointGlyphs(
   lastBreakpointGlyphs: React.MutableRefObject<Nullable<string[]>>
 ): void {
   const oldBreakpointGlyphs = lastBreakpointGlyphs.current ?? [];
-  const breakpointLines: { [key: number]: Nullable<GdbGuiBreakpoint> } = {};
-  for (const breakpoint of breakpoints) {
-    breakpointLines[breakpoint.line] = breakpoint;
-  }
-  // @ts-ignore
-  const lineCount = editor?.getModel().getLineCount();
-  console.error("got lines", lineCount);
-  // if (!_.isNumber(lineCount)) {
-  //   return;
-  // }
-  const newBreakpointGlyphs: monaco.editor.IModelDeltaDecoration[] = [];
-  // for (let lineNum = 1; lineNum++; lineNum <= 5) {
-  //   console.log(lineNum);
-  // }
-  //   const breakpoint = breakpointLines[lineNum];
-  //   if (breakpoint) {
-  //     newBreakpointGlyphs.push({
-  //       range: new monaco.Range(lineNum, 1, lineNum, 1),
-  //       options: {
-  //         isWholeLine: true,
-  //         glyphMarginClassName:
-  //           (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
-  //       },
-  //     });
-  //   } else {
-  //     newBreakpointGlyphs.push({
-  //       range: new monaco.Range(lineNum, 1, lineNum, 1),
-  //       options: {
-  //         isWholeLine: true,
-  //         glyphMarginClassName: "hover:bg-red-100 rounded ",
-  //       },
-  //     });
-  //   }
-  // }
-  // const linesWithBreakpoints = breakpoints.reduce(
-  //   (prev: { [key: number]: null }, breakpoint: GdbGuiBreakpoint) => {
-  //     pr;
-  //   },
-  //   {}
-  // );
-
-  // const newBreakpointGlyphs = breakpoints.map((breakpoint) => {
-  //   return {
-  //     range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
-  //     options: {
-  //       isWholeLine: true,
-  //       glyphMarginClassName:
-  //         (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded ",
-  //     },
-  //   };
-  // });
+  const newBreakpointGlyphs = breakpoints.map((breakpoint) => {
+    return {
+      range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
+      options: {
+        isWholeLine: true,
+        glyphMarginClassName:
+          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded-full ",
+      },
+    };
+  });
 
   lastBreakpointGlyphs.current = editor.deltaDecorations(
     oldBreakpointGlyphs,
@@ -242,7 +228,7 @@ export function GdbguiEditor() {
     <MonacoEditor
       // height="calc(100% - 19px)" // By default, it fully fits with its parent
       theme={"vs-dark"}
-      // language="c"
+      // language="myspecial"
       // loading={<Loader />}
       path={sourcePath || ""}
       value={getSourceCode(sourceCodeState, sourcePath)}
