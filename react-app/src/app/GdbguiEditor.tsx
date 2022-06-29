@@ -90,6 +90,7 @@ function highlightLine(
   }
   let endCol;
   const lineNumInt = parseInt(lineNumber);
+  editor.revealLine(lineNumInt);
   try {
     endCol = editor.getModel()?.getLineMaxColumn(lineNumInt);
   } catch (e) {
@@ -98,7 +99,6 @@ function highlightLine(
   if (!endCol) {
     endCol = 999;
   }
-  endCol = 999;
   const r = new monaco.Range(lineNumInt, 1, lineNumInt, endCol);
   lastHighlight.current = editor.deltaDecorations(lastHighlight.current ?? [], [
     {
@@ -189,8 +189,7 @@ export function GdbguiEditor() {
     "line_of_source_to_flash"
   );
   const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
-  const [revealLine, setRevealLine] =
-    useGlobalState<(lineNum: number) => void>("revealLine");
+  const [revealLine, setRevealLine] = useGlobalState<number>("revealLine");
 
   const lastHighlight = useRef<Nullable<string[]>>(null);
   const breakpointDecorations = useRef<Nullable<string[]>>(null);
@@ -211,11 +210,13 @@ export function GdbguiEditor() {
       editor,
       monaco,
     };
-    setRevealLine((lineNum: Nullable<number>) => {
-      if (lineNum) {
-        editor.revealLine(lineNum);
-      }
-    });
+    // setRevealLine((lineNum: Nullable<number>) => {
+    //   editor.revealLine(lineNum);
+    //   if (lineNum) {
+    //     console.log("revealing line");
+    //     editor.revealLine(lineNum);
+    //   }
+    // });
     editor.onMouseDown((e: monaco.editor.IEditorMouseEvent) => {
       // TODO handle gutter clicks
       //     https://microsoft.github.io/monaco-editor/playground.html#interacting-with-the-editor-listening-to-mouse-events shows mouseDown, mouseMove events over the glyph margin.

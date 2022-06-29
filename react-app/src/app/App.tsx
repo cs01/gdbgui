@@ -115,20 +115,16 @@ export function Gdbgui() {
 
         <ReflexElement minSize={10} className="pb-10">
           <ReflexContainer orientation="vertical">
-            <ReflexElement minSize={20} flex={0.1}>
+            <ReflexElement minSize={20}>
               <GdbTerminal />
             </ReflexElement>
 
-            <ReflexSplitter className="" />
-
-            <ReflexElement minSize={20}>
-              <GdbGuiTerminal />
+            <ReflexElement minSize={20} flex={0.3}>
+              <InferiorTerminal />
             </ReflexElement>
 
-            <ReflexSplitter className="" />
-
-            <ReflexElement minSize={20} flex={0.1}>
-              <InferiorTerminal />
+            <ReflexElement minSize={20} flex={0.3}>
+              <GdbGuiTerminal />
             </ReflexElement>
           </ReflexContainer>
         </ReflexElement>
