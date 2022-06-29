@@ -21,6 +21,8 @@ function classNames(...classes: any) {
   return classes.filter(Boolean).join(" ");
 }
 
+type DebugType = "Binary Executable" | "gdb server" | "attach to process";
+
 function convertUserInputToGdbInput(userInput: string): { binary: string; args: string } {
   const paramList = Util.stringToArraySafeQuotes(userInput);
   return { binary: paramList[0], args: paramList.slice(1).join(" ") };
@@ -51,83 +53,107 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
   const [userInput, setUserInput] =
     useGlobalState<typeof store.data.userTargetInput>("userTargetInput");
 
-  const targetTypes = [
-    {
-      name: "Binary Executable",
-      title:
-        "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes.",
-      placeholder: "/path/to/executable --myflag",
-      onClick: (userInput: string) => {
-        addUserInputToHistory(userInput);
-        const { binary, args } = convertUserInputToGdbInput(userInput);
-        Handlers.setGdbBinaryAndArguments(binary, args);
-      },
-      executeButton: (
-        <button
-          className="btn btn-purple mr-2 text-sm"
-          onClick={() => {
-            chosenOption.onClick(userInput);
-          }}
-          title="Load configured target and input"
-        >
-          Load
-        </button>
-      ),
-    },
-    {
-      name: "gdb server",
-      title: "Connect GDB to the remote target",
-      placeholder: "examples: 127.0.0.1:9999 | /dev/ttya",
-      onClick: (userInput: string) => {
-        addUserInputToHistory(userInput);
-        GdbApi.requestConnectToGdbserver(userInput);
-      },
-      executeButton: (
-        <button
-          className="btn btn-purple mr-2 text-sm whitespace-nowrap"
-          onClick={() => {
-            chosenOption.onClick(userInput);
-          }}
-          title="Load configured target and input"
-        >
-          Connect to server
-        </button>
-      ),
-    },
-    {
-      name: "Attach to process",
-      title:
-        "Attach to a process 'pid' or a file 'file' outside of GDB, or a thread group 'gid'. " +
-        "If attaching to a thread group, the id previously returned by " +
-        "‘-list-thread-groups --available’ must be used. " +
-        "Note: to do this, you usually need to run gdbgui as sudo.",
-      placeholder: "pid | gid | file",
-      onClick: (userInput: string) => {
-        addUserInputToHistory(userInput);
-        Handlers.attachToProcess(userInput);
-      },
-      executeButton: (
-        <button
-          className="btn btn-purple mr-2 text-sm whitespace-nowrap"
-          onClick={() => {
-            chosenOption.onClick(userInput);
-          }}
-          title="Load configured target and input"
-        >
-          Attach
-        </button>
-      ),
-    },
-  ];
+  // const configs = {
+  //   "Binary Executable": {
+  //     title:
+  //       "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes.",
+  //     placeholder: "/path/to/executable --myflag",
+  //     onClick: (userInput: string) => {
+  //       addUserInputToHistory(userInput);
+  //       const { binary, args } = convertUserInputToGdbInput(userInput);
+  //       Handlers.setGdbBinaryAndArguments(binary, args);
+  //     },
+  //     executeButton: (
+  //       <button
+  //         className="btn btn-purple mr-2 text-sm"
+  //         onClick={() => {
+  //           chosenConfigName.onClick(userInput);
+  //         }}
+  //         title="Load configured target and input"
+  //       >
+  //         Load
+  //       </button>
+  //     ),
+  //   },
+  // };
+  // const targetTypes = [
+  //   {
+  //     name: "Binary Executable",
+  //     title:
+  //       "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes.",
+  //     placeholder: "/path/to/executable --myflag",
+  //     onClick: (userInput: string) => {
+  //       addUserInputToHistory(userInput);
+  //       const { binary, args } = convertUserInputToGdbInput(userInput);
+  //       Handlers.setGdbBinaryAndArguments(binary, args);
+  //     },
+  //     executeButton: (
+  //       <button
+  //         className="btn btn-purple mr-2 text-sm"
+  //         onClick={() => {
+  //           chosenOption.onClick(userInput);
+  //         }}
+  //         title="Load configured target and input"
+  //       >
+  //         Load
+  //       </button>
+  //     ),
+  //   },
+  //   {
+  //     name: "gdb server",
+  //     title: "Connect GDB to the remote target",
+  //     placeholder: "examples: 127.0.0.1:9999 | /dev/ttya",
+  //     onClick: (userInput: string) => {
+  //       addUserInputToHistory(userInput);
+  //       GdbApi.requestConnectToGdbserver(userInput);
+  //     },
+  //     executeButton: (
+  //       <button
+  //         className="btn btn-purple mr-2 text-sm whitespace-nowrap"
+  //         onClick={() => {
+  //           chosenOption.onClick(userInput);
+  //         }}
+  //         title="Load configured target and input"
+  //       >
+  //         Connect to server
+  //       </button>
+  //     ),
+  //   },
+  //   {
+  //     name: "Attach to process",
+  //     title:
+  //       "Attach to a process 'pid' or a file 'file' outside of GDB, or a thread group 'gid'. " +
+  //       "If attaching to a thread group, the id previously returned by " +
+  //       "‘-list-thread-groups --available’ must be used. " +
+  //       "Note: to do this, you usually need to run gdbgui as sudo.",
+  //     placeholder: "pid | gid | file",
+  //     onClick: (userInput: string) => {
+  //       addUserInputToHistory(userInput);
+  //       Handlers.attachToProcess(userInput);
+  //     },
+  //     executeButton: (
+  //       <button
+  //         className="btn btn-purple mr-2 text-sm whitespace-nowrap"
+  //         onClick={() => {
+  //           chosenOption.onClick(userInput);
+  //         }}
+  //         title="Load configured target and input"
+  //       >
+  //         Attach
+  //       </button>
+  //     ),
+  //   },
+  // ];
+
   const pastBinariesId = "past-binaries";
-  const [chosenOption, setChosenOption] = useState(targetTypes[0]);
+  const [debugType, setDebugType] = useState<DebugType>("Binary Executable");
   return (
     <div className="w-full align-middle content-center flex h-auto my-2 items-start ">
       <Menu as="div" className="ml-2 mr-1 inline-block text-left z-10 ">
         <div className="bg-gray-800 hover:bg-gray-800 focus:ring-purple-200 focus:ring-2">
           <Menu.Button className="inline-flex whitespace-nowrap justify-center w-full rounded-l-sm shadow-sm pl-1 pr-4 py-2 text-sm font-medium  focus:outline-none ">
             <ChevronDownIcon className="mr-1 ml-1 h-5 w-5" aria-hidden="true" />
-            Target Type: &nbsp;<span className="font-bold">{chosenOption.name}</span>
+            Target Type: &nbsp;<span className="font-bold">{debugType}</span>
           </Menu.Button>
         </div>
 
@@ -142,29 +168,22 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
         >
           <Menu.Items className="origin-top-left bg-gray-800 absolute left-0 mt-2 w-56 rounded-md shadow-lg  ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="py-2">
-              {targetTypes.map((option) => {
-                return (
-                  <Menu.Item key={option.name}>
-                    {({ active }) => (
-                      <button
-                        className={classNames(
-                          active ? "font-bold" : "",
-                          "block px-4 py-2 text-sm w-full text-left whitespace-nowrap"
-                        )}
-                        title={option.title}
-                        onClick={() => {
-                          setChosenOption(
-                            targetTypes.find((target) => target.name === option.name) ??
-                              targetTypes[0]
-                          );
-                        }}
-                      >
-                        {option.name}
-                      </button>
-                    )}
-                  </Menu.Item>
-                );
-              })}
+              <Menu.Item key="binary executable">
+                <button
+                  className={classNames(
+                    debugType === "Binary Executable" ? "font-bold" : "",
+                    "block px-4 py-2 text-sm w-full text-left whitespace-nowrap"
+                  )}
+                  title={
+                    "Loads the binary and any arguments present in the input to the right. Backslashes are treated as escape characters. Windows users can either use two backslashes in paths, or forward slashes."
+                  }
+                  onClick={() => {
+                    setDebugType("Binary Executable");
+                  }}
+                >
+                  Binary Executable
+                </button>
+              </Menu.Item>
             </div>
           </Menu.Items>
         </Transition>
@@ -176,23 +195,39 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
           "text-sm"
         }
         list={pastBinariesId}
-        placeholder={chosenOption.placeholder}
+        placeholder={"/path/to/executable --myflag"}
         onChange={(e) => {
           setUserInput(e.target.value);
         }}
         onKeyUp={(e) => {
           if (e.code?.toLocaleLowerCase() === "enter") {
-            chosenOption.onClick(userInput);
+            addUserInputToHistory(userInput);
+            const { binary, args } = convertUserInputToGdbInput(userInput);
+            Handlers.setGdbBinaryAndArguments(binary, args);
           }
         }}
-        defaultValue={userInput}
+        value={userInput}
+        // not sure if we need this?
+        // defaultValue={userInput}
       />
       <datalist id={pastBinariesId}>
         {getInputHistory().map((userInput) => (
           <option key={userInput}>{userInput}</option>
         ))}
       </datalist>
-      {chosenOption.executeButton}
+      {
+        <button
+          className="btn btn-purple mr-2 text-sm"
+          onClick={() => {
+            addUserInputToHistory(userInput);
+            const { binary, args } = convertUserInputToGdbInput(userInput);
+            Handlers.setGdbBinaryAndArguments(binary, args);
+          }}
+          title="Load configured target and input"
+        >
+          Load
+        </button>
+      }
       <DebugControls />
     </div>
   );
