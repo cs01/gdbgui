@@ -45,46 +45,52 @@ def read_file():
     start_line = max(1, start_line)  # make sure it's not negative
     end_line = int(data["end_line"])
 
-    if path and os.path.isfile(path):
-        try:
-            last_modified = os.path.getmtime(path)
-            encoding = chardet.detect(open(path, "rb").read())["encoding"]
-            with open(path, "r", encoding=encoding, errors="replace") as f:
-                try:
-                    raw_source_code_list = f.read().split("\n")
-                except Exception as e:
-                    raw_source_code_list = [f"failed to read file: {e}"]
-                num_lines_in_file = len(raw_source_code_list)
-                end_line = min(
-                    num_lines_in_file, end_line
-                )  # make sure we don't try to go too far
-
-                # if leading lines are '', then the lexer will strip them out, but we want
-                # to preserve blank lines. Insert a space whenever we find a blank line.
-                for i in range((start_line - 1), (end_line)):
-                    if raw_source_code_list[i] == "":
-                        raw_source_code_list[i] = " "
-                raw_source_code_lines_of_interest = raw_source_code_list[
-                    (start_line - 1) : (end_line)
-                ]
-                source_code = raw_source_code_lines_of_interest
-
-            return jsonify(
-                {
-                    "source_code_array": source_code,
-                    "path": path,
-                    "last_modified_unix_sec": last_modified,
-                    "start_line": start_line,
-                    "end_line": end_line,
-                    "num_lines_in_file": num_lines_in_file,
-                }
-            )
-
-        except Exception as e:
-            return client_error({"message": "%s" % e.with_traceback()})
-
-    else:
+    if not path or not os.path.isfile(path):
         return client_error({"message": "File not found: %s" % path})
+    try:
+        last_modified = os.path.getmtime(path)
+        raw_data = open(path, "rb").read()
+        detect = chardet.detect(raw_data[0 : 10**5])
+        encoding = detect["encoding"]
+        if encoding is None:
+            raw_source_code_list = [f"{path!r} is a binary file"]
+        else:
+            try:
+                raw_source_code_list = raw_data.decode(
+                    encoding, errors="replace"
+                ).split("\n")
+            except Exception as e:
+                raw_source_code_list = [
+                    f"failed to decode file {path!r}. Detected encoding {encoding}: {e}"
+                ]
+        num_lines_in_file = len(raw_source_code_list)
+        end_line = min(
+            num_lines_in_file, end_line
+        )  # make sure we don't try to go too far
+
+        # if leading lines are '', then the lexer will strip them out, but we want
+        # to preserve blank lines. Insert a space whenever we find a blank line.
+        for i in range((start_line - 1), (end_line)):
+            if raw_source_code_list[i] == "":
+                raw_source_code_list[i] = " "
+        raw_source_code_lines_of_interest = raw_source_code_list[
+            (start_line - 1) : (end_line)
+        ]
+        source_code = raw_source_code_lines_of_interest
+
+        return jsonify(
+            {
+                "source_code_array": source_code,
+                "path": path,
+                "last_modified_unix_sec": last_modified,
+                "start_line": start_line,
+                "end_line": end_line,
+                "num_lines_in_file": num_lines_in_file,
+            }
+        )
+
+    except Exception as e:
+        return client_error({"message": "%s" % e.with_traceback()})
 
 
 @blueprint.route("/read_dir", methods=["GET", "POST"])
@@ -175,37 +181,6 @@ def get_initial_data():
             "working_directory": os.getcwd(),
         }
     )
-    # return send_from_directory(STATIC_DIR, "index.html")
-
-
-#     return app.send_static_file(path)
-
-
-#     gdbpid = request.args.get("gdbpid", 0)
-#     gdb_command = request.args.get("gdb_command", current_app.config["gdb_command"])
-#     add_csrf_token_to_session()
-
-#     THEMES = ["monokai", "light"]
-#     initial_data = {
-#         "csrf_token": session["csrf_token"],
-#         "gdbgui_version": __version__,
-#         "gdbpid": gdbpid,
-#         "gdb_command": gdb_command,
-# "initial_binary_and_args": current_app.config["initial_binary_and_args"],
-# "project_home": current_app.config["project_home"],
-# "remap_sources": current_app.config["remap_sources"],
-#         "themes": THEMES,
-# "signals": SIGNAL_NAME_TO_OBJ,
-# "using_windows": USING_WINDOWS,
-#     }
-
-#     return render_template(
-#         "gdbgui.html",
-#         version=__version__,
-#         debug=current_app.debug,
-#         initial_data=initial_data,
-#         themes=THEMES,
-#     )
 
 
 @blueprint.route("/dashboard_data", methods=["GET"])
@@ -226,10 +201,7 @@ def kill_session():
         manager.remove_debug_session_by_pid(pid)
         return jsonify({"success": True})
     else:
-        return Response(
-            "Missing required parameter: gdbpid",
-            401,
-        )
+        return Response("Missing required parameter: gdbpid", 401, debug)
 
 
 @blueprint.route("/send_signal_to_pid", methods=["POST"])
