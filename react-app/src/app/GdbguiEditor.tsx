@@ -175,6 +175,7 @@ export function GdbguiEditor() {
     "line_of_source_to_flash"
   );
   const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
+  const breakpointsCurrentFile = breakpoints.filter((b) => b.fullname === sourcePath);
   const [revealLine, setRevealLine] = useGlobalState<number>("revealLine");
 
   const lastHighlight = useRef<Nullable<string[]>>(null);
@@ -184,7 +185,7 @@ export function GdbguiEditor() {
     highlightLine(monacoObjects.current?.editor, flashLine, lastHighlight);
     addBreakpointGlyphs(
       monacoObjects.current?.editor,
-      breakpoints,
+      breakpointsCurrentFile,
       breakpointDecorations
     );
   }
