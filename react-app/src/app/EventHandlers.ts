@@ -98,7 +98,7 @@ const Handlers = {
       console.error("Pty not available. New entries are:", entries);
     }
   },
-  add_gdb_response_to_console(mi_obj: any) {
+  addGdbResponseToConsole(mi_obj: any) {
     if (!mi_obj) {
       return;
     }

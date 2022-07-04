@@ -2,6 +2,16 @@ import { Terminal } from "xterm";
 import { GdbWebsocket } from "./Websocket";
 import { DebugProtocol } from "vscode-debugprotocol";
 
+export type SourceFile = {
+  fullname: string;
+  source_code_obj: any;
+  assembly: Object;
+  sourceCode: Array<string>;
+  last_modified_unix_sec: number;
+  num_lines_in_file: number;
+  exists: boolean;
+};
+
 export type GdbBreakpoint = {
   addr: string; //"0x0000555555555228";
   disp: string; // "keep";
@@ -190,7 +200,7 @@ export type GlobalState = {
   line_of_source_to_flash: Nullable<string>;
   current_assembly_address: Nullable<string>;
   make_current_line_visible: boolean;
-  cached_source_files: any[]; // list with keys fullname, source_code
+  cached_source_files: SourceFile[]; // list with keys fullname, source_code
   disassembly_for_missing_file: any[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
   source_code_state: string;

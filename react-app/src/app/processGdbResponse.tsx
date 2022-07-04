@@ -52,7 +52,7 @@ function handleGdbMessage(r: GdbMiMessage) {
       FileOps.fetch_disassembly_for_missing_file_failed();
     } else if (r.payload && !Array.isArray(r.payload) && r.payload.msg) {
       if (r.payload.msg.startsWith("Unable to find Mach task port")) {
-        Handlers.add_gdb_response_to_console(r);
+        Handlers.addGdbResponseToConsole(r);
         Handlers.addGdbGuiConsoleEntries(
           <React.Fragment>
             <span>Follow </span>
@@ -226,7 +226,7 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
   } else if (r.type === "result" && r.message === "error") {
     // render it in the status bar, and don't render the last response in the array as it does by default
-    Handlers.add_gdb_response_to_console(r);
+    Handlers.addGdbResponseToConsole(r);
 
     // we tried to load a binary, but gdb couldn't find it
     if (

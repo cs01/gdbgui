@@ -4,6 +4,7 @@ import constants from "./constants";
 import Handlers from "./EventHandlers";
 import { debug } from "./InitialData";
 import _ from "lodash";
+import { SourceFile } from "./types";
 
 let debugPrint: any;
 if (debug) {
@@ -13,16 +14,6 @@ if (debug) {
     // stubbed out
   };
 }
-
-export type SourceFile = {
-  fullname: string;
-  source_code_obj: any;
-  assembly: Object;
-  sourceCode: Array<string>;
-  last_modified_unix_sec: number;
-  num_lines_in_file: number;
-  exists: boolean;
-};
 
 const FileFetcher: {
   _isFetching: boolean;
@@ -416,7 +407,7 @@ const FileOps = {
     const cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
     if (cached_file_obj === null) {
       // nothing cached in the front end, add a new entry
-      const new_source_file: SourceFile = {
+      const newSourceFile: SourceFile = {
         fullname: fullname,
         source_code_obj: source_code_obj,
         sourceCode,
@@ -427,7 +418,7 @@ const FileOps = {
       };
       const cachedSourceFiles = store.data.cached_source_files;
 
-      cachedSourceFiles.push(new_source_file);
+      cachedSourceFiles.push(newSourceFile);
       store.set<typeof store.data.cached_source_files>(
         "cached_source_files",
         cachedSourceFiles
@@ -435,7 +426,7 @@ const FileOps = {
       FileOps.warningShownForOldBinary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
-        new_source_file.last_modified_unix_sec
+        newSourceFile.last_modified_unix_sec
       );
     } else {
       // mutate existing source code object by adding keys (lines) of the new source code object
@@ -497,57 +488,6 @@ const FileOps = {
   clear_cached_source_files: function () {
     store.set<typeof store.data.cached_source_files>("cached_source_files", []);
   },
-  // fetch_more_source_at_beginning() {
-  //   const fullname = store.data.fullname_to_render;
-  //   const center_on_line = store.data.source_linenum_to_display_start - 1;
-  //   // store.set('source_code_infinite_scrolling', true)
-  //   store.set(
-  //     "source_linenum_to_display_start",
-  //     Math.max(
-  //       store.data.source_linenum_to_display_start -
-  //         Math.floor(store.data.max_lines_of_code_to_fetch / 2),
-  //       1
-  //     )
-  //   );
-  //   store.set(
-  //     "source_linenum_to_display_end",
-  //     Math.ceil(
-  //       store.data.source_linenum_to_display_start +
-  //         store.data.max_lines_of_code_to_fetch
-  //     )
-  //   );
-  //   Actions.viewFile(fullname, center_on_line);
-  //   FileFetcher.fetch(
-  //     fullname,
-  //     store.data.source_linenum_to_display_start,
-  //     store.data.source_linenum_to_display_end
-  //   );
-  // },
-  // fetch_more_source_at_end() {
-  //   store.set<typeof store.data.source_code_infinite_scrolling>("source_code_infinite_scrolling", true);
-
-  //   const fullname = store.data.fullname_to_render;
-  //   let end_line =
-  //     store.data.source_linenum_to_display_end +
-  //     Math.ceil(store.data.max_lines_of_code_to_fetch / 2);
-
-  //   const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
-  //   if (source_file_obj) {
-  //     // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
-  //     end_line = Math.min(end_line, FileOps.get_num_lines_in_file(fullname)); // don't go past the end of the line
-  //   }
-
-  //   let start_line = end_line - store.data.max_lines_of_code_to_fetch;
-  //   start_line = Math.max(1, start_line);
-  //   store.set<typeof store.data.source_linenum_to_display_end>("source_linenum_to_display_end", end_line);
-  //   store.set<typeof store.data.source_linenum_to_display_start>("source_linenum_to_display_start", start_line);
-
-  //   FileFetcher.fetch(
-  //     fullname,
-  //     store.data.source_linenum_to_display_start,
-  //     store.data.source_linenum_to_display_end
-  //   );
-  // },
   is_missing_file: function (fullname: any) {
     return store.data.missing_files.indexOf(fullname) !== -1;
   },

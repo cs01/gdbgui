@@ -158,7 +158,7 @@ const VarCreator = {
     if (VarCreator.expr_type === "hover") {
       // do nothing
     } else {
-      Handlers.add_gdb_response_to_console(r);
+      Handlers.addGdbResponseToConsole(r);
     }
     VarCreator._fetch_complete();
   },
