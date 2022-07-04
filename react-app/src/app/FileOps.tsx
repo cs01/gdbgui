@@ -166,7 +166,7 @@ const FileOps = {
         "files_being_fetched",
         "fullname_to_render",
         "line_of_source_to_flash",
-        "cached_source_files",
+        "cachedSourceFiles",
         "max_lines_of_code_to_fetch",
       ],
       FileOps._storeChangeCallback
@@ -233,7 +233,7 @@ const FileOps = {
   getStartAndEndLines(fullname: string, requireCachedLineNum: number | undefined) {
     let startLine;
     let endLine;
-    const sourceFileObj = FileOps.get_source_file_obj_from_cache(fullname);
+    const sourceFileObj = FileOps.getSourceFileFromFullname(fullname);
     if (!requireCachedLineNum) {
       requireCachedLineNum = 1;
     }
@@ -327,7 +327,7 @@ const FileOps = {
   },
   get_num_lines_in_file: function (fullname: any, source_file_obj: any) {
     if (!source_file_obj) {
-      source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+      source_file_obj = FileOps.getSourceFileFromFullname(fullname);
     }
     if (!source_file_obj) {
       console.error("Developer error: expected to find file object for " + fullname);
@@ -340,7 +340,7 @@ const FileOps = {
     return source_file_obj.num_lines_in_file;
   },
   lines_are_cached: function (fullname: any, start_line: any, end_line: any) {
-    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.getSourceFileFromFullname(fullname);
     if (!source_file_obj) {
       return false;
     }
@@ -363,7 +363,7 @@ const FileOps = {
   },
   lineIsCached: function (fullname: any, linenum: any, source_file_obj?: any) {
     if (!source_file_obj) {
-      source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+      source_file_obj = FileOps.getSourceFileFromFullname(fullname);
     }
     return (
       source_file_obj &&
@@ -372,24 +372,22 @@ const FileOps = {
     );
   },
   get_line_from_file: function (fullname: any, linenum: any) {
-    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.getSourceFileFromFullname(fullname);
     if (!source_file_obj) {
       return null;
     }
     return source_file_obj.source_code_obj[linenum];
   },
   assembly_is_cached: function (fullname: any) {
-    const source_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const source_file_obj = FileOps.getSourceFileFromFullname(fullname);
     return (
       source_file_obj &&
       source_file_obj.assembly &&
       Object.keys(source_file_obj.assembly).length
     );
   },
-  get_source_file_obj_from_cache: function (
-    fullname: Nullable<string>
-  ): Nullable<SourceFile> {
-    const cached_files = store.data.cached_source_files;
+  getSourceFileFromFullname: function (fullname: Nullable<string>): Nullable<SourceFile> {
+    const cached_files = store.data.cachedSourceFiles;
     for (const sf of cached_files) {
       if (sf.fullname === fullname) {
         return sf;
@@ -404,7 +402,7 @@ const FileOps = {
     num_lines_in_file: any,
     sourceCode: Array<string>
   ) {
-    const cached_file_obj = FileOps.get_source_file_obj_from_cache(fullname);
+    const cached_file_obj = FileOps.getSourceFileFromFullname(fullname);
     if (cached_file_obj === null) {
       // nothing cached in the front end, add a new entry
       const newSourceFile: SourceFile = {
@@ -416,11 +414,11 @@ const FileOps = {
         num_lines_in_file: num_lines_in_file,
         exists: true,
       };
-      const cachedSourceFiles = store.data.cached_source_files;
+      const cachedSourceFiles = store.data.cachedSourceFiles;
 
       cachedSourceFiles.push(newSourceFile);
-      store.set<typeof store.data.cached_source_files>(
-        "cached_source_files",
+      store.set<typeof store.data.cachedSourceFiles>(
+        "cachedSourceFiles",
         cachedSourceFiles
       );
       FileOps.warningShownForOldBinary = false;
@@ -431,9 +429,9 @@ const FileOps = {
     } else {
       // mutate existing source code object by adding keys (lines) of the new source code object
       Object.assign(cached_file_obj.source_code_obj, source_code_obj);
-      store.set<typeof store.data.cached_source_files>(
-        "cached_source_files",
-        store.data.cached_source_files
+      store.set<typeof store.data.cachedSourceFiles>(
+        "cachedSourceFiles",
+        store.data.cachedSourceFiles
       );
     }
   },
@@ -474,24 +472,24 @@ const FileOps = {
       }
     }
   },
-  get_cached_assembly_for_file: function (fullname: any) {
-    for (const file of store.data.cached_source_files) {
+  getCachedAssemblyForFile: function (fullname: string) {
+    for (const file of store.data.cachedSourceFiles) {
       if (file.fullname === fullname) {
         return file.assembly;
       }
     }
     return [];
   },
-  refresh_cached_source_files: function () {
-    FileOps.clear_cached_source_files();
+  refresh_cachedSourceFiles: function () {
+    FileOps.clear_cachedSourceFiles();
   },
-  clear_cached_source_files: function () {
-    store.set<typeof store.data.cached_source_files>("cached_source_files", []);
+  clear_cachedSourceFiles: function () {
+    store.set<typeof store.data.cachedSourceFiles>("cachedSourceFiles", []);
   },
-  is_missing_file: function (fullname: any) {
+  is_missing_file: function (fullname: string) {
     return store.data.missing_files.indexOf(fullname) !== -1;
   },
-  add_missing_file: function (fullname: any) {
+  add_missing_file: function (fullname: string) {
     const missing_files = store.data.missing_files;
     missing_files.push(fullname);
     store.set<typeof store.data.missing_files>("missing_files", missing_files);
@@ -615,8 +613,8 @@ const FileOps = {
       assembly_to_save[parseInt(obj.line)] = obj.line_asm_insn;
     }
 
-    const cached_source_files = store.data.cached_source_files;
-    for (const cached_file of cached_source_files) {
+    const cachedSourceFiles = store.data.cachedSourceFiles;
+    for (const cached_file of cachedSourceFiles) {
       if (cached_file.fullname === fullname) {
         cached_file.assembly = Object.assign(cached_file.assembly, assembly_to_save);
 
@@ -632,9 +630,9 @@ const FileOps = {
             }
           }
         }
-        store.set<typeof store.data.cached_source_files>(
-          "cached_source_files",
-          cached_source_files
+        store.set<typeof store.data.cachedSourceFiles>(
+          "cachedSourceFiles",
+          cachedSourceFiles
         );
         break;
       }

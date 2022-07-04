@@ -14,7 +14,7 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
   switch (sourceCodeState) {
     case states.ASSM_AND_SOURCE_CACHED: // fallthrough
     case states.SOURCE_CACHED: {
-      const obj = FileOps.get_source_file_obj_from_cache(sourcePath);
+      const obj = FileOps.getSourceFileFromFullname(sourcePath);
       if (!obj) {
         console.error("expected to find source file");
         return "error";

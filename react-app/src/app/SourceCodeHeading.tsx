@@ -32,7 +32,7 @@ class SourceCodeHeading extends React.Component<{}, State> {
     let num_lines = 0;
     if (
       this.state.fullname_to_render &&
-      FileOps.get_source_file_obj_from_cache(this.state.fullname_to_render)
+      FileOps.getSourceFileFromFullname(this.state.fullname_to_render)
     ) {
       // @ts-expect-error ts-migrate(2554) FIXME: Expected 2 arguments, but got 1.
       num_lines = FileOps.get_num_lines_in_file(this.state.fullname_to_render);

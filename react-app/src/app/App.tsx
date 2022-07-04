@@ -18,6 +18,7 @@ import { GdbguiEditor } from "./GdbguiEditor";
 import { Footer } from "./Footer";
 import { GdbWebsocket } from "./Websocket";
 import "react-reflex/styles.css";
+import { SourceFileTabs } from "./SourceFileTabs";
 
 export function Gdbgui() {
   const [initialData, setInitialData] = useState<Nullable<InitialData>>(null);
@@ -94,6 +95,7 @@ export function Gdbgui() {
             style={{ paddingTop: "92px" }}
           >
             <ReflexElement className="left-pane" flex={0.6} minSize={100}>
+              <SourceFileTabs />
               <GdbguiEditor />
             </ReflexElement>
 

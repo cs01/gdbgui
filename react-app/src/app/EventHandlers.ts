@@ -206,13 +206,13 @@ const Handlers = {
       "disassembly_for_missing_file",
       []
     );
-    const cached_source_files = store.data.cached_source_files;
-    for (const file of cached_source_files) {
+    const cachedSourceFiles = store.data.cachedSourceFiles;
+    for (const file of cachedSourceFiles) {
       file.assembly = {};
     }
-    store.set<typeof store.data.cached_source_files>(
-      "cached_source_files",
-      cached_source_files
+    store.set<typeof store.data.cachedSourceFiles>(
+      "cachedSourceFiles",
+      cachedSourceFiles
     );
   },
   update_max_lines_of_code_to_fetch(new_value: any) {

@@ -55,7 +55,7 @@ const initialGlobalState: GlobalState = {
   current_assembly_address: null,
   // rendered_source: {},
   make_current_line_visible: false, // set to true when source code window should jump to current line
-  cached_source_files: [], // list with keys fullname, source_code
+  cachedSourceFiles: [], // list with keys fullname, source_code
   disassembly_for_missing_file: [], // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: [], // files that were attempted to be fetched but did not exist on the local filesystem
   source_code_state: constants.source_code_states.NONE_AVAILABLE,
