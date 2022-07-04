@@ -86,6 +86,7 @@ def read_file():
                 "start_line": start_line,
                 "end_line": end_line,
                 "num_lines_in_file": num_lines_in_file,
+                "encoding": encoding,
             }
         )
 
