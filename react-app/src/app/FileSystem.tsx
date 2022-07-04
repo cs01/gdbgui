@@ -19,22 +19,11 @@ function File(props: { fullPath: string; fileName: string; isExecutable: boolean
     <div className="flex items-center text-sm align-middle">
       <div className="flex flex-grow  hover:bg-gray-900 cursor-pointer items-center whitespace-nowrap overflow-x-hidden">
         <DocumentIcon
-          className="icon "
+          className="icon h-full"
           onClick={() => {
             FileOps.userSelectFileToView(props.fullPath, null);
           }}
         />
-        {props.isExecutable ? (
-          <button
-            title={`Debug this file ${props.fullPath}`}
-            onClick={() => {
-              store.set("userTargetInput", props.fullPath);
-            }}
-            className="bg-purple-900 hover:bg-purple-600 rounded-md mr-2"
-          >
-            debug this file
-          </button>
-        ) : null}
         <div
           className={`${isHidden ? hiddenColor : normalColor} w-full`}
           onClick={() => {
@@ -42,7 +31,18 @@ function File(props: { fullPath: string; fileName: string; isExecutable: boolean
           }}
         >
           {props.fileName}
-        </div>
+        </div>{" "}
+        {props.isExecutable ? (
+          <button
+            title={`Debug this file ${props.fullPath}`}
+            onClick={() => {
+              store.set("userTargetInput", props.fullPath);
+            }}
+            className="bg-purple-900 p-1 hover:bg-purple-600 rounded-md mr-2"
+          >
+            debug this file
+          </button>
+        ) : null}
       </div>
     </div>
   );
