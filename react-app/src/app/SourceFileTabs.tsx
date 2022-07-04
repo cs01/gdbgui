@@ -41,7 +41,7 @@ export function SourceFileTabs() {
     useGlobalValue<typeof store.data.fullname_to_render>("fullname_to_render");
 
   return (
-    <div className="flex-nowrap flex h-8">
+    <div className="flex-nowrap flex h-8 w-full">
       {sourceFiles.map((sf) => (
         <SourceFileTab
           key={sf.fullname}

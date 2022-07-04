@@ -10,6 +10,7 @@ export type SourceFile = {
   last_modified_unix_sec: number;
   num_lines_in_file: number;
   exists: boolean;
+  encoding: string;
 };
 
 export type GdbBreakpoint = {

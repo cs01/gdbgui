@@ -84,6 +84,7 @@ const FileFetcher: {
           last_modified_unix_sec: number;
           source_code_array: Array<string>;
           num_lines_in_file: number;
+          encoding: string;
         } = await response.json();
 
         const sourceCodeObj: { [lineNum: number]: string } = {};
@@ -93,12 +94,13 @@ const FileFetcher: {
           linenum++;
         }
 
-        FileOps.add_source_file_to_cache(
+        FileOps.addSourceFileToCache(
           fullname,
           sourceCodeObj,
           responseJson.last_modified_unix_sec,
           responseJson.num_lines_in_file,
-          responseJson.source_code_array
+          responseJson.source_code_array,
+          responseJson.encoding
         );
       } catch (e) {
         handleError();
@@ -395,12 +397,13 @@ const FileOps = {
     }
     return null;
   },
-  add_source_file_to_cache: function (
-    fullname: any,
+  addSourceFileToCache: function (
+    fullname: string,
     source_code_obj: any,
-    last_modified_unix_sec: any,
-    num_lines_in_file: any,
-    sourceCode: Array<string>
+    last_modified_unix_sec: number,
+    num_lines_in_file: number,
+    sourceCode: Array<string>,
+    encoding: string
   ) {
     const cached_file_obj = FileOps.getSourceFileFromFullname(fullname);
     if (cached_file_obj === null) {
@@ -413,14 +416,14 @@ const FileOps = {
         last_modified_unix_sec: last_modified_unix_sec,
         num_lines_in_file: num_lines_in_file,
         exists: true,
+        encoding,
       };
       const cachedSourceFiles = store.data.cachedSourceFiles;
 
       cachedSourceFiles.push(newSourceFile);
-      store.set<typeof store.data.cachedSourceFiles>(
-        "cachedSourceFiles",
-        cachedSourceFiles
-      );
+      store.set<typeof store.data.cachedSourceFiles>("cachedSourceFiles", [
+        ...cachedSourceFiles,
+      ]);
       FileOps.warningShownForOldBinary = false;
       FileOps.show_modal_if_file_modified_after_binary(
         fullname,
