@@ -7,10 +7,8 @@ import React, { ReactNode, useLayoutEffect, useState } from "react";
 
 import Breakpoints, { BreakpointsFn } from "./Breakpoints";
 import constants from "./constants";
-import Expressions from "./Expressions";
 import { GdbMiOutput } from "./GdbMiOutput";
 import { Watch } from "./Watch";
-import InferiorProgramInfo from "./InferiorProgramInfo";
 import { Locals } from "./Locals";
 import { Memory } from "./Memory";
 import { Registers } from "./Registers";

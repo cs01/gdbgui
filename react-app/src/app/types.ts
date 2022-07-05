@@ -26,9 +26,11 @@ export type GdbBreakpoint = {
   "thread-groups": Array<string>; // ["i1"];
   times: string; // "0";
   type: string; // "breakpoint";
+  cond?: string; // i == 0
 };
 
 export type GdbGuiBreakpoint = {
+  cond?: string;
   addr: string;
   disp: string;
   enabled: "y" | "n";

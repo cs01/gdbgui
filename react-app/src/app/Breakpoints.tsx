@@ -47,53 +47,18 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
   const [breakpointCondition, setBreakpointCondition] = useState("");
   const [editingBreakpointCondition, setEditingBreakpointCondition] = useState(false);
 
-  // const getSourceLine = (fullname: any, linenum: any) => {
-  //   // if we have the source file cached, we can display the line of text
-  //   const MAX_CHARS_TO_SHOW_FROM_SOURCE = 40;
-  //   let line = null;
-  //   if (BreakpointSourceLineCache.getLine(fullname, linenum)) {
-  //     line = BreakpointSourceLineCache.getLine(fullname, linenum);
-  //   } else if (FileOps.lineIsCached(fullname, linenum)) {
-  //     const syntaxHighlightedLine = FileOps.get_line_from_file(fullname, linenum);
-  //     line = _.trim(Util.get_text_from_html(syntaxHighlightedLine));
-
-  //     if (line.length > MAX_CHARS_TO_SHOW_FROM_SOURCE) {
-  //       line = line.slice(0, MAX_CHARS_TO_SHOW_FROM_SOURCE) + "...";
-  //     }
-  //     BreakpointSourceLineCache.addLine(fullname, linenum, line);
+  // const getNumTimesHit = () => {
+  //   if (
+  //     props.breakpoint.times === undefined || // E.g. 'bkpt' is a child breakpoint
+  //     props.breakpoint.times === 0
+  //   ) {
+  //     return "";
+  //   } else if (props.breakpoint.times === 1) {
+  //     return "1 hit";
+  //   } else {
+  //     return `${props.breakpoint.times} hits`;
   //   }
-
-  //   if (line) {
-  //     return (
-  //       <span className="monospace" style={{ whiteSpace: "nowrap", fontSize: "0.9em" }}>
-  //         {line || <br />}
-  //       </span>
-  //     );
-  //   }
-  //   return "(file not cached)";
-
-  const getNumTimesHit = () => {
-    if (
-      props.breakpoint.times === undefined || // E.g. 'bkpt' is a child breakpoint
-      props.breakpoint.times === 0
-    ) {
-      return "";
-    } else if (props.breakpoint.times === 1) {
-      return "1 hit";
-    } else {
-      return `${props.breakpoint.times} hits`;
-    }
-  };
-  const onChangeBkptCond = (e: any) => {
-    setBreakpointCondition(e.target.value);
-    setEditingBreakpointCondition(true);
-  };
-  const onKeyUpBreakpointCondition = (e: any) => {
-    if (e.keyCode === constants.ENTER_BUTTON_NUM) {
-      setEditingBreakpointCondition(false);
-      Breakpoints.setBreakpointCondition(e.target.value, props.breakpoint.number);
-    }
-  };
+  // };
   const onClickBreakpointCondition = (e: any) => {
     setEditingBreakpointCondition(true);
   };
@@ -112,67 +77,56 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
     breakpointNumberToDelete = breakpoint.number;
   }
 
-  const locationJsx = (
-    <FileLink
-      fullname={breakpoint.fullNameToDisplay}
-      file={breakpoint.fullNameToDisplay}
-      line={breakpoint.line}
+  // if (breakpoint.isParentBreakpoint) {
+  //   functionJsx = (
+  //     <span className="placeholder">
+  //       <ViewListIcon className="icon" /> parent breakpoint on inline, template, or
+  //       ambiguous location
+  //     </span>
+  //   );
+  // } else {
+  const func = breakpoint.func === undefined ? "(unknown function)" : breakpoint.func;
+
+  const breakCondition = editingBreakpointCondition ? (
+    <input
+      className={
+        "bg-gray-800 flex-grow p-2 w-full mr-1 " +
+        "rounded-sm focus:outline-none focus:ring-0 " +
+        "text-sm"
+      }
+      placeholder={"x == 1"}
+      onChange={(e: any) => {
+        setBreakpointCondition(e.target.value);
+        setEditingBreakpointCondition(true);
+      }}
+      onKeyUp={(e) => {
+        if (e.code === "Enter") {
+          setEditingBreakpointCondition(false);
+          Breakpoints.setBreakpointCondition(
+            breakpointCondition,
+            props.breakpoint.number
+          );
+        } else if (e.code === "Escape") {
+          setEditingBreakpointCondition(false);
+        }
+      }}
+      value={breakpointCondition}
     />
+  ) : (
+    <div
+      onClick={onClickBreakpointCondition}
+      className="inline"
+      title={
+        breakpoint.cond
+          ? `Modify breakpoint condition. Current condition: ${breakpoint.cond}`
+          : "Only break if a certain logical condition is true"
+      }
+    >
+      <button>
+        <PencilAltIcon className="icon" />
+      </button>
+    </div>
   );
-
-  if (breakpoint.isParentBreakpoint) {
-    functionJsx = (
-      <span className="placeholder">
-        <ViewListIcon className="icon" /> parent breakpoint on inline, template, or
-        ambiguous location
-      </span>
-    );
-  } else {
-    const func = breakpoint.func === undefined ? "(unknown function)" : breakpoint.func;
-
-    const breakCondition = editingBreakpointCondition ? (
-      <input
-        type="text"
-        style={{
-          display: "inline",
-          width: "110px",
-          padding: "10px 10px",
-          height: "25px",
-          fontSize: "1em",
-        }}
-        placeholder="Break condition"
-        className="form-control"
-        onKeyUp={onKeyUpBreakpointCondition}
-        onChange={onChangeBkptCond}
-        value={breakpointCondition}
-      />
-    ) : (
-      <div
-        onClick={onClickBreakpointCondition}
-        className="inline"
-        title={`${breakpointCondition ? "Modify or remove" : "Add"} breakpoint condition`}
-      >
-        <button>
-          <PencilAltIcon className="icon" />
-        </button>
-        <span className={`font-italic ${breakpointCondition ? "font-bold" : ""}`}>
-          condition
-        </span>
-      </div>
-    );
-
-    functionJsx = (
-      <div className="flex hover:bg-red-500">
-        <span className="">
-          {/* {func} */}
-          {breakpoint.file}
-        </span>
-        {/* <span className="italic">thread groups: {breakpoint["thread-groups"]}</span> */}
-        {/* <span>{breakCondition}</span> */}
-        <span className="font-italic">{getNumTimesHit()}</span>
-      </div>
-    );
-  }
 
   return (
     <div
@@ -201,11 +155,14 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
           )}
         </div>
         <div className="mr-1 flex align-middle">
+          {breakCondition}
+
           {breakpoint.line ? (
             <span title="line number" className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
               {breakpoint.line}
             </span>
           ) : null}
+
           <button
             title="Remove Breakpoint"
             className=" "
@@ -215,26 +172,12 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
                   ? breakpoint.parentBreakpointNumber
                   : breakpoint.number
               );
-
-              //   <div
-              //   style={{ width: "10px", display: "inline" }}
-              //   className="pointer"
-              //   onClick={(e) => {
-              //     e.stopPropagation();
-              //     Breakpoints.deleteBreakpoint(bkptNumToDelete);
-              //   }}
-              //   title={`Delete breakpoint ${bkptNumToDelete}`}
-              // >
-              //   <span className="glyphicon glyphicon-trash"> </span>
-              // </div>
             }}
           >
             <XIcon className="icon" />
           </button>
         </div>
       </div>
-      {/* <div>{locationJsx}</div> */}
-      {/* <div>{sourceLine}</div> */}
     </div>
   );
 }
