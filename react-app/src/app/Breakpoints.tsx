@@ -246,17 +246,6 @@ export function BreakpointsFn(props: {}) {
   }
   return (
     <div>
-      {breakpoints.length ? (
-        <button
-          className="flex items-center mb-2 hover:bg-gray-800"
-          onClick={() => {
-            Breakpoints.deleteAllBreakpoints();
-          }}
-        >
-          <TrashIcon className="icon " />
-          <span className="text-xs">Delete all</span>
-        </button>
-      ) : null}
       {breakpoints.map((breakpoint, i) => {
         return <Breakpoint breakpoint={breakpoint} key={i} />;
       })}
