@@ -1,6 +1,15 @@
 import React, { useRef } from "react";
 import { store, useGlobalState } from "./Store";
 
+export function showModal(header: string, body: React.ReactNode) {
+  const newModalData: typeof store.data.modalData = {
+    header,
+    modalBody: body,
+    show: true,
+  };
+  store.set<typeof store.data.modalData>("modalData", newModalData);
+}
+
 export function Modal() {
   const [modalData, setModalData] =
     useGlobalState<typeof store.data.modalData>("modalData");

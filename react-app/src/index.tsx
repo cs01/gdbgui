@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
+import "./App.css";
 import { Gdbgui } from "./app/App";
 import reportWebVitals from "./reportWebVitals";
 import { RecoilRoot } from "recoil";

@@ -36,3 +36,27 @@
     transform: rotate(360deg);
   }
 }
+
+.background-animate {
+  background-size: 150%;
+
+  -webkit-animation: BackgroundGradientAnimation 100s ease infinite;
+  -moz-animation: BackgroundGradientAnimation 100s ease infinite;
+  animation: BackgroundGradientAnimation 100s ease infinite;
+}
+
+@keyframes BackgroundGradientAnimation {
+  0%,
+  100% {
+    /* x,y */
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 30% 50%;
+  }
+}
+
+.breakpoint {
+  width: "1px";
+  background-color: "yellow";
+}

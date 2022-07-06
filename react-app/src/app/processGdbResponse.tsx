@@ -19,6 +19,7 @@ import { Modal } from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
 import {
+  GdbChildExpression,
   GdbLocalVariable,
   GdbMiChildrenVarResponse,
   GdbMiMessage,
@@ -211,13 +212,12 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     // gdbgui expression was evaluated for the first time for a child variable
     if ("has_more" in r.payload && "numchild" in r.payload && "children" in r.payload) {
-      ExpressionClass.gdb_created_children_variables(
-        r.payload as GdbMiChildrenVarResponse
-      );
+      ExpressionClass.gdbCreatedChildrenVariables(r.payload as GdbMiChildrenVarResponse);
     }
     // gdbgui expression was evaluated for the first time for a root variable
-    if ("name" in r.payload) {
-      ExpressionClass.createdRootExpression(r);
+    if ("name" in r.payload && "exp" in r.payload) {
+      const gdbChildExpression = r.payload as GdbChildExpression;
+      ExpressionClass.createdRootExpression(gdbChildExpression);
     }
     // features list
     if ("features" in r.payload) {

@@ -5,6 +5,7 @@ import Handlers from "./EventHandlers";
 import { debug } from "./InitialData";
 import _ from "lodash";
 import { SourceFile } from "./types";
+import { showModal } from "./GdbguiModal";
 
 let debugPrint: any;
 if (debug) {
@@ -451,7 +452,7 @@ const FileOps = {
           (store.data.inferior_binary_path_last_modified_unix_sec ?? 0) &&
         FileOps.warningShownForOldBinary === false
       ) {
-        Handlers.showModal(
+        showModal(
           "Warning",
           <div>
             This source file was modified <span className="bold">after</span> the binary

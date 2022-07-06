@@ -132,20 +132,6 @@ const Handlers = {
     const consoleType = error ? "STD_ERR" : "STD_OUT";
     Handlers.addGdbGuiConsoleEntries(entries, consoleType);
   },
-  toggle_modal_visibility() {
-    store.set<typeof store.data.modalData>("modalData", {
-      ...store.data.modalData,
-      show: !store.data.modalData.show,
-    });
-  },
-  showModal(header: string, body: React.ReactNode) {
-    const newModalData: typeof store.data.modalData = {
-      header,
-      modalBody: body,
-      show: true,
-    };
-    store.set<typeof store.data.modalData>("modalData", newModalData);
-  },
   setGdbBinaryAndArguments(binary: string, args: string) {
     // remove list of source files associated with the loaded binary since we're loading a new one
     store.set<typeof store.data.source_file_paths>("source_file_paths", []);

@@ -131,7 +131,7 @@ const VarCreator = {
    * new variable is saved locally. The variable UI element is then re-rendered
    * @param r (object): gdb mi object
    */
-  onExpressionCreated(r: any) {
+  onExpressionCreated(gdbChildExpression: GdbChildExpression) {
     const exp = VarCreator.expressionBeingCreated;
     if (exp) {
       // example payload:
@@ -143,10 +143,14 @@ const VarCreator = {
       //      "type": "int",
       //      "value": "0"
       //  },
-      ExpressionClass.saveNewExpression(exp, VarCreator.expr_type ?? "expr", r.payload);
+      ExpressionClass.saveNewExpression(
+        exp,
+        VarCreator.expr_type ?? "expr",
+        gdbChildExpression
+      );
       VarCreator.expressionBeingCreated = null;
       // automatically fetch first level of children for root variables
-      ExpressionClass.fetchAndShowChildrenForVar(r.payload.name);
+      ExpressionClass.fetchAndShowChildrenForVar(gdbChildExpression.name);
     } else {
       // gdbgui did not expect a new variable to be created here
       // it's likely this tab is viewing an instance of gdb that multiple users
@@ -554,7 +558,7 @@ export class ExpressionClass {
    * object
    * @param r (object): gdb mi object
    */
-  static gdb_created_children_variables(response: GdbMiChildrenVarResponse) {
+  static gdbCreatedChildrenVariables(response: GdbMiChildrenVarResponse) {
     const parentGdbName = childVarFetcher.gdbParentExprCurrentlyFetchingChildren;
     childVarFetcher.fetchComplete();
     if (!parentGdbName) {

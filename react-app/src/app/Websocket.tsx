@@ -5,6 +5,7 @@ import { debug } from "./InitialData";
 import { handleGdbResponseArray } from "./processGdbResponse";
 import io from "socket.io-client";
 import { GdbMiMessage } from "./types";
+import { showModal } from "./GdbguiModal";
 
 // print to console if debug is true
 let log: {
@@ -176,7 +177,7 @@ export class GdbWebsocket {
       // on the server is already gone
       window.onbeforeunload = () => null;
 
-      Handlers.showModal(
+      showModal(
         "",
         <>
           <p>

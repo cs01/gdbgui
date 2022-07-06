@@ -50,8 +50,3 @@ code {
 .input {
   @apply bg-gray-800 p-1 mr-1 rounded-sm focus:outline-none focus:ring-0 text-sm;
 }
-
-.breakpoint {
-  width: "1px";
-  background-color: "yellow";
-}
