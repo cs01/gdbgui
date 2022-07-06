@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { CogIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
 import { store, useGlobalState } from "./Store";
+import { Settings } from "./Settings";
 
 export function Nav() {
   const [showMenu, setShowMenu] = useState(false);
@@ -29,10 +30,32 @@ background-animate
         <MenuIcon className="h-6 w-6" aria-hidden="true" />
       </button>
       <div
+        onClick={() => {
+          setShowMenu(false);
+        }}
         className={`absolute text-right pl-20 p-8 flex flex-col space-y-4 right-0 mt-10 bg-gray-700 ${
           showMenu ? null : "hidden"
         }`}
       >
+        <button
+          className="text-right flex align-middle"
+          onClick={() => {
+            setModalData({
+              show: true,
+              modalBody: <Settings />,
+              header: "Settings",
+            });
+          }}
+        >
+          <CogIcon className="icon mt-1" />
+          <span className="mx-2">Settings</span>
+        </button>
+        <a href="/dashboard" target="_blank">
+          Dashboard
+        </a>
+        <a href="http://github.com/cs01/gdbgui" target="_blank" rel="noreferrer">
+          GitHub
+        </a>
         <button
           className="text-right"
           onClick={() => {
@@ -51,12 +74,6 @@ background-animate
         >
           About
         </button>
-        <a href="/dashboard" target="_blank">
-          Dashboard
-        </a>
-        <a href="http://github.com/cs01/gdbgui" target="_blank" rel="noreferrer">
-          GitHub
-        </a>
       </div>
     </div>
   );

@@ -3,13 +3,24 @@ import { SourceFile } from "./types";
 import path from "path";
 import { XIcon } from "@heroicons/react/solid";
 
+function getSourceFileHoverString(sourceFile: SourceFile) {
+  return [
+    `Path: ${sourceFile.fullname}`,
+    `Encoding: ${sourceFile.encoding}`,
+    `Last modified unixtime: ${sourceFile.last_modified_unix_sec}`,
+    `Last modified: ${new Date(
+      sourceFile.last_modified_unix_sec * 1000
+    ).toLocaleString()}`,
+  ].join("\n");
+}
+
 function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) {
   const activeColors = props.currentFile
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
   return (
     <div
-      title={props.sourceFile.fullname}
+      title={getSourceFileHoverString(props.sourceFile)}
       className={`${activeColors} flex h-full mx-1 p-2 items-center space-x-2 text-sm`}
     >
       <button

@@ -5,7 +5,6 @@ import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
 import { Modal } from "./GdbguiModal";
 import { RightSidebar } from "./RightSidebar";
-import Settings from "./Settings";
 import ToolTip from "./ToolTip";
 import { debug, InitialData } from "./InitialData";
 import { ReflexContainer, ReflexSplitter, ReflexElement } from "react-reflex";
@@ -64,7 +63,6 @@ export function Gdbgui() {
 
   return (
     <div className="h-screen text-gray-300 bg-black">
-      <Settings />
       <HoverVar />
       <Modal />
       <ToolTip />

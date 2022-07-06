@@ -1,136 +1,54 @@
-import { store } from "./Store";
+import { store, useGlobalState } from "./Store";
 import Handlers from "./EventHandlers";
 import ToolTip from "./ToolTip";
 import React from "react";
+import { GlobalState } from "./types";
+import { GlobalBooleanToggle } from "./BooleanToggle";
 
-/**
- * Settings modal when clicking the gear icon
- */
-class Settings extends React.Component {
-  max_source_file_lines_input: any;
-  save_button: any;
-  settings_node: any;
-  constructor() {
-    // @ts-expect-error ts-migrate(2554) FIXME: Expected 1-2 arguments, but got 0.
-    super();
-    store.reactComponentState(this, [
-      "debug",
-      "gdb_pid",
-      "show_settings",
-      "auto_add_breakpoint_to_main",
-      "pretty_print",
-      "refresh_state_after_sending_console_command",
-      "show_all_sent_commands_in_console",
-    ]);
-    this.get_update_max_lines_of_code_to_fetch =
-      this.get_update_max_lines_of_code_to_fetch.bind(this);
-  }
-  static toggle_key(key: any) {
-    // @ts-expect-error
-    store.set(key, !store.data[key]);
-    // @ts-expect-error
-    localStorage.setItem(key, JSON.stringify(store.data[key]));
-  }
-  static get_checkbox_row(store_key: any, text: any) {
-    return (
-      <tr>
-        <td>
-          <div className="checkbox">
-            <label>
-              <input
-                type="checkbox"
-                // @ts-expect-error
-                checked={store.data[store_key]}
-                onChange={() => Settings.toggle_key(store_key)}
-              />
-              {text}
-            </label>
-          </div>
-        </td>
-      </tr>
-    );
-  }
-  get_update_max_lines_of_code_to_fetch() {
-    return (
-      <tr>
-        <td>
-          Maximum number of source file lines to display:
-          <input
-            style={{ width: "100px", marginLeft: "10px" }}
-            defaultValue={store.data.max_lines_of_code_to_fetch}
-            ref={(el) => (this.max_source_file_lines_input = el)}
-          />
-          <button
-            ref={(n) => (this.save_button = n)}
-            onClick={() => {
-              const newValue = parseInt(this.max_source_file_lines_input.value);
-              Handlers.update_max_lines_of_code_to_fetch(newValue);
-              // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '1' is not assignable to paramete... Remove this comment to see the full error message
-              ToolTip.show_tooltip_on_node("saved!", this.save_button, 1);
-            }}
-          >
-            save
-          </button>
-        </td>
-      </tr>
-    );
-  }
-  get_table() {
-    return (
-      <table className="table table-condensed">
-        <tbody>
-          {Settings.get_checkbox_row(
-            "auto_add_breakpoint_to_main",
-            "Add breakpoint to main after loading executable"
-          )}
-          {this.get_update_max_lines_of_code_to_fetch()}
-          {Settings.get_checkbox_row(
-            "pretty_print",
-            "Pretty print dynamic variables (requires restart)"
-          )}
-          {Settings.get_checkbox_row(
-            "refresh_state_after_sending_console_command",
-            "Refresh all components when a command is sent from the console"
-          )}
-          {Settings.get_checkbox_row(
-            "show_all_sent_commands_in_console",
-            "Print all sent commands in console, including those sent automatically by gdbgui"
-          )}
-        </tbody>
-      </table>
-    );
-  }
+export function Settings() {
+  const [maxLinesToFetch, setMaxLinesToFetch] = useGlobalState<
+    typeof store.data.max_lines_of_code_to_fetch
+  >("max_lines_of_code_to_fetch");
 
-  render() {
-    return (
-      <div
-        className={store.data.show_settings ? "fullscreen_modal" : "hidden"}
-        ref={(el) => (this.settings_node = el)}
-        onClick={(e) => {
-          if (e.target === this.settings_node) {
-            Settings.toggle_key("show_settings");
-          }
-        }}
-      >
-        <div id="gdb_settings_modal">
-          <button className="close" onClick={() => Settings.toggle_key("show_settings")}>
-            ×
-          </button>
-          <h4>Settings</h4>
-          {this.get_table()}
-          <div className="modal-footer" style={{ marginTop: "20px" }}>
-            <button
-              className="btn btn-success"
-              onClick={() => Settings.toggle_key("show_settings")}
-              data-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+  return (
+    <div className="flex flex-col space-y-5">
+      <div className="flex">
+        {/* // /             ref={(n) => (this.save_button = n)}
+      //             onClick={() => {
+      //               const newValue = parseInt(this.max_source_file_lines_input.value);
+      //               Handlers.update_max_lines_of_code_to_fetch(newValue);
+      //               // @ts-expect-error ts-migrate(2345) FIXME: Argument of type '1' is not assignable to paramete... Remove this comment to see the full error message
+      //               ToolTip.show_tooltip_on_node("saved!", this.save_button, 1); */}
+        Maximum number of source file lines to display:{" "}
+        <input
+          value={maxLinesToFetch}
+          onChange={(e) => {
+            const newValue = parseInt(e.target.value);
+            if (Number.isInteger(newValue)) {
+              setMaxLinesToFetch(newValue);
+            } else {
+              setMaxLinesToFetch(500);
+            }
+          }}
+          className="input"
+        />
       </div>
-    );
-  }
+      <GlobalBooleanToggle
+        label="Refresh all components when a command is sent from the console"
+        storeKey={"refresh_state_after_sending_console_command"}
+      />
+      <GlobalBooleanToggle
+        label="Add breakpoint to main() after loading executable"
+        storeKey={"auto_add_breakpoint_to_main"}
+      />
+      <GlobalBooleanToggle
+        label="Print all sent commands in console, including those sent automatically by gdbgui"
+        storeKey={"show_all_sent_commands_in_console"}
+      />
+      <GlobalBooleanToggle
+        label="Pretty print dynamic variables (requires restart)"
+        storeKey={"pretty_print"}
+      />
+    </div>
+  );
 }
-
-export default Settings;
