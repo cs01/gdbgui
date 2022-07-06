@@ -46,28 +46,9 @@ const BreakpointSourceLineCache = {
 function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
   const [breakpointCondition, setBreakpointCondition] = useState("");
   const [editingBreakpointCondition, setEditingBreakpointCondition] = useState(false);
-
-  // const getNumTimesHit = () => {
-  //   if (
-  //     props.breakpoint.times === undefined || // E.g. 'bkpt' is a child breakpoint
-  //     props.breakpoint.times === 0
-  //   ) {
-  //     return "";
-  //   } else if (props.breakpoint.times === 1) {
-  //     return "1 hit";
-  //   } else {
-  //     return `${props.breakpoint.times} hits`;
-  //   }
-  // };
-  const onClickBreakpointCondition = (e: any) => {
-    setEditingBreakpointCondition(true);
-  };
-
   const breakpoint = props.breakpoint;
   const checked = breakpoint.enabled === "y";
-  // const sourceLine = getSourceLine(breakpoint.fullNameToDisplay, breakpoint.line);
 
-  let functionJsx;
   let breakpointNumberToDelete;
   if (breakpoint.isChildBreakpoint) {
     breakpointNumberToDelete = breakpoint.parentBreakpointNumber;
@@ -87,96 +68,91 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
   // } else {
   const func = breakpoint.func === undefined ? "(unknown function)" : breakpoint.func;
 
-  const breakCondition = editingBreakpointCondition ? (
-    <input
-      className={
-        "bg-gray-800 flex-grow p-2 w-full mr-1 " +
-        "rounded-sm focus:outline-none focus:ring-0 " +
-        "text-sm"
-      }
-      placeholder={"x == 1"}
-      onChange={(e: any) => {
-        setBreakpointCondition(e.target.value);
-        setEditingBreakpointCondition(true);
-      }}
-      onKeyUp={(e) => {
-        if (e.code === "Enter") {
-          setEditingBreakpointCondition(false);
-          Breakpoints.setBreakpointCondition(
-            breakpointCondition,
-            props.breakpoint.number
-          );
-        } else if (e.code === "Escape") {
-          setEditingBreakpointCondition(false);
+  // TODO add -break-commands
+  // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Breakpoint-Commands.html
+  const breakCondition = (
+    <div className="flex flex-nowrap">
+      {editingBreakpointCondition ? (
+        <input
+          className="input w-full"
+          placeholder={"x == 1"}
+          onChange={(e: any) => {
+            setBreakpointCondition(e.target.value);
+            setEditingBreakpointCondition(true);
+          }}
+          onKeyUp={(e) => {
+            if (e.code === "Enter") {
+              setEditingBreakpointCondition(false);
+              Breakpoints.setBreakpointCondition(
+                breakpointCondition,
+                props.breakpoint.number
+              );
+            } else if (e.code === "Escape") {
+              setEditingBreakpointCondition(false);
+            }
+          }}
+          value={breakpointCondition}
+        />
+      ) : null}
+      <button
+        onClick={() => {
+          setEditingBreakpointCondition(!editingBreakpointCondition);
+        }}
+        title={
+          breakpoint.cond
+            ? `Current condition: ${breakpoint.cond}. Click to modify or remove breakpoint condition. `
+            : "Only break if a certain logical condition is true"
         }
-      }}
-      value={breakpointCondition}
-    />
-  ) : (
-    <div
-      onClick={onClickBreakpointCondition}
-      className="inline"
-      title={
-        breakpoint.cond
-          ? `Modify breakpoint condition. Current condition: ${breakpoint.cond}`
-          : "Only break if a certain logical condition is true"
-      }
-    >
-      <button>
-        <PencilAltIcon className="icon" />
+      >
+        <PencilAltIcon className={`icon ${breakpoint.cond ? "text-purple-600" : null}`} />
       </button>
     </div>
   );
 
   return (
-    <div
-      className="my-1 "
-      onClick={() => Handlers.viewFile(breakpoint.fullNameToDisplay, breakpoint.line)}
-    >
-      <div className="flex justify-between text-sm">
-        <div>
-          <input
-            className="mx-1"
-            type="checkbox"
-            checked={checked}
-            onChange={() =>
-              Breakpoints.toggleEnableBreakpoint(checked, breakpoint.number)
-            }
-          />
-          {breakpoint.file ? (
-            <button
-              title={`${breakpoint.func}()\n${breakpoint.fullname}:${breakpoint.line}\n${breakpoint.addr}\nHit ${breakpoint.times} time(s)`}
-              onClick={() => Handlers.viewFile(breakpoint.fullname, breakpoint.line)}
-            >
-              {breakpoint.file}
-            </button>
-          ) : (
-            <MemoryLink addr={breakpoint.addr} />
-          )}
-        </div>
-        <div className="mr-1 flex align-middle">
-          {breakCondition}
-
-          {breakpoint.line ? (
-            <span title="line number" className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
-              {breakpoint.line}
-            </span>
-          ) : null}
-
+    <div className="flex flex-nowrap justify-between text-sm">
+      <div className="flex flex-nowrap">
+        <input
+          title="enable/disable breakpoint"
+          className="mx-1"
+          type="checkbox"
+          checked={checked}
+          onChange={() => Breakpoints.toggleEnableBreakpoint(checked, breakpoint.number)}
+        />
+        {breakpoint.file ? (
           <button
-            title="Remove Breakpoint"
-            className=" "
-            onClick={() => {
-              Breakpoints.deleteBreakpoint(
-                breakpoint.isChildBreakpoint && breakpoint.parentBreakpointNumber
-                  ? breakpoint.parentBreakpointNumber
-                  : breakpoint.number
-              );
-            }}
+            className="mr-1"
+            title={`${breakpoint.func}\n${breakpoint.fullname}:${breakpoint.line}\n${breakpoint.addr}\nHit ${breakpoint.times} time(s)`}
+            onClick={() => Handlers.viewFile(breakpoint.fullname, breakpoint.line)}
           >
-            <XIcon className="icon" />
+            {breakpoint.file}
           </button>
-        </div>
+        ) : (
+          <MemoryLink addr={breakpoint.addr} />
+        )}
+      </div>
+      <div className="mr-1 flex align-middle">
+        {breakCondition}
+
+        {breakpoint.line ? (
+          <span title="line number" className="text-xs bg-gray-600 rounded-lg mx-1 p-1">
+            {breakpoint.line}
+          </span>
+        ) : null}
+
+        <button
+          title="Remove Breakpoint"
+          className=" "
+          onClick={() => {
+            Breakpoints.deleteBreakpoint(
+              breakpoint.isChildBreakpoint && breakpoint.parentBreakpointNumber
+                ? breakpoint.parentBreakpointNumber
+                : breakpoint.number
+            );
+          }}
+        >
+          <XIcon className="icon" />
+        </button>
       </div>
     </div>
   );

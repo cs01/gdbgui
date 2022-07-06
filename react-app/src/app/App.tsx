@@ -3,7 +3,7 @@ import { store } from "./Store";
 import FileOps from "./FileOps";
 import GlobalEvents from "./GlobalEvents";
 import HoverVar from "./HoverVar";
-import Modal from "./GdbguiModal";
+import { Modal } from "./GdbguiModal";
 import { RightSidebar } from "./RightSidebar";
 import Settings from "./Settings";
 import ToolTip from "./ToolTip";

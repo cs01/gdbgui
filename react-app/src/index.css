@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  margin: 0;
+  /* margin: 0; */
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
     "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -49,4 +49,9 @@ code {
 
 .input {
   @apply bg-gray-800 p-1 mr-1 rounded-sm focus:outline-none focus:ring-0 text-sm;
+}
+
+.breakpoint {
+  width: "1px";
+  background-color: "yellow";
 }

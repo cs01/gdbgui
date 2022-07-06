@@ -150,7 +150,8 @@ function addBreakpointGlyphs(
       options: {
         isWholeLine: true,
         glyphMarginClassName:
-          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") + " rounded-full ",
+          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") +
+          " rounded-full w-[1em] h-[1rem]",
       },
     };
   });
@@ -234,7 +235,14 @@ export function GdbguiEditor() {
       path={sourcePath || ""}
       value={getSourceCode(sourceCodeState, sourcePath)}
       onMount={handleEditorDidMount}
-      options={{ glyphMargin: true, wordWrap: "on" }}
+      options={{
+        glyphMargin: true,
+        wordWrap: "on",
+        lineNumbers: (n: number) => {
+          // TODO determine line number based on how many instructions per line
+          return n.toString();
+        },
+      }}
     />
   );
 }

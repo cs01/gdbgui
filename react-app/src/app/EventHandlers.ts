@@ -8,6 +8,7 @@ import $ from "jquery";
 import { GdbGuiConsoleEntry } from "./types";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { ExpressionClass } from "./Expression";
+import React from "react";
 
 const Handlers = {
   clearProgramState: function () {
@@ -132,12 +133,18 @@ const Handlers = {
     Handlers.addGdbGuiConsoleEntries(entries, consoleType);
   },
   toggle_modal_visibility() {
-    store.set<typeof store.data.show_modal>("show_modal", !store.data.show_modal);
+    store.set<typeof store.data.modalData>("modalData", {
+      ...store.data.modalData,
+      show: !store.data.modalData.show,
+    });
   },
-  show_modal(header: any, body: any) {
-    store.set<typeof store.data.modal_header>("modal_header", header);
-    store.set<typeof store.data.modal_body>("modal_body", body);
-    store.set<typeof store.data.show_modal>("show_modal", true);
+  showModal(header: string, body: React.ReactNode) {
+    const newModalData: typeof store.data.modalData = {
+      header,
+      modalBody: body,
+      show: true,
+    };
+    store.set<typeof store.data.modalData>("modalData", newModalData);
   },
   setGdbBinaryAndArguments(binary: string, args: string) {
     // remove list of source files associated with the loaded binary since we're loading a new one

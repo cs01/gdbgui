@@ -176,7 +176,7 @@ export class GdbWebsocket {
       // on the server is already gone
       window.onbeforeunload = () => null;
 
-      Handlers.show_modal(
+      Handlers.showModal(
         "",
         <>
           <p>

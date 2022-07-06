@@ -118,7 +118,7 @@ function MoreButton(props: { direction: "preceding" | "following" }) {
       }
       title="Read more memory"
     >
-      <DotsHorizontalIcon className="icon m-auto" />
+      <span className="font-sans text-sm">more</span>
     </button>
   );
 }

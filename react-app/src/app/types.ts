@@ -1,6 +1,7 @@
 import { Terminal } from "xterm";
 import { GdbWebsocket } from "./Websocket";
 import { DebugProtocol } from "vscode-debugprotocol";
+import React from "react";
 
 export type SourceFile = {
   fullname: string;
@@ -165,9 +166,11 @@ export type GlobalState = {
   gdbWebsocket: Nullable<GdbWebsocket>;
   debug_in_reverse: boolean;
   reverse_supported: boolean;
-  show_modal: boolean;
-  modal_header: any;
-  modal_body: any;
+  modalData: {
+    show: boolean;
+    header: Nullable<string>;
+    modalBody: Nullable<React.ReactNode>;
+  };
   tooltip: any;
   textarea_to_copy_to_clipboard: Nullable<HTMLTextAreaElement>;
   max_lines_of_code_to_fetch: number;

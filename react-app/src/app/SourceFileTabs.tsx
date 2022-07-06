@@ -4,11 +4,13 @@ import path from "path";
 import { XIcon } from "@heroicons/react/solid";
 
 function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) {
-  const bgColor = props.currentFile ? "bg-gray-800" : "bg-gray-900 ";
+  const activeColors = props.currentFile
+    ? "bg-gray-800 border-indigo-500 border-t-2 "
+    : "bg-gray-900 ";
   return (
     <div
       title={props.sourceFile.fullname}
-      className={`${bgColor} flex h-full mx-1 p-2 items-center space-x-2 text-sm`}
+      className={`${activeColors} flex h-full mx-1 p-2 items-center space-x-2 text-sm`}
     >
       <button
         className="text-white"

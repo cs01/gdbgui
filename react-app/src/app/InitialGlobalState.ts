@@ -22,9 +22,7 @@ const initialGlobalState: GlobalState = {
 
   debug_in_reverse: false,
   reverse_supported: false,
-  show_modal: false,
-  modal_header: null,
-  modal_body: null,
+  modalData: { show: false, header: null, modalBody: null },
 
   tooltip: { hidden: false, content: "placeholder", node: null, show_for_n_sec: null },
   textarea_to_copy_to_clipboard: null, // will be replaced with textarea dom node

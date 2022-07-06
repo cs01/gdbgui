@@ -451,7 +451,7 @@ const FileOps = {
           (store.data.inferior_binary_path_last_modified_unix_sec ?? 0) &&
         FileOps.warningShownForOldBinary === false
       ) {
-        Handlers.show_modal(
+        Handlers.showModal(
           "Warning",
           <div>
             This source file was modified <span className="bold">after</span> the binary

@@ -818,8 +818,8 @@ export class ExpressionClass {
     }
     return cmds;
   }
-  static handle_changelist(changelist_array: any) {
-    for (const changelist of changelist_array) {
+  static handle_changelist(changelistArray: any) {
+    for (const changelist of changelistArray) {
       const expressions = store.data.expressions;
       const obj = ExpressionClass.getObjectFromGdbVarName(expressions, changelist.name);
       if (obj) {

@@ -53,7 +53,7 @@ function Frame(props: {
         </div>
         <button
           className="pr-2"
-          title="Frame level"
+          title="Frame level (0 is top of stack)"
           onClick={() => {
             GdbApi.requestSelectFrame(frame.level);
           }}

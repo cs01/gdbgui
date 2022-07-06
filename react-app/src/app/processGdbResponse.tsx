@@ -15,10 +15,15 @@ import MemoryClass from "./Memory";
 import GdbApi from "./GdbApi";
 import { LocalsClass } from "./Locals";
 import { ExpressionClass } from "./Expression";
-import Modal from "./GdbguiModal";
+import { Modal } from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
-import { GdbMiChildrenVarResponse, GdbMiMessage, GdbMiRegisterValue } from "./types";
+import {
+  GdbLocalVariable,
+  GdbMiChildrenVarResponse,
+  GdbMiMessage,
+  GdbMiRegisterValue,
+} from "./types";
 import { RegisterClass } from "./Registers";
 /**
  * Determines if response is an error and client does not want to be notified of errors for this particular response.
@@ -161,20 +166,22 @@ function handleGdbMessage(r: GdbMiMessage) {
         ]);
 
         if (store.data.inferior_binary_path) {
-          // @ts-expect-error ts-migrate(2339) FIXME: Property 'render' does not exist on type 'typeof M... Remove this comment to see the full error message
-          Modal.render(
-            "Warning",
-            <div>
-              This binary was not compiled with debug symbols. Recompile with the -g flag
-              for a better debugging experience.
-              <p />
-              <p />
-              Read more:{" "}
-              <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">
-                http://www.delorie.com/gnu/docs/gdb/gdb_17.html
-              </a>
-            </div>
-          );
+          store.set<typeof store.data.modalData>("modalData", {
+            show: true,
+            header: "Warning",
+            modalBody: (
+              <div>
+                This binary was not compiled with debug symbols. Recompile with the -g
+                flag for a better debugging experience.
+                <p />
+                <p />
+                Read more:{" "}
+                <a href="http://www.delorie.com/gnu/docs/gdb/gdb_17.html">
+                  http://www.delorie.com/gnu/docs/gdb/gdb_17.html
+                </a>
+              </div>
+            ),
+          });
         }
       }
     }
@@ -196,7 +203,7 @@ function handleGdbMessage(r: GdbMiMessage) {
     // in gdb with '-var-create'. *Those* types of variables are referred to as "expressions" in gdbgui, and
     // are returned by gdbgui as "changelist", or have the keys "has_more", "numchild", "children", or "name".
     if ("variables" in r.payload) {
-      LocalsClass.saveLocals(r.payload.variables);
+      LocalsClass.saveLocals(r.payload.variables as Array<GdbLocalVariable>);
     }
     // gdbgui expression (aka a gdb variable was changed)
     if ("changelist" in r.payload) {
