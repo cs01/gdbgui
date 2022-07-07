@@ -93,9 +93,9 @@ export type GdbStackFrame = {
 export type GdbMiMemoryEntry = { begin: string; end: string; contents: string };
 export type GdbMiMemoryResponse = Array<GdbMiMemoryEntry>;
 export type GdbLocalVariable = { name: string; type: string; value: string };
-export type GdbChildExpression = {
+
+export type GdbRootExpressionResponse = {
   name: string;
-  exp: string | "<anonymous struct>";
   numchild: string; //"1"
   has_more: string;
   value: string; // "{...}"
@@ -103,6 +103,10 @@ export type GdbChildExpression = {
   "thread-id": string; //"1"
   dynamic?: "1";
   displayhint?: string;
+};
+
+export type GdbChildExpression = GdbRootExpressionResponse & {
+  exp: string | "<anonymous struct>";
 };
 // export type GdbguiChildExpression = {
 //   name: string;

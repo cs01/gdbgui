@@ -24,6 +24,7 @@ import {
   GdbMiChildrenVarResponse,
   GdbMiMessage,
   GdbMiRegisterValue,
+  GdbRootExpressionResponse,
 } from "./types";
 import { RegisterClass } from "./Registers";
 /**
@@ -208,15 +209,15 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     // gdbgui expression (aka a gdb variable was changed)
     if ("changelist" in r.payload) {
-      ExpressionClass.handle_changelist(r.payload.changelist);
+      ExpressionClass.handleChangelist(r.payload.changelist);
     }
     // gdbgui expression was evaluated for the first time for a child variable
     if ("has_more" in r.payload && "numchild" in r.payload && "children" in r.payload) {
       ExpressionClass.gdbCreatedChildrenVariables(r.payload as GdbMiChildrenVarResponse);
     }
     // gdbgui expression was evaluated for the first time for a root variable
-    if ("name" in r.payload && "exp" in r.payload) {
-      const gdbChildExpression = r.payload as GdbChildExpression;
+    if ("name" in r.payload && "numchild" in r.payload) {
+      const gdbChildExpression = r.payload as GdbRootExpressionResponse;
       ExpressionClass.createdRootExpression(gdbChildExpression);
     }
     // features list

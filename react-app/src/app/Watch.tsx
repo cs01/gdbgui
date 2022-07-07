@@ -63,7 +63,13 @@ export function Watch(props: {}) {
       </div>
       {expressions.map((expression) => {
         if (expression.expr_type === "expr") {
-          return <Expression obj={expression} expr_type={expression.expr_type} />;
+          return (
+            <Expression
+              key={expression.name}
+              obj={expression}
+              expr_type={expression.expr_type}
+            />
+          );
         }
         return null;
       })}

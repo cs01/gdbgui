@@ -18,6 +18,7 @@ import {
   GdbMiChildrenVarResponse,
   GdbguiExpressionType,
   GdbguiLocalVariable,
+  GdbRootExpressionResponse,
 } from "./types";
 import {
   ChevronDownIcon,
@@ -129,9 +130,8 @@ const VarCreator = {
    * variable name (which is automatically created by gdb),
    * and the expression the user wanted to evaluate. The
    * new variable is saved locally. The variable UI element is then re-rendered
-   * @param r (object): gdb mi object
    */
-  onExpressionCreated(gdbChildExpression: GdbChildExpression) {
+  onRootExpressionCreated(gdbChildExpression: GdbRootExpressionResponse) {
     const exp = VarCreator.expressionBeingCreated;
     if (exp) {
       // example payload:
@@ -547,7 +547,7 @@ export class ExpressionClass {
     VarCreator.createExpression(expression, exprType);
   }
   static createdRootExpression(r: any) {
-    VarCreator.onExpressionCreated(r);
+    VarCreator.onRootExpressionCreated(r);
   }
   static gdb_variable_fetch_failed(r: any) {
     VarCreator.fetch_failed(r);
@@ -574,7 +574,8 @@ export class ExpressionClass {
         ExpressionClass.gdbExpressionToGdbguiExpression(
           child,
           parent,
-          VarCreator.expr_type
+          VarCreator.expr_type,
+          null
         )
       );
       // save these children as a field to their parent
@@ -597,20 +598,21 @@ export class ExpressionClass {
   /**
    * gdb returns objects for its variables,, but before we save that
    * data locally, we will add more fields to make it more useful for gdbgui
-   * @param child (object): mi object returned from gdb
+   * @param newExpression (object): mi object returned from gdb
    * @param expr_type "local" | "expr" | "hover"
    */
   static gdbExpressionToGdbguiExpression(
-    child: GdbChildExpression,
-    parent: Nullable<GdbguiExpressionVar>,
+    newExpression: GdbChildExpression | GdbRootExpressionResponse,
+    parent: Nullable<GdbguiExpressionVar>, //not null if newExpression is child
     expr_type: Nullable<GdbguiExpressionType>,
-    exp?: Nullable<string>
+    exp: Nullable<string>
   ): GdbguiExpressionVar {
+    const expression = "exp" in newExpression ? newExpression.exp : exp;
     return {
-      ...child,
+      ...newExpression,
       parent,
-      numchild: parseInt(child.numchild),
-      has_more: parseInt(child.has_more),
+      numchild: parseInt(newExpression.numchild),
+      has_more: parseInt(newExpression.has_more),
       show_children_in_ui: false,
       children: [],
       can_plot: false,
@@ -630,7 +632,7 @@ export class ExpressionClass {
       expr_type: expr_type ?? "expr",
       // root objects don't have this field
       // child objects do. This is the human readable variable name.
-      exp: exp ?? child.exp,
+      exp: expression ?? "",
     };
 
     // new_obj.expr_type = VarCreator.expr_type;
@@ -822,7 +824,7 @@ export class ExpressionClass {
     }
     return cmds;
   }
-  static handle_changelist(changelistArray: any) {
+  static handleChangelist(changelistArray: any) {
     for (const changelist of changelistArray) {
       const expressions = store.data.expressions;
       const obj = ExpressionClass.getObjectFromGdbVarName(expressions, changelist.name);
@@ -833,11 +835,12 @@ export class ExpressionClass {
           childVarFetcher.fetchChildren(changelist["name"], obj.expr_type);
         }
         if ("new_children" in changelist) {
-          const new_children = changelist.new_children.map((child_obj: any) =>
+          const new_children = changelist.new_children.map((child: any) =>
             ExpressionClass.gdbExpressionToGdbguiExpression(
-              child_obj,
+              child,
               obj,
-              VarCreator.expr_type
+              VarCreator.expr_type,
+              null
             )
           );
           obj.children = obj.children.concat(new_children);
@@ -876,7 +879,11 @@ export class ExpressionClass {
   /**
    * Locally save the variable to our cached variables
    */
-  static saveNewExpression(exp: string, exprType: GdbguiExpressionType, obj: any) {
+  static saveNewExpression(
+    exp: string,
+    exprType: GdbguiExpressionType,
+    obj: GdbRootExpressionResponse
+  ) {
     const newExpression = ExpressionClass.gdbExpressionToGdbguiExpression(
       obj,
       null,
