@@ -265,7 +265,7 @@ const Tree = {
         return;
       }
       if (gdb_var_name) {
-        ExpressionClass.toggleChildren(gdb_var_name);
+        // ExpressionClass.toggleChildren(gdb_var_name);
       }
     });
   },

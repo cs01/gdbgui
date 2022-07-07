@@ -170,17 +170,11 @@ export type GdbguiExpressionVar = {
   numchild: number;
   parent: Nullable<GdbguiExpressionVar>;
   has_more: number;
-  // show_children_in_ui: boolean;
-  // show_plot: boolean;
   "thread-id": string;
   type: string;
 
   value: string;
-  valueHistory: Nullable<
-    Array<{
-      number: number;
-    }>
-  >;
+  valueHistory: number[];
 };
 
 export type GdbMiRegisterValue = { value: string; number: string };

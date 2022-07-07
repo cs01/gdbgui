@@ -368,7 +368,7 @@ export class ExpressionClass {
   static createExpression(expression: string, exprType: GdbguiExpressionType) {
     VarCreator.createExpression(expression, exprType);
   }
-  static createdRootExpression(r: any) {
+  static createdRootExpression(r: GdbRootExpressionResponse) {
     VarCreator.onRootExpressionCreated(r);
   }
   static gdb_variable_fetch_failed(r: any) {
@@ -452,35 +452,6 @@ export class ExpressionClass {
       // child objects do. This is the human readable variable name.
       exp: expression ?? "",
     };
-
-    // new_obj.expr_type = VarCreator.expr_type;
-
-    // Expression._update_numeric_properties(new_obj);
-
-    // new_obj.dom_id_for_plot = new_obj.name
-    //   .replace(/\./g, "-") // replace '.' with '-'
-    //   .replace(/\$/g, "_") // replace '$' with '-'
-    //   .replace(/\[/g, "_") // replace '[' with '_'
-    //   .replace(/\]/g, "_"); // replace ']' with '_'
-    // new_obj.show_plot = false; // used when rendering to decide whether to show plot or not
-    // push to this array each time a new value is assigned if value is numeric.
-    // Plots use this data
-    // if (new_obj.value.indexOf("0x") === 0) {
-    //   new_obj.values = [parseInt(new_obj.value, 16)];
-    //   new_obj.displayRadix = 16;
-    // } else if (!window.isNaN(parseFloat(new_obj.value))) {
-    //   new_obj.values = [parseFloat(new_obj.value)];
-    //   if (new_obj.is_int) {
-    //     new_obj.displayRadix = 10;
-    //   } else {
-    //     new_obj.displayRadix = 0;
-    //   }
-    // } else {
-    //   new_obj.values = [];
-    //   new_obj.displayRadix = 0;
-    // }
-    // Expression._update_radix_values(new_obj); // mutates new_obj
-    // return new_obj;
   }
   /**
    * function render a plot on an existing element
@@ -568,36 +539,6 @@ export class ExpressionClass {
       store.set<typeof store.data.expressions>("expressions", [...expressions]);
     }
   }
-  static click_toggle_children_visibility(gdb_variable_name: any) {
-    ExpressionClass.toggleChildren(gdb_variable_name);
-  }
-  static toggleChildren(gdb_var_name: string) {
-    // get data object, which has field that says whether its expanded or not
-    const obj = ExpressionClass.getObjectFromGdbVarName(
-      store.data.expressions,
-      gdb_var_name
-    );
-    if (obj) {
-      // if (showing_children_in_ui) {
-      //   // collapse
-      //   ExpressionClass.hide_children_in_ui(gdb_var_name);
-      // } else {
-      //   // expand
-      //   ExpressionClass.fetchAndShowChildrenForVar(gdb_var_name);
-      // }
-    } else {
-      console.error("developer error - expected to find gdb variable object");
-    }
-  }
-  // static click_toggle_plot(gdb_var_name: any) {
-  //   const expressions = store.data.expressions;
-  //   // get data object, which has field that says whether its expanded or not
-  //   const obj = ExpressionClass.getObjectFromGdbVarName(expressions, gdb_var_name);
-  //   if (obj) {
-  //     obj.show_plot = !obj.show_plot;
-  //     store.set<typeof store.data.expressions>("expressions", [...expressions]);
-  //   }
-  // }
   static get_update_cmds() {
     function _get_cmds_for_obj(obj: any) {
       let cmds = [`-var-update --all-values ${obj.name}`];
@@ -645,17 +586,14 @@ export class ExpressionClass {
       );
       gdbguiExpression.children = gdbguiExpression.children.concat(newChildrenGdbGui);
       gdbguiExpression.value = changelist.value;
-
+      const floatValue = parseFloat(changelist.value);
+      if (Number.isFinite(floatValue)) {
+        gdbguiExpression.valueHistory.push(floatValue);
+      }
       gdbguiExpression.in_scope = changelist.in_scope === "true";
       if ("new_type" in changelist) {
         gdbguiExpression.type = changelist.new_type as string;
       }
-      // overwrite fields of obj with fields from changelist
-      // ExpressionClass.getNumericProperties(updatedGdbguiExpression);
-      // ExpressionClass.updateRadixValues(updatedGdbguiExpression);
-      // if (updatedGdbguiExpression.canPlot) {
-      //   updatedGdbguiExpression.values.push(updatedGdbguiExpression.floatValue);
-      // }
       store.set<typeof store.data.expressions>("expressions", [...expressions]);
     }
   }
