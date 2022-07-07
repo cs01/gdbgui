@@ -19,6 +19,7 @@ import {
   GdbguiExpressionType,
   GdbguiLocalVariable,
   GdbRootExpressionResponse,
+  GdbMiChangelist,
 } from "./types";
 import {
   ChevronDownIcon,
@@ -328,185 +329,6 @@ function fullyResolvedPath(expression: GdbguiExpressionVar): string {
   return expression.exp;
 }
 export class ExpressionClass {
-  /**
-   * get unordered list for a variable that has children
-   * @return unordered list, expanded or collapsed based on the key "show_children_in_ui"
-   */
-  get_ul_for_var_with_children(
-    expression: any,
-    mi_obj: any,
-    expr_type: any,
-    is_root = false
-  ) {
-    let child_tree;
-    if (mi_obj.show_children_in_ui) {
-      const content = [];
-      if (mi_obj.children.length > 0) {
-        for (const child of mi_obj.children) {
-          if (child.numchild > 0) {
-            content.push(
-              <li key={child.exp}>
-                {this.get_ul_for_var_with_children(child.exp, child, expr_type)}
-              </li>
-            );
-          } else {
-            content.push(
-              <li key={child.exp}>
-                {this.get_ul_for_var_without_children(child.exp, child, expr_type)}
-              </li>
-            );
-          }
-        }
-      }
-
-      child_tree = <ul key={mi_obj.exp}>{content}</ul>;
-    } else {
-      child_tree = "";
-    }
-
-    const plus_or_minus = mi_obj.show_children_in_ui ? "-" : "+";
-    return this._get_ul_for_var(
-      expression,
-      mi_obj,
-      expr_type,
-      is_root,
-      plus_or_minus,
-      // @ts-expect-error ts-migrate(2345) FIXME: Type 'Element' is not assignable to type 'string'.
-      child_tree,
-      mi_obj.numchild
-    );
-  }
-  get_ul_for_var_without_children(
-    expression: any,
-    mi_obj: any,
-    expr_type: any,
-    is_root = false
-  ) {
-    return this._get_ul_for_var(expression, mi_obj, expr_type, is_root);
-  }
-  static _get_value_jsx(obj: any) {
-    let val;
-    if (obj.is_int) {
-      val = (
-        <div className="inline">
-          <span className="gdbVarValue">
-            {MemoryClass.textToLinks(obj._int_value_to_str_in_radix)}
-            <button
-              className="btn btn-default btn-xs btn-radix"
-              onClick={() => {
-                ExpressionClass.change_radix(obj);
-              }}
-              title="click to change radix"
-              style={{ fontSize: "60%" }}
-            >
-              base {obj._radix}
-            </button>
-          </span>
-        </div>
-      );
-    } else {
-      val = _.isString(obj.value) ? MemoryClass.textToLinks(obj.value) : obj.value;
-    }
-    return val;
-  }
-  static change_radix(obj: any) {
-    if (obj._radix === 16) {
-      obj._radix = 2;
-    } else {
-      obj._radix += 2;
-    }
-    ExpressionClass._update_radix_values(obj);
-    store.set<typeof store.data.expressions>("expressions", [...store.data.expressions]);
-  }
-  /**
-   * Get ul for a variable with or without children
-   */
-  _get_ul_for_var(
-    expression: any,
-    mi_obj: any,
-    expr_type: any,
-    is_root: any,
-    plus_or_minus = "",
-    child_tree = "",
-    numchild = 0
-  ) {
-    const glyph_style = { fontSize: "0.8em", paddingLeft: "5px" };
-    const delete_button =
-      is_root && expr_type === "expr" ? (
-        <span
-          style={glyph_style}
-          className="glyphicon glyphicon-trash pointer"
-          onClick={() => ExpressionClass.deleteGdbVariable(mi_obj.name)}
-        />
-      ) : (
-        ""
-      );
-    const has_children = numchild > 0;
-    const can_draw_tree = has_children && (expr_type === "expr" || expr_type === "local"); // hover var can't draw tree
-    const tree = can_draw_tree ? (
-      <span
-        style={glyph_style}
-        className="glyphicon glyphicon-tree-deciduous pointer"
-        onClick={() => ExpressionClass.click_draw_tree_gdb_variable(mi_obj.name)}
-      />
-    ) : (
-      ""
-    );
-    const toggle_classes = has_children ? "pointer" : "";
-    let plot_content = "";
-    let plot_button = "";
-    const plusminusClickCallback = has_children
-      ? () => ExpressionClass.click_toggle_children_visibility(mi_obj.name)
-      : () => {};
-    if (mi_obj.can_plot && mi_obj.show_plot) {
-      // dots are not allowed in the dom as id's. replace with '-'.
-      const id = mi_obj.dom_id_for_plot;
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-      plot_button = (
-        <span
-          style={glyph_style}
-          className="pointer glyphicon glyphicon-ban-circle"
-          onClick={() => ExpressionClass.click_toggle_plot(mi_obj.name)}
-          title="remove x/y plot"
-        />
-      );
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-      plot_content = <div id={id} className="plot" />;
-    } else if (mi_obj.can_plot && !mi_obj.show_plot) {
-      // @ts-expect-error ts-migrate(2322) FIXME: Type 'Element' is not assignable to type 'string'.
-      plot_button = (
-        <span
-          style={glyph_style}
-          className="glyphicon glyphicon glyphicon-equalizer pointer"
-          onClick={() => ExpressionClass.click_toggle_plot(mi_obj.name)}
-          title="show x/y plot"
-        />
-      );
-    }
-
-    return (
-      <ul key={expression} className="varUL">
-        <li className="varLI">
-          <span className={toggle_classes} onClick={plusminusClickCallback}>
-            {plus_or_minus} {expression}&nbsp;
-          </span>
-
-          {ExpressionClass._get_value_jsx(mi_obj)}
-
-          <span className="var_type">{_.trim(mi_obj.type) || ""}</span>
-
-          <div className="right_help_icon_show_on_hover">
-            <CopyToClipboard content={ExpressionClass._get_full_path(mi_obj)} />:{tree}
-            {plot_button}
-            {delete_button}
-          </div>
-
-          {plot_content}
-        </li>
-        {child_tree}
-      </ul>
-    );
-  }
   static _get_full_path(obj: any) {
     if (!obj) {
       return "";
@@ -613,10 +435,8 @@ export class ExpressionClass {
       parent,
       numchild: parseInt(newExpression.numchild),
       has_more: parseInt(newExpression.has_more),
-      show_children_in_ui: false,
+      // show_children_in_ui: false,
       children: [],
-      can_plot: false,
-      show_plot: false,
       // expression: "",
       // do we need this?
       // new_obj.children = []; // actual child objects are fetched dynamically when the user requests them
@@ -625,12 +445,10 @@ export class ExpressionClass {
       // it is returned when the variables are updated
       // it is returned by gdb mi as a string, and we assume it starts out in scope
       in_scope: true,
-      is_int: false,
-      is_numeric: false,
-      values: [],
-      // TODO ensure this isn't null
+      valueHistory: [],
+      // TODO ensure this isn't nullshow_children_in_ui
       expr_type: expr_type ?? "expr",
-      // root objects don't have this field
+      // root objects don't have this fieshow_childrld
       // child objects do. This is the human readable variable name.
       exp: expression ?? "",
     };
@@ -649,44 +467,20 @@ export class ExpressionClass {
     // Plots use this data
     // if (new_obj.value.indexOf("0x") === 0) {
     //   new_obj.values = [parseInt(new_obj.value, 16)];
-    //   new_obj._radix = 16;
+    //   new_obj.displayRadix = 16;
     // } else if (!window.isNaN(parseFloat(new_obj.value))) {
     //   new_obj.values = [parseFloat(new_obj.value)];
     //   if (new_obj.is_int) {
-    //     new_obj._radix = 10;
+    //     new_obj.displayRadix = 10;
     //   } else {
-    //     new_obj._radix = 0;
+    //     new_obj.displayRadix = 0;
     //   }
     // } else {
     //   new_obj.values = [];
-    //   new_obj._radix = 0;
+    //   new_obj.displayRadix = 0;
     // }
     // Expression._update_radix_values(new_obj); // mutates new_obj
     // return new_obj;
-  }
-  static _update_numeric_properties(obj: any) {
-    let value = obj.value;
-    if (obj.value.startsWith("0x")) {
-      value = parseInt(obj.value, 16);
-    }
-    obj._float_value = parseFloat(value);
-    obj.is_numeric = !window.isNaN(obj._float_value);
-    obj.can_plot = obj.is_numeric && obj.expr_type === "expr";
-    obj.is_int = obj.is_numeric ? obj._float_value % 1 === 0 : false;
-  }
-  static _update_radix_values(obj: any) {
-    if (obj.is_int) {
-      obj._int_value_decimal = parseInt(obj.value);
-      if (obj._radix < 2 || obj._radix > 36) {
-        // defensive programming
-        console.warn("Got invalid radix. Setting to 10.");
-        obj._radix = 10;
-      }
-      obj._int_value_to_str_in_radix = obj._int_value_decimal.toString(obj._radix);
-      if (obj._radix === 16) {
-        obj._int_value_to_str_in_radix = "0x" + obj._int_value_to_str_in_radix;
-      }
-    }
   }
   /**
    * function render a plot on an existing element
@@ -758,8 +552,6 @@ export class ExpressionClass {
     if (!obj) {
       return;
     }
-    // mutate object by reference
-    obj.show_children_in_ui = true;
     // update store
     store.set<typeof store.data.expressions>("expressions", [...expressions]);
     if (obj.numchild && obj.children.length === 0) {
@@ -773,7 +565,6 @@ export class ExpressionClass {
     const expressions = store.data.expressions;
     const obj = ExpressionClass.getObjectFromGdbVarName(expressions, gdbVarName);
     if (obj) {
-      obj.show_children_in_ui = false;
       store.set<typeof store.data.expressions>("expressions", [...expressions]);
     }
   }
@@ -787,28 +578,26 @@ export class ExpressionClass {
       gdb_var_name
     );
     if (obj) {
-      const showing_children_in_ui = obj.show_children_in_ui;
-
-      if (showing_children_in_ui) {
-        // collapse
-        ExpressionClass.hide_children_in_ui(gdb_var_name);
-      } else {
-        // expand
-        ExpressionClass.fetchAndShowChildrenForVar(gdb_var_name);
-      }
+      // if (showing_children_in_ui) {
+      //   // collapse
+      //   ExpressionClass.hide_children_in_ui(gdb_var_name);
+      // } else {
+      //   // expand
+      //   ExpressionClass.fetchAndShowChildrenForVar(gdb_var_name);
+      // }
     } else {
       console.error("developer error - expected to find gdb variable object");
     }
   }
-  static click_toggle_plot(gdb_var_name: any) {
-    const expressions = store.data.expressions;
-    // get data object, which has field that says whether its expanded or not
-    const obj = ExpressionClass.getObjectFromGdbVarName(expressions, gdb_var_name);
-    if (obj) {
-      obj.show_plot = !obj.show_plot;
-      store.set<typeof store.data.expressions>("expressions", [...expressions]);
-    }
-  }
+  // static click_toggle_plot(gdb_var_name: any) {
+  //   const expressions = store.data.expressions;
+  //   // get data object, which has field that says whether its expanded or not
+  //   const obj = ExpressionClass.getObjectFromGdbVarName(expressions, gdb_var_name);
+  //   if (obj) {
+  //     obj.show_plot = !obj.show_plot;
+  //     store.set<typeof store.data.expressions>("expressions", [...expressions]);
+  //   }
+  // }
   static get_update_cmds() {
     function _get_cmds_for_obj(obj: any) {
       let cmds = [`-var-update --all-values ${obj.name}`];
@@ -824,38 +613,50 @@ export class ExpressionClass {
     }
     return cmds;
   }
-  static handleChangelist(changelistArray: any) {
+  static handleChangelist(changelistArray: GdbMiChangelist[]) {
     for (const changelist of changelistArray) {
       const expressions = store.data.expressions;
-      const obj = ExpressionClass.getObjectFromGdbVarName(expressions, changelist.name);
-      if (obj) {
-        if (parseInt(changelist["has_more"]) === 1 && "name" in changelist) {
-          // already retrieved children of obj, but more fields were added.
-          // Re-fetch the object from gdb
-          childVarFetcher.fetchChildren(changelist["name"], obj.expr_type);
-        }
-        if ("new_children" in changelist) {
-          const new_children = changelist.new_children.map((child: any) =>
-            ExpressionClass.gdbExpressionToGdbguiExpression(
-              child,
-              obj,
-              VarCreator.expr_type,
-              null
-            )
-          );
-          obj.children = obj.children.concat(new_children);
-        }
-        // overwrite fields of obj with fields from changelist
-        const changedObj = Object.assign(obj, changelist);
-        ExpressionClass._update_numeric_properties(changedObj);
-        ExpressionClass._update_radix_values(changedObj);
-        if (changedObj.can_plot) {
-          changedObj.values.push(changedObj._float_value);
-        }
-        store.set<typeof store.data.expressions>("expressions", [...expressions]);
-      } else {
-        // error
+      const gdbguiExpression = ExpressionClass.getObjectFromGdbVarName(
+        expressions,
+        changelist.name
+      );
+      if (!gdbguiExpression) {
+        continue;
       }
+      if (changelist.in_scope === "invalid") {
+        ExpressionClass.deleteGdbVariable(gdbguiExpression.name);
+        continue;
+      }
+
+      // TODO fetch a max number of children to avoid performance issues
+      if (changelist.has_more === "1" && "name" in changelist) {
+        // already retrieved children of obj, but more fields were added.
+        // Re-fetch the object from gdb
+        childVarFetcher.fetchChildren(changelist["name"], gdbguiExpression.expr_type);
+      }
+      const newChildrenGdb = changelist.new_children ?? [];
+      const newChildrenGdbGui = newChildrenGdb.map((child: GdbChildExpression) =>
+        ExpressionClass.gdbExpressionToGdbguiExpression(
+          child,
+          gdbguiExpression,
+          VarCreator.expr_type,
+          null
+        )
+      );
+      gdbguiExpression.children = gdbguiExpression.children.concat(newChildrenGdbGui);
+      gdbguiExpression.value = changelist.value;
+
+      gdbguiExpression.in_scope = changelist.in_scope === "true";
+      if ("new_type" in changelist) {
+        gdbguiExpression.type = changelist.new_type as string;
+      }
+      // overwrite fields of obj with fields from changelist
+      // ExpressionClass.getNumericProperties(updatedGdbguiExpression);
+      // ExpressionClass.updateRadixValues(updatedGdbguiExpression);
+      // if (updatedGdbguiExpression.canPlot) {
+      //   updatedGdbguiExpression.values.push(updatedGdbguiExpression.floatValue);
+      // }
+      store.set<typeof store.data.expressions>("expressions", [...expressions]);
     }
   }
   static click_draw_tree_gdb_variable(gdb_variable: any) {

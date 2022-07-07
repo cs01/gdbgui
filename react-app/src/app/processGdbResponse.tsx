@@ -21,6 +21,7 @@ import _ from "lodash";
 import {
   GdbChildExpression,
   GdbLocalVariable,
+  GdbMiChangelist,
   GdbMiChildrenVarResponse,
   GdbMiMessage,
   GdbMiRegisterValue,
@@ -209,7 +210,10 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     // gdbgui expression (aka a gdb variable was changed)
     if ("changelist" in r.payload) {
-      ExpressionClass.handleChangelist(r.payload.changelist);
+      const changelist = r.payload.changelist as GdbMiChangelist[];
+      if (changelist.length > 0) {
+        ExpressionClass.handleChangelist(changelist);
+      }
     }
     // gdbgui expression was evaluated for the first time for a child variable
     if ("has_more" in r.payload && "numchild" in r.payload && "children" in r.payload) {

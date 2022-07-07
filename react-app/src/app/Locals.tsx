@@ -11,48 +11,6 @@ import MemoryClass from "./Memory";
 import _ from "lodash";
 import { ChevronRightIcon } from "@heroicons/react/solid";
 
-/**
- * get unordered list for a "local" returned by gdb
- * these are special snowflakes; gdb returns a small subset of information for
- * locals. The list is useful to browse, but oftentimes needs to be expanded.
- * If the user clicks on a local that can be expanded, gdbgui will ask gdb
- * to create a full-fledged expression for the user to explore. gdbgui will then
- * render that instead of the "local".
- */
-function LocalVariable(props: { local: GdbguiLocalVariable }) {
-  const local = props.local;
-  const can_be_expanded = local.can_be_expanded;
-
-  const value = _.isString(local.value)
-    ? MemoryClass.textToLinks(local.value)
-    : local.value;
-
-  return (
-    <div
-      className={`flex w-full whitespace-nowrap overflow-x-hidden items-center text-xs font-mono ${
-        can_be_expanded ? "cursor-pointer" : ""
-      } `}
-      onClick={() => {
-        if (can_be_expanded) {
-          ExpressionClass.createExpression(local.name, "local");
-        }
-      }}
-    >
-      <div className="w-4">
-        {can_be_expanded ? (
-          <button>
-            <ChevronRightIcon className="icon" />
-          </button>
-        ) : null}
-      </div>
-      <div className="text-purple-400 mr-2">{local.name}:</div>
-      <div className="mr-2">{value === "" ? "{...}" : value}</div>
-      <div className="flex-grow" />
-      <div className="text-gray-400 italic">{local.type.trim()}</div>
-    </div>
-  );
-}
-
 export function Locals() {
   const expressions = useGlobalValue<typeof store.data.expressions>("expressions");
   const locals = useGlobalValue<typeof store.data.locals>("locals");

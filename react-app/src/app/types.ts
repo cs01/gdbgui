@@ -127,33 +127,60 @@ export type GdbMiChildrenVarResponse = {
   children: Array<GdbChildExpression>;
 };
 
+// changelist
+// {
+//   name: "var3.value",
+//   value: "100",
+//   in_scope: "true",
+//   type_changed: "false",
+//   has_more: "0",
+// };
+// https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Variable-Objects.html#GDB_002fMI-Variable-Objects
+export type GdbMiChangelist = {
+  // The name of the varobj.
+  name: "string";
+  // If values were requested for this update, then this field will be present and will hold the value of the varobj.
+  value: "string";
+  // The variable object no longer holds a valid value.
+  // This can occur when the executable file being
+  // debugged has changed, either through recompilation or by using the GDB file command. The front end should normally choose to delete these variable objects.
+  in_scope: "true" | "false" | "invalid";
+  // if changed, children should be auto-deleted
+  type_changed?: "true" | "false";
+  new_type?: string;
+  has_more: "0" | "1";
+  num_new_children?: string;
+  displayhint?: string;
+  dynamic?: "1" | "0";
+  new_children?: GdbChildExpression[];
+};
+
 export type GdbguiExpressionType = "local" | "expr" | "hover";
 export type GdbguiLocalVariable = GdbLocalVariable & {
   can_be_expanded: boolean;
   expr_type: "simplelocal";
 };
 export type GdbguiExpressionVar = {
-  can_plot: boolean;
   children: Array<GdbguiExpressionVar>;
   expr_type: "expr" | "hover" | "local";
   exp: string;
   // expression: string;
   in_scope: true | false | "invalid";
-  is_int: boolean;
-  is_numeric: boolean;
   name: string;
   numchild: number;
   parent: Nullable<GdbguiExpressionVar>;
   has_more: number;
-  show_children_in_ui: boolean;
-  show_plot: boolean;
+  // show_children_in_ui: boolean;
+  // show_plot: boolean;
   "thread-id": string;
   type: string;
+
   value: string;
-  values: Array<{
-    _float_value: number;
-    _radix: number;
-  }>;
+  valueHistory: Nullable<
+    Array<{
+      number: number;
+    }>
+  >;
 };
 
 export type GdbMiRegisterValue = { value: string; number: string };
