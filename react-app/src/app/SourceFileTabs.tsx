@@ -37,7 +37,14 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
           const filteredSourceFiles = store.data.cachedSourceFiles.filter(
             (sf) => sf.fullname !== props.sourceFile.fullname
           );
-          store.set("cachedSourceFiles", filteredSourceFiles);
+          store.set<typeof store.data.cachedSourceFiles>(
+            "cachedSourceFiles",
+            filteredSourceFiles
+          );
+          store.set<typeof store.data.fullname_to_render>(
+            "fullname_to_render",
+            filteredSourceFiles[0].fullname
+          );
         }}
       >
         <XIcon className="icon" />
