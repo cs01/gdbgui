@@ -23,7 +23,7 @@ function MemoryRow(props: { entry: GdbMiMemoryEntry; bytes: string[] }) {
     String.fromCharCode(parseInt(byte, 16)).replace(/\W/g, ".")
   );
   const hoverBgColor = "bg-blue-900";
-  const characterColor = "text-blue-600";
+  const characterColor = "text-blue-400";
   return (
     <div className="flex">
       <span className="mr-2">{<MemoryLink addr={entry.begin} />}</span>
@@ -159,7 +159,7 @@ export function Memory(props: {}) {
     <div className="text-sm">
       <div className="flex flex-wrap space-y-2 w-full items-center">
         <input
-          className="input text-center"
+          className="input text-center font-mono"
           placeholder="start address (hex)"
           value={startAddr}
           onKeyUp={(e) => {
@@ -173,7 +173,7 @@ export function Memory(props: {}) {
         />
         <span className="px-1">to</span>
         <input
-          className="input text-center"
+          className="input text-center font-mono"
           placeholder="end address (hex)"
           value={endAddr}
           onKeyUp={(e) => {

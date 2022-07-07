@@ -302,7 +302,7 @@ export function Expression(props: {
         </div>
         {depth === 0 && props.expr_type === "expr" ? (
           <div
-            className="text-gray-200"
+            className="text-gray-200 cursor-pointer"
             onClick={() => {
               ExpressionClass.deleteGdbVariable(obj.name);
             }}
