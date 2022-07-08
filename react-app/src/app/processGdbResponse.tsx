@@ -19,12 +19,14 @@ import { Modal } from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
 import {
+  GdbAsmResponse,
   GdbChildExpression,
   GdbLocalVariable,
   GdbMiChangelist,
   GdbMiChildrenVarResponse,
   GdbMiMessage,
   GdbMiRegisterValue,
+  GdbProgramStopped,
   GdbRootExpressionResponse,
 } from "./types";
 import { RegisterClass } from "./Registers";
@@ -57,7 +59,7 @@ function handleGdbMessage(r: GdbMiMessage) {
     } else if (ignoreError(r)) {
       return;
     } else if (r.token === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
-      FileOps.fetch_disassembly_for_missing_file_failed();
+      FileOps.fetchDisassemblyForMissingFileFailed();
     } else if (r.payload && !Array.isArray(r.payload) && r.payload.msg) {
       if (r.payload.msg.startsWith("Unable to find Mach task port")) {
         Handlers.addGdbResponseToConsole(r);
@@ -133,7 +135,7 @@ function handleGdbMessage(r: GdbMiMessage) {
       );
     }
     if ("asm_insns" in r.payload) {
-      FileOps.saveNewAssembly(r.payload.asm_insns, r.token);
+      FileOps.saveNewAssembly(r.payload.asm_insns as GdbAsmResponse, r.token);
     }
     if ("files" in r.payload) {
       if (r.payload.files.length > 0) {
@@ -274,16 +276,8 @@ function handleGdbMessage(r: GdbMiMessage) {
       if (r.payload.reason.includes("exited")) {
         Handlers.onDebugeeExited();
       } else {
-        Handlers.onProgramStopped({
-          seq: 0,
-          event: "program stopped",
-          type: "event",
-          body: {
-            reason: r.payload.reason,
-            threadId: r.payload["thread-id"],
-            allThreadsStopped: r.payload["stopped-threads"] === "all",
-          },
-        });
+        const payload = r.payload as GdbProgramStopped;
+        Handlers.onProgramStopped(payload);
         if (
           r.payload.reason === "signal-received" &&
           r.payload["signal-name"] !== "SIGINT"

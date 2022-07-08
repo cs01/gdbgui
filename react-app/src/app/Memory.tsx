@@ -317,25 +317,29 @@ class MemoryClass {
    * return react component
    */
   static textToLinks(text: string): React.ReactNode | string {
-    const matches = text.match(/(0x[\d\w]+)/g);
-    if (text && matches && matches.length) {
-      const addr = matches[0];
-      const leading_text = text.slice(0, text.indexOf(addr));
-      const trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length);
-      let suffix_component: React.ReactNode | string = trailing_text;
-      if (trailing_text) {
-        // recursive call to turn additional addressed after the first
-        suffix_component = MemoryClass.textToLinks(trailing_text);
+    try {
+      const matches = text.match(/(0x[\d\w]+)/g);
+      if (text && matches && matches.length) {
+        const addr = matches[0];
+        const leading_text = text.slice(0, text.indexOf(addr));
+        const trailing_text = text.slice(text.indexOf(addr) + addr.length, text.length);
+        let suffix_component: React.ReactNode | string = trailing_text;
+        if (trailing_text) {
+          // recursive call to turn additional addressed after the first
+          suffix_component = MemoryClass.textToLinks(trailing_text);
+        }
+        return (
+          <React.Fragment>
+            {leading_text}
+            <MemoryLink addr={addr} />
+            {suffix_component}
+          </React.Fragment>
+        );
+      } else {
+        return text;
       }
-      return (
-        <React.Fragment>
-          {leading_text}
-          <MemoryLink addr={addr} />
-          {suffix_component}
-        </React.Fragment>
-      );
-    } else {
-      return text;
+    } catch (e) {
+      console.error("failed to run textToLinks", e);
     }
   }
 

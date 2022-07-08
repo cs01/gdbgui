@@ -393,7 +393,7 @@ export class ExpressionClass {
     if (parent) {
       // prepare all the child objects we received for local storage
       const gdbguiChildren = response.children.map((child) =>
-        ExpressionClass.gdbExpressionToGdbguiExpression(
+        ExpressionClass.initGdbguiVarFromGdbResponse(
           child,
           parent,
           VarCreator.expr_type,
@@ -423,7 +423,7 @@ export class ExpressionClass {
    * @param newExpression (object): mi object returned from gdb
    * @param expr_type "local" | "expr" | "hover"
    */
-  static gdbExpressionToGdbguiExpression(
+  static initGdbguiVarFromGdbResponse(
     newExpression: GdbChildExpression | GdbRootExpressionResponse,
     parent: Nullable<GdbguiExpressionVar>, //not null if newExpression is child
     expr_type: Nullable<GdbguiExpressionType>,
@@ -577,7 +577,7 @@ export class ExpressionClass {
       }
       const newChildrenGdb = changelist.new_children ?? [];
       const newChildrenGdbGui = newChildrenGdb.map((child: GdbChildExpression) =>
-        ExpressionClass.gdbExpressionToGdbguiExpression(
+        ExpressionClass.initGdbguiVarFromGdbResponse(
           child,
           gdbguiExpression,
           VarCreator.expr_type,
@@ -623,7 +623,7 @@ export class ExpressionClass {
     exprType: GdbguiExpressionType,
     obj: GdbRootExpressionResponse
   ) {
-    const newExpression = ExpressionClass.gdbExpressionToGdbguiExpression(
+    const newExpression = ExpressionClass.initGdbguiVarFromGdbResponse(
       obj,
       null,
       VarCreator.expr_type,

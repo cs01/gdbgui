@@ -14,7 +14,7 @@ export function Footer() {
       className={`w-full ${background} fixed px-2 left-0 bottom-0 text-sm text-gray-300`}
     >
       Status: {programState}{" "}
-      {programState === "stopped" ? `(${stoppedDetails?.body.reason})` : ""}
+      {programState === "stopped" ? `(${stoppedDetails?.reason})` : ""}
     </div>
   );
 }

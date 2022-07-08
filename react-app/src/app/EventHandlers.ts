@@ -5,7 +5,7 @@ import MemoryClass from "./Memory";
 import constants, { colorTypeMap } from "./constants";
 import _ from "lodash";
 import $ from "jquery";
-import { GdbGuiConsoleEntry } from "./types";
+import { GdbGuiConsoleEntry, GdbProgramStopped } from "./types";
 import { DebugProtocol } from "vscode-debugprotocol";
 import { ExpressionClass } from "./Expression";
 import React from "react";
@@ -27,19 +27,19 @@ const Handlers = {
   onEventInferiorProgramResuming: function () {
     store.set<typeof store.data.gdbguiState>("gdbguiState", "running");
   },
-  onProgramStopped: function (stoppedDetails: DebugProtocol.StoppedEvent) {
+  onProgramStopped: function (stoppedDetails: GdbProgramStopped) {
     store.set<typeof store.data.gdbguiState>("gdbguiState", "stopped");
     store.set<typeof store.data.stoppedDetails>("stoppedDetails", stoppedDetails);
-    // store.set(
-    //   "source_code_selection_state",
-    //   constants.source_code_selection_states.PAUSED_FRAME
+    store.set(
+      "source_code_selection_state",
+      constants.source_code_selection_states.PAUSED_FRAME
+    );
+    // store.set<typeof store.data.paused_on_frame>(
+    //   "paused_on_frame",
+    //   gdbProgramStopped.frame
     // );
-    // store.set<typeof store.data.paused_on_frame>("paused_on_frame", frame);
-    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'fullname' does not exist on type '{}'.
     // store.set<typeof store.data.fullname_to_render>("fullname_to_render", frame.fullname);
-    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'line' does not exist on type '{}'.
     // store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", parseInt(frame.line));
-    // // @ts-expect-error ts-migrate(2339) FIXME: Property 'addr' does not exist on type '{}'.
     // store.set<typeof store.data.current_assembly_address>("current_assembly_address", frame.addr);
     // SourceCode.make_current_line_visible();
     Handlers.refreshGdbguiState();

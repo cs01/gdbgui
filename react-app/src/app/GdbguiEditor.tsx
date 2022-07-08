@@ -25,12 +25,13 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
       return "fetching source, please wait";
     }
     case states.ASSM_CACHED: {
-      return "assm cached";
-      // const pausedAddr = this.state.paused_on_frame
-      //   ? this.state.paused_on_frame.addr
-      //   : null;
-      // const asmArray = this.state.disassembly_for_missing_file;
-      // return this.getBodyAsmOnly(asmArray, pausedAddr);
+      const gdbAsm = store.data.disassembly_for_missing_file;
+      return gdbAsm
+        .map((g) => {
+          const onCurrentLine = g.address === store.data.stoppedDetails?.frame.addr;
+          return `${onCurrentLine ? ">" : " "} ${g.address} ${g.inst} ${g["func-name"]}`;
+        })
+        .join("\n");
     }
     case states.FETCHING_ASSM: {
       return "fetching assembly, please wait";
@@ -117,7 +118,7 @@ function highlightLine(
   }
   let endCol;
   const lineNumInt = parseInt(lineNumber);
-  editor.revealLine(lineNumInt);
+  editor.revealLineInCenter(lineNumInt);
   try {
     endCol = editor.getModel()?.getLineMaxColumn(lineNumInt);
   } catch (e) {

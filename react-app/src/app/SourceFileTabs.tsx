@@ -2,6 +2,7 @@ import { store, useGlobalState, useGlobalValue } from "./Store";
 import { SourceFile } from "./types";
 import path from "path";
 import { XIcon } from "@heroicons/react/solid";
+import { fetchAssemblyForFileAtLine } from "./Assembly";
 
 function getSourceFileHoverString(sourceFile: SourceFile) {
   return [
@@ -18,6 +19,22 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
   const activeColors = props.currentFile
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
+
+  const maybeFetchAssemblyButton = props.currentFile ? (
+    <button
+      onClick={() => {
+        fetchAssemblyForFileAtLine(
+          props.sourceFile.fullname,
+          store.data.line_of_source_to_flash
+            ? parseInt(store.data.line_of_source_to_flash)
+            : null
+        );
+      }}
+    >
+      {" "}
+      Fetch Assembly
+    </button>
+  ) : null;
   return (
     <div
       title={getSourceFileHoverString(props.sourceFile)}
@@ -31,6 +48,7 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
       >
         {path.basename(props.sourceFile.fullname)}
       </button>
+      {maybeFetchAssemblyButton}
       <button
         className="hover:bg-red-600"
         onClick={() => {

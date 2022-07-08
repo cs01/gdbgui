@@ -181,6 +181,42 @@ export type GdbMiRegisterValue = { value: string; number: string };
 export type GdbguiRegisterValue = {
   [registerNumber: string]: { gdbValue: string; decimalValue: Nullable<number> };
 };
+
+export type GdbAsmLine = {
+  address: string; // "0x0005551a8"
+  ["func-name"]?: string; // "main"
+  offset: string;
+  inst: string;
+};
+
+export type GdbAsmForFile = {
+  line?: string; // "33"
+  file?: string; // hello.c
+  fullname: string; ///home/csmith/hello.c
+  line_asm_insn: Array<GdbAsmLine>;
+};
+export type GdbAsmResponse = GdbAsmLine[] | GdbAsmForFile[];
+
+// when messaged is "stopped"
+export type GdbProgramStopped = {
+  bkptno: string; // "1"
+  core: string; // "4"
+  disp: "keep" | string;
+  frame: {
+    addr: string;
+    func: string;
+    arch: string; //"i386:x86-64"
+    line: string;
+    args: { name: string; value: string }[];
+    file: string;
+    fullname: string;
+  };
+  reason: "breakpoint-hit" | "signal-received" | string;
+  ["stopped-threads"]: "all" | string;
+  ["thread-id"]: string;
+  ["signame-name"]?: "SIGINT" | "SIGSEV" | string;
+};
+
 export type GlobalState = {
   debug: boolean;
   gdbgui_version: string;
@@ -232,7 +268,7 @@ export type GlobalState = {
   current_assembly_address: Nullable<string>;
   make_current_line_visible: boolean;
   cachedSourceFiles: SourceFile[]; // list with keys fullname, source_code
-  disassembly_for_missing_file: any[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
+  disassembly_for_missing_file: GdbAsmLine[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
   source_code_state: string;
   source_code_selection_state: string;
@@ -269,7 +305,7 @@ export type GlobalState = {
   gdbguiPty: Nullable<Terminal>;
   revealLine: (lineNum: number) => void;
 
-  stoppedDetails: Nullable<DebugProtocol.StoppedEvent>;
+  stoppedDetails: Nullable<GdbProgramStopped>;
   gdbguiState: UserVisibleState;
   features: Nullable<Array<GdbFeature>>;
 
