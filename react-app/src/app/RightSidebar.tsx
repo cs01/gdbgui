@@ -20,9 +20,10 @@ import { store, useGlobalValue } from "./Store";
 function CollapsableContainer(props: {
   content: ReactNode;
   title: string;
+  collapseOnInitialRender?: boolean;
   rightTitleBarContent?: ReactNode;
 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(props.collapseOnInitialRender ?? false);
   return (
     <div className="w-full">
       <div className="w-full cursor-pointer bg-black-900 items-center flex">
@@ -76,7 +77,11 @@ export function RightSidebar(props: { signals: {}; debug: boolean; initialDir: s
       <CollapsableContainer title={"watch"} content={<Watch />} />
       <CollapsableContainer title={"threads"} content={<Threads />} />
       <CollapsableContainer title={"memory"} content={<Memory />} />
-      <CollapsableContainer title={"registers"} content={<Registers />} />
+      <CollapsableContainer
+        title={"registers"}
+        collapseOnInitialRender={true}
+        content={<Registers />}
+      />
       <CollapsableContainer title={"gdb mi output"} content={<GdbMiOutput />} />
     </div>
   );

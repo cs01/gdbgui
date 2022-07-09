@@ -6,13 +6,42 @@ import { store, useGlobalState, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 import Breakpoints from "./Breakpoints";
-import { GdbGuiBreakpoint } from "./types";
-import _ from "lodash";
+import { GdbAsmForFile, GdbAsmLine, GdbGuiBreakpoint } from "./types";
+
+// function asmToRows(asmLines: GdbAsmForFile[] | GdbAsmLine[]) {
+//   return asmLines
+//     .map((g) => {
+//       const onCurrentLine = g.address === store.data.stoppedDetails?.frame.addr;
+//       return `${onCurrentLine ? ">" : " "} ${g.address} ${g.inst} ${g["func-name"]}`;
+//     })
+//     .join("\n");
+// }
 
 function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
   const states = constants.source_code_states;
   switch (sourceCodeState) {
     case states.ASSM_AND_SOURCE_CACHED: // fallthrough
+      const obj = FileOps.getSourceFileFromFullname(sourcePath);
+      if (!obj) {
+        console.error("expected to find source file");
+        return `Developer error - could not find file contents for ${sourcePath}`;
+      }
+      return obj.sourceCode
+        .map((line, i) => {
+          const asms = obj.assembly[i];
+          if (!asms) {
+            return line;
+          }
+          return `${line}\n${asms
+            .map(
+              (asm) =>
+                `          ${
+                  asm.address === store.data.stoppedDetails?.frame.addr ? "--->" : "    "
+                } ${asm.address} ${asm.inst}`
+            )
+            .join("\n")}`;
+        })
+        .join("\n");
     case states.SOURCE_CACHED: {
       const obj = FileOps.getSourceFileFromFullname(sourcePath);
       if (!obj) {
@@ -223,6 +252,8 @@ export function GdbguiEditor() {
             e.target.position?.lineNumber
           );
         }
+      } else {
+        console.log("mouse down", e);
       }
     });
   }

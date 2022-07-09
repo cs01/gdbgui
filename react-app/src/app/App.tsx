@@ -56,7 +56,7 @@ export function Gdbgui() {
   if (!initialData) {
     return (
       <div className="flex-col h-screen w-screen bg-gray-900  text-gray-800 text-9xl text-center">
-        <div className="w-full  ">Loading...</div>
+        <div className="w-full">Loading...</div>
       </div>
     );
   }
@@ -84,13 +84,12 @@ export function Gdbgui() {
       <ReflexContainer orientation="horizontal">
         <ReflexElement flex={0.85} minSize={100} className="bg-black text-gray-300">
           <div className="fixed bg-black w-full z-10">
-            <Nav />
-            <TargetSelector initial_user_input={initialData.initial_binary_and_args} />
+            <Nav initialData={initialData} />
           </div>
           <ReflexContainer
             orientation="vertical"
             className="h-full"
-            style={{ paddingTop: "92px" }}
+            style={{ paddingTop: "52px" }}
           >
             <ReflexElement className="left-pane" flex={0.6} minSize={100}>
               <SourceFileTabs />

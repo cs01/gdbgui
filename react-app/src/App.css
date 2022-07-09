@@ -38,11 +38,11 @@
 }
 
 .background-animate {
-  background-size: 150%;
+  background-size: 200%;
 
-  -webkit-animation: BackgroundGradientAnimation 100s ease infinite;
-  -moz-animation: BackgroundGradientAnimation 100s ease infinite;
-  animation: BackgroundGradientAnimation 100s ease infinite;
+  -webkit-animation: BackgroundGradientAnimation 10s ease infinite;
+  -moz-animation: BackgroundGradientAnimation 10s ease infinite;
+  animation: BackgroundGradientAnimation 10s ease infinite;
 }
 
 @keyframes BackgroundGradientAnimation {

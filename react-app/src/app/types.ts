@@ -6,7 +6,7 @@ import React from "react";
 export type SourceFile = {
   fullname: string;
   source_code_obj: any;
-  assembly: Object;
+  assembly: { [key: number]: Nullable<GdbAsmLine[]> };
   sourceCode: Array<string>;
   last_modified_unix_sec: number;
   num_lines_in_file: number;

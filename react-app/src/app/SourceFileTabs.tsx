@@ -1,7 +1,7 @@
 import { store, useGlobalState, useGlobalValue } from "./Store";
 import { SourceFile } from "./types";
 import path from "path";
-import { XIcon } from "@heroicons/react/solid";
+import { XIcon, DownloadIcon, ArrowDownIcon } from "@heroicons/react/solid";
 import { fetchAssemblyForFileAtLine } from "./Assembly";
 
 function getSourceFileHoverString(sourceFile: SourceFile) {
@@ -20,21 +20,37 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
 
-  const maybeFetchAssemblyButton = props.currentFile ? (
-    <button
-      onClick={() => {
-        fetchAssemblyForFileAtLine(
-          props.sourceFile.fullname,
-          store.data.line_of_source_to_flash
-            ? parseInt(store.data.line_of_source_to_flash)
-            : null
-        );
-      }}
-    >
-      {" "}
-      Fetch Assembly
-    </button>
-  ) : null;
+  const maybeFetchAssemblyButton =
+    props.currentFile && !Object.keys(props.sourceFile.assembly).length ? (
+      <button
+        title="Fetch assembly"
+        className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
+        onClick={() => {
+          fetchAssemblyForFileAtLine(
+            props.sourceFile.fullname,
+            store.data.line_of_source_to_flash
+              ? parseInt(store.data.line_of_source_to_flash)
+              : null
+          );
+        }}
+      >
+        asm
+        <DownloadIcon className="icon" />
+      </button>
+    ) : null;
+
+  const maybeClearAssemblyButton =
+    props.currentFile && Object.keys(props.sourceFile.assembly).length ? (
+      <button
+        title="Clear assembly"
+        className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
+        onClick={() => {
+          props.sourceFile.assembly = {};
+        }}
+      >
+        clear asm
+      </button>
+    ) : null;
   return (
     <div
       title={getSourceFileHoverString(props.sourceFile)}
@@ -49,6 +65,7 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
         {path.basename(props.sourceFile.fullname)}
       </button>
       {maybeFetchAssemblyButton}
+      {maybeClearAssemblyButton}
       <button
         className="hover:bg-red-600"
         onClick={() => {
