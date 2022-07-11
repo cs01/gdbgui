@@ -3,6 +3,7 @@ import { SourceFile } from "./types";
 import path from "path";
 import { XIcon, DownloadIcon, ArrowDownIcon } from "@heroicons/react/solid";
 import { fetchAssemblyForFileAtLine } from "./Assembly";
+import FileOps from "./FileOps";
 
 function getSourceFileHoverString(sourceFile: SourceFile) {
   return [
@@ -20,14 +21,14 @@ function SourceFileTab(props: {
   currentFile: boolean;
   pausedOnFrame: boolean;
 }) {
+  const sourceCodeState =
+    useGlobalValue<typeof store.data.source_code_state>("source_code_state");
   const activeColors = props.currentFile
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
 
   const maybeFetchAssemblyButton =
-    props.currentFile &&
-    props.pausedOnFrame &&
-    !Object.keys(props.sourceFile.assembly).length ? (
+    props.currentFile && props.pausedOnFrame && sourceCodeState === "SOURCE_CACHED" ? (
       <button
         title="Fetch assembly"
         className="flex items-center  hover:bg-gray-900 text-xs"
@@ -48,12 +49,12 @@ function SourceFileTab(props: {
   const maybeClearAssemblyButton =
     props.currentFile &&
     props.pausedOnFrame &&
-    Object.keys(props.sourceFile.assembly).length ? (
+    sourceCodeState === "ASSM_AND_SOURCE_CACHED" ? (
       <button
         title="Clear assembly"
         className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
         onClick={() => {
-          props.sourceFile.assembly = {};
+          FileOps.clearCachedAssemblyForFile(props.sourceFile.fullname);
         }}
       >
         clear asm

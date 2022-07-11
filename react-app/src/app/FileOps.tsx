@@ -261,9 +261,9 @@ const FileOps = {
     startLine: Nullable<number>,
     requireCachedLineNum: Nullable<number>,
     endLine: Nullable<number>,
-    assemblyIsCached: any,
+    assemblyIsCached: boolean,
     fileIsMissing: boolean,
-    isPaused: any,
+    isPaused: boolean,
     pausedAddress: Nullable<number>
   ) {
     const lineIsCached = FileOps.lineIsCached(fullname, requireCachedLineNum);
@@ -370,9 +370,19 @@ const FileOps = {
     }
     return source_file_obj.source_code_obj[linenum];
   },
-  assemblyIsCached: function (fullname: string) {
+  assemblyIsCached: function (fullname: string): boolean {
     const sourceFile = FileOps.getSourceFileFromFullname(fullname);
-    return sourceFile && sourceFile.assembly && Object.keys(sourceFile.assembly).length;
+    return Boolean(
+      sourceFile && sourceFile.assembly && Object.keys(sourceFile.assembly).length > 0
+    );
+  },
+  clearCachedAssemblyForFile: function (fullname: string) {
+    const sourceFile = FileOps.getSourceFileFromFullname(fullname);
+    if (!sourceFile) {
+      return;
+    }
+    sourceFile.assembly = {};
+    store.set<typeof store.data.source_code_state>("source_code_state", "SOURCE_CACHED");
   },
   getSourceFileFromFullname: function (fullname: Nullable<string>): Nullable<SourceFile> {
     const cached_files = store.data.cachedSourceFiles;

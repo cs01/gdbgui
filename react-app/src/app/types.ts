@@ -217,6 +217,16 @@ export type GdbProgramStopped = {
   ["signame-name"]?: "SIGINT" | "SIGSEV" | string;
 };
 
+export type GdbguiSourceCodeState =
+  | "ASSM_AND_SOURCE_CACHED"
+  | "SOURCE_CACHED"
+  | "FETCHING_SOURCE"
+  | "ASM_CACHED"
+  | "FETCHING_ASSM"
+  | "ASSM_UNAVAILABLE"
+  | "FILE_MISSING"
+  | "NONE_AVAILABLE";
+
 export type GlobalState = {
   debug: boolean;
   gdbgui_version: string;
@@ -270,15 +280,7 @@ export type GlobalState = {
   cachedSourceFiles: SourceFile[]; // list with keys fullname, source_code
   disassembly_for_missing_file: GdbAsmLine[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
-  source_code_state:
-    | "ASSM_AND_SOURCE_CACHED"
-    | "SOURCE_CACHED"
-    | "FETCHING_SOURCE"
-    | "ASM_CACHED"
-    | "FETCHING_ASSM"
-    | "ASSM_UNAVAILABLE"
-    | "FILE_MISSING"
-    | "NONE_AVAILABLE";
+  source_code_state: GdbguiSourceCodeState;
   source_code_selection_state: Nullable<"paused frame" | "user selected file">;
 
   // binary selection

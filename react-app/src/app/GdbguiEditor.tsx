@@ -6,7 +6,12 @@ import { store, useGlobalState, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
 import Breakpoints from "./Breakpoints";
-import { GdbAsmForFile, GdbAsmLine, GdbGuiBreakpoint } from "./types";
+import {
+  GdbAsmForFile,
+  GdbAsmLine,
+  GdbGuiBreakpoint,
+  GdbguiSourceCodeState,
+} from "./types";
 
 // function asmToRows(asmLines: GdbAsmForFile[] | GdbAsmLine[]) {
 //   return asmLines
@@ -17,7 +22,10 @@ import { GdbAsmForFile, GdbAsmLine, GdbGuiBreakpoint } from "./types";
 //     .join("\n");
 // }
 
-function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
+function getSourceCode(
+  sourceCodeState: GdbguiSourceCodeState,
+  sourcePath: Nullable<string>
+): string {
   switch (sourceCodeState) {
     case "ASSM_AND_SOURCE_CACHED": // fallthrough
       const obj = FileOps.getSourceFileFromFullname(sourcePath);
