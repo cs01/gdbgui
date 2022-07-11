@@ -18,9 +18,8 @@ import { GdbAsmForFile, GdbAsmLine, GdbGuiBreakpoint } from "./types";
 // }
 
 function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): string {
-  const states = constants.source_code_states;
   switch (sourceCodeState) {
-    case states.ASSM_AND_SOURCE_CACHED: // fallthrough
+    case "ASSM_AND_SOURCE_CACHED": // fallthrough
       const obj = FileOps.getSourceFileFromFullname(sourcePath);
       if (!obj) {
         console.error("expected to find source file");
@@ -42,7 +41,7 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
             .join("\n")}`;
         })
         .join("\n");
-    case states.SOURCE_CACHED: {
+    case "SOURCE_CACHED": {
       const obj = FileOps.getSourceFileFromFullname(sourcePath);
       if (!obj) {
         console.error("expected to find source file");
@@ -50,10 +49,10 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
       }
       return obj.sourceCode.join("\n");
     }
-    case states.FETCHING_SOURCE: {
+    case "FETCHING_SOURCE": {
       return "fetching source, please wait";
     }
-    case states.ASSM_CACHED: {
+    case "ASM_CACHED": {
       const gdbAsm = store.data.disassembly_for_missing_file;
       return gdbAsm
         .map((g) => {
@@ -62,16 +61,16 @@ function getSourceCode(sourceCodeState: any, sourcePath: Nullable<string>): stri
         })
         .join("\n");
     }
-    case states.FETCHING_ASSM: {
+    case "FETCHING_ASSM": {
       return "fetching assembly, please wait";
     }
-    case states.ASSM_UNAVAILABLE: {
+    case "ASSM_UNAVAILABLE": {
       return "cannot access address";
     }
-    case states.FILE_MISSING: {
+    case "FILE_MISSING": {
       return `file not found: ${sourcePath}`;
     }
-    case states.NONE_AVAILABLE: {
+    case "NONE_AVAILABLE": {
       return "";
     }
     default: {

@@ -208,8 +208,8 @@ export type GdbProgramStopped = {
     arch: string; //"i386:x86-64"
     line: string;
     args: { name: string; value: string }[];
-    file: string;
-    fullname: string;
+    file?: string;
+    fullname?: string;
   };
   reason: "breakpoint-hit" | "signal-received" | string;
   ["stopped-threads"]: "all" | string;
@@ -243,7 +243,7 @@ export type GlobalState = {
 
   inferior_pid: Nullable<number>;
 
-  paused_on_frame: Nullable<any>;
+  paused_on_frame: Nullable<GdbStackFrame>;
   selected_frame_num: number;
   stack: Nullable<Array<GdbStackFrame>>;
   locals: Array<GdbguiLocalVariable>;
@@ -270,8 +270,16 @@ export type GlobalState = {
   cachedSourceFiles: SourceFile[]; // list with keys fullname, source_code
   disassembly_for_missing_file: GdbAsmLine[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
-  source_code_state: string;
-  source_code_selection_state: string;
+  source_code_state:
+    | "ASSM_AND_SOURCE_CACHED"
+    | "SOURCE_CACHED"
+    | "FETCHING_SOURCE"
+    | "ASM_CACHED"
+    | "FETCHING_ASSM"
+    | "ASSM_UNAVAILABLE"
+    | "FILE_MISSING"
+    | "NONE_AVAILABLE";
+  source_code_selection_state: Nullable<"paused frame" | "user selected file">;
 
   // binary selection
   inferior_binary_path: Nullable<string>;

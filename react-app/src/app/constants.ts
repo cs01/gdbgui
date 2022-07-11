@@ -37,22 +37,6 @@ export const constants = {
   INLINE_DISASSEMBLY_STR: "4",
   INLINE_DISASSEMBLY_INT: 4,
 
-  source_code_selection_states: {
-    USER_SELECTION: "USER_SELECTION",
-    PAUSED_FRAME: "PAUSED_FRAME",
-  },
-
-  source_code_states: {
-    ASSM_AND_SOURCE_CACHED: "ASSM_AND_SOURCE_CACHED",
-    SOURCE_CACHED: "SOURCE_CACHED",
-    FETCHING_SOURCE: "FETCHING_SOURCE",
-    ASSM_CACHED: "ASSM_CACHED",
-    FETCHING_ASSM: "FETCHING_ASSM",
-    ASSM_UNAVAILABLE: "ASSM_UNAVAILABLE",
-    FILE_MISSING: "FILE_MISSING",
-    NONE_AVAILABLE: "NONE_AVAILABLE",
-  },
-
   tree_component_id: "tree",
 
   default_max_lines_of_code_to_fetch: 500,

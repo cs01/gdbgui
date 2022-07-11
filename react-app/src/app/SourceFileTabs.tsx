@@ -15,16 +15,22 @@ function getSourceFileHoverString(sourceFile: SourceFile) {
   ].join("\n");
 }
 
-function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) {
+function SourceFileTab(props: {
+  sourceFile: SourceFile;
+  currentFile: boolean;
+  pausedOnFrame: boolean;
+}) {
   const activeColors = props.currentFile
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
 
   const maybeFetchAssemblyButton =
-    props.currentFile && !Object.keys(props.sourceFile.assembly).length ? (
+    props.currentFile &&
+    props.pausedOnFrame &&
+    !Object.keys(props.sourceFile.assembly).length ? (
       <button
         title="Fetch assembly"
-        className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
+        className="flex items-center  hover:bg-gray-900 text-xs"
         onClick={() => {
           fetchAssemblyForFileAtLine(
             props.sourceFile.fullname,
@@ -34,13 +40,15 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
           );
         }}
       >
-        asm
+        <span>asm</span>
         <DownloadIcon className="icon" />
       </button>
     ) : null;
 
   const maybeClearAssemblyButton =
-    props.currentFile && Object.keys(props.sourceFile.assembly).length ? (
+    props.currentFile &&
+    props.pausedOnFrame &&
+    Object.keys(props.sourceFile.assembly).length ? (
       <button
         title="Clear assembly"
         className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
@@ -51,10 +59,16 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
         clear asm
       </button>
     ) : null;
+  const maxCharsToDisplay = 30;
+  const fullBasename = path.basename(props.sourceFile.fullname);
+  const filenameToDisplay =
+    fullBasename.length > maxCharsToDisplay
+      ? `${fullBasename.slice(0, maxCharsToDisplay)}...`
+      : fullBasename;
   return (
     <div
       title={getSourceFileHoverString(props.sourceFile)}
-      className={`${activeColors} flex h-full mx-1 p-2 items-center space-x-2 text-sm`}
+      className={`${activeColors} flex flex-nowrap whitespace-nowrap h-full mx-1 p-2 items-center space-x-2 text-sm`}
     >
       <button
         className="text-white"
@@ -62,7 +76,7 @@ function SourceFileTab(props: { sourceFile: SourceFile; currentFile: boolean }) 
           store.set("fullname_to_render", props.sourceFile.fullname);
         }}
       >
-        {path.basename(props.sourceFile.fullname)}
+        {filenameToDisplay}
       </button>
       {maybeFetchAssemblyButton}
       {maybeClearAssemblyButton}
@@ -92,16 +106,23 @@ export function SourceFileTabs() {
   const sourceFiles =
     useGlobalValue<typeof store.data.cachedSourceFiles>("cachedSourceFiles");
 
-  const fullname_to_render =
+  const fullnameToRender =
     useGlobalValue<typeof store.data.fullname_to_render>("fullname_to_render");
 
+  const pausedOnFrame =
+    useGlobalValue<typeof store.data.paused_on_frame>("paused_on_frame");
+
   return (
-    <div className="flex-nowrap flex h-8 w-full">
+    <div
+      className="flex-nowrap flex h-8 w-full overflow-x-scroll overflow-y-hidden subtle-scrollbar"
+      style={{ scrollbarWidth: "thin" }}
+    >
       {sourceFiles.map((sf) => (
         <SourceFileTab
           key={sf.fullname}
           sourceFile={sf}
-          currentFile={sf.fullname === fullname_to_render}
+          currentFile={sf.fullname === fullnameToRender}
+          pausedOnFrame={pausedOnFrame?.fullname === fullnameToRender}
         />
       ))}
     </div>

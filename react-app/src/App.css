@@ -60,3 +60,19 @@
   width: "1px";
   background-color: "yellow";
 }
+
+.subtle-scrollbar::-webkit-scrollbar {
+  /* hide by default */
+  width: 0px;
+  height: 0px;
+}
+
+.subtle-scrollbar:hover::-webkit-scrollbar {
+  /* show a very thin scrollbar when hovering */
+  width: 1px;
+  height: 1px;
+}
+
+.subtle-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(153, 153, 153);
+}

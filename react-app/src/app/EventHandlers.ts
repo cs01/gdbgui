@@ -13,7 +13,7 @@ import React from "react";
 const Handlers = {
   clearProgramState: function () {
     store.set<typeof store.data.line_of_source_to_flash>("line_of_source_to_flash", null);
-    store.set<typeof store.data.paused_on_frame>("paused_on_frame", undefined);
+    store.set<typeof store.data.paused_on_frame>("paused_on_frame", null);
     store.set<typeof store.data.selected_frame_num>("selected_frame_num", 0);
     store.set<typeof store.data.stack>("stack", null);
     store.set<typeof store.data.threads>("threads", null);
@@ -30,9 +30,9 @@ const Handlers = {
   onProgramStopped: function (stoppedDetails: GdbProgramStopped) {
     store.set<typeof store.data.gdbguiState>("gdbguiState", "stopped");
     store.set<typeof store.data.stoppedDetails>("stoppedDetails", stoppedDetails);
-    store.set(
+    store.set<typeof store.data.source_code_selection_state>(
       "source_code_selection_state",
-      constants.source_code_selection_states.PAUSED_FRAME
+      "paused frame"
     );
     // store.set<typeof store.data.paused_on_frame>(
     //   "paused_on_frame",
@@ -181,9 +181,9 @@ const Handlers = {
     Handlers.setLineState(line);
   },
   setLineState(line: number) {
-    store.set(
+    store.set<typeof store.data.source_code_selection_state>(
       "source_code_selection_state",
-      constants.source_code_selection_states.USER_SELECTION
+      "user selected file"
     );
     store.set<typeof store.data.line_of_source_to_flash>(
       "line_of_source_to_flash",

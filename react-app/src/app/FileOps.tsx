@@ -170,9 +170,9 @@ const FileOps = {
     );
   },
   userSelectFileToView: function (fullname: string, line: Nullable<number>) {
-    store.set(
+    store.set<typeof store.data.source_code_selection_state>(
       "source_code_selection_state",
-      constants.source_code_selection_states.USER_SELECTION
+      "user selected file"
     );
     store.set<typeof store.data.fullname_to_render>("fullname_to_render", fullname);
     store.set<typeof store.data.line_of_source_to_flash>(
@@ -181,7 +181,7 @@ const FileOps = {
     );
     store.set<typeof store.data.make_current_line_visible>(
       "make_current_line_visible",
-      true
+      line != null
     );
   },
   handleStoreChange: function () {
@@ -194,18 +194,14 @@ const FileOps = {
     let isPaused = false;
     let pausedAddr = null;
     const pausedFrame = stoppedDetails?.frame;
-    const pausedFrameFullname = pausedFrame ? pausedFrame.fullname : null;
+    const pausedFrameFullname = pausedFrame?.fullname ?? null;
     let sourceLineNumber;
-    if (
-      sourceCodeSelectionState === constants.source_code_selection_states.USER_SELECTION
-    ) {
+    if (sourceCodeSelectionState === "user selected file") {
       fullname = store.data.fullname_to_render;
       isPaused = false;
       pausedAddr = null;
       sourceLineNumber = parseInt(store.data.line_of_source_to_flash ?? "");
-    } else if (
-      sourceCodeSelectionState === constants.source_code_selection_states.PAUSED_FRAME
-    ) {
+    } else if (sourceCodeSelectionState === "paused frame") {
       isPaused = store.data.gdbguiState === "stopped";
       pausedAddr = store.data.current_assembly_address
         ? parseInt(store.data.current_assembly_address, 16)
@@ -270,20 +266,19 @@ const FileOps = {
     isPaused: any,
     pausedAddress: Nullable<number>
   ) {
-    const states = constants.source_code_states;
     const lineIsCached = FileOps.lineIsCached(fullname, requireCachedLineNum);
 
     if (fullname && lineIsCached) {
       // we have file cached. We may have assembly cached too.
-      store.set(
+      store.set<typeof store.data.source_code_state>(
         "source_code_state",
-        assemblyIsCached ? states.ASSM_AND_SOURCE_CACHED : states.SOURCE_CACHED
+        assemblyIsCached ? "ASSM_AND_SOURCE_CACHED" : "SOURCE_CACHED"
       );
     } else if (fullname && !fileIsMissing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it
       store.set<typeof store.data.source_code_state>(
         "source_code_state",
-        states.FETCHING_SOURCE
+        "FETCHING_SOURCE"
       );
 
       FileFetcher.fetch(fullname, startLine, endLine);
@@ -294,21 +289,18 @@ const FileOps = {
         (obj: any) => parseInt(obj.address, 16) === pausedAddress
       )
     ) {
-      store.set<typeof store.data.source_code_state>(
-        "source_code_state",
-        states.ASSM_CACHED
-      );
+      store.set<typeof store.data.source_code_state>("source_code_state", "ASM_CACHED");
     } else if (isPaused && pausedAddress) {
       if (pausedAddress in unfetchableDisassemblyAddresses) {
         store.set<typeof store.data.source_code_state>(
           "source_code_state",
-          states.ASSM_UNAVAILABLE
+          "ASSM_UNAVAILABLE"
         );
       } else {
         // get disassembly
         store.set<typeof store.data.source_code_state>(
           "source_code_state",
-          states.FETCHING_ASSM
+          "FETCHING_ASSM"
         );
         if (disassemblyAddrBeingFetched != null) {
           console.error(`Already fetching disassembly at ${disassemblyAddrBeingFetched}`);
@@ -317,14 +309,11 @@ const FileOps = {
         fetchDisassemblyAtAddress(pausedAddress);
       }
     } else if (fileIsMissing) {
-      store.set<typeof store.data.source_code_state>(
-        "source_code_state",
-        states.FILE_MISSING
-      );
+      store.set<typeof store.data.source_code_state>("source_code_state", "FILE_MISSING");
     } else {
       store.set<typeof store.data.source_code_state>(
         "source_code_state",
-        states.NONE_AVAILABLE
+        "NONE_AVAILABLE"
       );
     }
   },

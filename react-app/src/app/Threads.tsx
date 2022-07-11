@@ -335,7 +335,7 @@ class DEPRECATED_Threads extends React.Component<{}, ThreadsState> {
     );
     store.set<typeof store.data.current_assembly_address>(
       "current_assembly_address",
-      store.data.paused_on_frame?.addr
+      store.data.paused_on_frame?.addr ?? null
     );
     store.set<typeof store.data.make_current_line_visible>(
       "make_current_line_visible",

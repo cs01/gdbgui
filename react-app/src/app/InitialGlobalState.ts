@@ -56,8 +56,8 @@ const initialGlobalState: GlobalState = {
   cachedSourceFiles: [], // list with keys fullname, source_code
   disassembly_for_missing_file: [], // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: [], // files that were attempted to be fetched but did not exist on the local filesystem
-  source_code_state: constants.source_code_states.NONE_AVAILABLE,
-  source_code_selection_state: constants.source_code_selection_states.PAUSED_FRAME,
+  source_code_state: "NONE_AVAILABLE",
+  source_code_selection_state: null,
 
   // binary selection
   inferior_binary_path: null,
