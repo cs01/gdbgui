@@ -159,6 +159,7 @@ export type GdbguiExpressionType = "local" | "expr" | "hover";
 export type GdbguiLocalVariable = GdbLocalVariable & {
   can_be_expanded: boolean;
   expr_type: "simplelocal";
+  in_scope: true;
 };
 export type GdbguiExpressionVar = {
   children: Array<GdbguiExpressionVar>;

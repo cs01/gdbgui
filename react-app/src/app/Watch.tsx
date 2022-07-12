@@ -59,8 +59,8 @@ export function Watch(props: {}) {
               className="w=full bg-black  hover:bg-purple-800 border-purple-800 flex whitespace-nowrap text-xs rounded-md align-middle p-1"
               onClick={() => setShowInput(true)}
             >
-              Watch New Expression
               <PlusSmIcon className="icon" />
+              Watch New Expression
             </button>
           </div>
         )}

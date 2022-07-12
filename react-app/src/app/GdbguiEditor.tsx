@@ -5,7 +5,10 @@ import FileOps from "./FileOps";
 import { store, useGlobalState, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
 import { useEffect, useRef, useState } from "react";
-import Breakpoints from "./Breakpoints";
+import Breakpoints, {
+  breakpointDisabledClass,
+  breakpointEnabledClass,
+} from "./Breakpoints";
 import {
   GdbAsmForFile,
   GdbAsmInstruction,
@@ -195,16 +198,17 @@ function addBreakpointGlyphs(
     return {
       range: new monaco.Range(breakpoint.line, 1, breakpoint.line, 1),
       options: {
-        isWholeLine: true,
+        isWholeLine: false,
+        glyphMarginHoverMessage: "breakpoint",
         glyphMarginClassName:
-          (breakpoint.enabled === "y" ? "bg-red-800" : "bg-blue-500") +
-          " rounded-full w-[1em] h-[1rem]",
+          breakpoint.enabled === "y" ? breakpointEnabledClass : breakpointDisabledClass,
       },
     };
   });
 
   lastBreakpointGlyphs.current = editor.deltaDecorations(
     oldBreakpointGlyphs,
+    // @ts-ignore
     newBreakpointGlyphs
   );
 }

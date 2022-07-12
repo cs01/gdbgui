@@ -115,7 +115,7 @@ export function SourceFileTabs() {
 
   return (
     <div
-      className="flex-nowrap flex h-8 w-full overflow-x-scroll overflow-y-hidden subtle-scrollbar"
+      className="bg-gray-600 space-x-1 flex-nowrap flex h-8 w-full overflow-x-scroll overflow-y-hidden subtle-scrollbar"
       style={{ scrollbarWidth: "thin" }}
     >
       {sourceFiles.map((sf) => (

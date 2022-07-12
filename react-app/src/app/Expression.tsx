@@ -293,7 +293,11 @@ export function Expression(props: {
               }}
             />
           ) : (
-            <div>{MemoryClass.textToLinks(obj.value)}</div>
+            <div>
+              {obj.in_scope === true
+                ? MemoryClass.textToLinks(obj.value)
+                : "not in scope"}
+            </div>
           )}
         </div>
         <div className="flex-grow" />
@@ -586,11 +590,13 @@ export class ExpressionClass {
       );
       gdbguiExpression.children = gdbguiExpression.children.concat(newChildrenGdbGui);
       gdbguiExpression.value = changelist.value;
-      const floatValue = parseFloat(changelist.value);
-      if (Number.isFinite(floatValue)) {
-        gdbguiExpression.valueHistory.push(floatValue);
-      }
       gdbguiExpression.in_scope = changelist.in_scope === "true";
+      if (gdbguiExpression.in_scope) {
+        const floatValue = parseFloat(changelist.value);
+        if (Number.isFinite(floatValue)) {
+          gdbguiExpression.valueHistory.push(floatValue);
+        }
+      }
       if ("new_type" in changelist) {
         gdbguiExpression.type = changelist.new_type as string;
       }

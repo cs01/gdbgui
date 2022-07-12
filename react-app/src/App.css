@@ -56,11 +56,6 @@
   }
 }
 
-.breakpoint {
-  width: "1px";
-  background-color: "yellow";
-}
-
 .subtle-scrollbar::-webkit-scrollbar {
   /* hide by default */
   width: 0px;

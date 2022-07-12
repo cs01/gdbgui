@@ -18,6 +18,9 @@ import {
 import MemoryLink from "./MemoryLink";
 import { GdbBreakpoint as GdbMiBreakpoint, GdbGuiBreakpoint } from "./types";
 
+export const breakpointEnabledClass = "bg-red-400 rounded-xl border-gray-800 border-4";
+export const breakpointDisabledClass = "bg-blue-400 rounded-xl border-gray-800 border-4";
+
 const BreakpointSourceLineCache = {
   _cache: {},
   getLine: function (fullname: any, linenum: any) {

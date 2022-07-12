@@ -68,6 +68,7 @@ export class LocalsClass extends React.Component {
         value: local.value ?? "{...}",
         can_be_expanded: LocalsClass.canLocalBeExpanded(local),
         expr_type: "simplelocal",
+        in_scope: true,
       }))
     );
   }
