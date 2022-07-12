@@ -3,7 +3,7 @@ import GdbApi from "./GdbApi";
 import constants from "./constants";
 import Handlers from "./EventHandlers";
 import { debug } from "./InitialData";
-import { GdbAsmForFile, GdbAsmLine, GdbAsmResponse, SourceFile } from "./types";
+import { GdbAsmForFile, GdbAsmInstruction, GdbAsmResponse, SourceFile } from "./types";
 import { showModal } from "./GdbguiModal";
 import { fetchDisassemblyAtAddress } from "./Assembly";
 
@@ -272,7 +272,7 @@ const FileOps = {
       // we have file cached. We may have assembly cached too.
       store.set<typeof store.data.source_code_state>(
         "source_code_state",
-        assemblyIsCached ? "ASSM_AND_SOURCE_CACHED" : "SOURCE_CACHED"
+        assemblyIsCached ? "ASM_AND_SOURCE_CACHED" : "SOURCE_CACHED"
       );
     } else if (fullname && !fileIsMissing) {
       // we don't have file cached, and it is not known to be missing on the file system, so try to get it
@@ -294,7 +294,7 @@ const FileOps = {
       if (pausedAddress in unfetchableDisassemblyAddresses) {
         store.set<typeof store.data.source_code_state>(
           "source_code_state",
-          "ASSM_UNAVAILABLE"
+          "ASM_UNAVAILABLE"
         );
       } else {
         // get disassembly
@@ -313,7 +313,7 @@ const FileOps = {
     } else {
       store.set<typeof store.data.source_code_state>(
         "source_code_state",
-        "NONE_AVAILABLE"
+        "NONE_REQUESTED"
       );
     }
   },
@@ -526,7 +526,7 @@ const FileOps = {
     if (miToken === constants.DISASSEMBLY_FOR_MISSING_FILE_INT) {
       store.set<typeof store.data.disassembly_for_missing_file>(
         "disassembly_for_missing_file",
-        asmInstructions as GdbAsmLine[]
+        asmInstructions as GdbAsmInstruction[]
       );
       return;
     }

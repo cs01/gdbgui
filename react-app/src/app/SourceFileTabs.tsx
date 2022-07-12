@@ -49,7 +49,7 @@ function SourceFileTab(props: {
   const maybeClearAssemblyButton =
     props.currentFile &&
     props.pausedOnFrame &&
-    sourceCodeState === "ASSM_AND_SOURCE_CACHED" ? (
+    sourceCodeState === "ASM_AND_SOURCE_CACHED" ? (
       <button
         title="Clear assembly"
         className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"

@@ -10,7 +10,12 @@ export function GlobalBooleanToggle(props: {
     throw new Error(`${props.storeKey} must be a boolean (got ${typeof globalValue})`);
   }
   return (
-    <div className="flex">
+    <button
+      className="flex items-center"
+      onClick={() => {
+        setGlobalValue(!globalValue);
+      }}
+    >
       <input
         className="mr-2"
         type="checkbox"
@@ -21,6 +26,6 @@ export function GlobalBooleanToggle(props: {
         }}
       />
       {props.label}
-    </div>
+    </button>
   );
 }

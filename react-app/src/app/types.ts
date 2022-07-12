@@ -6,7 +6,7 @@ import React from "react";
 export type SourceFile = {
   fullname: string;
   source_code_obj: any;
-  assembly: { [key: number]: Nullable<GdbAsmLine[]> };
+  assembly: { [key: number]: Nullable<GdbAsmInstruction[]> };
   sourceCode: Array<string>;
   last_modified_unix_sec: number;
   num_lines_in_file: number;
@@ -182,7 +182,7 @@ export type GdbguiRegisterValue = {
   [registerNumber: string]: { gdbValue: string; decimalValue: Nullable<number> };
 };
 
-export type GdbAsmLine = {
+export type GdbAsmInstruction = {
   address: string; // "0x0005551a8"
   ["func-name"]?: string; // "main"
   offset: string;
@@ -193,9 +193,9 @@ export type GdbAsmForFile = {
   line?: string; // "33"
   file?: string; // hello.c
   fullname: string; ///home/csmith/hello.c
-  line_asm_insn: Array<GdbAsmLine>;
+  line_asm_insn: Array<GdbAsmInstruction>;
 };
-export type GdbAsmResponse = GdbAsmLine[] | GdbAsmForFile[];
+export type GdbAsmResponse = GdbAsmInstruction[] | GdbAsmForFile[];
 
 // when messaged is "stopped"
 export type GdbProgramStopped = {
@@ -218,14 +218,16 @@ export type GdbProgramStopped = {
 };
 
 export type GdbguiSourceCodeState =
-  | "ASSM_AND_SOURCE_CACHED"
-  | "SOURCE_CACHED"
-  | "FETCHING_SOURCE"
-  | "ASM_CACHED"
-  | "FETCHING_ASSM"
-  | "ASSM_UNAVAILABLE"
-  | "FILE_MISSING"
-  | "NONE_AVAILABLE";
+  | "NONE_REQUESTED" // none to display
+  // source code states
+  | "FETCHING_SOURCE" //in the process of fetching source code
+  | "SOURCE_CACHED" // display source code for paused frame, or user-selected file
+  | "ASM_AND_SOURCE_CACHED" //display inline assembly with source code
+  | "FILE_MISSING" // file cannot be fetched
+  // assembly states
+  | "ASM_CACHED" //no source file available, but we have asm
+  | "FETCHING_ASSM" // in the process of fetching asm
+  | "ASM_UNAVAILABLE"; // no asm available at current instruction
 
 export type GlobalState = {
   debug: boolean;
@@ -278,7 +280,7 @@ export type GlobalState = {
   current_assembly_address: Nullable<string>;
   make_current_line_visible: boolean;
   cachedSourceFiles: SourceFile[]; // list with keys fullname, source_code
-  disassembly_for_missing_file: GdbAsmLine[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
+  disassembly_for_missing_file: GdbAsmInstruction[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
   source_code_state: GdbguiSourceCodeState;
   source_code_selection_state: Nullable<"paused frame" | "user selected file">;
@@ -320,6 +322,7 @@ export type GlobalState = {
   features: Nullable<Array<GdbFeature>>;
 
   userTargetInput: string;
+  wordWrap: boolean;
 };
 
 export type GdbMiMessage = {

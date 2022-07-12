@@ -40,9 +40,9 @@
 .background-animate {
   background-size: 200%;
 
-  -webkit-animation: BackgroundGradientAnimation 10s ease infinite;
-  -moz-animation: BackgroundGradientAnimation 10s ease infinite;
-  animation: BackgroundGradientAnimation 10s ease infinite;
+  -webkit-animation: BackgroundGradientAnimation 5s ease infinite;
+  -moz-animation: BackgroundGradientAnimation 5s ease infinite;
+  animation: BackgroundGradientAnimation 5s ease infinite;
 }
 
 @keyframes BackgroundGradientAnimation {

@@ -8,10 +8,15 @@ import { useEffect, useRef, useState } from "react";
 import Breakpoints from "./Breakpoints";
 import {
   GdbAsmForFile,
-  GdbAsmLine,
+  GdbAsmInstruction,
   GdbGuiBreakpoint,
   GdbguiSourceCodeState,
+  SourceFile,
 } from "./types";
+import {
+  getEffectiveLineNumberWithAsm,
+  getHighlightLineFromNewNumber,
+} from "./computeLineNumbers";
 
 // function asmToRows(asmLines: GdbAsmForFile[] | GdbAsmLine[]) {
 //   return asmLines
@@ -27,29 +32,8 @@ function getSourceCode(
   sourcePath: Nullable<string>
 ): string {
   switch (sourceCodeState) {
-    case "ASSM_AND_SOURCE_CACHED": // fallthrough
-      const obj = FileOps.getSourceFileFromFullname(sourcePath);
-      if (!obj) {
-        console.error("expected to find source file");
-        return `Developer error - could not find file contents for ${sourcePath}`;
-      }
-      return obj.sourceCode
-        .map((line, i) => {
-          const asms = obj.assembly[i];
-          if (!asms) {
-            return line;
-          }
-          return `${line}\n${asms
-            .map(
-              (asm) =>
-                `          ${
-                  asm.address === store.data.stoppedDetails?.frame.addr ? "--->" : "    "
-                } ${asm.address} ${asm.inst}`
-            )
-            .join("\n")}`;
-        })
-        .join("\n");
     case "SOURCE_CACHED": {
+      // display source code
       const obj = FileOps.getSourceFileFromFullname(sourcePath);
       if (!obj) {
         console.error("expected to find source file");
@@ -57,10 +41,36 @@ function getSourceCode(
       }
       return obj.sourceCode.join("\n");
     }
+    case "ASM_AND_SOURCE_CACHED":
+      // display inline assembly with source code
+      const obj = FileOps.getSourceFileFromFullname(sourcePath);
+      if (!obj) {
+        console.error(`Developer error - could not find file contents for ${sourcePath}`);
+        return "";
+      }
+      const lineNumberToInstructionStrings = (lineNumber: number): string[] => {
+        const asms = obj.assembly[lineNumber];
+        return asms?.map(instructionToString).filter(Boolean) ?? [];
+      };
+
+      const instructionToString = (instruction: GdbAsmInstruction): string => {
+        const indent = "";
+        const maybeArrow =
+          instruction.address === store.data.stoppedDetails?.frame.addr ? "-->" : "   ";
+        return `${indent}${maybeArrow} ${instruction.address} ${instruction.inst}`;
+      };
+
+      return obj.sourceCode
+        .map((sourceLine, lineNumber) => {
+          const instructions = lineNumberToInstructionStrings(lineNumber).join("\n");
+          return sourceLine + (instructions ? "\n" + instructions : "");
+        })
+        .join("\n");
     case "FETCHING_SOURCE": {
       return "fetching source, please wait";
     }
     case "ASM_CACHED": {
+      // missing file
       const gdbAsm = store.data.disassembly_for_missing_file;
       return gdbAsm
         .map((g) => {
@@ -72,17 +82,17 @@ function getSourceCode(
     case "FETCHING_ASSM": {
       return "fetching assembly, please wait";
     }
-    case "ASSM_UNAVAILABLE": {
+    case "ASM_UNAVAILABLE": {
       return "cannot access address";
     }
     case "FILE_MISSING": {
       return `file not found: ${sourcePath}`;
     }
-    case "NONE_AVAILABLE": {
+    case "NONE_REQUESTED": {
       return "";
     }
     default: {
-      return "developer error";
+      return `developer error: unhandled state ${sourceCodeState}`;
     }
   }
 }
@@ -145,15 +155,15 @@ monaco.languages.registerHoverProvider("myspecial", {
 });
 function highlightLine(
   editor: monaco.editor.IStandaloneCodeEditor,
-  lineNumber: Nullable<string>,
+  lineNumInt: Nullable<number>,
   lastHighlight: React.MutableRefObject<Nullable<string[]>>
 ): void {
-  if (!lineNumber) {
+  if (!lineNumInt) {
     editor.deltaDecorations([], []);
     return;
   }
   let endCol;
-  const lineNumInt = parseInt(lineNumber);
+
   editor.revealLineInCenter(lineNumInt);
   try {
     endCol = editor.getModel()?.getLineMaxColumn(lineNumInt);
@@ -168,7 +178,7 @@ function highlightLine(
     {
       range: r,
       options: {
-        className: "bg-gray-700",
+        className: "bg-green-800",
         isWholeLine: true,
       },
     },
@@ -209,18 +219,28 @@ export function GdbguiEditor() {
     useGlobalValue<typeof store.data["source_code_state"]>("source_code_state");
   const sourcePath =
     useGlobalValue<typeof store.data["fullname_to_render"]>("fullname_to_render");
-  const flashLine = useGlobalValue<typeof store.data["line_of_source_to_flash"]>(
-    "line_of_source_to_flash"
-  );
+
   const breakpoints = useGlobalValue<typeof store.data.breakpoints>("breakpoints");
+  const wordWrap = useGlobalValue<typeof store.data.wordWrap>("wordWrap");
+  const pausedFrame =
+    useGlobalValue<typeof store.data.paused_on_frame>("paused_on_frame");
   const breakpointsCurrentFile = breakpoints.filter((b) => b.fullname === sourcePath);
-  const [revealLine, setRevealLine] = useGlobalState<number>("revealLine");
 
   const lastHighlight = useRef<Nullable<string[]>>(null);
   const breakpointDecorations = useRef<Nullable<string[]>>(null);
+  const sourceFile = FileOps.getSourceFileFromFullname(sourcePath);
 
   if (monacoObjects.current?.editor) {
-    highlightLine(monacoObjects.current?.editor, flashLine, lastHighlight);
+    const lineNumberToHighlight = getLineNumToHighlight(
+      pausedFrame &&
+        pausedFrame?.fullname === sourceFile?.fullname &&
+        "line" in pausedFrame
+        ? pausedFrame?.line
+        : null,
+      sourceFile,
+      sourceCodeState
+    );
+    highlightLine(monacoObjects.current?.editor, lineNumberToHighlight, lastHighlight);
     addBreakpointGlyphs(
       monacoObjects.current?.editor,
       breakpointsCurrentFile,
@@ -276,12 +296,45 @@ export function GdbguiEditor() {
       onMount={handleEditorDidMount}
       options={{
         glyphMargin: true,
-        wordWrap: "on",
+        wordWrap: wordWrap ? "on" : "off",
         lineNumbers: (n: number) => {
-          // TODO determine line number based on how many instructions per line
-          return n.toString();
+          // const lineNumberToInstructionStrings = (lineNumber: number): string[] => {
+          //   const asms = obj.assembly[lineNumber];
+          //   return asms?.map(instructionToString) ?? [];
+          // };
+          switch (sourceCodeState) {
+            case "ASM_AND_SOURCE_CACHED": {
+              if (!sourceFile) {
+                console.error("Expected source file in this state");
+                return "";
+              }
+              return getEffectiveLineNumberWithAsm(sourceFile, n);
+            }
+            default: {
+              return n.toString();
+            }
+          }
         },
       }}
     />
   );
+}
+
+function getLineNumToHighlight(
+  flashLine: Nullable<string>,
+  sourceFile: Nullable<SourceFile>,
+  sourceCodeState: GdbguiSourceCodeState
+): Nullable<number> {
+  if (!flashLine) {
+    return null;
+  }
+  const lineNum = parseInt(flashLine);
+  if (sourceCodeState === "ASM_AND_SOURCE_CACHED") {
+    if (!sourceFile) {
+      return null;
+    }
+    return getHighlightLineFromNewNumber(sourceFile, lineNum);
+  } else {
+    return lineNum;
+  }
 }

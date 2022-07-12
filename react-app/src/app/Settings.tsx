@@ -49,6 +49,7 @@ export function Settings() {
         label="Pretty print dynamic variables (requires restart)"
         storeKey={"pretty_print"}
       />
+      <GlobalBooleanToggle label="Wrap long lines in editor" storeKey={"wordWrap"} />
     </div>
   );
 }

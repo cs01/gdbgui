@@ -363,7 +363,7 @@ class MemoryClass {
   }
 
   static clearMemoryCache() {
-    store.set<typeof store.data.memory_cache>("memory_cache", []);
+    // store.set<typeof store.data.memory_cache>("memory_cache", []);
   }
 }
 
