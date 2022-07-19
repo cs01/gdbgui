@@ -10,9 +10,8 @@ import GdbApi from "./GdbApi";
 import MemoryLink from "./MemoryLink";
 import Handlers from "./EventHandlers";
 import React, { useState } from "react";
-import _, { add, isNumber } from "lodash";
+import _ from "lodash";
 import { GdbMiMemoryEntry, GdbMiMemoryResponse } from "./types";
-import { DotsHorizontalIcon } from "@heroicons/react/solid";
 
 function MemoryRow(props: { entry: GdbMiMemoryEntry; bytes: string[] }) {
   const [editingValue, setEditingValue] = useState(false);
@@ -157,7 +156,7 @@ export function Memory(props: {}) {
 
   return (
     <div className="text-sm">
-      <div className="flex flex-wrap space-y-2 w-full items-center">
+      <div className="flex flex-wrap w-full items-center">
         <input
           className="input text-center font-mono"
           placeholder="start address (hex)"
@@ -207,7 +206,7 @@ class MemoryClass {
     store.set(
       "end_addr",
       "0x" +
-        (parseInt(address, 16) + MemoryClass.DEFAULT_ADDRESS_DELTA_BYTES).toString(16)
+      (parseInt(address, 16) + MemoryClass.DEFAULT_ADDRESS_DELTA_BYTES).toString(16)
     );
     MemoryClass.requestReadMemory(true);
   }
@@ -231,8 +230,7 @@ class MemoryClass {
     } else if (userEndAddr - startAddr > MemoryClass.MAX_ADDRESS_DELTA_BYTES) {
       // requesting too much memory, truncate for performance reasons
       Handlers.addGdbGuiConsoleEntries(
-        `Cannot fetch ${userEndAddr - startAddr} bytes. Changed end address to ${
-          store.data.end_addr
+        `Cannot fetch ${userEndAddr - startAddr} bytes. Changed end address to ${store.data.end_addr
         } since maximum bytes gdbgui allows is ${MemoryClass.MAX_ADDRESS_DELTA_BYTES}.`,
         "STD_ERR"
       );
@@ -266,8 +264,7 @@ class MemoryClass {
     while (currentAddress <= endAddr) {
       const offset = i * bytesPerRow;
       cmds.push(
-        `-data-read-memory-bytes -o 0x${parseInt(`${offset}`, 16)} ${
-          "0x" + currentAddress.toString(16)
+        `-data-read-memory-bytes -o 0x${parseInt(`${offset}`, 16)} ${"0x" + currentAddress.toString(16)
         } ${bytesPerRow}`
       );
       currentAddress = currentAddress + bytesPerRow;

@@ -1,5 +1,4 @@
 import { store } from "./Store";
-import GdbApi from "./GdbApi";
 import constants from "./constants";
 import Handlers from "./EventHandlers";
 import { debug } from "./InitialData";

@@ -7,8 +7,6 @@ import _ from "lodash";
 import $ from "jquery";
 import { GdbGuiConsoleEntry, GdbProgramStopped } from "./types";
 import { DebugProtocol } from "vscode-debugprotocol";
-import { ExpressionClass } from "./Expression";
-import React from "react";
 
 const Handlers = {
   clearProgramState: function () {
@@ -189,10 +187,10 @@ const Handlers = {
       "line_of_source_to_flash",
       `${line}`
     );
-    store.set<typeof store.data.make_current_line_visible>(
-      "make_current_line_visible",
-      true
-    );
+    // store.set<typeof store.data.make_current_line_visible>(
+    //   "make_current_line_visible",
+    //   true
+    // );
   },
   clearCachedAssembly() {
     store.set<typeof store.data.disassembly_for_missing_file>(

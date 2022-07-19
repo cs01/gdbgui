@@ -1,8 +1,4 @@
 import { store, useGlobalState } from "./Store";
-import Handlers from "./EventHandlers";
-import ToolTip from "./ToolTip";
-import React from "react";
-import { GlobalState } from "./types";
 import { GlobalBooleanToggle } from "./BooleanToggle";
 
 export function Settings() {

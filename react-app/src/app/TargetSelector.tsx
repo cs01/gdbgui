@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import Handlers from "./EventHandlers";
 import { Util } from "./Util";
 import { Fragment } from "react";
@@ -207,8 +207,8 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
           }
         }}
         value={userInput}
-        // not sure if we need this?
-        // defaultValue={userInput}
+      // not sure if we need this?
+      // defaultValue={userInput}
       />
       <datalist id={pastBinariesId}>
         {getInputHistory().map((userInput) => (
@@ -234,11 +234,10 @@ export function TargetSelector(props: { initial_user_input: string[] }) {
 }
 
 function DebugControls() {
-  const gdbPid = useGlobalValue("gdb_pid");
   const reverseSupported = useGlobalValue("reverse_supported");
   return (
     <div className="flex">
-      <button title="Start inferior program from the beginning keyboard shortcut: r">
+      <button title="Start program from the beginning (keyboard shortcut: r)">
         <RefreshIcon
           className="h-8 w-8"
           aria-hidden="true"

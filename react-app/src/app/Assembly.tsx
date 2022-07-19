@@ -2,7 +2,6 @@ import constants from "./constants";
 import Handlers from "./EventHandlers";
 import FileOps from "./FileOps";
 import GdbApi from "./GdbApi";
-import { store } from "./Store";
 
 export function fetchAssemblyForFileAtLine(fullname: string, line: Nullable<number>) {
   requestDisassembly(fullname, line ?? 1);

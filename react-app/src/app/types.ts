@@ -1,6 +1,5 @@
 import { Terminal } from "xterm";
 import { GdbWebsocket } from "./Websocket";
-import { DebugProtocol } from "vscode-debugprotocol";
 import React from "react";
 
 export type SourceFile = {
@@ -273,18 +272,20 @@ export type GlobalState = {
   }>;
 
   // source files
-  source_file_paths: any[];
+  source_file_paths: string[];
   language: string;
-  files_being_fetched: any[];
-  fullname_to_render: Nullable<string>;
-  line_of_source_to_flash: Nullable<string>;
+  files_being_fetched: string[];
   current_assembly_address: Nullable<string>;
-  make_current_line_visible: boolean;
   cachedSourceFiles: SourceFile[]; // list with keys fullname, source_code
   disassembly_for_missing_file: GdbAsmInstruction[]; // mi response object. Only fetched when there currently paused frame refers to a file that doesn't exist or is undefined
   missing_files: string[]; // files that were attempted to be fetched but did not exist on the local filesystem
+
+  fullname_to_render: Nullable<string>;
+  line_of_source_to_flash: Nullable<string>;
   source_code_state: GdbguiSourceCodeState;
   source_code_selection_state: Nullable<"paused frame" | "user selected file">;
+  userSelectedFile: Nullable<{ fullname: string; line: Nullable<string> }>;
+  make_current_line_visible: boolean;
 
   // binary selection
   inferior_binary_path: Nullable<string>;

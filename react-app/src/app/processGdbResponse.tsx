@@ -15,12 +15,10 @@ import MemoryClass from "./Memory";
 import GdbApi from "./GdbApi";
 import { LocalsClass } from "./Locals";
 import { ExpressionClass } from "./Expression";
-import { Modal } from "./GdbguiModal";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
 import {
   GdbAsmResponse,
-  GdbChildExpression,
   GdbLocalVariable,
   GdbMiChangelist,
   GdbMiChildrenVarResponse,
@@ -139,9 +137,9 @@ function handleGdbMessage(r: GdbMiMessage) {
     }
     if ("files" in r.payload) {
       if (r.payload.files.length > 0) {
-        const sourceFilePaths = _.uniq(
+        const sourceFilePaths: string[] = _.uniq(
           r.payload.files.map((f: any) => f.fullname)
-        ).sort();
+        ).sort() as string[];
         store.set<typeof store.data.source_file_paths>(
           "source_file_paths",
           sourceFilePaths

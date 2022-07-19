@@ -5,7 +5,6 @@
 
 import React from "react";
 import { store } from "./Store";
-import constants from "./constants";
 import { ExpressionClass, Expression } from "./Expression";
 import $ from "jquery";
 class HoverVar extends React.Component {

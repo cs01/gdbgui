@@ -9,7 +9,6 @@ import MemoryClass from "./Memory";
 import constants from "./constants";
 import { store } from "./Store";
 import GdbApi from "./GdbApi";
-import CopyToClipboard from "./CopyToClipboard";
 import Handlers from "./EventHandlers";
 import _ from "lodash";
 import {
@@ -24,8 +23,6 @@ import {
 import {
   ChevronDownIcon,
   ChevronRightIcon,
-  EyeIcon,
-  PlusSmIcon,
   RefreshIcon,
   XIcon,
 } from "@heroicons/react/solid";

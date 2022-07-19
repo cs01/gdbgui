@@ -10,6 +10,8 @@ import { GlobalState } from "./types";
  * exist as local state for that component.
  */
 const initialGlobalState: GlobalState = {
+  // currentUser: null,
+
   // environment
   debug, // if gdbgui is run in debug mode
   gdbgui_version: initial_data.gdbgui_version,
@@ -58,6 +60,7 @@ const initialGlobalState: GlobalState = {
   missing_files: [], // files that were attempted to be fetched but did not exist on the local filesystem
   source_code_state: "NONE_REQUESTED",
   source_code_selection_state: null,
+  userSelectedFile: null,
 
   // binary selection
   inferior_binary_path: null,
@@ -90,7 +93,7 @@ const initialGlobalState: GlobalState = {
   show_filesystem: false,
 
   gdbguiPty: null,
-  revealLine: (lineNumber: number) => {},
+  revealLine: (lineNumber: number) => { },
   stoppedDetails: null,
   features: null,
 

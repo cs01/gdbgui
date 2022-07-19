@@ -1,7 +1,7 @@
-import { store, useGlobalState, useGlobalValue } from "./Store";
+import { store, useGlobalValue } from "./Store";
 import { SourceFile } from "./types";
 import path from "path";
-import { XIcon, DownloadIcon, ArrowDownIcon } from "@heroicons/react/solid";
+import { XIcon, DownloadIcon } from "@heroicons/react/solid";
 import { fetchAssemblyForFileAtLine } from "./Assembly";
 import FileOps from "./FileOps";
 
@@ -9,10 +9,10 @@ function getSourceFileHoverString(sourceFile: SourceFile) {
   return [
     `Path: ${sourceFile.fullname}`,
     `Encoding: ${sourceFile.encoding}`,
-    `Last modified unixtime: ${sourceFile.last_modified_unix_sec}`,
     `Last modified: ${new Date(
       sourceFile.last_modified_unix_sec * 1000
     ).toLocaleString()}`,
+    `Last modified unixtime: ${sourceFile.last_modified_unix_sec}`,
   ].join("\n");
 }
 
@@ -27,39 +27,8 @@ function SourceFileTab(props: {
     ? "bg-gray-800 border-indigo-500 border-t-2 "
     : "bg-gray-900 ";
 
-  const maybeFetchAssemblyButton =
-    props.currentFile && props.pausedOnFrame && sourceCodeState === "SOURCE_CACHED" ? (
-      <button
-        title="Fetch assembly"
-        className="flex items-center  hover:bg-gray-900 text-xs"
-        onClick={() => {
-          fetchAssemblyForFileAtLine(
-            props.sourceFile.fullname,
-            store.data.line_of_source_to_flash
-              ? parseInt(store.data.line_of_source_to_flash)
-              : null
-          );
-        }}
-      >
-        <span>asm</span>
-        <DownloadIcon className="icon" />
-      </button>
-    ) : null;
 
-  const maybeClearAssemblyButton =
-    props.currentFile &&
-    props.pausedOnFrame &&
-    sourceCodeState === "ASM_AND_SOURCE_CACHED" ? (
-      <button
-        title="Clear assembly"
-        className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
-        onClick={() => {
-          FileOps.clearCachedAssemblyForFile(props.sourceFile.fullname);
-        }}
-      >
-        clear asm
-      </button>
-    ) : null;
+
   const maxCharsToDisplay = 30;
   const fullBasename = path.basename(props.sourceFile.fullname);
   const filenameToDisplay =
@@ -79,18 +48,45 @@ function SourceFileTab(props: {
       >
         {filenameToDisplay}
       </button>
-      {maybeFetchAssemblyButton}
-      {maybeClearAssemblyButton}
-      <button
+      {props.currentFile && props.pausedOnFrame && sourceCodeState === "SOURCE_CACHED" && (
+        <button
+          title="Fetch assembly"
+          className="flex items-center  hover:bg-gray-900 text-xs"
+          onClick={() => {
+            fetchAssemblyForFileAtLine(
+              props.sourceFile.fullname,
+              store.data.line_of_source_to_flash
+                ? parseInt(store.data.line_of_source_to_flash)
+                : null
+            );
+          }}
+        >
+          assembly
+        </button>
+      )}
+      {props.currentFile &&
+        props.pausedOnFrame &&
+        sourceCodeState === "ASM_AND_SOURCE_CACHED" && (
+          <button
+            title="Clear assembly"
+            className="flex items-center flex-nowrap whitespace-nowrap hover:bg-gray-900 text-xs"
+            onClick={() => {
+              FileOps.clearCachedAssemblyForFile(props.sourceFile.fullname);
+            }}
+          >
+            clear asm
+          </button>)}
+      {!props.currentFile && <button
         className="hover:bg-red-600"
+        title='close'
         onClick={() => {
           const filteredSourceFiles = store.data.cachedSourceFiles.filter(
             (sf) => sf.fullname !== props.sourceFile.fullname
           );
-          store.set<typeof store.data.cachedSourceFiles>(
-            "cachedSourceFiles",
-            filteredSourceFiles
-          );
+          // store.set<typeof store.data.cachedSourceFiles>(
+          //   "cachedSourceFiles",
+          //   filteredSourceFiles
+          // );
           store.set<typeof store.data.fullname_to_render>(
             "fullname_to_render",
             filteredSourceFiles[0].fullname
@@ -98,7 +94,7 @@ function SourceFileTab(props: {
         }}
       >
         <XIcon className="icon" />
-      </button>
+      </button>}
     </div>
   );
 }
@@ -115,7 +111,7 @@ export function SourceFileTabs() {
 
   return (
     <div
-      className="bg-gray-600 space-x-1 flex-nowrap flex h-8 w-full overflow-x-scroll overflow-y-hidden subtle-scrollbar"
+      className="bg-black space-x-1 flex-nowrap flex h-8 w-full overflow-x-scroll overflow-y-hidden subtle-scrollbar"
       style={{ scrollbarWidth: "thin" }}
     >
       {sourceFiles.map((sf) => (

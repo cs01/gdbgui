@@ -18,7 +18,7 @@ function computeSourceAndAsmLineNumber(sourceFile: SourceFile): SourceLineTransf
 
   code.forEach((_line, realLineNumber: number) => {
     renderedLineNumber += 1;
-    mapping.originalToNew[realLineNumber] = renderedLineNumber;
+    mapping.originalToNew[realLineNumber] = renderedLineNumber; // used to highlight the effective line number
 
     const asmsCurLine = sourceFile.assembly[realLineNumber];
     mapping.newToOriginal[renderedLineNumber] = `${realLineNumber}`;

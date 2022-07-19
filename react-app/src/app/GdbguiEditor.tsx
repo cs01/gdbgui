@@ -1,18 +1,16 @@
-import MonacoEditor, { Monaco } from "@monaco-editor/react";
-import { ClockLoader as Loader } from "react-spinners";
-import constants from "./constants";
+import MonacoEditor, { Monaco, loader } from "@monaco-editor/react";
 import FileOps from "./FileOps";
-import { store, useGlobalState, useGlobalValue } from "./Store";
+import { store, useGlobalValue } from "./Store";
 import * as monaco from "monaco-editor";
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import Breakpoints, {
   breakpointDisabledClass,
   breakpointEnabledClass,
 } from "./Breakpoints";
 import {
-  GdbAsmForFile,
+  // GdbAsmForFile,
   GdbAsmInstruction,
-  GdbGuiBreakpoint,
+  // GdbGuiBreakpoint,
   GdbguiSourceCodeState,
   SourceFile,
 } from "./types";
@@ -21,6 +19,8 @@ import {
   getHighlightLineFromNewNumber,
 } from "./computeLineNumbers";
 
+// https://github.com/suren-atoyan/monaco-loader#configure-the-loader-to-load-the-monaco-as-an-npm-package
+loader.config({ monaco })
 // function asmToRows(asmLines: GdbAsmForFile[] | GdbAsmLine[]) {
 //   return asmLines
 //     .map((g) => {
@@ -92,10 +92,16 @@ function getSourceCode(
       return `file not found: ${sourcePath}`;
     }
     case "NONE_REQUESTED": {
-      return "";
+      return `Welcome to gdb gui!
+      
+      To get started:
+
+      * choose a target type
+      * provide the binary you wish to debug
+      * Click "Load"`.split('\n').map(s => s.trim()).join('\n');
     }
     default: {
-      return `developer error: unhandled state ${sourceCodeState}`;
+      return `developer error: unhandled state ${sourceCodeState} `;
     }
   }
 }
@@ -289,6 +295,7 @@ export function GdbguiEditor() {
     });
   }
 
+  
   return (
     <MonacoEditor
       // height="calc(100% - 19px)" // By default, it fully fits with its parent

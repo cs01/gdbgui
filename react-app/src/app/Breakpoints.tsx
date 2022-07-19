@@ -3,23 +3,13 @@ import { store, useGlobalValue } from "./Store";
 import GdbApi from "./GdbApi";
 import Handlers from "./EventHandlers";
 import { Util } from "./Util";
-import FileOps from "./FileOps";
-import { FileLink } from "./Links";
-import constants from "./constants";
 import _ from "lodash";
-import {
-  ChevronDownIcon,
-  ChevronRightIcon,
-  ViewListIcon,
-  PencilAltIcon,
-  TrashIcon,
-  XIcon,
-} from "@heroicons/react/solid";
+import { PencilAltIcon, XIcon } from "@heroicons/react/solid";
 import MemoryLink from "./MemoryLink";
 import { GdbBreakpoint as GdbMiBreakpoint, GdbGuiBreakpoint } from "./types";
 
-export const breakpointEnabledClass = "bg-red-400 rounded-xl border-gray-800 border-4";
-export const breakpointDisabledClass = "bg-blue-400 rounded-xl border-gray-800 border-4";
+export const breakpointEnabledClass = "bg-red-700 rounded-xl border-gray-800 border-4";
+export const breakpointDisabledClass = "bg-blue-500 rounded-xl border-gray-800 border-4";
 
 const BreakpointSourceLineCache = {
   _cache: {},
@@ -51,25 +41,6 @@ function Breakpoint(props: { breakpoint: GdbGuiBreakpoint }) {
   const [editingBreakpointCondition, setEditingBreakpointCondition] = useState(false);
   const breakpoint = props.breakpoint;
   const checked = breakpoint.enabled === "y";
-
-  let breakpointNumberToDelete;
-  if (breakpoint.isChildBreakpoint) {
-    breakpointNumberToDelete = breakpoint.parentBreakpointNumber;
-  } else if (breakpoint.isParentBreakpoint) {
-    breakpointNumberToDelete = breakpoint.number;
-  } else {
-    breakpointNumberToDelete = breakpoint.number;
-  }
-
-  // if (breakpoint.isParentBreakpoint) {
-  //   functionJsx = (
-  //     <span className="placeholder">
-  //       <ViewListIcon className="icon" /> parent breakpoint on inline, template, or
-  //       ambiguous location
-  //     </span>
-  //   );
-  // } else {
-  const func = breakpoint.func === undefined ? "(unknown function)" : breakpoint.func;
 
   // TODO add -break-commands
   // https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Breakpoint-Commands.html

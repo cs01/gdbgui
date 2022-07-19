@@ -6,10 +6,7 @@
 import React from "react";
 import { store, useGlobalValue } from "./Store";
 import { ExpressionClass, Expression } from "./Expression";
-import { GdbguiExpressionVar, GdbguiLocalVariable, GdbLocalVariable } from "./types";
-import MemoryClass from "./Memory";
-import _ from "lodash";
-import { ChevronRightIcon } from "@heroicons/react/solid";
+import { GdbguiLocalVariable, GdbLocalVariable } from "./types";
 
 export function Locals() {
   const expressions = useGlobalValue<typeof store.data.expressions>("expressions");

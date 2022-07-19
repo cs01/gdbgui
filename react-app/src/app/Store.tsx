@@ -1,7 +1,6 @@
-import constants from "./constants";
 import { debug } from "./InitialData";
 import initialGlobalState from "./InitialGlobalState";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { GlobalState } from "./types";
 type Middleware = (key: string, oldval: any, newval: any) => boolean;
 
@@ -10,10 +9,11 @@ export function logChangesMiddleware(
   oldval: unknown,
   newval: unknown
 ): boolean {
-  if (constants.doNotLogChanges.indexOf(key) === -1) {
-    console.log(key, oldval, " -> ", newval);
-  }
   return true;
+  // if (constants.doNotLogChanges.indexOf(key) === -1) {
+  //   console.log(key, oldval, " -> ", newval);
+  // }
+  // return true;
 }
 
 function intersection(arr1: Array<string>, arr2: Array<string>) {
@@ -256,9 +256,12 @@ export const useGlobalState = <T,>(
 
   return [
     reactValue,
-    (newValue: unknown) => {
-      store.set(key, newValue);
-    },
+    useCallback(
+      (newValue: unknown) => {
+        store.set(key, newValue);
+      },
+      [key]
+    ),
   ];
 };
 

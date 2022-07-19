@@ -6,7 +6,6 @@ import MemoryClass from "./Memory";
 import { FileLink } from "./Links";
 import MemoryLink from "./MemoryLink";
 import { GdbStackFrame } from "./types";
-import Handlers from "./EventHandlers";
 import { ArrowSmRightIcon } from "@heroicons/react/solid";
 
 class FrameArguments extends React.Component {

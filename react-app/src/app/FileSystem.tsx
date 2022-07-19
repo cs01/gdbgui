@@ -1,11 +1,5 @@
-import {
-  BeakerIcon,
-  DocumentIcon,
-  FolderIcon,
-  FolderOpenIcon,
-} from "@heroicons/react/solid";
-import path from "path/posix";
-import React, { useEffect, useState } from "react";
+import { DocumentIcon, FolderIcon, FolderOpenIcon } from "@heroicons/react/solid";
+import { useState } from "react";
 import FileOps from "./FileOps";
 import { fileSystemService, FsDirEntry } from "./FileSystemService";
 import { store } from "./Store";

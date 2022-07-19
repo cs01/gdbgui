@@ -113,7 +113,6 @@ export class GdbWebsocket {
         : io.connect("/gdb_listener", opts);
 
     this.socket.on("connect", () => {
-      log("connected");
       const queuedGdbCommands = store.data.queuedGdbCommands;
       if (queuedGdbCommands) {
         this.runGdbCommand(queuedGdbCommands);

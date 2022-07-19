@@ -19,3 +19,4 @@ __pycache__
 built-react-app
 TODO*
 examples
+*.log
