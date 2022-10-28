@@ -30,7 +30,7 @@ jinja2==3.0.1
     # via flask
 markupsafe==2.0.1
     # via jinja2
-pygdbmi==0.10.0.1
+pygdbmi==0.10.0.2
     # via -r requirements.in
 pygments==2.10.0
     # via -r requirements.in
