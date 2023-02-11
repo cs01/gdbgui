@@ -10,9 +10,9 @@ brotli==1.0.9
     # via flask-compress
 click==8.0.1
     # via flask
-dnspython==2.2.1
+dnspython==2.3.0
     # via eventlet
-eventlet==0.33.0
+eventlet==0.33.3
     # via -r requirements.in
 flask==2.0.1
     # via
