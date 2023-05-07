@@ -162,11 +162,11 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(reuse_venv=True, python="3.10")
+@nox.session(reuse_venv=True, python="3.11")
 def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller==5.1")
+    session.install(".", "PyInstaller==5.10.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
