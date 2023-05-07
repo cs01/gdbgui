@@ -25,7 +25,7 @@ lint_dependencies = [
     "black==22.3.0",
     "vulture",
     "flake8",
-    "mypy==0.782",
+    "mypy==1.2.0",
     "check-manifest",
 ]
 vulture_whitelist = ".vulture_whitelist.py"
