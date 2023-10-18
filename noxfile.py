@@ -196,7 +196,7 @@ def build_executable_windows(session):
 def build_pex(session):
     """Builds a pex of gdbgui"""
     # NOTE: frontend must be built before running this
-    session.install("pex==2.1.93")
+    session.install("pex")
     pex_path = Path("build/executable/gdbgui.pex")
     session.run(
         "pex",
