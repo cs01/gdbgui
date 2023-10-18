@@ -81,7 +81,7 @@ Note that this only applies if you are installing the Python package, and not us
 
 ### Linux Dependencies
 
-    sudo apt-get install gdb python3
+    sudo apt install gdb python3
 
 ### macOS Dependencies
 

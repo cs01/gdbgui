@@ -29,6 +29,8 @@ jobs:
           pip install nox
       - name: Install gdb ubuntu
         run: |
+          sudo apt update
+          sudo apt upgrade
           sudo apt install gdb
       - name: Execute Tests
         run: |
