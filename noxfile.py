@@ -8,7 +8,7 @@ import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.11"]
+python = ["3.12"]
 
 prettier_command = [
     "npx",
@@ -22,10 +22,10 @@ prettier_command = [
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = [
-    "black==22.3.0",
+    "black==22.10.0",
     "vulture",
     "flake8",
-    "mypy==1.2.0",
+    "mypy==1.6.1",
     "check-manifest",
 ]
 vulture_whitelist = ".vulture_whitelist.py"
@@ -162,11 +162,11 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(reuse_venv=True, python="3.11")
+@nox.session(reuse_venv=True, python="3.12")
 def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller==5.10.1")
+    session.install(".", "PyInstaller==6.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
@@ -196,7 +196,7 @@ def build_executable_windows(session):
 def build_pex(session):
     """Builds a pex of gdbgui"""
     # NOTE: frontend must be built before running this
-    session.install("pex==2.1.93")
+    session.install("pex")
     pex_path = Path("build/executable/gdbgui.pex")
     session.run(
         "pex",

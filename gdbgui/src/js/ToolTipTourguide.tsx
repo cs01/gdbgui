@@ -122,15 +122,13 @@ class ToolTipTourguide extends React.Component<{}, State> {
           background: "white",
           border: "1px solid",
           padding: "5px",
-          // @ts-expect-error ts-migrate(2322) FIXME: Type '"1000"' is not assignable to type '"-moz-ini... Remove this comment to see the full error message
           zIndex: "1000",
           position: "absolute",
           overflow: "auto",
           whiteSpace: "normal",
           left: left,
           top: top,
-          fontSize: "small",
-          pointer: "normal"
+          fontSize: "small"
         }}
       >
         {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'content' does not exist on type 'Readonl... Remove this comment to see the full error message */}

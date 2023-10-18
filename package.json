@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "license": "GPL-3.0",
   "scripts": {
-    "start": "cross-env NODE_ENV=development webpack --mode development --watch --config webpack.config.js",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=development webpack --mode development --watch --config webpack.config.js",
     "test": "jest",
-    "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
+    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider NODE_ENV=production webpack --mode production --config webpack.config.js",
     "format": "prettier ./gdbgui/src/js/** --write",
     "lint": "prettier ./gdbgui/src/js/** --check"
   },

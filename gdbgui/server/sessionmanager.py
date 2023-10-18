@@ -100,8 +100,8 @@ class SessionManager(object):
         pid = pty_for_gdb.pid
         debug_session = DebugSession(
             pygdbmi_controller=IoManager(
-                os.fdopen(pty_for_gdbgui.stdin, mode="wb", buffering=0),
-                os.fdopen(pty_for_gdbgui.stdout, mode="rb", buffering=0),
+                os.fdopen(pty_for_gdbgui.stdin, mode="wb", buffering=0),  # type: ignore
+                os.fdopen(pty_for_gdbgui.stdout, mode="rb", buffering=0),  # type: ignore
                 None,
             ),
             pty_for_gdbgui=pty_for_gdbgui,

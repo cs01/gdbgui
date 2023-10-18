@@ -59,7 +59,6 @@ class ToolTip extends React.Component {
           border: "1px solid",
           position: "fixed",
           padding: "5px",
-          // @ts-expect-error ts-migrate(2322) FIXME: Type '"121"' is not assignable to type '"-moz-init... Remove this comment to see the full error message
           zIndex: "121"
         }}
       >

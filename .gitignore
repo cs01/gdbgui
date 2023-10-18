@@ -15,3 +15,4 @@ venv
 site
 gdbgui/static/js/*
 __pycache__
+.coverage*

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import distutils.text_file
+import distutils.text_file  # type: ignore
 
 USING_WINDOWS = os.name == "nt"
 if USING_WINDOWS:
@@ -70,7 +70,6 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.9",
     ],
     python_requires=">=3.6",
     project_urls={
