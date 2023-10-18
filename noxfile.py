@@ -8,7 +8,7 @@ import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.10"]
+python = ["3.11"]
 
 prettier_command = [
     "npx",
@@ -25,7 +25,7 @@ lint_dependencies = [
     "black==22.3.0",
     "vulture",
     "flake8",
-    "mypy==0.782",
+    "mypy==1.2.0",
     "check-manifest",
 ]
 vulture_whitelist = ".vulture_whitelist.py"
@@ -162,11 +162,11 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(reuse_venv=True, python="3.10")
+@nox.session(reuse_venv=True, python="3.11")
 def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller==5.1")
+    session.install(".", "PyInstaller==5.10.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
