@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os
-import distutils.text_file
+import distutils.text_file  # type: ignore
 
 USING_WINDOWS = os.name == "nt"
 if USING_WINDOWS:

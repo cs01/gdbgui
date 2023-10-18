@@ -11,7 +11,7 @@ IS_A_TTY = sys.stdout.isatty()
 pyinstaller_base_dir = getattr(sys, "_MEIPASS", None)
 using_pyinstaller = pyinstaller_base_dir is not None
 if using_pyinstaller:
-    BASE_PATH = Path(pyinstaller_base_dir)
+    BASE_PATH = Path(pyinstaller_base_dir or "")
 else:
     BASE_PATH = Path(os.path.realpath(__file__)).parent.parent
     PARENTDIR = BASE_PATH.parent

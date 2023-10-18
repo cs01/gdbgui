@@ -22,10 +22,10 @@ prettier_command = [
 
 doc_dependencies = [".", "mkdocs", "mkdocs-material"]
 lint_dependencies = [
-    "black==22.3.0",
+    "black==22.10.0",
     "vulture",
     "flake8",
-    "mypy==1.2.0",
+    "mypy==1.6.1",
     "check-manifest",
 ]
 vulture_whitelist = ".vulture_whitelist.py"
