@@ -128,7 +128,7 @@ class ToolTipTourguide extends React.Component<{}, State> {
           whiteSpace: "normal",
           left: left,
           top: top,
-          fontSize: "small",
+          fontSize: "small"
         }}
       >
         {/* @ts-expect-error ts-migrate(2339) FIXME: Property 'content' does not exist on type 'Readonl... Remove this comment to see the full error message */}
