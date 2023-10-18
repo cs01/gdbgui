@@ -166,7 +166,7 @@ def publish_docs(session):
 def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller==5.10.1")
+    session.install(".", "PyInstaller==6.1")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
