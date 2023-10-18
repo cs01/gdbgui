@@ -21,6 +21,8 @@ jobs:
           #   buildname: windows
           - os: macos-latest
             buildname: mac
+    env:
+      NODE_OPTIONS: "--openssl-legacy-provider"
     steps:
       - uses: actions/checkout@v1
       - name: Set up Python ${{ matrix.python-version }}
