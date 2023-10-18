@@ -69,7 +69,7 @@ nox -s publish_docs
 These are automatically built on CI, but can be built locally with corresponding `nox` commands, such as:
 
 ```
-nox -s build_executable_current_platform
+nox -s build_executables_current_platform
 ```
 
 ## Publishing a New Version
