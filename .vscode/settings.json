@@ -1,7 +1,8 @@
 {
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "[python]": {
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "ms-python.black-formatter"
     },
     "[json]": {
         "editor.formatOnSave": true

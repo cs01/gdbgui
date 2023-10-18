@@ -1,5 +1,10 @@
 # gdbgui release history
 
+## 0.15.2.0
+- Update default python version to 3.12
+- utf-8 decode error bugfix
+- fix registers cannot be displayed bug
+
 ## 0.15.1.0
 
 - Compatibility with Werkzeug 2.1. Use the eventlet server instead of
