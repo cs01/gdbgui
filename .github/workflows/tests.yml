@@ -29,7 +29,7 @@ jobs:
           pip install nox
       - name: Install gdb ubuntu
         run: |
-          sudo apt-get install gdb
+          sudo apt install gdb
       - name: Execute Tests
         run: |
           nox --non-interactive --session tests-${{ matrix.python-version }}

@@ -22,7 +22,7 @@ flask==3.0.0
     #   flask-socketio
 flask-compress==1.10.1
     # via -r requirements.in
-flask-socketio==5.1.2
+flask-socketio==5.3.6
     # via -r requirements.in
 greenlet==3.0.0
     # via eventlet
