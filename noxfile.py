@@ -130,7 +130,7 @@ def develop(session):
 @nox.session(reuse_venv=True)
 def serve(session):
     session.install("-e", ".")
-    session.run("python", "-m", "gdbgui", *session.posargs)
+    session.run("python", "-m", "gdbgui", "--no-browser", *session.posargs)
 
 
 @nox.session(reuse_venv=True)

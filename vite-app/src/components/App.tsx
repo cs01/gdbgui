@@ -1,71 +1,150 @@
-import Avatar from 'components/Avatar'
-import logo from 'assets/logo.svg'
+import { useEffect, useState } from 'react'
+import { store, useGlobalValue } from './Store'
+import FileOps from './FileOps'
+import GlobalEvents from './GlobalEvents'
+import HoverVar from './HoverVar'
+import { Modal } from './GdbguiModal'
+import { RightSidebar } from './RightSidebar'
+import ToolTip from './ToolTip'
+import { debug, InitialData } from './InitialData'
+import { ReflexContainer, ReflexSplitter, ReflexElement } from 'react-reflex'
+import { GdbTerminal } from './GdbTerminal'
+import { InferiorTerminal } from './InferiorTerminal'
+import { GdbGuiTerminal } from './GdbGuiTerminal'
+import { Nav } from './Nav'
+import { GdbguiEditor } from './GdbguiEditor'
+import { Footer } from './Footer'
+import { GdbWebsocket } from './Websocket'
+import 'react-reflex/styles.css'
+import { SourceFileTabs } from './SourceFileTabs'
 
-const randoms = [
-  [1, 2],
-  [3, 4, 5],
-  [6, 7]
-]
+export function Gdbgui() {
+  const [initialData, setInitialData] = useState<Nullable<InitialData>>(null)
+  const [error, setError] = useState<Nullable<string>>(null)
 
-function App() {
-  return (
-    <div className="relative overflow-hidden bg-white">
-      <div className="h-screen sm:pb-40 sm:pt-24 lg:pb-48 lg:pt-40">
-        <div className="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
-          <div className="sm:max-w-lg">
-            <div className="my-4">
-              <Avatar size="large" src={logo} />
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
-              Welcome!
-            </h1>
-            <p className="mt-4 text-xl text-gray-500">
-              This is a boilerplate build with Vite, React 18, TypeScript,
-              Vitest, Testing Library, TailwindCSS 3, Eslint and Prettier.
-            </p>
+  useEffect(() => {
+    async function initialize() {
+      const response = await fetch('/initial_data')
+      if (!response.ok) {
+        setError(JSON.stringify(response, null, 3))
+      }
+      try {
+        const initialData: InitialData = await response.json()
+        const gdbWebsocket = new GdbWebsocket(
+          initialData.gdb_command,
+          initialData.gdbpid
+        )
+        store.set<typeof store.data.gdbWebsocket>('gdbWebsocket', gdbWebsocket)
+        GlobalEvents.init()
+        FileOps.init()
+        setInitialData(initialData)
+      } catch (e) {
+        console.error(e)
+        setError(
+          `Failed to parse initial data from gdbgui server. Is it running? Error: ${String(
+            e
+          )}`
+        )
+      }
+    }
+    initialize()
+  }, [])
+
+  if (error) {
+    return (
+      <div className=" h-screen w-screen bg-gray-900  text-red-800 text-2xl text-center">
+        <div className="w-full  ">
+          <div className="py-10">
+            gdbgui failed to connect to the server. Is it still running?
           </div>
-          <div>
-            <div className="my-10">
-              <a
-                href="vscode://"
-                className="inline-block rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-center font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700 focus:ring-offset-2"
-              >
-                Start building for free
-              </a>
-              <div
-                aria-hidden="true"
-                className="pointer-events-none mt-10 md:mt-0 lg:absolute lg:inset-y-0 lg:mx-auto lg:w-full lg:max-w-7xl"
-              >
-                <div className="absolute sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
-                  <div className="flex items-center space-x-6 lg:space-x-8">
-                    {randoms.map((random, number) => (
-                      <div
-                        key={`random-${random[number]}`}
-                        className="grid shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8"
-                      >
-                        {random.map((number) => (
-                          <div
-                            key={`random-${number}`}
-                            className="h-64 w-44 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100"
-                          >
-                            <img
-                              src={`https://picsum.photos/600?random=${number}`}
-                              alt=""
-                              className="h-full w-full bg-indigo-100 object-cover object-center"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div className="pt-10">
+            <pre>{error}</pre>
           </div>
         </div>
       </div>
+    )
+  }
+
+  if (!initialData) {
+    return (
+      <div className="flex-col h-screen w-screen bg-gray-900  text-gray-800 text-9xl text-center">
+        <div className="w-full">Loading...</div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="h-screen text-gray-300 bg-black">
+      <HoverVar />
+      <Modal />
+      <ToolTip />
+      <textarea
+        style={{
+          width: '0px',
+          height: '0px',
+          position: 'absolute',
+          top: '0',
+          left: '-1000px'
+        }}
+        ref={(node) => {
+          store.set<typeof store.data.textarea_to_copy_to_clipboard>(
+            'textarea_to_copy_to_clipboard',
+            node
+          )
+        }}
+      />
+      <ReflexContainer orientation="horizontal">
+        <ReflexElement
+          flex={0.85}
+          minSize={100}
+          className="bg-black text-gray-300"
+        >
+          <div className="fixed bg-black w-full z-10">
+            <Nav initialData={initialData} />
+          </div>
+          <ReflexContainer
+            orientation="vertical"
+            className="h-full"
+            style={{ paddingTop: '52px' }}
+          >
+            <ReflexElement className="left-pane" flex={0.6} minSize={100}>
+              <SourceFileTabs />
+              <GdbguiEditor />
+            </ReflexElement>
+
+            <ReflexSplitter className="" />
+
+            <ReflexElement minSize={100}>
+              <div className="pane-content">
+                <RightSidebar
+                  signals={initialData.signals}
+                  debug={debug}
+                  initialDir={initialData.working_directory}
+                />
+              </div>
+            </ReflexElement>
+          </ReflexContainer>
+        </ReflexElement>
+
+        <ReflexSplitter className="" />
+
+        <ReflexElement minSize={10} className="pb-10">
+          <ReflexContainer orientation="vertical">
+            <ReflexElement minSize={20}>
+              <GdbTerminal />
+            </ReflexElement>
+
+            <ReflexElement minSize={20} flex={0.3}>
+              <InferiorTerminal />
+            </ReflexElement>
+
+            <ReflexElement minSize={20} flex={0.3}>
+              <GdbGuiTerminal />
+            </ReflexElement>
+          </ReflexContainer>
+        </ReflexElement>
+      </ReflexContainer>
+      <Footer />{' '}
     </div>
   )
 }
-
-export default App
