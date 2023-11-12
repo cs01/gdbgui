@@ -33,6 +33,7 @@ blueprint = Blueprint(
     __name__,
     static_folder=str(STATIC_DIR),
     static_url_path="",
+    template_folder="../templates",
 )
 
 
@@ -146,22 +147,8 @@ def help_route():
     return redirect("https://github.com/cs01/gdbgui/blob/master/HELP.md")
 
 
-@blueprint.route("/dashboard", methods=["GET"])
-@authenticate
-def dashboard():
-    manager = current_app.config.get("_manager")
-
-    """display a dashboard with a list of all running gdb processes
-    and ability to kill them, or open a new tab to work with that
-    GdbController instance"""
-    return render_template(
-        "dashboard.html",
-        gdbgui_sessions=manager.get_dashboard_data(),
-        default_command=current_app.config["gdb_command"],
-    )
-
-
 @blueprint.route("/", methods=["GET"])
+@blueprint.route("/dashboard", methods=["GET"])
 @authenticate
 def gdbgui():
     return send_from_directory(STATIC_DIR, "index.html")
@@ -188,7 +175,7 @@ def get_initial_data():
 @authenticate
 def dashboard_data():
     manager = current_app.config.get("_manager")
-
+    print(manager.get_dashboard_data())
     return jsonify(manager.get_dashboard_data())
 
 

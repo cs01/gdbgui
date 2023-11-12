@@ -15,6 +15,13 @@ export default defineConfig({
         secure: false
         // Path rewrite is optional
         // rewrite: (path) => path.replace(/^\/api/, '')
+      },
+      '/dashboard_data': {
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false
+        // Path rewrite is optional
+        // rewrite: (path) => path.replace(/^\/api/, '')
       }
     }
   },

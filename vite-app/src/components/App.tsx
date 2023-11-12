@@ -17,40 +17,29 @@ import { Footer } from './Footer'
 import { GdbWebsocket } from './Websocket'
 import 'react-reflex/styles.css'
 import { SourceFileTabs } from './SourceFileTabs'
+import { useQuery } from '@tanstack/react-query'
 
-export function Gdbgui() {
-  const [initialData, setInitialData] = useState<Nullable<InitialData>>(null)
-  const [error, setError] = useState<Nullable<string>>(null)
-
-  useEffect(() => {
-    async function initialize() {
+export default function Gdbgui() {
+  const initialData = useQuery<InitialData>({
+    queryKey: ['initial_data'],
+    queryFn: async () => {
       const response = await fetch('/initial_data')
       if (!response.ok) {
-        setError(JSON.stringify(response, null, 3))
+        throw new Error(response.statusText)
       }
-      try {
-        const initialData: InitialData = await response.json()
-        const gdbWebsocket = new GdbWebsocket(
-          initialData.gdb_command,
-          initialData.gdbpid
-        )
-        store.set<typeof store.data.gdbWebsocket>('gdbWebsocket', gdbWebsocket)
-        GlobalEvents.init()
-        FileOps.init()
-        setInitialData(initialData)
-      } catch (e) {
-        console.error(e)
-        setError(
-          `Failed to parse initial data from gdbgui server. Is it running? Error: ${String(
-            e
-          )}`
-        )
-      }
+      const initialData: InitialData = await response.json()
+      const gdbWebsocket = new GdbWebsocket(
+        initialData.gdb_command,
+        initialData.gdbpid
+      )
+      store.set<typeof store.data.gdbWebsocket>('gdbWebsocket', gdbWebsocket)
+      GlobalEvents.init()
+      FileOps.init()
+      return initialData
     }
-    initialize()
-  }, [])
+  })
 
-  if (error) {
+  if (initialData.isError) {
     return (
       <div className=" h-screen w-screen bg-gray-900  text-red-800 text-2xl text-center">
         <div className="w-full  ">
@@ -58,19 +47,24 @@ export function Gdbgui() {
             gdbgui failed to connect to the server. Is it still running?
           </div>
           <div className="pt-10">
-            <pre>{error}</pre>
+            <pre>{initialData.error.message}</pre>
           </div>
         </div>
       </div>
     )
   }
 
-  if (!initialData) {
+  if (initialData.isLoading) {
     return (
       <div className="flex-col h-screen w-screen bg-gray-900  text-gray-800 text-9xl text-center">
         <div className="w-full">Loading...</div>
       </div>
     )
+  }
+
+  if (!initialData.data) {
+    // This should be unreachable
+    return null
   }
 
   return (
@@ -100,7 +94,7 @@ export function Gdbgui() {
           className="bg-black text-gray-300"
         >
           <div className="fixed bg-black w-full z-10">
-            <Nav initialData={initialData} />
+            <Nav initialData={initialData.data} />
           </div>
           <ReflexContainer
             orientation="vertical"
@@ -117,9 +111,9 @@ export function Gdbgui() {
             <ReflexElement minSize={100}>
               <div className="pane-content">
                 <RightSidebar
-                  signals={initialData.signals}
+                  signals={initialData.data.signals}
                   debug={debug}
-                  initialDir={initialData.working_directory}
+                  initialDir={initialData.data.working_directory}
                 />
               </div>
             </ReflexElement>
