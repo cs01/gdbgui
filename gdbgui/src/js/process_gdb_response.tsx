@@ -274,6 +274,7 @@ const process_gdb_response = function(response_array: any) {
           Actions.inferior_program_exited();
         } else if (
           r.payload.reason.includes("breakpoint-hit") ||
+          r.payload.reason.includes("watchpoint-trigger") ||
           r.payload.reason.includes("end-stepping-range")
         ) {
           if (r.payload["new-thread-id"]) {
