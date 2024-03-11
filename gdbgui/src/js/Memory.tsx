@@ -85,7 +85,7 @@ class Memory extends React.Component<{}, State> {
       }
       let hex_value = store.get("memory_cache")[hex_addr];
       hex_vals_for_this_addr.push(hex_value);
-      let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/\W/g, ".");
+      let char = String.fromCharCode(parseInt(hex_value, 16)).replace(/[^ -~]/g, ".");
       char_vals_for_this_addr.push(
         <span key={i} className="memory_char">
           {char}
