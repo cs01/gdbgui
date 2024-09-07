@@ -45,17 +45,18 @@ class Pty:
             (master, slave) = pty.openpty()
             self.stdin = master
             self.stdout = master
+            self.slave = slave
             self.name = os.ttyname(slave)
             self.set_echo(echo)
 
     def set_echo(self, echo_on: bool) -> None:
-        (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.stdin)
+        (iflag, oflag, cflag, lflag, ispeed, ospeed, cc) = termios.tcgetattr(self.slave)
         if echo_on:
             lflag = lflag & termios.ECHO  # type: ignore
         else:
             lflag = lflag & ~termios.ECHO  # type: ignore
         termios.tcsetattr(
-            self.stdin,
+            self.slave,
             termios.TCSANOW,
             [iflag, oflag, cflag, lflag, ispeed, ospeed, cc],
         )
