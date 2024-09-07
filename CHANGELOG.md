@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.15.2.1
+- Fix setting echo attribute in ptylib on Unix98 systems
+
 ## 0.15.2.0
 - Update default python version to 3.12
 - utf-8 decode error bugfix
