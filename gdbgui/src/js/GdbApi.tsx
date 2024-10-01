@@ -187,12 +187,11 @@ const GdbApi = {
       "-exec-step" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
     );
   },
-  click_return_button: function() {
-    // From gdb mi docs (https://sourceware.org/gdb/onlinedocs/gdb/GDB_002fMI-Program-Execution.html#GDB_002fMI-Program-Execution):
-    // `-exec-return` Makes current function return immediately. Doesn't execute the inferior.
-    // That means we do NOT dispatch the event `event_inferior_program_resuming`, because it's not, in fact, running.
-    // The return also doesn't even indicate that it's paused, so we need to manually trigger the event here.
-    GdbApi.run_gdb_command("-exec-return");
+  click_return_button: function(reverse = false) {
+    Actions.inferior_program_resuming();
+    GdbApi.run_gdb_command(
+      "-exec-finish" + (store.get("debug_in_reverse") || reverse ? " --reverse" : "")
+    );
     Actions.inferior_program_paused();
   },
   click_next_instruction_button: function(reverse = false) {
