@@ -37,6 +37,7 @@ if (debug) {
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'initial_data' does not exist on type 'Wi... Remove this comment to see the full error message
 const initial_data = window.initial_data;
 let socket: SocketIOClient.Socket;
+const base = window.location.pathname.replace(/\/$/, '');
 const GdbApi = {
   getSocket: function() {
     return socket;
@@ -49,7 +50,8 @@ const GdbApi = {
         csrf_token: initial_data.csrf_token,
         gdbpid: initial_data.gdbpid,
         gdb_command: initial_data.gdb_command
-      }
+      },
+      path: base + '/socket.io',
     });
 
     socket.on("connect", function() {

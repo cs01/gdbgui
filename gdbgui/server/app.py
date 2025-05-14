@@ -6,6 +6,7 @@ import traceback
 from flask import Flask, abort, request, session
 from flask_compress import Compress  # type: ignore
 from flask_socketio import SocketIO, emit  # type: ignore
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .constants import DEFAULT_GDB_EXECUTABLE, STATIC_DIR, TEMPLATE_DIR
 from .http_routes import blueprint
@@ -15,6 +16,7 @@ from .sessionmanager import SessionManager, DebugSession
 logger = logging.getLogger(__file__)
 # Create flask application and add some configuration keys to be used in various callbacks
 app = Flask(__name__, template_folder=str(TEMPLATE_DIR), static_folder=str(STATIC_DIR))
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1,x_prefix=1)
 Compress(
     app
 )  # add gzip compression to Flask. see https://github.com/libwilliam/flask-compress
