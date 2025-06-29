@@ -35,9 +35,10 @@ jobs:
         run: |
           nox --non-interactive --session build_executables_${{ matrix.buildname }}
       - name: Upload ${{ matrix.buildname }} executable
-        # if: github.ref == 'refs/heads/master'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: gdbgui_${{ matrix.buildname }}
-          path: |
-            ./build/executable
+          path: ./build/executable
+          if-no-files-found: error  # Optional: warn, error, or ignore
+          retention-days: 90      # Optional: 1-90 days, or repo default            
+
