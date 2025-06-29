@@ -67,11 +67,10 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: Unix",
         "Operating System :: POSIX",
-        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
     ],
-    python_requires=">=3.6",
+    python_requires=">=3.13",
     project_urls={
         "Documentation": "https://cs01.github.io/gdbgui/",
         "Source Code": "https://github.com/cs01/gdbgui",

@@ -8,7 +8,7 @@ import glob
 
 nox.options.reuse_existing_virtualenvs = True
 nox.options.sessions = ["tests", "lint", "docs"]
-python = ["3.12"]
+python_version = ["3.13"]
 
 prettier_command = [
     "npx",
@@ -51,7 +51,7 @@ def js_tests(session):
     session.run("yarn", "build", external=True)
 
 
-@nox.session(reuse_venv=True, python=python)
+@nox.session(reuse_venv=True, python=python_version)
 def tests(session):
     python_tests(session)
     js_tests(session)
@@ -162,11 +162,11 @@ def publish_docs(session):
     session.run("mkdocs", "gh-deploy")
 
 
-@nox.session(reuse_venv=True, python="3.12")
+@nox.session(reuse_venv=True, python=python_version)
 def build_executables_current_platform(session):
     session.run("yarn", "install", external=True)
     session.run("yarn", "build", external=True)
-    session.install(".", "PyInstaller==6.1")
+    session.install(".", "PyInstaller==6.14")
     session.run("python", "make_executable.py")
     session.notify("build_pex")
 
