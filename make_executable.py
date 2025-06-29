@@ -26,9 +26,9 @@ a = Analysis(['gdbgui/cli.py'],  # noqa
              pathex=['.'],
              binaries=[],
              datas=[
-              ('./gdbgui/static*', './static'),
-              ('./gdbgui/templates*', './templates'),
-              ('./gdbgui/VERSION.txt*', './')
+              ('./gdbgui/static/*', './static'),
+              ('./gdbgui/templates/*', './templates'),
+              ('./gdbgui/VERSION.txt', './')
             ],
              hiddenimports=[
                'engineio.async_threading',
@@ -89,13 +89,15 @@ def main():
     binary_path = Path(distpath) / f"{binary_name}{extension}"
 
     write_spec_with_gdbgui_version_in_name(spec_path, binary_name)
+    cmd = [
+        "pyinstaller",
+        spec_path,
+        "--distpath",
+        distpath,
+    ]
+    logging.info(f"Running command {' '.join(str(c) for c in cmd)}")
     subprocess.run(
-        [
-            "pyinstaller",
-            spec_path,
-            "--distpath",
-            distpath,
-        ],
+        cmd,
         check=True,
     )
     verify(binary_path, __version__)

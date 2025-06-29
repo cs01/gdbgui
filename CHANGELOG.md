@@ -1,5 +1,8 @@
 # gdbgui release history
 
+## 0.15.3.0
+- Update default python version to 3.13
+
 ## 0.15.2.0
 - Update default python version to 3.12
 - utf-8 decode error bugfix
