@@ -1,3 +1,5 @@
+import './ajaxOverride'
+
 let constants = {
   ENTER_BUTTON_NUM: 13,
   TAB_BUTTON_NUM: 9,

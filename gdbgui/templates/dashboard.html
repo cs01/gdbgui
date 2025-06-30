@@ -7,6 +7,9 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" />
   </head>
 
+
+  <base href="{{ url_for('static', filename='') }}">
+
   <body class="w-screen h-screen bg-gray-300">
     <div id="dashboard">Loading dashboard...</div>
   </body>
@@ -15,5 +18,5 @@
     window.csrf_token = {{csrf_token | tojson}}
     window.default_command = {{default_command | tojson}}
   </script>
-  <script type="text/javascript" src="static/js/dashboard.js?_={{version}}"></script>
+  <script type="text/javascript" src="js/dashboard.js?_={{version}}"></script>
 </html>
