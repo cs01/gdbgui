@@ -181,9 +181,21 @@ td.assembly {
   white-space: nowrap;
 }
 /* instruction content */
-.instrContent {
-  min-width: 250px;
-  display: inline-block;
+.asm-mnemonic {
+  color: green;
+  font-weight: bold;
+}
+.asm-register {
+  color: red;
+}
+.asm-immediate {
+  color: #489ce4;
+}
+.asm-other {
+  color: inherit;
+}
+.asm-address {
+  color: #489ce4;
 }
 #code_table {
   font-family: monospace;

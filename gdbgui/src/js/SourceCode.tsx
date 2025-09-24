@@ -260,19 +260,50 @@ class SourceCode extends React.Component<{}, State> {
       ) : (
         <span style={{ width: "10px", display: "inline-block" }}> </span>
       );
+    const instStr: string = assm.inst || "";
+    const [mnemonic, ...operandParts] = instStr.trim().split(/\s+/);
+    const operandsStr = operandParts.join(" ");
+
+    // split operands by commas but keep commas
+    const operandTokens = operandsStr.split(/(\,)/).map((tok) => tok.trim()).filter((tok) => tok.length > 0);
+
+    const highlightedOperands = operandTokens.map((tok, i) => {
+      if (/^\%[a-z0-9]+$/i.test(tok)) {
+        // register like %rax
+        return <span key={i} className="asm-register">{tok}</span>;
+      } else if (/^\$?0x[0-9a-f]+$/i.test(tok) || /^\$?\d+$/i.test(tok)) {
+        // immediate or numeric constant
+        return <span key={i} className="asm-immediate">{tok}</span>;
+      } else if (tok === ",") {
+        return <span key={i}>{tok}</span>;
+      } else {
+        // memory reference or other
+        return <span key={i} className="asm-other">{tok}</span>;
+      }
+    });
+
+    const highlightedInstruction = (
+      <>
+        <span className="asm-mnemonic">{mnemonic}</span>{" "}
+        {highlightedOperands}
+      </>
+    );
     return (
-      <span key={key} style={{ whiteSpace: "nowrap" }} className={cls}>
-        {/* @ts-expect-error ts-migrate(2769) FIXME: Property 'fontFamily' is missing in type '{ paddin... Remove this comment to see the full error message */}
-        {asterisk} <MemoryLink addr={addr} style={{ paddingRight: "5px" }} />
-        {opcodes /* i.e. mov */}
-        <span className="instrContent">{instruction}</span>
+      <span key={key} className={cls} style={{ whiteSpace: "pre" }}>
+        {asterisk}
+        <MemoryLink addr={addr} style={{ display: "inline-block", width: "100px", fontFamily: "monospace" }}/>
+        {opcodes}
+        <span className="asm-mnemonic" style={{ display: "inline-block", width: "80px" }}>
+          {mnemonic}
+        </span>
+        <span className="asm-operands" style={{ display: "inline-block", width: "200px" }}>
+          {highlightedOperands}
+        </span>
         {func_name ? (
-          <span>
+          <span className="asm-func" style={{ marginLeft: "10px" }}>
             {func_name}+{offset}
           </span>
-        ) : (
-          ""
-        )}
+        ) : ""}
       </span>
     );
   }
