@@ -1,5 +1,6 @@
 import os
 import socket
+import threading
 import webbrowser
 
 from .constants import DEFAULT_HOST, DEFAULT_PORT, colorize
@@ -82,7 +83,12 @@ def run_server(
             text = ("Opening gdbgui with %s at " + protocol + "%s:%d") % args
             print(colorize(text))
             b = webbrowser.get(browsername) if browsername else webbrowser
-            b.open(url_with_prefix)
+
+            # open the dashboard directly in a new tab/window in a new thread
+            def open_browser_func():
+                b.open_new_tab(url_with_prefix)
+
+            threading.Thread(target=open_browser_func).start()
         else:
             print(colorize(f"View gdbgui at {protocol}{url[0]}:{url[1]}"))
         print(

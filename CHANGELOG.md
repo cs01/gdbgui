@@ -1,5 +1,7 @@
 # gdbgui release history
 
+- start browser in a new thread to avoid connection errors
+
 ## 0.15.3.0
 - Update default python version to 3.13
 
