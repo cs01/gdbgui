@@ -41,7 +41,7 @@ export class FileLink extends React.Component<Props> {
         >
           {this.props.file}
           {sep}
-          {line > 0 ? line : ""}
+          {line > 0 ? <span className="sidebar_bp_line_num">{line}</span> : ""}
         </span>
 
         <CopyToClipboard content={clipboard_content} />
