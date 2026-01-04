@@ -448,3 +448,8 @@ button:focus {
   on focused buttons */
   outline-width: 0 !important;
 }
+
+.sidebar_bp_line_num {
+  font-weight: bold;
+  font-size: 1.0em;
+}
