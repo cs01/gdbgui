@@ -1,0 +1,9 @@
+node_modules
+gdbgui/static/js/main.js
+__pycache__
+*.pyc
+*.pyo
+.git
+.pytest_cache
+gdbgui.egg-info
+gdbgui/server/uploads
